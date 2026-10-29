@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+    <meta name="referrer" content="no-referrer">
+    <title>Thetadex</title>
+
+    <!-- PWA: Manifest, Farben, Icons -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#FAF9F7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1C1B19" media="(prefers-color-scheme: dark)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Thetadex">
+    <link rel="icon" href="icons/thetadex-icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/thetadex-icon-180.png">
+
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+<header class="kopf">
+    <a class="kopf-marke" href="#/">
+        <img src="icons/thetadex-icon.svg" alt="" width="40" height="40">
+        <span class="kopf-name">Thetadex</span>
+    </a>
+    <nav class="kopf-links" aria-label="Allgemein">
+        <a href="#/einrichtung" data-route="einrichtung">Einrichtung</a>
+        <a href="#/info" data-route="info">Info</a>
+    </nav>
+</header>
+
+<nav class="reiter" id="reiter" aria-label="Bereiche"></nav>
+
+<main id="inhalt" class="inhalt" tabindex="-1"></main>
+
+<div id="update-hinweis" class="update-hinweis" role="status" hidden>
+    <span>Neue Version da.</span>
+    <button type="button" id="update-knopf" class="knopf">Jetzt neu laden</button>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

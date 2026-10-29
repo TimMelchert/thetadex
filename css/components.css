@@ -1,0 +1,84 @@
+/* Thetadex – Bausteine: Karte, Knopf, Formular, Hinweise. */
+
+.leise { color: var(--schrift-leise); }
+
+.karte {
+    background: var(--kachel);
+    border-radius: var(--rund);
+    padding: var(--abstand);
+    margin: var(--abstand) 0;
+}
+
+.bereich-titel {
+    padding-left: 12px;
+    border-left: 6px solid var(--bereich);
+}
+
+.knopf {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border: none;
+    border-radius: var(--rund);
+    background: var(--knopf-grund);
+    color: var(--knopf-schrift);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.knopf-zweit {
+    background: transparent;
+    color: var(--schrift);
+    border: 1px solid var(--schrift-leise);
+}
+
+.formular {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: var(--abstand);
+}
+
+.formular label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.formular input {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--linie);
+    border-radius: var(--rund);
+    background: var(--hintergrund);
+    color: var(--schrift);
+    font: inherit;
+}
+
+.formular .knopf { margin-top: var(--abstand); align-self: flex-start; }
+
+.meldung { margin-top: 12px; font-weight: 600; min-height: 1.5em; }
+
+.update-hinweis {
+    position: fixed;
+    left: var(--abstand);
+    right: var(--abstand);
+    bottom: calc(52px + var(--abstand) + env(safe-area-inset-bottom));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 8px 8px var(--abstand);
+    background: var(--kachel);
+    border: 1px solid var(--linie);
+    border-radius: var(--rund);
+    z-index: 20;
+}
+
+@media (min-width: 768px) {
+    .update-hinweis { left: auto; bottom: var(--abstand); max-width: 420px; }
+}
