@@ -8,7 +8,7 @@ import { apiOeffentlich } from '../api.js';
 const TEILE = [['doener', 'Döner'], ['yufka', 'Yufka'], ['pommes', 'Pommes']];
 // Für die ausführliche Bewertung; „laden“ (Service, Gemütlichkeit …) zählt nicht zu „Insgesamt“
 const ALLE_TEILE = [...TEILE, ['laden', 'Laden']];
-const HALBE = Array.from({ length: 19 }, (_, k) => 1 + k / 2);
+const NEU = '__neu__';
 const KENNUNG = /^[A-Za-z0-9_-]{20,120}$/;
 const ADRESSE = /^https:\/\/script\.google\.com\/macros\/s\/([A-Za-z0-9_-]+)\/exec$/;
 
@@ -24,6 +24,43 @@ function kennungFinden(teile) {
     if (eigen) return eigen[1];
     const gemerkt = (lesen('oeffentlich', {}) || {}).doener || '';
     return KENNUNG.test(gemerkt) ? gemerkt : '';
+}
+
+// Bewertung mit 10 kleinen Dönern. Antippen = ganzer Wert, nochmal antippen = halber Wert darunter.
+// „×“ löscht den Wert (Kriterium nicht bewerten). Rechts steht die Zahl.
+function sterneWahl(id, titel) {
+    let wert = null;
+    const zahlText = el('span', { class: 'wahl-zahl', attrs: { 'aria-hidden': 'true' } });
+    const knoepfe = Array.from({ length: 10 }, (_, k) => el('button', {
+        class: 'wahl-stern',
+        attrs: { type: 'button', 'aria-label': titel + ': ' + (k + 1) + ' von 10' },
+        on: { click: () => setze(wert === k + 1 ? k + 0.5 : k + 1) }
+    }));
+    const leer = el('button', {
+        class: 'wahl-leer', text: '×',
+        attrs: { type: 'button', 'aria-label': titel + ': nicht bewerten' },
+        on: { click: () => setze(null) }
+    });
+    const status = el('span', { class: 'unsichtbar', attrs: { 'aria-live': 'polite' } });
+
+    function setze(neu) {
+        wert = neu;
+        knoepfe.forEach((b, k) => {
+            const n = k + 1;
+            b.classList.toggle('voll', wert != null && wert >= n);
+            b.classList.toggle('halb', wert === n - 0.5);
+            b.setAttribute('aria-pressed', wert != null && wert >= n - 0.5 ? 'true' : 'false');
+        });
+        zahlText.textContent = wert == null ? '–' : zahl(wert).replace(',0', '');
+        leer.hidden = wert == null;
+        status.textContent = wert == null ? titel + ': nicht bewertet' : titel + ': ' + zahlText.textContent;
+    }
+    setze(null);
+
+    const box = el('div', { class: 'wahl', attrs: { role: 'group', 'aria-labelledby': id } }, [
+        el('span', { class: 'wahl-reihe' }, knoepfe), zahlText, leer, status
+    ]);
+    return { box, wert: () => wert, leeren: () => setze(null), fokus: () => knoepfe[0].focus() };
 }
 
 function zahl(n) {
@@ -66,7 +103,10 @@ export function render(container, ctx) {
     const kennung = kennungFinden(ctx.teile || []);
     const eigeneAdresse = Boolean(ADRESSE.exec((lesen('skripte', {}) || {}).doener || ''));
 
-    container.append(el('h1', { class: 'bereich-titel', text: 'Döner Landau' }));
+    container.append(el('h1', { class: 'bereich-titel doener-titel' }, [
+        el('img', { class: 'doener-bild', attrs: { src: 'icons/doener-bunt.svg', alt: '', width: 36, height: 36 } }),
+        el('span', { text: 'Döner Landau' })
+    ]));
 
     if (!kennung) {
         container.append(el('div', { class: 'karte' }, [
@@ -83,14 +123,14 @@ export function render(container, ctx) {
     let kriterien = {};
 
     async function laden() {
-        status.textContent = 'Lädt …';
         try {
             const d = await apiOeffentlich(adresse, 'liste');
             laedenNamen = Array.isArray(d.laeden) ? d.laeden : [];
             kriterien = d.kriterien && typeof d.kriterien === 'object' ? d.kriterien : {};
+            baueLadenAuswahl();
             baueAusfuehrlich();
             zeigeListe(rangliste(Array.isArray(d.bewertungen) ? d.bewertungen : []));
-            status.textContent = '';
+            if (status.textContent === 'Lädt …') status.textContent = '';
         } catch (e) {
             status.textContent = e.message;
             leeren(listeBox);
@@ -107,6 +147,15 @@ export function render(container, ctx) {
         listeBox.append(el('ol', { class: 'doener-rangliste' }, laeden.map(zeigeLaden)));
     }
 
+    // Klappt einen Bereich auf und zu und hält aria-expanded aktuell
+    function klapper(knopf, bereich) {
+        knopf.addEventListener('click', () => {
+            const auf = knopf.getAttribute('aria-expanded') === 'true';
+            knopf.setAttribute('aria-expanded', auf ? 'false' : 'true');
+            bereich.hidden = auf;
+        });
+    }
+
     function zeigeLaden(l, i) {
         const balken = el('span', { class: 'doener-balken' });
         balken.style.setProperty('--anteil', String((l.insgesamt || 0) / 10));
@@ -115,64 +164,85 @@ export function render(container, ctx) {
                 el('dt', { text: titel }),
                 el('dd', { text: l.teile[t] == null ? '–' : zahl(l.teile[t]) })
             ])),
-            el('ul', { class: 'doener-bewertungen' }, l.liste.map((b) => el('li', {}, [
-                el('p', { class: 'doener-sterne', text: ALLE_TEILE.map(([t, titel]) => [titel, t === 'laden' ? b.laden_note : b[t]]).filter(([, w]) => typeof w === 'number').map(([titel, w]) => titel + ' ' + zahl(w)).join(' · ') }),
-                b.begruendung ? el('p', { text: b.begruendung }) : null,
-                b.datum ? el('p', { class: 'leise', text: datumText(b.datum) }) : null,
-                zeigeKriterien(b.kriterien)
-            ])))
+            el('ul', { class: 'doener-bewertungen' }, l.liste.map((b, j) => zeigeBewertung(b, i + '-' + j)))
         ]);
+        const anzahl = l.liste.length === 1 ? '1 Bewertung' : l.liste.length + ' Bewertungen';
         const knopf = el('button', {
             class: 'doener-laden',
-            attrs: { type: 'button', 'aria-expanded': 'false', 'aria-controls': 'doener-details-' + i },
-            on: {
-                click: () => {
-                    const auf = knopf.getAttribute('aria-expanded') === 'true';
-                    knopf.setAttribute('aria-expanded', auf ? 'false' : 'true');
-                    details.hidden = auf;
-                }
-            }
+            attrs: { type: 'button', 'aria-expanded': 'false', 'aria-controls': 'doener-details-' + i }
         }, [
             el('span', { class: 'doener-kopf' }, [
-                el('span', { class: 'doener-name', text: (i + 1) + '. ' + l.name }),
+                el('span', { class: 'doener-name' }, [
+                    el('span', { text: (i + 1) + '. ' + l.name }),
+                    el('span', { class: 'doener-anzahl', text: anzahl })
+                ]),
                 el('span', { class: 'doener-wert', text: zahl(l.insgesamt || 0) })
             ]),
-            el('span', { class: 'doener-leiste', attrs: { 'aria-hidden': 'true' } }, [balken]),
-            el('span', { class: 'leise doener-anzahl', text: l.liste.length === 1 ? '1 Bewertung' : l.liste.length + ' Bewertungen' })
+            el('span', { class: 'doener-leiste', attrs: { 'aria-hidden': 'true' } }, [balken])
         ]);
+        klapper(knopf, details);
         return el('li', {}, [knopf, details]);
     }
 
-    // Kriterien einer ausführlichen Bewertung, aufklappbar
-    function zeigeKriterien(liste) {
-        if (!Array.isArray(liste) || !liste.length) return null;
-        return el('details', { class: 'doener-kriterien' }, [
-            el('summary', { text: 'Alle Kriterien (' + liste.length + ')' }),
-            ...ALLE_TEILE.filter(([t]) => liste.some((k) => k.teil === t)).map(([t, titel]) => el('div', {}, [
-                el('p', { class: 'doener-krit-titel', text: titel }),
-                el('ul', {}, liste.filter((k) => k.teil === t).map((k) => el('li', {}, [
-                    el('span', { class: 'doener-krit-kopf' }, [el('span', { text: k.name }), el('span', { text: zahl(k.wert) })]),
-                    k.begruendung ? el('span', { class: 'leise', text: k.begruendung }) : null
-                ])))
-            ]))
+    // Eine Bewertung: Werte, rechts daneben der Knopf für alle Kriterien
+    function zeigeBewertung(b, nr) {
+        const werte = ALLE_TEILE.map(([t, titel]) => [titel, t === 'laden' ? b.laden_note : b[t]])
+            .filter(([, w]) => typeof w === 'number').map(([titel, w]) => titel + ' ' + zahl(w)).join(' · ');
+        const liste = Array.isArray(b.kriterien) ? b.kriterien : [];
+        let kriterienBox = null;
+        let kriterienKnopf = null;
+        if (liste.length) {
+            kriterienBox = el('div', { class: 'doener-kriterien', attrs: { id: 'doener-krit-' + nr, hidden: true } },
+                ALLE_TEILE.filter(([t]) => liste.some((k) => k.teil === t)).map(([t, titel]) => el('div', {}, [
+                    el('p', { class: 'doener-krit-titel', text: titel }),
+                    el('ul', {}, liste.filter((k) => k.teil === t).map((k) => el('li', {}, [
+                        el('span', { class: 'doener-krit-kopf' }, [el('span', { text: k.name }), el('span', { text: zahl(k.wert) })]),
+                        k.begruendung ? el('span', { class: 'leise', text: k.begruendung }) : null
+                    ])))
+                ])));
+            kriterienKnopf = el('button', {
+                class: 'doener-krit-knopf', text: 'Kriterien (' + liste.length + ')',
+                attrs: { type: 'button', 'aria-expanded': 'false', 'aria-controls': 'doener-krit-' + nr }
+            });
+            klapper(kriterienKnopf, kriterienBox);
+        }
+        return el('li', {}, [
+            el('div', { class: 'doener-bew-zeile' }, [el('p', { class: 'doener-sterne', text: werte }), kriterienKnopf]),
+            b.begruendung ? el('p', { text: b.begruendung }) : null,
+            b.datum ? el('p', { class: 'leise', text: datumText(b.datum) }) : null,
+            kriterienBox
         ]);
     }
 
     // --- Formular „Bewerten“ ---
     const formMeldung = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
-    const ladenFeld = el('input', { attrs: { id: 'doener-laden', list: 'doener-laeden', maxlength: 60, autocomplete: 'off', required: true } });
-    const ladenListe = el('datalist', { attrs: { id: 'doener-laeden' } });
-    const sterneFelder = TEILE.map(([t, titel]) => ({
-        t,
-        titel,
-        feld: el('select', { attrs: { id: 'doener-' + t } }, [
-            el('option', { text: '–', attrs: { value: '' } }),
-            ...Array.from({ length: 10 }, (_, k) => el('option', { text: String(k + 1), attrs: { value: String(k + 1) } }))
-        ])
-    }));
-    // Ausführlich: je Kriterium ein Wert (halbe Sterne erlaubt) und eine Begründung
+    const ladenWahl = el('select', { attrs: { id: 'doener-laden' } });
+    const ladenNeu = el('input', { attrs: { id: 'doener-laden-neu', type: 'text', maxlength: 60, autocomplete: 'off', 'aria-label': 'Name des neuen Ladens', placeholder: 'Name des neuen Ladens', hidden: true } });
+    ladenWahl.addEventListener('change', () => {
+        ladenNeu.hidden = ladenWahl.value !== NEU;
+        if (!ladenNeu.hidden) ladenNeu.focus();
+    });
+
+    function baueLadenAuswahl() {
+        const vorher = ladenWahl.value;
+        leeren(ladenWahl);
+        ladenWahl.append(
+            el('option', { text: 'Laden wählen …', attrs: { value: '' } }),
+            ...laedenNamen.slice().sort((a, b) => a.localeCompare(b, 'de')).map((n) => el('option', { text: n, attrs: { value: n } })),
+            el('option', { text: '+ Neuer Laden …', attrs: { value: NEU } })
+        );
+        if ([...ladenWahl.options].some((o) => o.value === vorher)) ladenWahl.value = vorher;
+    }
+    baueLadenAuswahl();
+
+    const schnellWahl = TEILE.map(([t, titel]) => ({ t, titel, wahl: sterneWahl('doener-titel-' + t, titel) }));
+
+    // Ausführlich: je Kriterium ein Wert (halbe erlaubt) und eine Begründung
     const ausfuehrlichSchalter = el('input', { attrs: { id: 'doener-ausfuehrlich', type: 'checkbox' } });
-    const schnellBox = el('div', { class: 'doener-sterne-felder' });
+    const schnellBox = el('div', { class: 'doener-schnell' }, schnellWahl.map((s) => el('div', { class: 'doener-wahl-zeile' }, [
+        el('span', { class: 'doener-wahl-titel', text: s.titel, attrs: { id: 'doener-titel-' + s.t } }),
+        s.wahl.box
+    ])));
     const ausfuehrlichBox = el('div', { class: 'doener-ausfuehrlich', attrs: { hidden: true } });
     let kriterienFelder = [];
 
@@ -185,14 +255,11 @@ export function render(container, ctx) {
             if (!namen.length) continue;
             const zeilen = namen.map((name) => {
                 nr += 1;
-                const wert = el('select', { attrs: { id: 'doener-k' + nr } }, [
-                    el('option', { text: '–', attrs: { value: '' } }),
-                    ...HALBE.map((h) => el('option', { text: zahl(h).replace(',0', ''), attrs: { value: String(h) } }))
-                ]);
-                const begr = el('input', { attrs: { id: 'doener-kb' + nr, type: 'text', maxlength: 200, placeholder: 'Begründung (freiwillig)', 'aria-label': 'Begründung ' + name } });
-                kriterienFelder.push({ teil: t, kriterium: name, wert, begr });
+                const wahl = sterneWahl('doener-k' + nr, name);
+                const begr = el('input', { attrs: { type: 'text', maxlength: 200, placeholder: 'Begründung (freiwillig)', 'aria-label': 'Begründung ' + name } });
+                kriterienFelder.push({ teil: t, kriterium: name, wahl, begr });
                 return el('div', { class: 'doener-krit-zeile' }, [
-                    el('label', { text: name, attrs: { for: 'doener-k' + nr } }), wert, begr
+                    el('span', { class: 'doener-wahl-titel', text: name, attrs: { id: 'doener-k' + nr } }), wahl.box, begr
                 ]);
             });
             ausfuehrlichBox.append(el('details', { class: 'doener-krit-gruppe' }, [
@@ -213,38 +280,48 @@ export function render(container, ctx) {
     const lockFeld = el('input', { attrs: { name: 'web', type: 'text', tabindex: '-1', autocomplete: 'off' } });
     const sendenKnopf = el('button', { class: 'knopf', text: 'Bewertung senden', attrs: { type: 'submit' } });
 
+    function formularLeeren() {
+        formular.reset();
+        ladenNeu.hidden = true;
+        schnellWahl.forEach((s) => s.wahl.leeren());
+        kriterienFelder.forEach((k) => k.wahl.leeren());
+        schnellBox.hidden = false;
+        ausfuehrlichBox.hidden = true;
+        formMeldung.textContent = '';
+    }
+
     async function senden(ev) {
         ev.preventDefault();
-        const daten = { laden: ladenFeld.value.trim(), begruendung: begruendungFeld.value.trim(), web: lockFeld.value };
+        const ladenName = ladenWahl.value === NEU ? ladenNeu.value.trim() : ladenWahl.value;
+        const daten = { laden: ladenName, begruendung: begruendungFeld.value.trim(), web: lockFeld.value };
         const ausfuehrlich = ausfuehrlichSchalter.checked;
         if (ausfuehrlich) {
-            daten.details = kriterienFelder.filter((k) => k.wert.value).map((k) => ({
-                teil: k.teil, kriterium: k.kriterium, wert: Number(k.wert.value), begruendung: k.begr.value.trim()
+            daten.details = kriterienFelder.filter((k) => k.wahl.wert() != null).map((k) => ({
+                teil: k.teil, kriterium: k.kriterium, wert: k.wahl.wert(), begruendung: k.begr.value.trim()
             }));
         } else {
-            for (const s of sterneFelder) daten[s.t] = s.feld.value ? Number(s.feld.value) : '';
+            for (const s of schnellWahl) daten[s.t] = s.wahl.wert() == null ? '' : s.wahl.wert();
         }
         if (!daten.laden) {
-            formMeldung.textContent = 'Bitte einen Laden angeben.';
-            ladenFeld.focus();
+            formMeldung.textContent = ladenWahl.value === NEU ? 'Bitte den Namen des neuen Ladens eintragen.' : 'Bitte einen Laden wählen.';
+            (ladenWahl.value === NEU ? ladenNeu : ladenWahl).focus();
             return;
         }
         const essenBewertet = ausfuehrlich
             ? daten.details.some((k) => k.teil !== 'laden')
-            : sterneFelder.some((s) => s.feld.value);
+            : schnellWahl.some((s) => s.wahl.wert() != null);
         if (!essenBewertet) {
             formMeldung.textContent = 'Bitte mindestens Döner, Yufka oder Pommes bewerten.';
-            (ausfuehrlich ? ausfuehrlichSchalter : sterneFelder[0].feld).focus();
+            if (ausfuehrlich) ausfuehrlichSchalter.focus(); else schnellWahl[0].wahl.fokus();
             return;
         }
         sendenKnopf.disabled = true;
         formMeldung.textContent = 'Wird gesendet …';
         try {
             await apiOeffentlich(adresse, 'bewerten', daten);
-            formular.reset();
-            schnellBox.hidden = false;
-            ausfuehrlichBox.hidden = true;
-            formMeldung.textContent = 'Danke! Deine Bewertung ist gespeichert.';
+            formularLeeren();
+            zeigeFormular(false);
+            status.textContent = 'Danke! Deine Bewertung ist gespeichert.';
             laden();
         } catch (e) {
             formMeldung.textContent = e.message;
@@ -255,13 +332,13 @@ export function render(container, ctx) {
 
     const formular = el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: senden } }, [
         el('label', { text: 'Laden', attrs: { for: 'doener-laden' } }),
-        ladenFeld,
-        ladenListe,
-        el('p', { class: 'leise klein', text: 'Aus der Liste wählen oder einen neuen Laden eintippen.' }),
+        ladenWahl,
+        ladenNeu,
         el('div', { class: 'doener-schalter' }, [
             ausfuehrlichSchalter,
             el('label', { text: 'Ausführlich bewerten (alle Kriterien)', attrs: { for: 'doener-ausfuehrlich' } })
         ]),
+        el('p', { class: 'leise klein', text: 'Antippen = ganze Zahl, nochmal antippen = halbe. × = nicht bewerten.' }),
         schnellBox,
         ausfuehrlichBox,
         el('label', { text: 'Begründung (freiwillig)', attrs: { for: 'doener-begruendung' } }),
@@ -271,22 +348,21 @@ export function render(container, ctx) {
         formMeldung
     ]);
 
-    schnellBox.append(...sterneFelder.map((s) => el('div', {}, [
-        el('label', { text: s.titel + ' (1–10)', attrs: { for: 'doener-' + s.t } }),
-        s.feld
-    ])));
-
-    const bewertenBox = el('details', { class: 'karte doener-bewerten' }, [
-        el('summary', { text: 'Bewerten' }),
-        formular
-    ]);
-    bewertenBox.addEventListener('toggle', () => {
-        if (!bewertenBox.open) return;
-        leeren(ladenListe);
-        laedenNamen.forEach((n) => ladenListe.append(el('option', { attrs: { value: n } })));
+    const formBox = el('div', { class: 'karte doener-bewerten', attrs: { id: 'doener-formular', hidden: true } }, [formular]);
+    const bewertenKnopf = el('button', {
+        class: 'knopf', text: '+ Bewerten',
+        attrs: { type: 'button', 'aria-expanded': 'false', 'aria-controls': 'doener-formular' },
+        on: { click: () => zeigeFormular(formBox.hidden) }
     });
 
-    container.append(bewertenBox, status, listeBox);
+    function zeigeFormular(auf) {
+        formBox.hidden = !auf;
+        bewertenKnopf.setAttribute('aria-expanded', auf ? 'true' : 'false');
+        if (auf) status.textContent = '';
+    }
+
+    status.textContent = 'Lädt …';
+    container.append(bewertenKnopf, formBox, status, listeBox);
 
     // Nur für die Person mit eigener Einrichtung: Link zum Teilen
     if (eigeneAdresse) {

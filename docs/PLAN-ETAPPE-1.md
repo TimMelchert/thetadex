@@ -42,6 +42,14 @@ Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelösc
 - Anzeige: Laden-Note in den Einzelheiten, „Alle Kriterien“ je Bewertung aufklappbar.
 - Das Skript prüft Teil und Kriterium gegen das Blatt `kriterien`, höchstens 60 Kriterien je Bewertung, Begründung je Kriterium bis 200 Zeichen.
 
+## Schritt 1.4 Anpassungen nach Rückmeldung (0.1.6 → 0.1.7)
+
+- Buntes Döner-Bild vor der Überschrift. Bewerten mit 10 kleinen Dönern je Wert (antippen = ganz, nochmal = halb, × = nicht bewerten), Zahl rechts.
+- Knopf „+ Bewerten“ klappt das Formular auf; nach dem Speichern schließt es sich.
+- Laden als echte Auswahlliste mit „+ Neuer Laden …“ (dann Textfeld).
+- Rangliste: Zahl der Bewertungen im Kopf der Kachel, Einzelheiten eingerückt, „Kriterien“ als Knopf rechts in der Zeile der Bewertung.
+- Sheet und Skript bleiben unverändert.
+
 ## Prüfen am Ende der Etappe
 
 - Bewerten am Handy ohne Einrichtung (privates Fenster mit dem Link) und mit Einrichtung.
