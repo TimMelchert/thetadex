@@ -18,13 +18,21 @@ export async function api(skript, action, daten = {}) {
     if (!adresse || !passwort) {
         throw new ApiFehler('einrichtung', 'Bitte zuerst unter „Einrichtung“ Passwort und Script-Adresse eintragen.');
     }
+    return senden(adresse, { ...daten, pin: passwort, action });
+}
 
+// Für öffentliche Skripte (Döner): ohne Passwort, Adresse wird übergeben.
+export async function apiOeffentlich(adresse, action, daten = {}) {
+    return senden(adresse, { ...daten, action });
+}
+
+async function senden(adresse, koerper) {
     let antwort;
     try {
         antwort = await fetch(adresse, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ ...daten, pin: passwort, action })
+            body: JSON.stringify(koerper)
         });
     } catch (e) {
         throw new ApiFehler('netz', 'Keine Verbindung. Bitte Internet prüfen und erneut versuchen.');

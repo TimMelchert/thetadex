@@ -128,3 +128,94 @@
     text-decoration: none;
     font-weight: 600;
 }
+
+.formular select,
+.formular textarea {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--linie);
+    border-radius: var(--rund);
+    background: var(--hintergrund);
+    color: var(--schrift);
+    font: inherit;
+}
+
+.klein { font-size: 0.85rem; margin: 2px 0 0; }
+
+/* Lockfeld gegen Bots: aus dem Bild geschoben */
+.lockfeld { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* Döner */
+.doener-bewerten summary {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.doener-sterne-felder {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.doener-sterne-felder > div { display: flex; flex-direction: column; gap: 6px; }
+
+.doener-rangliste { list-style: none; padding: 0; margin: var(--abstand) 0; display: flex; flex-direction: column; gap: 10px; }
+
+.doener-laden {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 44px;
+    padding: 12px 14px;
+    border: none;
+    border-radius: var(--rund);
+    background: var(--kachel);
+    color: var(--schrift);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.doener-kopf { display: flex; justify-content: space-between; gap: 10px; font-weight: 700; }
+.doener-wert { font-variant-numeric: tabular-nums; }
+
+.doener-leiste {
+    display: block;
+    height: 10px;
+    border-radius: 5px;
+    background: var(--linie);
+    overflow: hidden;
+}
+
+.doener-balken {
+    display: block;
+    height: 100%;
+    width: calc(var(--anteil, 0) * 100%);
+    background: var(--bereich);
+}
+
+.doener-anzahl { font-size: 0.85rem; }
+
+.doener-details { padding: 8px 14px 4px; }
+
+.doener-teile {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    grid-auto-flow: column;
+    grid-template-rows: auto auto;
+    justify-content: start;
+    column-gap: 24px;
+    margin: 0 0 8px;
+}
+
+.doener-teile dt { font-size: 0.85rem; color: var(--schrift-leise); }
+.doener-teile dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.doener-bewertungen { list-style: none; padding: 0; margin: 0; }
+.doener-bewertungen li { padding: 8px 0; border-top: 1px solid var(--linie); }
+.doener-bewertungen p { margin: 2px 0; }
+.doener-sterne { font-weight: 600; }
