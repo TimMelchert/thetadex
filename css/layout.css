@@ -80,6 +80,16 @@
     background: var(--kachel);
 }
 
+/* Handy: nur das Symbol, der Name bleibt für Bildschirmleser */
+.reiter-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
 .inhalt {
     max-width: 720px;
     margin: 0 auto;
@@ -117,6 +127,15 @@
         border-top: none;
         border-left: 6px solid var(--bereich);
         border-radius: 0 var(--rund) var(--rund) 0;
+        gap: 10px;
+    }
+
+    .reiter-name {
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip: auto;
     }
 
     .inhalt {
