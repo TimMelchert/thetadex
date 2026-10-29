@@ -5,6 +5,8 @@
 
 var KONTEN_ = ["Konto", "Paypal", "Kreditkarte", "Portemonnaie", "Muenzglas", "Pfandbons"];
 var MODI_ = ["ein", "aus", "umbuchung"];
+var BLATT_EINST_ = "Einstellungen";  // Zwecke, Kategorien, Rückzahlungen (siehe docs/PLAN-ETAPPE-2.md, Schritt 2.2)
+var EINST_KOPF_ = ["liste", "name", "kategorie", "betrag", "zweck"];
 var MONATE_ = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
 // --- 1. HILFSFUNKTIONEN FÜR ANTWORTEN & PASSWORT ---
@@ -55,6 +57,7 @@ function doPost(e) {
 
   try {
     if (data.action === "stats")   return jsonOut_(getStats());
+    if (data.action === "einstellungen") return jsonOut_(einstellungenLesen_());
     if (data.action === "analyse") return jsonOut_(getAnalyseData());
 
     if (data.action === "buchen") {
@@ -436,4 +439,55 @@ function getStats() {
     muenzglas: v[5][0] || 0,
     pfandbons: v[6][0] || 0
   };
+}
+// --- 6. EINSTELLUNGEN (Zwecke, Kategorien, Rückzahlungen) ---
+
+// Einmal im Editor ausführen: legt das Blatt "Einstellungen" mit Kopfzeile an. Ein vorhandenes Blatt bleibt unverändert.
+function einrichten() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss.getSheetByName(BLATT_EINST_)) {
+    Logger.log("Blatt '" + BLATT_EINST_ + "' gibt es schon. Nichts geändert.");
+    return;
+  }
+  var blatt = ss.insertSheet(BLATT_EINST_);
+  blatt.getRange(1, 1, 1, EINST_KOPF_.length).setValues([EINST_KOPF_]);
+  blatt.setFrozenRows(1);
+  Logger.log("Blatt '" + BLATT_EINST_ + "' angelegt.");
+}
+
+// Liest das Blatt "Einstellungen". Zeilen mit unbekannter Liste werden übersprungen.
+function einstellungenLesen_() {
+  var blatt = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BLATT_EINST_);
+  if (!blatt) return { error: "blatt", message: "Blatt '" + BLATT_EINST_ + "' fehlt. Bitte im Editor einmal 'einrichten' ausführen." };
+
+  var bereich = blatt.getDataRange();
+  var text = bereich.getDisplayValues();
+  var roh = bereich.getValues();
+  var spalten = text[0].map(function (h) { return String(h).trim().toLowerCase(); });
+  var sp = {};
+  EINST_KOPF_.forEach(function (n) { sp[n] = spalten.indexOf(n); });
+  if (sp.liste === -1 || sp.name === -1) {
+    return { error: "blatt", message: "Im Blatt '" + BLATT_EINST_ + "' fehlen die Spalten 'liste' und 'name' in Zeile 1." };
+  }
+  var zelle = function (z, n) { return sp[n] === -1 ? "" : String(z[sp[n]]).trim(); };
+  var betrag = function (i) {
+    if (sp.betrag === -1) return null;
+    var v = roh[i][sp.betrag];
+    if (v === "" || v === null) return null;
+    var n = typeof v === "number" ? v : Number(String(v).replace(",", "."));
+    return isFinite(n) ? Math.round(n * 100) / 100 : null;
+  };
+
+  var aus = { zwecke: [], kategorien: [], rueckzahlungen: [], eigenanteile: {} };
+  for (var i = 1; i < text.length && i <= 500; i++) {
+    var z = text[i];
+    var liste = zelle(z, "liste").toLowerCase();
+    var name = zelle(z, "name");
+    var kat = zelle(z, "kategorie");
+    if (liste === "zweck" && name) aus.zwecke.push({ name: name, kategorie: kat, betrag: betrag(i) });
+    else if (liste === "kategorie" && name) aus.kategorien.push(name);
+    else if (liste === "rueckzahlung" && name && kat) aus.rueckzahlungen.push({ name: name, kategorie: kat, zweck: zelle(z, "zweck") });
+    else if (liste === "eigenanteil" && kat) aus.eigenanteile[kat] = betrag(i) || 0;
+  }
+  return aus;
 }

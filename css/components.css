@@ -456,3 +456,70 @@
 @media (min-width: 768px) {
     .tracking-raster { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* Auswahlfeld mit Freitext (js/ui/auswahl.js) */
+.auswahl { position: relative; display: flex; }
+.formular .auswahl input { flex: 1 1 auto; min-width: 0; border-radius: var(--rund) 0 0 var(--rund); }
+.auswahl-pfeil {
+    flex: 0 0 44px;
+    min-height: 44px;
+    border: 1px solid var(--linie);
+    border-left: none;
+    border-radius: 0 var(--rund) var(--rund) 0;
+    background: var(--kachel);
+    color: var(--schrift);
+    font: inherit;
+    cursor: pointer;
+}
+.auswahl-liste {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 10;
+    max-height: 260px;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+    background: var(--hintergrund);
+    border: 1px solid var(--linie);
+    border-radius: var(--rund);
+}
+.auswahl-eintrag {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: none;
+    background: none;
+    color: var(--schrift);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.auswahl-eintrag:hover, .auswahl-eintrag:focus { background: var(--kachel); }
+
+/* Finanzen */
+.finanz-gesamt { display: flex; flex-direction: column; align-items: center; margin: 0 0 12px; }
+.finanz-gesamt-wert { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.finanz-gesamt .leise { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.finanz-konten { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.finanz-konten div { padding: 8px; border-radius: var(--rund); background: var(--hintergrund); text-align: center; }
+.finanz-konten dt { font-size: 0.8rem; color: var(--schrift-leise); }
+.finanz-konten dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 0.95rem; }
+.finanz-staende { border-top: 4px solid var(--bereich); }
+.finanz-formular { max-width: 560px; }
+.finanz-betrag-zeile { display: flex; gap: 10px; }
+.finanz-betrag-zeile input[type="number"] { flex: 1 1 auto; min-width: 0; }
+.formular .finanz-split { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0 12px; min-height: 44px; border: 1px solid var(--linie); border-radius: var(--rund); font-weight: 400; font-size: 1rem; cursor: pointer; }
+.formular .finanz-split input { width: 22px; height: 22px; min-height: 0; margin: 0; accent-color: var(--bereich); }
+.finanz-knoepfe { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: var(--abstand); }
+.formular .finanz-knoepfe .knopf { margin-top: 0; }
+.finanz-umbuchung { display: flex; flex-direction: column; gap: 6px; margin-top: var(--abstand); }
+.formular .finanz-umbuchung label { margin-top: 0; }
+.formular .finanz-umbuchung .knopf { margin-top: 6px; align-self: stretch; }
+
+@media (min-width: 768px) {
+    .finanz-konten { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}

@@ -34,3 +34,9 @@ export function sichereUrl(text) {
         return null;
     }
 }
+
+// Heutiges Datum in Ortszeit (nicht UTC) als JJJJ-MM-TT, also auch nachts richtig.
+export function heute() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
