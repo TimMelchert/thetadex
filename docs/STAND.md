@@ -4,11 +4,11 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.0.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.0.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Laufende Etappe: **Etappe 0 „Start“** (Grundstruktur, Skripte prüfen, Plan Version 1).
-- Nächster Schritt: **0.1 Grundstruktur im Repo** (Abschnitt 7).
+- Nächster Schritt: **0.2 Skripte vereinheitlichen** (Abschnitt 7).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -98,6 +98,8 @@ Es gibt mehrere Skripte, jedes an sein eigenes Sheet gebunden (Abschnitt 2.2).
 Du kannst die Skripte nicht ausführen und die Sheets nicht ändern. Das macht die Person von Hand. Darum gilt:
 
 - Ändere `.gs`-Dateien im Repo nur, wenn der Schritt es verlangt.
+- **Ausnahme Finanzen:** Das Finanz-Skript ist nicht im Repo. Änderungen daran gibst du als ganze Datei in die Projektdateien
+  im Chat (`finanzen-skript/Code.gs`) und nennst sie im Pull Request nur als „Finanz-Skript: neue Fassung in den Projektdateien“.
 - Die Skripte suchen Spalten über ihre Namen in einer Kopfzeile. Neue Spalten im Sheet müssen **vor** dem Skript da sein.
   Bestehende Blätter und Spaltennamen nie umbenennen (1.2, Punkt 4).
 - Beim Schreiben ins Sheet werden Texte mit `bereinigeText_` geschützt (Zeilenumbrüche weg, Länge begrenzt,
@@ -195,7 +197,7 @@ unter „Info“ die Version prüfen.
 - Hash-Routing: `#/todos`, `#/tracking`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einrichtung`, `#/info`.
   Unbekannte Adressen zeigen „Seite nicht gefunden“. [OFFEN: Startseite – welcher Reiter oder später eine Heute-Übersicht?]
 - Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter sichtbar sind, steht in `js/config.js` (`features`).
-- PC und Handy: [OFFEN: Seitenleiste am PC (wie heute im Finanzmanager), untere Leiste am Handy?]
+- PC und Handy: Reiterleiste unten am Handy, Seitenleiste links am PC (ab 768 px). Einrichtung und Info in der Kopfzeile.
 - Name, Icon und Farben: Thetadex, siehe Abschnitt 4 „Erscheinungsbild“. Die Kopfzeile zeigt immer das vollständige Icon (Karte mit Reitern).
 - **Ersteinrichtung** (`#/einrichtung`): Passwort und die Script-Adressen je Bereich eingeben. Gespeichert nur im Gerät.
   Ein Knopf „Abmelden“ löscht alles wieder aus dem Gerät.
@@ -206,7 +208,7 @@ unter „Info“ die Version prüfen.
   | Bereich | Skript | Sheet |
   | --- | --- | --- |
   | Tracking | `apps-script/tracking/Code.gs` | bestehendes Tracking-Sheet, Blatt `Tabellenblatt1`, Kopfzeile 4 |
-  | Finanzen | `apps-script/finanzen/Code.gs` | bestehendes Finanz-Sheet (Blätter je Konto, `Übersicht`, `Analyse Monate`, `Bafoeg`), Daten ab Zeile 8 |
+  | Finanzen | nicht im Repo (siehe Abschnitt 4) | bestehendes Finanz-Sheet (Aufbau nur in der privaten Sicherung beschrieben) |
   | Alle neuen Reiter | `apps-script/leben/*.gs` | neues Sheet, ein Blatt je Reiter (ab Etappe 2) |
 - Aufruf per POST mit JSON als `text/plain`. Das Feld für die Aktion heißt `action` (wie im bestehenden Finanz-Skript).
   Antwort immer JSON: bei Erfolg die Daten, bei Fehler `{error: "<code>", message: "<Text für die Person>"}`.
@@ -237,9 +239,10 @@ unter „Info“ die Version prüfen.
 
 - Zwei alte Apps laufen weiter: Repos `TimMelchert/Tracking-Leben` und `TimMelchert/App-Finazen-Tabelle` (öffentlich, GitHub Pages).
 - Skript-Code beider Apps liegt als Sicherung in den Projektdateien (`apps-script-backup/`).
-  - Finanzen: Passwort in Skripteigenschaft `APP_PIN`, Sperre nach Fehlversuchen, `LockService`, Eingabeprüfung. Kann so ins Repo.
+  - Finanzen: Passwort in Skripteigenschaft `APP_PIN`, Sperre nach Fehlversuchen, `LockService`, Eingabeprüfung. Bleibt privat (Abschnitt 4).
   - Tracking: PIN stand im Code (in der Sicherung durch `HIER_PASSWORT` ersetzt), keine Sperre, Antwort als Text, kein `LockService`.
-- Neues Repo: [OFFEN: noch nicht angelegt]
+- Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
+- Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
 
 ### 3.2 Offen
 
@@ -253,6 +256,10 @@ unter „Info“ die Version prüfen.
 Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von den Grundsätzen (1.2) stehen hier mit Grund.
 
 - **Repo öffentlich** auf GitHub Pages, damit keine Kosten entstehen. Deshalb gelten die Regeln „Script-Adressen“ und „Persönliches“ in 1.5.
+- **Finanzen: nichts öffentlich** (Wunsch der Person, 29.10.2026). Das Finanz-Skript liegt nicht im öffentlichen Repo,
+  sondern nur als Sicherung bei der Person [OFFEN: privates Zweit-Repo oder Google Drive]. Im öffentlichen Code des Finanz-Reiters
+  stehen keine Konten, Kategorien, Blattnamen oder Hinweise auf einzelne Geldquellen. All das liefert das Finanz-Skript
+  nach der Anmeldung (Aktion `einstellungen`). Der Reiter im Repo ist nur eine allgemeine Hülle.
 - **Daten bleiben in den bestehenden Sheets.** Kein Export oder Import. Die neue App spricht dieselben Sheets an.
 - **Jedes Skript bekommt beim Umzug eine neue Bereitstellung** (neue Adresse). Die alten Bereitstellungen werden erst nach dem Umstieg archiviert.
 - **Chart.js** (Finanz-Auswertung) als lokale Datei in `vendor/`, feste Version 4.4.1, statt aus dem Internet. Grund: keine fremden Server.
@@ -273,7 +280,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 ## 5. Technik-Merkzettel
 
 - **Hilfsmodule** vor dem Neubauen suchen und wiederverwenden. Lies die Datei, bevor du sie benutzt. Rate keine Signaturen.
-  Liste: [OFFEN: kommt mit Schritt 0.1, zum Beispiel `js/ui/dom.js` mit `el`, `leeren`]
+  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
+  `js/api.js` (`api(skript, action, daten)`, `ApiFehler` mit `code`).
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
@@ -289,9 +297,13 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 
 ## 6. Dateiübersicht
 
-- Hauptordner: `CLAUDE.md` (zeigt nur hierher), [OFFEN: kommt mit Schritt 0.1]
+- Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
+- `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
+- `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
+- `js/views/`: `start.js`, `platzhalter.js` (Reiter ohne Inhalt), `einrichtung.js`, `info.js`, `nichtgefunden.js`.
+- `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple).
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan.
-- `apps-script/tracking/Code.gs`, `apps-script/finanzen/Code.gs`: von der Person kopiert (Schritt 0.0).
+- `apps-script/tracking/Code.gs`: Tracking-Skript (ohne PIN). Das Finanz-Skript ist bewusst nicht im Repo (Abschnitt 4).
 
 ---
 
@@ -303,8 +315,8 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
 
 - **0.0 Sichern (Person, ohne Pull Request)**
   - Beide Sheets kopieren (Datei → Kopie erstellen). Kopien bleiben im Google Drive.
-  - Neues öffentliches Repo anlegen, `docs/STAND.md`, `CLAUDE.md` und die zwei Skript-Dateien hineinkopieren.
-  - Icon-Dateien aus den Projektdateien (`branding/`) nach `icons/` hochladen.
+  - Neues öffentliches Repo anlegen, `docs/STAND.md` und `CLAUDE.md` hineinkopieren.
+  - Tracking-Skript (ohne PIN) kommt per Pull Request ins Repo, das Finanz-Skript bleibt privat. Icons kommen mit Schritt 0.1.
   - Alte Repos als ZIP herunterladen (Code → Download ZIP).
 - **0.1 Grundstruktur im Repo** (Version 0.0.0 → 0.0.1)
   - Leeres App-Gerüst nach 2.1: `index.html` mit Content-Security-Policy, `manifest.webmanifest`, `sw.js` mit `HUELLE`,
@@ -317,6 +329,7 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
   - Tracking-Skript auf den Stand des Finanz-Skripts bringen: Passwort aus `APP_PIN`, `pruefePin_` mit Sperre, `doGet`,
     JSON-Antworten, `LockService`, `bereinigeText_` bzw. Prüfung der Werte gegen die Spaltennamen.
   - Finanz-Skript nur prüfen; ändern nur, was für die neue App nötig ist (z. B. Aktion `einstellungen`).
+    Die geänderte Fassung kommt als Datei in die Projektdateien im Chat, nicht ins Repo.
   - Ergebnis im Pull Request: Liste „übernommen / angepasst / entfernt“ und Abschnitt „Von Hand zu erledigen“
     (neues Passwort in beiden Skripten als `APP_PIN`, Skript einfügen, **neue Bereitstellung** je Skript, Adressen in der App eintragen).
   - Die alten Apps laufen mit den alten Bereitstellungen weiter. Achtung: Die alte Tracking-App sendet die alte PIN;
@@ -341,3 +354,4 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
 ## 8. Geschichte (kurz)
 
 - **Etappe 0** (ab 0.0.0): Repo angelegt, Start-Datei `docs/STAND.md` übernommen.
+- **0.0.1** Schritt 0.1: App-Gerüst, Ersteinrichtung, Icons.

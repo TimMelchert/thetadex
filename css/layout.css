@@ -1,0 +1,126 @@
+/* Thetadex – Aufbau: Kopfzeile, Reiterleiste, Inhalt.
+   Handy: Reiterleiste unten. PC (ab 768 px): Reiterleiste links. */
+
+.kopf {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--abstand);
+    padding: 8px var(--abstand);
+    padding-top: max(8px, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--linie);
+}
+
+.kopf-marke {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    min-height: 44px;
+}
+
+.kopf-name {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.kopf-links {
+    display: flex;
+    gap: 4px;
+}
+
+.kopf-links a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 10px;
+    border-radius: var(--rund);
+    text-decoration: none;
+    color: var(--schrift-leise);
+}
+
+.kopf-links a[aria-current="page"] {
+    color: var(--schrift);
+    background: var(--kachel);
+}
+
+.reiter {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    background: var(--hintergrund);
+    border-top: 1px solid var(--linie);
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 10;
+}
+
+.reiter-link {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 2px 4px;
+    font-size: 0.75rem;
+    text-decoration: none;
+    color: var(--schrift-leise);
+    border-top: 4px solid var(--bereich);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.reiter-link[aria-current="page"] {
+    color: var(--schrift);
+    font-weight: 700;
+    background: var(--kachel);
+}
+
+.inhalt {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--abstand);
+    padding-bottom: calc(52px + 2 * var(--abstand) + env(safe-area-inset-bottom));
+}
+
+.inhalt:focus { outline: none; }
+
+@media (min-width: 768px) {
+    body {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        grid-template-rows: auto 1fr;
+        min-height: 100vh;
+    }
+
+    .kopf { grid-column: 1 / -1; }
+
+    .reiter {
+        position: static;
+        flex-direction: column;
+        gap: 4px;
+        padding: var(--abstand) 8px;
+        border-top: none;
+        border-right: 1px solid var(--linie);
+    }
+
+    .reiter-link {
+        flex: 0 0 auto;
+        justify-content: flex-start;
+        min-height: 44px;
+        padding: 0 12px;
+        font-size: 0.95rem;
+        border-top: none;
+        border-left: 6px solid var(--bereich);
+        border-radius: 0 var(--rund) var(--rund) 0;
+    }
+
+    .inhalt {
+        width: 100%;
+        padding-bottom: var(--abstand);
+    }
+}

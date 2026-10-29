@@ -1,0 +1,77 @@
+/* Thetadex – Farben, Schrift, Grundelemente.
+   Farben NUR hier als Variablen. Jede Farbe hat einen hellen und einen dunklen Wert.
+   Die Oberfläche ist schwarz-weiß; Farbe gibt es nur als Bereichsfarbe der Reiter. */
+
+:root {
+    color-scheme: light dark;
+
+    /* Bereichsfarben (gleich in hell und dunkel) */
+    --farbe-todos: #E2A23B;
+    --farbe-tracking: #E07A5F;
+    --farbe-finanzen: #8DB580;
+    --farbe-dsa: #B5838D;
+    --farbe-einkauf: #D4B483;
+    --farbe-besitz: #7FA7A0;
+    --farbe-uni: #C9784A;
+
+    /* Hell */
+    --hintergrund: #FAF9F7;
+    --kachel: #EEECE8;
+    --schrift: #1C1B19;
+    --schrift-leise: #5C5853;
+    --linie: #D9D6D0;
+    --knopf-grund: #1C1B19;
+    --knopf-schrift: #F4F2EE;
+    --fokus: #1C1B19;
+
+    --rund: 10px;
+    --abstand: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --hintergrund: #1C1B19;
+        --kachel: #2A2826;
+        --schrift: #F4F2EE;
+        --schrift-leise: #B3AEA6;
+        --linie: #3A3734;
+        --knopf-grund: #F4F2EE;
+        --knopf-schrift: #1C1B19;
+        --fokus: #F4F2EE;
+    }
+}
+
+/* Bereichsfarbe je Reiter in --bereich */
+[data-bereich="todos"]    { --bereich: var(--farbe-todos); }
+[data-bereich="tracking"] { --bereich: var(--farbe-tracking); }
+[data-bereich="finanzen"] { --bereich: var(--farbe-finanzen); }
+[data-bereich="dsa"]      { --bereich: var(--farbe-dsa); }
+[data-bereich="einkauf"]  { --bereich: var(--farbe-einkauf); }
+[data-bereich="besitz"]   { --bereich: var(--farbe-besitz); }
+[data-bereich="uni"]      { --bereich: var(--farbe-uni); }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    background: var(--hintergrund);
+    color: var(--schrift);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+h1 { font-size: 1.5rem; margin: 0 0 8px; }
+h2 { font-size: 1.15rem; margin: 24px 0 8px; }
+p { margin: 0 0 12px; }
+
+a { color: inherit; }
+
+:focus-visible {
+    outline: 2px solid var(--fokus);
+    outline-offset: 2px;
+}
+
+[hidden] { display: none !important; }
