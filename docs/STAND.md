@@ -213,7 +213,7 @@ unter „Info“ die Version prüfen.
   | Besitz | `apps-script/leben/Code.gs` | neues Sheet „Leben“ (ab Etappe 3), nur die Person |
   | Einkauf und Essen, Uni | `apps-script/gemeinsam/Code.gs` | neues Sheet „Gemeinsam“ (ab Etappe 4), Person und Partner*in |
   | DSA und DnD | `apps-script/dsa/Code.gs` | neues Sheet „DSA“ (ab Etappe 6), Bögen per Link lesbar |
-  | Döner | `apps-script/doener/Code.gs` | bestehendes Döner-Sheet (ab Etappe 2), öffentlich lesen und bewerten |
+  | Döner | `apps-script/doener/Code.gs` | neues Sheet „Döner“ (ab Etappe 2), öffentlich lesen und bewerten |
 - **Warum eigene Sheets statt einem:** Die Sheets sind nach „Wer darf das sehen?“ getrennt. Ein Fehler in der Freigabe
   eines Bogens, beim öffentlichen Bewerten oder im Partner-Zugang kann so nie Besitz, Tracking oder Finanzen verraten.
 - Aufruf per POST mit JSON als `text/plain`. Das Feld für die Aktion heißt `action` (wie im bestehenden Finanz-Skript).
@@ -248,7 +248,7 @@ unter „Info“ die Version prüfen.
   | --- | --- |
   | Leben | `besitz`, `orte` |
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, `semester`, `stundenplan`, `termine`, `module` |
-  | Döner | bestehendes Blatt, Spalten nach der Kopfzeile der Person (kommt in Etappe 2) |
+  | Döner | `bewertungen` (`laden, doener, yufka, pommes, begruendung` + Standardspalten), `laeden` (`name`) |
   | DSA | `boegen` (ein Bogen je Zeile, Abschnitte als JSON-Spalten), `verlauf` (Geld, AP, AsP, LeP), `gegenstaende`, `bilder` |
 
 ---
@@ -312,7 +312,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Im Gerät (Ergänzung zu 5):** die Einkaufsliste und die noch nicht gesendeten Haken. Sonst nichts Neues.
 - **Döner öffentlich** (Wunsch der Person, 29.10.2026): Jede Person mit dem Link kann Bewertungen sehen und abgeben.
   Ändern und Löschen geht nur im Sheet durch die Person. Es werden keine Namen von Bewertenden gespeichert.
-  Schutz gegen Spam und böse Eingaben im Skript: feste Längen (Laden 60, Begründung 300 Zeichen), Sterne nur ganze Zahlen 1 bis 10,
+  Schutz gegen Spam und böse Eingaben im Skript: feste Längen (Laden 60, Begründung 300 Zeichen), Sterne nur ganze Zahlen 1 bis 10 oder leer,
   Datum setzt das Skript selbst, `bereinigeText_`, höchstens 30 neue Bewertungen pro Stunde für alle zusammen (`CacheService`),
   ein verstecktes Lockfeld gegen Bots, `LockService`. Die App zeigt alle Texte nur mit `textContent`.
   Ehrlich: Apps Script kennt keine IP-Adressen. Wer es darauf anlegt, kann im Rahmen der Grenze Unsinn eintragen. Die Person löscht das dann im Sheet.
@@ -403,10 +403,14 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Datenschutz: Finanz- und Tracking-Daten nur nach Passwort, nichts im Gerät außer den letzten Kontoständen (5).
   - **Tor:** Die Person ist mit der neuen App zufrieden (Richtwert 2 Wochen). Dann alte Bereitstellungen archivieren und alte Repos löschen.
 - **Etappe 2 „Döner Landau“ (0.2.x)**
-  - Ziel: öffentlicher Reiter mit dem bestehenden Döner-Sheet und eigenem Skript `doener`. Ohne Passwort, aber getrennt von allem anderen.
-  - Bewerten: Laden aus einer Auswahl der bisherigen Läden oder neu als Freitext, Sterne 1 bis 10, Begründung freiwillig, Datum automatisch.
-  - Anzeige: Balken-Grafik aller Läden mit ihrem aktuellen Rating (Durchschnitt aller Bewertungen) und der Zahl der Bewertungen.
-    Antippen eines Ladens zeigt alle Begründungen mit Sternen und Datum. Die Balken baut die App selbst mit CSS, ohne Bibliothek.
+  - Ziel: öffentlicher Reiter mit neuem Sheet „Döner“ und eigenem Skript `doener`. Ohne Passwort, aber getrennt von allem anderen.
+    Das alte Döner-Sheet (nur Durchschnitte) bleibt als Sicherung. Das Skript hat eine Funktion `einrichten`, die die Blätter
+    und Kopfzeilen selbst anlegt. Die bisherigen Werte trägt die Person als je eine Start-Bewertung pro Laden ein.
+  - Bewerten: Laden aus einer Auswahl der bisherigen Läden oder neu als Freitext. Sterne 1 bis 10 getrennt für Döner, Yufka und Pommes,
+    jedes Feld freiwillig, mindestens eins (Entscheidung der Person, 29.10.2026). Begründung freiwillig, Datum automatisch.
+  - Anzeige: Balken-Grafik aller Läden mit „Insgesamt“ und der Zahl der Bewertungen. Je Teil (Döner, Yufka, Pommes) zählt der
+    Durchschnitt aller Bewertungen; „Insgesamt“ ist der Durchschnitt der Teile, die schon Bewertungen haben.
+    Antippen eines Ladens zeigt die drei Teile und alle Begründungen mit Sternen und Datum. Die Balken baut die App selbst mit CSS, ohne Bibliothek.
   - Teilen: Link `#/doener/<skript>` ohne Einrichtung. Für dich steht der Reiter normal in der Reiterleiste.
   - Datenschutz: Nur Laden, Sterne, Begründung und Datum. Keine Namen, keine Geräte-Kennung.
 - **Etappe 3 „Besitz“ (0.3.x)**
