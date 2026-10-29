@@ -50,6 +50,14 @@ Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelösc
 - Rangliste: Zahl der Bewertungen im Kopf der Kachel, Einzelheiten eingerückt, „Kriterien“ als Knopf rechts in der Zeile der Bewertung.
 - Sheet und Skript bleiben unverändert.
 
+## Schritt 1.5 Zweite Rückmeldung und Vergleich (0.1.7 → 0.1.8)
+
+- 🥙 statt eigenem Bild (Überschrift und Bewertung), Überschrift „Döner-Rating Landau“, „+ Bewerten“ rechtsbündig.
+- Knöpfe im Döner-Reiter in der Döner-Farbe. Kriterium, Döner-Reihe und Zahl in einer Zeile, darunter die Begründung.
+- Formular mit × oben rechts (schließt, Eingaben bleiben) und „Abbrechen“ (verwirft die Eingaben).
+- Umschalter „Rangliste / Vergleich“: Vergleich je Teil und je Kriterium mit allen Läden als Balken, Gewinner mit 🏆.
+- Fehler behoben: Die Seite lud beim ersten Besuch von selbst neu (Service Worker), dadurch verschwand das Formular.
+
 ## Prüfen am Ende der Etappe
 
 - Bewerten am Handy ohne Einrichtung (privates Fenster mit dem Link) und mit Einrichtung.

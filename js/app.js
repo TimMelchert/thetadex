@@ -90,14 +90,21 @@ function beobachteUpdates(reg) {
         });
     });
 
+    // Neu laden nur, wenn auf dieser Seite „Jetzt neu laden“ getippt wurde.
+    // Sonst würde die Seite beim ersten Besuch (Service Worker übernimmt) oder durch ein anderes Fenster
+    // von selbst neu laden, und halb ausgefüllte Formulare wären weg.
+    let gewuenscht = false;
     knopf.addEventListener('click', () => {
-        if (wartend) wartend.postMessage('skipWaiting');
+        if (!wartend) return;
+        // Schon von einem anderen Fenster übernommen: einfach neu laden
+        if (wartend.state === 'activated') { location.reload(); return; }
+        gewuenscht = true;
+        wartend.postMessage('skipWaiting');
     });
 
-    let neuGeladen = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (neuGeladen) return;
-        neuGeladen = true;
+        if (!gewuenscht) return;
+        gewuenscht = false;
         location.reload();
     });
 }
