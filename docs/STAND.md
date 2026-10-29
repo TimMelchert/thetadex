@@ -4,11 +4,11 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.0.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.1.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
-- Laufende Etappe: **Etappe 0 „Start“** (Grundstruktur, Skripte prüfen, Plan Version 1).
-- Nächster Schritt: **0.3 Plan Version 1 fertigstellen** (Abschnitt 7).
+- Laufende Etappe: **Etappe 0 „Start“** ist fertig. Plan Version 1 steht in 7.2.
+- Nächster Schritt: **Etappe 1 „Bestehendes umziehen“**, zuerst `docs/PLAN-ETAPPE-1.md` schreiben (Abschnitt 7.2).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -19,7 +19,7 @@ Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegu
 
 ### 1.1 Worum es geht und mit wem du arbeitest
 
-Eine persönliche App (PWA) für eine einzige Person, am Handy und am PC. Sie führt zwei bestehende Apps zusammen
+Eine persönliche App (PWA) für eine Person, am Handy und am PC. Einkauf und Uni teilt sie mit ihrer Partnerin oder ihrem Partner, DSA-Bögen per Link. Sie führt zwei bestehende Apps zusammen
 (Tracking Leben, Finanzmanager) und bekommt neue Reiter: ToDos, DSA-Charakterbögen, Einkaufsliste und Essensideen,
 Besitz-Inventar, Uni mit Stundenplan. Die Daten liegen in Google Sheets der Person, nicht im Repo.
 
@@ -193,7 +193,9 @@ unter „Info“ die Version prüfen.
   `css/` (base, layout, components), `js/` (app, config, api, store, ui/, views/), `vendor/` (lokale Bibliotheken, siehe 4),
   `apps-script/` (Code aller Google-Skripte, je Bereich ein Ordner).
 - Hash-Routing: `#/todos`, `#/tracking`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einrichtung`, `#/info`.
-  Unbekannte Adressen zeigen „Seite nicht gefunden“. [OFFEN: Startseite – welcher Reiter oder später eine Heute-Übersicht?]
+  Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“).
+  Unbekannte Adressen zeigen „Seite nicht gefunden“.
+- Startseite: Kacheln aller Reiter. Eine Heute-Übersicht (ToDos, Termine, Einkauf) kommt in Etappe 6.
 - Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter sichtbar sind, steht in `js/config.js` (`features`).
 - PC und Handy: Reiterleiste unten am Handy, Seitenleiste links am PC (ab 768 px). Einrichtung und Info in der Kopfzeile.
 - Name, Icon und Farben: Thetadex, siehe Abschnitt 4 „Erscheinungsbild“. Die Kopfzeile zeigt immer das vollständige Icon (Karte mit Reitern).
@@ -207,14 +209,25 @@ unter „Info“ die Version prüfen.
   | --- | --- | --- |
   | Tracking | `apps-script/tracking/Code.gs` | bestehendes Tracking-Sheet, Blatt `Tabellenblatt1`, Kopfzeile 4 |
   | Finanzen | `apps-script/finanzen/Code.gs` | bestehendes Finanz-Sheet (Blätter je Konto, `Übersicht`, `Analyse Monate`), Daten ab Zeile 8 |
-  | Alle neuen Reiter | `apps-script/leben/*.gs` | neues Sheet, ein Blatt je Reiter (ab Etappe 2) |
+  | ToDos, Besitz | `apps-script/leben/Code.gs` | neues Sheet „Leben“ (ab Etappe 2), nur die Person |
+  | Einkauf und Essen, Uni | `apps-script/gemeinsam/Code.gs` | neues Sheet „Gemeinsam“ (ab Etappe 3), Person und Partner*in |
+  | DSA und DnD | `apps-script/dsa/Code.gs` | neues Sheet „DSA“ (ab Etappe 5), Bögen per Link lesbar |
+- **Warum drei neue Sheets statt einem:** Die Sheets sind nach „Wer darf das sehen?“ getrennt. Ein Fehler in der Freigabe
+  eines Bogens oder im Partner-Zugang kann so nie Besitz, ToDos, Tracking oder Finanzen verraten.
 - Aufruf per POST mit JSON als `text/plain`. Das Feld für die Aktion heißt `action` (wie im bestehenden Finanz-Skript).
   Antwort immer JSON: bei Erfolg die Daten, bei Fehler `{error: "<code>", message: "<Text für die Person>"}`.
   Die App zeigt Erfolg nur, wenn eine Antwort ohne `error` kam.
 - **Zugang:** Eine Person, ein Passwort für alle Skripte (mindestens 12 Zeichen, besser ein Satz aus mehreren Wörtern).
   Jedes Skript liest es aus der Skripteigenschaft `APP_PIN` und vergleicht es bei jedem Aufruf (`pruefePin_`).
   Nach 5 Fehlversuchen 15 Minuten Sperre (`CacheService`). Kein Token, keine Einzelkonten (1.2, Punkt 3).
-- **Ohne Passwort** liefert kein Skript Daten. `doGet` antwortet nur mit dem Namen der Schnittstelle.
+- **Partner-Zugang** (nur Skript `gemeinsam`): ein zweites Passwort in der Skripteigenschaft `PARTNER_PIN`.
+  Damit darf die Partnerin oder der Partner Einkauf und Essen lesen und ändern und Uni nur lesen. Alle anderen Skripte kennen `PARTNER_PIN` nicht.
+  Die Aktion `ping` antwortet mit der Rolle (`person` oder `partner`). Die App zeigt danach nur die erlaubten Reiter.
+  Die Rechte prüft immer das Skript, nie nur die App.
+- **Ohne Passwort** gibt nur das Skript `dsa` etwas heraus: genau einen Bogen, nur lesen, nur mit seinem Freigabe-Schlüssel.
+- **Sonst liefert ohne Passwort kein Skript Daten.** `doGet` antwortet nur mit dem Namen der Schnittstelle.
+- **Freigabe der Sheets:** Die Sheets werden mit niemandem geteilt. Wer ein Sheet bearbeiten darf, sieht auch das Skript
+  und seine Skripteigenschaften (also die Passwörter). Geteilt wird nur über die App.
 - **Schutz vor Formeln und bösen Eingaben:** Jeder Text, der ins Sheet geht, läuft durch `bereinigeText_`.
   Das Skript prüft Art, Länge und erlaubte Werte jedes Felds (Beispiel: `pruefeEingabe_` im Finanz-Skript).
 - **Content-Security-Policy:** Skripte und Stile nur von der eigenen Seite. Verbindungen nur zu
@@ -227,7 +240,12 @@ unter „Info“ die Version prüfen.
 - **Bestehende Sheets** (Tracking, Finanzen) behalten ihren Aufbau. Neu kommt je ein Blatt `Einstellungen` dazu
   (Tracking: Felder mit Gruppe, Art und Vorgabewert; Finanzen: Zwecke, Kategorien, Rückzahlungs-Personen).
 - **Neues Sheet** für die neuen Reiter: Kopfzeile in Zeile 1 (klein, ohne Umlaute). Alle Daten-Blätter haben zusätzlich
-  `id, erstellt_am, geaendert_am, geloescht`. Blätter: [OFFEN, kommt aus Plan Version 1]
+  `id, erstellt_am, geaendert_am, geloescht`. Die genauen Spalten legt der Plan der jeweiligen Etappe fest. Geplante Blätter:
+  | Sheet | Blätter |
+  | --- | --- |
+  | Leben | `todos`, `besitz`, `orte` |
+  | Gemeinsam | `lebensmittel`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, `semester`, `stundenplan`, `termine`, `module` |
+  | DSA | `boegen` (ein Bogen je Zeile, Abschnitte als JSON-Spalten), `verlauf` (Geld, AP, AsP, LeP), `gegenstaende`, `bilder` |
 
 ---
 
@@ -246,7 +264,9 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
-- Genaue Beschreibung aller Reiter durch die Person (für Plan Version 1).
+- Rückfragen zu Plan Version 1 (siehe Pull Request von Schritt 0.3): ToDos beschreiben, Kalender „wie im AktionsDeck“ zeigen,
+  Handy-Art für den Kontowecker, Reihenfolge der Etappen, Partner-Rechte bei Uni.
+- Ein Beispiel-Charakterbogen zum Verständnis (kommt nicht ins Repo).
 
 ---
 
@@ -271,7 +291,29 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - Bereichsfarben: ToDos `#E2A23B`, Tracking `#E07A5F`, Finanzen `#8DB580`, DSA `#B5838D`, Einkauf/Essen `#D4B483`,
     Besitz `#7FA7A0`, Uni `#C9784A`. Kein Blau.
   - Bereichsfarben auf hellem Grund nur als Fläche oder Marke, nicht als Schriftfarbe (zu wenig Kontrast nach WCAG AA).
-- [OFFEN: weitere Festlegungen kommen mit Plan Version 1 und den Etappen]
+- **Wer sieht was** (Plan Version 1, 29.10.2026):
+  | Bereich | Person | Partner*in | Ohne Passwort |
+  | --- | --- | --- | --- |
+  | Tracking, Finanzen, ToDos, Besitz | lesen, ändern | – | – |
+  | Einkauf und Essen | lesen, ändern | lesen, ändern | – |
+  | Uni | lesen, ändern | nur lesen | – |
+  | DSA-Bögen | lesen, ändern | – | ein Bogen per Link, nur lesen |
+- **Besitz: keine Daten öffentlich** (Wunsch der Person). Wie bei Finanzen: keine Gegenstände, Orte oder Preise im Repo.
+- **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
+  Der Link enthält die Skript-Kennung und diesen Schlüssel, nie das Passwort. „Neuen Link erstellen“ macht alte Links ungültig.
+  Die geteilte Ansicht zeigt den ganzen Bogen, aber keine Knöpfe zum Ändern. Grund: Bögen sollen ohne Passwort an andere gehen.
+- **Ausnahme von „Keine Offline-Schreibzugriffe“ (1.5), nur Einkaufsliste:** Die Liste liegt zusätzlich im Gerät.
+  Abhaken geht auch ohne Netz. Abgehakte Einträge werden gesendet, sobald wieder Netz da ist. Bis dahin zeigt die App „noch nicht gesendet“.
+  Grund: Wunsch der Person, im Laden gibt es oft kein Netz. Abhaken ist harmlos: doppelt senden schadet nicht.
+- **Im Gerät (Ergänzung zu 5):** die Einkaufsliste und die noch nicht gesendeten Haken. Sonst nichts Neues.
+- **Bilder** (DSA): Die App verkleinert ein Bild vor dem Senden (etwa 400 px, JPEG) und schickt es als Text.
+  Es liegt im Blatt `bilder`. Keine fremden Bild-Server, die Content-Security-Policy bleibt gleich (`img-src 'self' data:`).
+- **Würfel** (W4, W6, W20) rechnen nur im Gerät mit `crypto.getRandomValues`. Nichts wird gespeichert.
+- **Stundenplan am Handy:** im Hochformat eine Liste je Tag, im Querformat automatisch die Wochenansicht.
+  Eine Web-App kann das Drehen nicht erzwingen, darum ein Hinweis „Für die Woche das Handy drehen“.
+- **Kontowecker (Idee, Etappe 6):** Eine Web-App kann keine SMS lesen. Vorschlag: Kontowecker per E-Mail statt SMS,
+  das Finanz-Skript liest diese Mails alle 15 Minuten aus Gmail (nur ein Label) und legt sie als „offen“ ab.
+  Die App zeigt die offenen Buchungen, die Person ordnet sie zu. Braucht ein zusätzliches Google-Recht (Gmail lesen). Erst nach Rückfrage.
 
 ---
 
@@ -283,7 +325,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
-- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`.
+- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`.
 - **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen und zuletzt bekannte Kontostände.
   Schlüssel mit Vorsilbe `thetadex_`. Keine Tracking-Einträge im Gerät speichern. Abmelden löscht alles.
 - **Service Worker** (`sw.js`): App-Dateien zwischenspeichern (`<name>-<VERSION>`), Daten nicht im Service Worker,
@@ -337,14 +379,58 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
     und stellt Rückfragen gesammelt am Ende.
   - Prüfung je Etappe gegen die Grundsätze 1.2: Welche Daten? Wer sieht sie? Geht es einfacher?
 
-### 7.2 Plan Version 1 (Grobfassung, wird in 0.3 ausgearbeitet)
+### 7.2 Plan Version 1 (29.10.2026)
 
-- **Etappe 1 „Bestehendes umziehen“:** Reiter Tracking und Finanzen mit denselben Sheets. Blatt `Einstellungen` je Sheet.
-  Fehler werden angezeigt, Eingaben bleiben bei Fehlern stehen.
-  **Tor:** Die Person ist mit der neuen App zufrieden (Richtwert 2 Wochen). Dann alte Bereitstellungen archivieren und alte Repos löschen.
-- **Etappe 2 „Einfache neue Reiter“:** neues Sheet und Skript `leben`; Einkaufsliste und Essensideen, ToDos, Besitz – einer nach dem anderen.
-- **Etappe 3 „Komplexe Reiter“:** Uni (Stundenplan, Module, Termine), DSA-Charakterbögen.
-- **Etappe 4 „Ausbau“ (optional):** Startseite mit Heute-Übersicht, Eingabe ohne Netz, evtl. Datenbank statt Sheets.
+Jede Etappe bekommt vor dem ersten Schritt ihren eigenen Plan `docs/PLAN-ETAPPE-<n>.md` mit Schritten, genauen Spalten und Prüflisten.
+Die Etappen bauen nacheinander auf. Die Reihenfolge der Etappen 2 bis 5 kann die Person tauschen.
+
+- **Etappe 1 „Bestehendes umziehen“ (0.1.x)**
+  - Ziel: Tracking und Finanzen funktionieren in Thetadex „wie bisher“.
+  - Schritte: Blatt `Einstellungen` je Sheet (Tracking-Felder; Zwecke, Kategorien, Personen für Rückzahlungen) und Aktion `einstellungen`;
+    Reiter Tracking (Eingabe wie bisher); Reiter Finanzen (Übersicht, Buchen, Auswertung mit Chart.js aus `vendor/`).
+  - Datenschutz: Finanz- und Tracking-Daten nur nach Passwort, nichts im Gerät außer den letzten Kontoständen (5).
+  - **Tor:** Die Person ist mit der neuen App zufrieden (Richtwert 2 Wochen). Dann alte Bereitstellungen archivieren und alte Repos löschen.
+- **Etappe 2 „Leben: ToDos und Besitz“ (0.2.x)**
+  - Ziel: neues Sheet „Leben“ mit Skript `leben`.
+  - ToDos: [Beschreibung der Person fehlt noch]. Vorschlag zum Start: Aufgabe, fällig am, erledigt, einfache Listen.
+  - Besitz: Tabelle aller Sachen mit Ort und Anzahl, bei neuen Sachen Kaufpreis und Kaufdatum. Hinzufügen, ändern, weich löschen.
+    Suche und Filter nach Ort. Am PC als Tabelle, am Handy als Karten (1.5).
+  - Datenschutz: nur mit Passwort; nichts davon im Gerät speichern.
+- **Etappe 3 „Einkauf und Essen“ (0.3.x)**
+  - Ziel: neues Sheet „Gemeinsam“ mit Skript `gemeinsam`, Partner-Zugang (`PARTNER_PIN`).
+  - Lebensmittel-Liste mit Suchleiste: suchen, antippen, Anzahl wählen → steht auf der Einkaufsliste.
+  - Gerichte eintragen (mit Zutaten und Mengen). Ein Gericht wählen → seine Zutaten werden vorgeschlagen und angehakt.
+  - Vorrat: Bei jedem Lebensmittel steht, ob es im Schrank oder im Kühlschrank vorrätig ist. Vorrätiges wird bei Gerichten nicht vorgeschlagen.
+  - Einkaufsliste: abhaken, auch ohne Netz (Ausnahme in 4); abgehakte Einträge verschwinden.
+  - Gemeinsam nutzen: Die Partnerin oder der Partner richtet Thetadex auf dem eigenen Handy mit dem Skript `gemeinsam` und `PARTNER_PIN` ein.
+    Die Liste lädt beim Öffnen und beim Ziehen nach unten neu (kein Live-Abgleich).
+- **Etappe 4 „Uni“ (0.4.x)**, im Sheet „Gemeinsam“
+  - Semester auswählen, je Semester ein Stundenplan (Tag, von, bis, Veranstaltung, Ort, Art).
+  - Zusätzlich eintragen: Arbeitszeiten (Stunden je Woche und Monat werden berechnet) und Zugfahrten.
+  - Kalender mit Vorlesungen, Prüfungen, Urlaub und Semesterferien [Vorbild AktionsDeck: Person zeigt es noch].
+  - Master-Übersicht: welche Module erledigt sind, welche noch fehlen, wann und welche Prüfung dazu gehört.
+  - Partner*in sieht Uni nur lesend (Rechte in 4).
+- **Etappe 5 „DSA und DnD“ (0.5.x)**
+  - Ziel: neues Sheet „DSA“ mit Skript `dsa`. Vier Bögen (drei DSA, ein DnD), jeder einzeln wählbar, alle Daten in der App bearbeitbar.
+  - Bogen zeigt: Kopf (Name, GP-Basis, Rasse, Kultur, Profession, Geschlecht, Alter, Größe, Gewicht, Haar- und Augenfarbe, Bild,
+    Stand, Titel, Sozialstatus, Herkunft); Vor- und Nachteile; Eigenschaften und Basiswerte (MU, KL, IN, FF, GE, KO, KK zusätzlich
+    immer sichtbar als Leiste); Sonderfertigkeiten und Talente in Gruppen (Sonderfertigkeiten, Gaben, Kampftechniken, Körperliche,
+    Gesellschaftliche, Natur-, Wissens-, Handwerkliche Talente, Sprachen und Schriften); Zauber (Name, Probe, Kosten, Dauer, Spruch,
+    Wirkungsdauer, ZfW, Modifikationen); Waffen mit Werten; Besitz-Liste.
+  - Verlauf für Geld, AP, AsP und Leben: schnell „+“ oder „−“ mit Notiz; aktueller Stand wird daraus berechnet.
+    Geld und Leben stehen mit Icon immer sichtbar oben.
+  - Würfel W4, W6, W20.
+  - Die Eigenschaften sind eine Liste aus Kürzel, Name und Wert. So passt auch der DnD-Bogen (STR, DEX …) ohne Sonderbau.
+  - Teilen per Link ohne Passwort, nur lesen (4 „DSA teilen“).
+- **Etappe 6 „Ausbau“ (optional)**
+  - Startseite mit Heute-Übersicht (fällige ToDos, heutige Termine, Einkaufsliste).
+  - Kontowecker automatisch auslesen (Vorschlag in 4), danach im Reiter Finanzen eine Übersicht „Noch zuordnen“.
+
+Prüfung gegen die Grundsätze (1.2):
+- Welche Daten? Nur was die Person beschrieben hat. Über die Partnerin oder den Partner werden keine Daten gespeichert.
+- Wer sieht sie? Siehe Tabelle „Wer sieht was“ in 4. Jede Rolle prüft das Skript.
+- Geht es einfacher? Ein Sheet für alles wäre weniger Einrichtung, aber dann hinge die Sicherheit von Besitz und Tracking
+  an der Rechteprüfung für Partner*in und geteilte Bögen. Drei kleine Skripte mit demselben Aufbau sind sicherer und kaum mehr Arbeit.
 
 ---
 
@@ -353,3 +439,4 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
 - **Etappe 0** (ab 0.0.0): Repo angelegt, Start-Datei `docs/STAND.md` übernommen.
 - **0.0.1** Schritt 0.1: App-Gerüst, Ersteinrichtung, Icons.
 - **0.0.2** Schritt 0.2: Tracking-Skript auf Finanz-Stand, ein Passwort für alle Skripte, neue Bereitstellungen, „Verbindung prüfen“ in der Einrichtung.
+- **0.1.0** Schritt 0.3: Plan Version 1 (7.2), Rechte je Bereich, drei neue Sheets geplant. Etappe 0 fertig.
