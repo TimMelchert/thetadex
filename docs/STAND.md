@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.1.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.1.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Laufende Etappe: **Etappe 1 „Döner Landau“**, Plan in `docs/PLAN-ETAPPE-1.md`.
@@ -297,6 +297,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     Besitz `#7FA7A0`, Uni `#C9784A`, Döner `#E2A23B` (frühere Farbe von ToDos, der Reiter ist am 29.10.2026 entfallen). Kein Blau.
     Damit gibt es wieder sieben Reiter, passend zum Icon.
   - Bereichsfarben auf hellem Grund nur als Fläche oder Marke, nicht als Schriftfarbe (zu wenig Kontrast nach WCAG AA).
+  - Ausnahme (Wunsch der Person, 29.10.2026): Der Reiter Döner hat ein buntes Döner-Bild (`icons/doener-bunt.svg`) vor der Überschrift
+    und bewertet mit 10 kleinen bunten Dönern statt einer Auswahlliste.
 - **Wer sieht was** (Plan Version 1, 29.10.2026):
   | Bereich | Person | Partner*in | Ohne Passwort |
   | --- | --- | --- | --- |
@@ -481,3 +483,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **Etappe 1** Döner Landau (vor dem Umzug, Wunsch der Person). **0.1.4** Schritt 1.1: Symbole für alle Reiter, ohne Einrichtung nur öffentliche Reiter.
 - **0.1.5** Schritt 1.2: Döner-Skript (`apps-script/doener/Code.gs`) und Reiter Döner.
 - **0.1.6** Schritt 1.3: ausführliche Bewertung nach Kriterien (Blatt `kriterien`, `details`), Laden-Note (Service, Gemütlichkeit).
+- **0.1.7** Schritt 1.4: Döner-Optik nach Rückmeldung (bunter Döner, Bewerten mit kleinen Dönern, „+ Bewerten“, Laden-Auswahl, Einrückung).
