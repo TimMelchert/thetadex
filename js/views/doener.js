@@ -6,6 +6,9 @@ import { lesen, schreiben } from '../store.js';
 import { apiOeffentlich } from '../api.js';
 
 const TEILE = [['doener', 'Döner'], ['yufka', 'Yufka'], ['pommes', 'Pommes']];
+// Für die ausführliche Bewertung; „laden“ (Service, Gemütlichkeit …) zählt nicht zu „Insgesamt“
+const ALLE_TEILE = [...TEILE, ['laden', 'Laden']];
+const HALBE = Array.from({ length: 19 }, (_, k) => 1 + k / 2);
 const KENNUNG = /^[A-Za-z0-9_-]{20,120}$/;
 const ADRESSE = /^https:\/\/script\.google\.com\/macros\/s\/([A-Za-z0-9_-]+)\/exec$/;
 
@@ -51,7 +54,8 @@ export function rangliste(bewertungen) {
         for (const [t] of TEILE) {
             teile[t] = schnitt(l.liste.map((b) => b[t]).filter((v) => typeof v === 'number'));
         }
-        const vorhanden = Object.values(teile).filter((v) => v != null);
+        const vorhanden = TEILE.map(([t]) => teile[t]).filter((v) => v != null);
+        teile.laden = schnitt(l.liste.map((b) => b.laden_note).filter((v) => typeof v === 'number'));
         const liste = l.liste.slice().sort((a, b) => String(b.datum).localeCompare(String(a.datum)));
         return { name: l.name, teile, insgesamt: schnitt(vorhanden), liste };
     });
@@ -76,12 +80,15 @@ export function render(container, ctx) {
     const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
     const listeBox = el('div', { class: 'doener-liste' });
     let laedenNamen = [];
+    let kriterien = {};
 
     async function laden() {
         status.textContent = 'Lädt …';
         try {
             const d = await apiOeffentlich(adresse, 'liste');
             laedenNamen = Array.isArray(d.laeden) ? d.laeden : [];
+            kriterien = d.kriterien && typeof d.kriterien === 'object' ? d.kriterien : {};
+            baueAusfuehrlich();
             zeigeListe(rangliste(Array.isArray(d.bewertungen) ? d.bewertungen : []));
             status.textContent = '';
         } catch (e) {
@@ -104,14 +111,15 @@ export function render(container, ctx) {
         const balken = el('span', { class: 'doener-balken' });
         balken.style.setProperty('--anteil', String((l.insgesamt || 0) / 10));
         const details = el('div', { class: 'doener-details', attrs: { id: 'doener-details-' + i, hidden: true } }, [
-            el('dl', { class: 'doener-teile' }, TEILE.flatMap(([t, titel]) => [
+            el('dl', { class: 'doener-teile' }, ALLE_TEILE.filter(([t]) => t !== 'laden' || l.teile.laden != null).flatMap(([t, titel]) => [
                 el('dt', { text: titel }),
                 el('dd', { text: l.teile[t] == null ? '–' : zahl(l.teile[t]) })
             ])),
             el('ul', { class: 'doener-bewertungen' }, l.liste.map((b) => el('li', {}, [
-                el('p', { class: 'doener-sterne', text: TEILE.filter(([t]) => typeof b[t] === 'number').map(([t, titel]) => titel + ' ' + zahl(b[t])).join(' · ') }),
+                el('p', { class: 'doener-sterne', text: ALLE_TEILE.map(([t, titel]) => [titel, t === 'laden' ? b.laden_note : b[t]]).filter(([, w]) => typeof w === 'number').map(([titel, w]) => titel + ' ' + zahl(w)).join(' · ') }),
                 b.begruendung ? el('p', { text: b.begruendung }) : null,
-                b.datum ? el('p', { class: 'leise', text: datumText(b.datum) }) : null
+                b.datum ? el('p', { class: 'leise', text: datumText(b.datum) }) : null,
+                zeigeKriterien(b.kriterien)
             ])))
         ]);
         const knopf = el('button', {
@@ -135,6 +143,21 @@ export function render(container, ctx) {
         return el('li', {}, [knopf, details]);
     }
 
+    // Kriterien einer ausführlichen Bewertung, aufklappbar
+    function zeigeKriterien(liste) {
+        if (!Array.isArray(liste) || !liste.length) return null;
+        return el('details', { class: 'doener-kriterien' }, [
+            el('summary', { text: 'Alle Kriterien (' + liste.length + ')' }),
+            ...ALLE_TEILE.filter(([t]) => liste.some((k) => k.teil === t)).map(([t, titel]) => el('div', {}, [
+                el('p', { class: 'doener-krit-titel', text: titel }),
+                el('ul', {}, liste.filter((k) => k.teil === t).map((k) => el('li', {}, [
+                    el('span', { class: 'doener-krit-kopf' }, [el('span', { text: k.name }), el('span', { text: zahl(k.wert) })]),
+                    k.begruendung ? el('span', { class: 'leise', text: k.begruendung }) : null
+                ])))
+            ]))
+        ]);
+    }
+
     // --- Formular „Bewerten“ ---
     const formMeldung = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
     const ladenFeld = el('input', { attrs: { id: 'doener-laden', list: 'doener-laeden', maxlength: 60, autocomplete: 'off', required: true } });
@@ -147,6 +170,44 @@ export function render(container, ctx) {
             ...Array.from({ length: 10 }, (_, k) => el('option', { text: String(k + 1), attrs: { value: String(k + 1) } }))
         ])
     }));
+    // Ausführlich: je Kriterium ein Wert (halbe Sterne erlaubt) und eine Begründung
+    const ausfuehrlichSchalter = el('input', { attrs: { id: 'doener-ausfuehrlich', type: 'checkbox' } });
+    const schnellBox = el('div', { class: 'doener-sterne-felder' });
+    const ausfuehrlichBox = el('div', { class: 'doener-ausfuehrlich', attrs: { hidden: true } });
+    let kriterienFelder = [];
+
+    function baueAusfuehrlich() {
+        leeren(ausfuehrlichBox);
+        kriterienFelder = [];
+        let nr = 0;
+        for (const [t, titel] of ALLE_TEILE) {
+            const namen = Array.isArray(kriterien[t]) ? kriterien[t] : [];
+            if (!namen.length) continue;
+            const zeilen = namen.map((name) => {
+                nr += 1;
+                const wert = el('select', { attrs: { id: 'doener-k' + nr } }, [
+                    el('option', { text: '–', attrs: { value: '' } }),
+                    ...HALBE.map((h) => el('option', { text: zahl(h).replace(',0', ''), attrs: { value: String(h) } }))
+                ]);
+                const begr = el('input', { attrs: { id: 'doener-kb' + nr, type: 'text', maxlength: 200, placeholder: 'Begründung (freiwillig)', 'aria-label': 'Begründung ' + name } });
+                kriterienFelder.push({ teil: t, kriterium: name, wert, begr });
+                return el('div', { class: 'doener-krit-zeile' }, [
+                    el('label', { text: name, attrs: { for: 'doener-k' + nr } }), wert, begr
+                ]);
+            });
+            ausfuehrlichBox.append(el('details', { class: 'doener-krit-gruppe' }, [
+                el('summary', { text: titel + ' (' + namen.length + (namen.length === 1 ? ' Kriterium)' : ' Kriterien)') }),
+                ...zeilen
+            ]));
+        }
+        ausfuehrlichSchalter.disabled = !kriterienFelder.length;
+    }
+
+    ausfuehrlichSchalter.addEventListener('change', () => {
+        schnellBox.hidden = ausfuehrlichSchalter.checked;
+        ausfuehrlichBox.hidden = !ausfuehrlichSchalter.checked;
+    });
+
     const begruendungFeld = el('textarea', { attrs: { id: 'doener-begruendung', maxlength: 300, rows: 3 } });
     // Lockfeld gegen Bots: für Menschen unsichtbar und nicht erreichbar
     const lockFeld = el('input', { attrs: { name: 'web', type: 'text', tabindex: '-1', autocomplete: 'off' } });
@@ -155,15 +216,25 @@ export function render(container, ctx) {
     async function senden(ev) {
         ev.preventDefault();
         const daten = { laden: ladenFeld.value.trim(), begruendung: begruendungFeld.value.trim(), web: lockFeld.value };
-        for (const s of sterneFelder) daten[s.t] = s.feld.value ? Number(s.feld.value) : '';
+        const ausfuehrlich = ausfuehrlichSchalter.checked;
+        if (ausfuehrlich) {
+            daten.details = kriterienFelder.filter((k) => k.wert.value).map((k) => ({
+                teil: k.teil, kriterium: k.kriterium, wert: Number(k.wert.value), begruendung: k.begr.value.trim()
+            }));
+        } else {
+            for (const s of sterneFelder) daten[s.t] = s.feld.value ? Number(s.feld.value) : '';
+        }
         if (!daten.laden) {
             formMeldung.textContent = 'Bitte einen Laden angeben.';
             ladenFeld.focus();
             return;
         }
-        if (sterneFelder.every((s) => !s.feld.value)) {
+        const essenBewertet = ausfuehrlich
+            ? daten.details.some((k) => k.teil !== 'laden')
+            : sterneFelder.some((s) => s.feld.value);
+        if (!essenBewertet) {
             formMeldung.textContent = 'Bitte mindestens Döner, Yufka oder Pommes bewerten.';
-            sterneFelder[0].feld.focus();
+            (ausfuehrlich ? ausfuehrlichSchalter : sterneFelder[0].feld).focus();
             return;
         }
         sendenKnopf.disabled = true;
@@ -171,6 +242,8 @@ export function render(container, ctx) {
         try {
             await apiOeffentlich(adresse, 'bewerten', daten);
             formular.reset();
+            schnellBox.hidden = false;
+            ausfuehrlichBox.hidden = true;
             formMeldung.textContent = 'Danke! Deine Bewertung ist gespeichert.';
             laden();
         } catch (e) {
@@ -185,16 +258,23 @@ export function render(container, ctx) {
         ladenFeld,
         ladenListe,
         el('p', { class: 'leise klein', text: 'Aus der Liste wählen oder einen neuen Laden eintippen.' }),
-        el('div', { class: 'doener-sterne-felder' }, sterneFelder.map((s) => el('div', {}, [
-            el('label', { text: s.titel + ' (1–10)', attrs: { for: 'doener-' + s.t } }),
-            s.feld
-        ]))),
+        el('div', { class: 'doener-schalter' }, [
+            ausfuehrlichSchalter,
+            el('label', { text: 'Ausführlich bewerten (alle Kriterien)', attrs: { for: 'doener-ausfuehrlich' } })
+        ]),
+        schnellBox,
+        ausfuehrlichBox,
         el('label', { text: 'Begründung (freiwillig)', attrs: { for: 'doener-begruendung' } }),
         begruendungFeld,
         el('div', { class: 'lockfeld', attrs: { 'aria-hidden': 'true' } }, [lockFeld]),
         sendenKnopf,
         formMeldung
     ]);
+
+    schnellBox.append(...sterneFelder.map((s) => el('div', {}, [
+        el('label', { text: s.titel + ' (1–10)', attrs: { for: 'doener-' + s.t } }),
+        s.feld
+    ])));
 
     const bewertenBox = el('details', { class: 'karte doener-bewerten' }, [
         el('summary', { text: 'Bewerten' }),

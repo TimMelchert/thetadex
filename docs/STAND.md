@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.1.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.1.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Laufende Etappe: **Etappe 1 „Döner Landau“**, Plan in `docs/PLAN-ETAPPE-1.md`.
@@ -248,7 +248,8 @@ unter „Info“ die Version prüfen.
   | --- | --- |
   | Leben | `besitz`, `orte` |
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, `semester`, `stundenplan`, `termine`, `module` |
-  | Döner | `bewertungen` (`laden, doener, yufka, pommes, begruendung` + Standardspalten), `laeden` (`name`) |
+  | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung` + Standardspalten), `laeden` (`name`),
+    `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
   | DSA | `boegen` (ein Bogen je Zeile, Abschnitte als JSON-Spalten), `verlauf` (Geld, AP, AsP, LeP), `gegenstaende`, `bilder` |
 
 ---
@@ -266,7 +267,7 @@ unter „Info“ die Version prüfen.
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
 - Etappe 1: Symbole für alle Reiter (1.1). Döner-Skript und Reiter mit Rangliste, Einzelheiten, Bewerten und Teilen-Link (1.2).
-  Döner-Skript: Aktionen `liste`, `bewerten`, `ping`, ohne Passwort.
+  Döner-Skript: Aktionen `liste`, `bewerten`, `ping`, ohne Passwort. Schnell (drei Werte) oder ausführlich nach Kriterien (1.3).
 
 ### 3.2 Offen
 
@@ -406,6 +407,9 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     und Kopfzeilen selbst anlegt. Die bisherigen Werte trägt die Person als je eine Start-Bewertung pro Laden ein.
   - Bewerten: Laden aus einer Auswahl der bisherigen Läden oder neu als Freitext. Sterne 1 bis 10 getrennt für Döner, Yufka und Pommes,
     jedes Feld freiwillig, mindestens eins (Entscheidung der Person, 29.10.2026). Begründung freiwillig, Datum automatisch.
+  - Wahlweise „ausführlich“ (Entscheidung der Person, 29.10.2026): je Kriterium 1 bis 10 in halben Schritten mit eigener Begründung.
+    Die Kriterien stehen im Blatt `kriterien` (Vorgabe aus dem alten Döner-Sheet). Der Wert eines Teils ist dann der Durchschnitt
+    seiner Kriterien. Dazu kommt der Teil „Laden“ (Service, Gemütlichkeit); er zählt nicht zu „Insgesamt“.
   - Anzeige: Balken-Grafik aller Läden mit „Insgesamt“ und der Zahl der Bewertungen. Je Teil (Döner, Yufka, Pommes) zählt der
     Durchschnitt aller Bewertungen; „Insgesamt“ ist der Durchschnitt der Teile, die schon Bewertungen haben.
     Antippen eines Ladens zeigt die drei Teile und alle Begründungen mit Sternen und Datum. Die Balken baut die App selbst mit CSS, ohne Bibliothek.
@@ -476,3 +480,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.1.2–0.1.3** Neuer öffentlicher Reiter Döner Landau als Etappe 2 (neues Sheet, Sterne für Döner, Yufka, Pommes), die übrigen Etappen rücken eins nach hinten.
 - **Etappe 1** Döner Landau (vor dem Umzug, Wunsch der Person). **0.1.4** Schritt 1.1: Symbole für alle Reiter, ohne Einrichtung nur öffentliche Reiter.
 - **0.1.5** Schritt 1.2: Döner-Skript (`apps-script/doener/Code.gs`) und Reiter Döner.
+- **0.1.6** Schritt 1.3: ausführliche Bewertung nach Kriterien (Blatt `kriterien`, `details`), Laden-Note (Service, Gemütlichkeit).

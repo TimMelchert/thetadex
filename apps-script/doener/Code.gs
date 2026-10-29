@@ -6,29 +6,61 @@
 
 var BLATT_BEW_ = "bewertungen";
 var BLATT_LAEDEN_ = "laeden";
-var KOPF_BEW_ = ["id", "erstellt_am", "laden", "doener", "yufka", "pommes", "begruendung", "geloescht"];
+var BLATT_KRIT_ = "kriterien";
+var BLATT_DETAILS_ = "details";
+var KOPF_BEW_ = ["id", "erstellt_am", "laden", "doener", "yufka", "pommes", "ladennote", "begruendung", "geloescht"];
 var KOPF_LAEDEN_ = ["name"];
-var TEILE_ = ["doener", "yufka", "pommes"];
+var KOPF_KRIT_ = ["teil", "name"];
+var KOPF_DETAILS_ = ["bewertung_id", "teil", "kriterium", "wert", "begruendung"];
+var TEILE_ = ["doener", "yufka", "pommes"];       // zählen für „Insgesamt“
+var ALLE_TEILE_ = ["doener", "yufka", "pommes", "laden"];  // „laden“ = Service, Gemütlichkeit …
+var SPALTE_JE_TEIL_ = { doener: "doener", yufka: "yufka", pommes: "pommes", laden: "ladennote" };
 var MAX_LADEN_ = 60;          // Höchstlänge Name des Ladens
 var MAX_BEGRUENDUNG_ = 300;   // Höchstlänge Begründung
+var MAX_KRIT_BEGR_ = 200;     // Höchstlänge Begründung je Kriterium
+var MAX_DETAILS_ = 60;        // Höchstzahl Kriterien je Bewertung
 var MAX_PRO_STUNDE_ = 30;     // Höchstzahl neuer Bewertungen pro Stunde, für alle zusammen
 var LISTE_SEKUNDEN_ = 60;     // So lange wird die Liste zwischengespeichert
 
-// --- 1. EINRICHTEN (einmal im Editor ausführen) ---
+// Vorgabe für das Blatt „kriterien“ (die Person kann es im Sheet ändern)
+var KRITERIEN_VORGABE_ = [
+  ["pommes", "Crunchyness"], ["pommes", "Gewürz"], ["pommes", "Wärme"], ["pommes", "Preis-Leistung"],
+  ["doener", "Optik"], ["doener", "Füllgrad"], ["doener", "Wärme"], ["doener", "Seitan"], ["doener", "Salatmischung"],
+  ["doener", "Brötchen"], ["doener", "Eatability"], ["doener", "Vegane Joghurtsauce"], ["doener", "Bei leerem Magen"],
+  ["doener", "In Kombi mit Pommes"],
+  ["yufka", "Optik"], ["yufka", "Füllgrad"], ["yufka", "Wärme"], ["yufka", "Seitan"], ["yufka", "Salatmischung"],
+  ["yufka", "Brot"], ["yufka", "Eatability"], ["yufka", "Vegane Joghurtsauce"], ["yufka", "Bei leerem Magen"],
+  ["yufka", "In Kombi mit Pommes"],
+  ["laden", "Service"], ["laden", "Gemütlichkeit"]
+];
 
-// Legt die Blätter mit Kopfzeile an. Bestehende Blätter mit Inhalt bleiben unverändert.
+// --- 1. EINRICHTEN (im Editor ausführen, auch nach einem Update) ---
+
+// Legt fehlende Blätter an und ergänzt fehlende Spalten am Ende. Vorhandene Daten bleiben unverändert.
 function einrichten() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  [[BLATT_BEW_, KOPF_BEW_], [BLATT_LAEDEN_, KOPF_LAEDEN_]].forEach(function (b) {
+  [[BLATT_BEW_, KOPF_BEW_], [BLATT_LAEDEN_, KOPF_LAEDEN_], [BLATT_KRIT_, KOPF_KRIT_], [BLATT_DETAILS_, KOPF_DETAILS_]].forEach(function (b) {
     var sheet = ss.getSheetByName(b[0]) || ss.insertSheet(b[0]);
     if (sheet.getLastRow() === 0) {
       sheet.getRange(1, 1, 1, b[1].length).setValues([b[1]]).setFontWeight("bold");
       sheet.setFrozenRows(1);
       Logger.log("Blatt '" + b[0] + "' angelegt.");
+      if (b[0] === BLATT_KRIT_) {
+        sheet.getRange(2, 1, KRITERIEN_VORGABE_.length, 2).setValues(KRITERIEN_VORGABE_);
+        Logger.log("Kriterien eingetragen: " + KRITERIEN_VORGABE_.length);
+      }
+      return;
+    }
+    var sp = spalten_(sheet);
+    var fehlen = b[1].filter(function (k) { return sp[k] == null; });
+    if (fehlen.length) {
+      sheet.getRange(1, sheet.getLastColumn() + 1, 1, fehlen.length).setValues([fehlen]).setFontWeight("bold");
+      Logger.log("Blatt '" + b[0] + "': Spalten ergänzt: " + fehlen.join(", "));
     } else {
-      Logger.log("Blatt '" + b[0] + "' gibt es schon, bleibt unverändert.");
+      Logger.log("Blatt '" + b[0] + "' ist vollständig.");
     }
   });
+  CacheService.getScriptCache().remove("liste");
   Logger.log("Fertig.");
 }
 
@@ -63,14 +95,32 @@ function blatt_(name) {
   return sheet;
 }
 
+function zeilen_(sheet) {
+  return sheet.getLastRow() > 1 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues() : [];
+}
+
+function zelle_(z, sp, name) {
+  return sp[name] != null && z[sp[name]] != null ? z[sp[name]] : "";
+}
+
 function istWahr_(v) {
   return v === true || /^(true|wahr|ja|x)$/i.test(String(v).trim());
 }
 
-// Sterne aus dem Sheet: Zahl über 0 bis 10, sonst leer (auch Kommazahlen der Startwerte)
+// Sterne aus dem Sheet: Zahl über 0 bis 10, sonst leer (auch Kommazahlen)
 function sternAusSheet_(v) {
   var n = typeof v === "number" ? v : Number(String(v).replace(",", "."));
   return (String(v).trim() !== "" && isFinite(n) && n > 0 && n <= 10) ? n : null;
+}
+
+// Sterne aus der App: 1 bis 10, ganze oder halbe Zahlen
+function sternGueltig_(v) {
+  var n = Number(v);
+  return n >= 1 && n <= 10 && Math.round(n * 2) === n * 2;
+}
+
+function runde_(n) {
+  return Math.round(n * 10) / 10;
 }
 
 // --- 3. EINSTIEGSPUNKTE ---
@@ -116,25 +166,45 @@ function liste_() {
   var gemerkt = cache.get("liste");
   if (gemerkt) return JSON.parse(gemerkt);
 
-  var bew = blatt_(BLATT_BEW_);
-  var sp = spalten_(bew);
-  var zeilen = bew.getLastRow() > 1 ? bew.getRange(2, 1, bew.getLastRow() - 1, bew.getLastColumn()).getValues() : [];
   var zone = Session.getScriptTimeZone();
 
+  // Kriterien-Begründungen je Bewertung
+  var detailsJe = {};
+  var ds = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BLATT_DETAILS_);
+  if (ds) {
+    var dsp = spalten_(ds);
+    zeilen_(ds).forEach(function (z) {
+      var bid = String(zelle_(z, dsp, "bewertung_id"));
+      var wert = sternAusSheet_(zelle_(z, dsp, "wert"));
+      if (!bid || wert == null) return;
+      (detailsJe[bid] = detailsJe[bid] || []).push({
+        teil: String(zelle_(z, dsp, "teil")),
+        name: String(zelle_(z, dsp, "kriterium")),
+        wert: wert,
+        begruendung: String(zelle_(z, dsp, "begruendung"))
+      });
+    });
+  }
+
+  var bew = blatt_(BLATT_BEW_);
+  var sp = spalten_(bew);
   var bewertungen = [];
-  zeilen.forEach(function (z) {
-    var laden = String(z[sp.laden] == null ? "" : z[sp.laden]).trim();
+  zeilen_(bew).forEach(function (z) {
+    var laden = String(zelle_(z, sp, "laden")).trim();
     if (!laden) return;
-    if (sp.geloescht != null && istWahr_(z[sp.geloescht])) return;
-    var b = { laden: laden, begruendung: sp.begruendung != null ? String(z[sp.begruendung] || "") : "", datum: "" };
-    TEILE_.forEach(function (t) { b[t] = sp[t] != null ? sternAusSheet_(z[sp[t]]) : null; });
-    if (b.doener == null && b.yufka == null && b.pommes == null) return;
-    var d = sp.erstellt_am != null ? z[sp.erstellt_am] : "";
+    if (istWahr_(zelle_(z, sp, "geloescht"))) return;
+    var b = { laden: laden, begruendung: String(zelle_(z, sp, "begruendung")), datum: "" };
+    TEILE_.forEach(function (t) { b[t] = sternAusSheet_(zelle_(z, sp, t)); });
+    b.laden_note = sternAusSheet_(zelle_(z, sp, "ladennote"));
+    if (b.doener == null && b.yufka == null && b.pommes == null && b.laden_note == null) return;
+    var d = zelle_(z, sp, "erstellt_am");
     if (d instanceof Date && !isNaN(d)) b.datum = Utilities.formatDate(d, zone, "yyyy-MM-dd");
+    var bid = String(zelle_(z, sp, "id"));
+    b.kriterien = (bid && detailsJe[bid]) || [];
     bewertungen.push(b);
   });
 
-  var ergebnis = { laeden: laedenNamen_(), bewertungen: bewertungen };
+  var ergebnis = { laeden: laedenNamen_(), kriterien: kriterien_(), bewertungen: bewertungen };
   var text = JSON.stringify(ergebnis);
   if (text.length < 90000) cache.put("liste", text, LISTE_SEKUNDEN_);
   return ergebnis;
@@ -142,11 +212,24 @@ function liste_() {
 
 function laedenNamen_() {
   var sheet = blatt_(BLATT_LAEDEN_);
-  if (sheet.getLastRow() < 2) return [];
   var sp = spalten_(sheet);
-  return sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues()
-    .map(function (z) { return String(z[sp.name] == null ? "" : z[sp.name]).trim(); })
+  return zeilen_(sheet)
+    .map(function (z) { return String(zelle_(z, sp, "name")).trim(); })
     .filter(function (n) { return n; });
+}
+
+// Kriterien je Teil aus dem Blatt „kriterien“; fehlt es, gibt es keine ausführliche Bewertung
+function kriterien_() {
+  var k = { doener: [], yufka: [], pommes: [], laden: [] };
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BLATT_KRIT_);
+  if (!sheet) return k;
+  var sp = spalten_(sheet);
+  zeilen_(sheet).forEach(function (z) {
+    var teil = String(zelle_(z, sp, "teil")).trim().toLowerCase();
+    var name = String(zelle_(z, sp, "name")).trim();
+    if (k[teil] && name && k[teil].indexOf(name) === -1) k[teil].push(name);
+  });
+  return k;
 }
 
 // --- 5. BEWERTEN ---
@@ -166,18 +249,45 @@ function bewerten_(data) {
   if (!ladenText) return { error: "eingabe", message: "Bitte einen Laden angeben." };
   if (ladenText.length > MAX_LADEN_) return { error: "eingabe", message: "Der Name des Ladens ist zu lang (höchstens " + MAX_LADEN_ + " Zeichen)." };
 
-  var sterne = {};
+  // Schnelle Werte je Teil
+  var werte = { doener: "", yufka: "", pommes: "", laden: "" };
   for (var i = 0; i < TEILE_.length; i++) {
-    var t = TEILE_[i];
-    var v = data[t];
-    if (v === null || v === undefined || v === "") { sterne[t] = ""; continue; }
-    var n = Number(v);
-    if (!(n >= 1 && n <= 10 && Math.floor(n) === n)) {
-      return { error: "eingabe", message: "Sterne bitte als ganze Zahl von 1 bis 10." };
-    }
-    sterne[t] = n;
+    var v = data[TEILE_[i]];
+    if (v === null || v === undefined || v === "") continue;
+    if (!sternGueltig_(v)) return { error: "eingabe", message: "Sterne bitte von 1 bis 10." };
+    werte[TEILE_[i]] = Number(v);
   }
-  if (sterne.doener === "" && sterne.yufka === "" && sterne.pommes === "") {
+
+  // Ausführliche Werte je Kriterium: ersetzen den schnellen Wert des Teils durch ihren Durchschnitt
+  var details = [];
+  if (data.details != null) {
+    if (!Array.isArray(data.details) || data.details.length > MAX_DETAILS_) {
+      return { error: "eingabe", message: "Ungültige Kriterien." };
+    }
+    var erlaubt = kriterien_();
+    var gesehen = {};
+    for (var j = 0; j < data.details.length; j++) {
+      var d = data.details[j] || {};
+      var teil = String(d.teil || "");
+      var name = String(d.kriterium || "");
+      if (!erlaubt[teil] || erlaubt[teil].indexOf(name) === -1) {
+        return { error: "eingabe", message: "Unbekanntes Kriterium: " + bereinigeText_(name, 40) };
+      }
+      if (gesehen[teil + "|" + name]) continue;
+      gesehen[teil + "|" + name] = true;
+      if (d.wert === null || d.wert === undefined || d.wert === "") continue;
+      if (!sternGueltig_(d.wert)) return { error: "eingabe", message: "Sterne bitte von 1 bis 10." };
+      var kb = String(d.begruendung == null ? "" : d.begruendung);
+      if (kb.length > MAX_KRIT_BEGR_) return { error: "eingabe", message: "Eine Begründung ist zu lang (höchstens " + MAX_KRIT_BEGR_ + " Zeichen)." };
+      details.push({ teil: teil, kriterium: name, wert: Number(d.wert), begruendung: bereinigeText_(kb, MAX_KRIT_BEGR_) });
+    }
+    ALLE_TEILE_.forEach(function (t) {
+      var w = details.filter(function (x) { return x.teil === t; }).map(function (x) { return x.wert; });
+      if (w.length) werte[t] = runde_(w.reduce(function (a, b) { return a + b; }, 0) / w.length);
+    });
+  }
+
+  if (werte.doener === "" && werte.yufka === "" && werte.pommes === "") {
     return { error: "eingabe", message: "Bitte mindestens Döner, Yufka oder Pommes bewerten." };
   }
 
@@ -200,19 +310,34 @@ function bewerten_(data) {
 
   var bew = blatt_(BLATT_BEW_);
   var sp = spalten_(bew);
-  var werte = {
-    id: Utilities.getUuid(),
+  var id = Utilities.getUuid();
+  var zeilenWerte = {
+    id: id,
     erstellt_am: new Date(),
     laden: laden,
-    doener: sterne.doener,
-    yufka: sterne.yufka,
-    pommes: sterne.pommes,
+    doener: werte.doener,
+    yufka: werte.yufka,
+    pommes: werte.pommes,
+    ladennote: werte.laden,
     begruendung: bereinigeText_(begruendung, MAX_BEGRUENDUNG_),
     geloescht: false
   };
   var zeile = new Array(bew.getLastColumn()).fill("");
-  Object.keys(werte).forEach(function (k) { if (sp[k] != null) zeile[sp[k]] = werte[k]; });
+  Object.keys(zeilenWerte).forEach(function (k) { if (sp[k] != null) zeile[sp[k]] = zeilenWerte[k]; });
   bew.appendRow(zeile);
+
+  if (details.length) {
+    var ds = blatt_(BLATT_DETAILS_);
+    var dsp = spalten_(ds);
+    var breite = ds.getLastColumn();
+    var neu = details.map(function (x) {
+      var z = new Array(breite).fill("");
+      var w = { bewertung_id: id, teil: x.teil, kriterium: bereinigeText_(x.kriterium, 60), wert: x.wert, begruendung: x.begruendung };
+      Object.keys(w).forEach(function (k) { if (dsp[k] != null) z[dsp[k]] = w[k]; });
+      return z;
+    });
+    ds.getRange(ds.getLastRow() + 1, 1, neu.length, breite).setValues(neu);
+  }
 
   cache.put(stunde, String(anzahl + 1), 3700);
   cache.remove("liste");
