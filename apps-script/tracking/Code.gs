@@ -1,51 +1,133 @@
-var SECRET_PIN = "HIER_PASSWORT"; // wird in Schritt 0.2 durch Skripteigenschaft APP_PIN ersetzt 
+// =====================================================
+// TRACKING – Apps Script
+// Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN)
+// =====================================================
 
+var BLATT_ = "Tabellenblatt1";
+var KOPFZEILE_ = 4;          // In dieser Zeile stehen die Spaltennamen
+var MAX_FELDER_ = 60;        // Höchstzahl Felder pro Eintrag
+var MAX_TEXT_ = 100;         // Höchstlänge eines Textwerts
+
+// --- 1. HILFSFUNKTIONEN FÜR ANTWORTEN & PASSWORT ---
+
+function jsonOut_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Prüft das Passwort und sperrt nach 5 Fehlversuchen für 15 Minuten
+function pruefePin_(pin) {
+  var cache = CacheService.getScriptCache();
+  var fehler = Number(cache.get('pin_fehler') || 0);
+  if (fehler >= 5) return 'gesperrt';
+
+  var soll = PropertiesService.getScriptProperties().getProperty('APP_PIN');
+  if (!soll || String(pin) !== soll) {
+    cache.put('pin_fehler', String(fehler + 1), 900);
+    return 'falsch';
+  }
+  cache.remove('pin_fehler');
+  return 'ok';
+}
+
+// Macht aus Freitext einen sicheren Zellinhalt:
+// Zeilenumbrüche weg, Länge begrenzt, keine Formeln (=, +, -, @ am Anfang)
+function bereinigeText_(text, maxLaenge) {
+  var t = String(text == null ? "" : text).replace(/[\r\n\t]+/g, " ").trim();
+  if (t.length > maxLaenge) t = t.substring(0, maxLaenge);
+  if (/^[=+\-@]/.test(t)) t = "'" + t;
+  return t;
+}
+
+// --- 2. EINSTIEGSPUNKTE ---
+
+// Direkter Aufruf der URL liefert keine Daten
+function doGet() {
+  return jsonOut_({ status: "Tracking API" });
+}
+
+// Alle Anfragen laufen über POST und brauchen das Passwort
 function doPost(e) {
   var data;
-  try { 
-    data = JSON.parse(e.postData.contents); 
-  } catch(f) { 
-    return ContentService.createTextOutput("Fehler beim Parsen").setMimeType(ContentService.MimeType.TEXT);
-  }
-  
-  if (data.pin !== SECRET_PIN) {
-    return ContentService.createTextOutput("Zugriff verweigert").setMimeType(ContentService.MimeType.TEXT);
+  try {
+    data = JSON.parse(e.postData.contents);
+  } catch (err) {
+    return jsonOut_({ error: "anfrage", message: "Ungültige Anfrage" });
   }
 
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("Tabellenblatt1");
-  if (!sheet) return ContentService.createTextOutput("Blatt nicht gefunden").setMimeType(ContentService.MimeType.TEXT);
-
-  // Spalten-Mapping (Sucht Namen in Zeile 4)
-  var lastCol = sheet.getLastColumn();
-  var headerRow = sheet.getRange(4, 1, 1, lastCol).getValues()[0];
-  
-  var getCol = function(name) {
-    var idx = headerRow.indexOf(name);
-    return idx + 1;
-  };
-
-  // Datum verarbeiten
-  var buchungsDatum = data.datum ? new Date(data.datum) : new Date();
-  buchungsDatum.setHours(12, 0, 0, 0);
-
-  // Neue Zeile finden
-  var lastRow = sheet.getLastRow();
-  var targetRow = lastRow + 1;
-
-  // Datum in die Spalte "Datum" schreiben
-  var dateCol = getCol("Datum");
-  if (dateCol > 0) {
-    sheet.getRange(targetRow, dateCol).setValue(buchungsDatum);
+  var status = pruefePin_(data.pin);
+  if (status === 'gesperrt') {
+    return jsonOut_({ error: "gesperrt", message: "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen." });
   }
-  
-  // Alle anderen Felder aus dem "values"-Objekt loopen und setzen
-  for (var key in data.values) {
-    var colIdx = getCol(key);
-    if (colIdx > 0) {
-      sheet.getRange(targetRow, colIdx).setValue(data.values[key]);
+  if (status !== 'ok') {
+    return jsonOut_({ error: "pin", message: "Passwort falsch" });
+  }
+
+  try {
+    if (data.action === "ping") return jsonOut_({ ok: true });
+
+    if (data.action === "eintragen") {
+      // Sperre: Es kann immer nur ein Eintrag gleichzeitig laufen
+      var lock = LockService.getScriptLock();
+      if (!lock.tryLock(20000)) {
+        return jsonOut_({ error: "ausgelastet", message: "Script ausgelastet. Bitte gleich nochmal versuchen." });
+      }
+      try {
+        return jsonOut_(eintragSpeichern_(data));
+      } finally {
+        lock.releaseLock();
+      }
     }
+
+    return jsonOut_({ error: "aktion", message: "Unbekannte Aktion" });
+  } catch (err) {
+    return jsonOut_({ error: "server", message: String(err) });
+  }
+}
+
+// --- 3. EINTRAG SPEICHERN ---
+
+function eintragSpeichern_(data) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BLATT_);
+  if (!sheet) return { error: "blatt", message: "Blatt '" + BLATT_ + "' nicht gefunden" };
+
+  // Datum mit 12:00 Uhr (Fix gegen Zeitzonen-Fehler)
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(data.datum || ""));
+  if (!m) return { error: "eingabe", message: "Ungültiges Datum" };
+  var datum = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0);
+  if (datum.getMonth() !== Number(m[2]) - 1) return { error: "eingabe", message: "Ungültiges Datum" };
+
+  var werte = data.values;
+  if (!werte || typeof werte !== "object" || Array.isArray(werte)) {
+    return { error: "eingabe", message: "Keine Werte übergeben" };
+  }
+  var namen = Object.keys(werte);
+  if (namen.length === 0 || namen.length > MAX_FELDER_) {
+    return { error: "eingabe", message: "Ungültige Anzahl Felder" };
   }
 
-  return ContentService.createTextOutput("Erfolg").setMimeType(ContentService.MimeType.TEXT);
+  // "Landkarte": Spaltennamen in der Kopfzeile suchen
+  var lastCol = sheet.getLastColumn();
+  var kopf = sheet.getRange(KOPFZEILE_, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h).trim(); });
+  var datumSpalte = kopf.indexOf("Datum");
+  if (datumSpalte === -1) return { error: "blatt", message: "Spalte 'Datum' nicht gefunden" };
+
+  // Unbekannte Felder melden statt still zu verwerfen
+  var unbekannt = namen.filter(function (n) { return kopf.indexOf(String(n).trim()) === -1; });
+  if (unbekannt.length) {
+    return { error: "eingabe", message: "Unbekannte Felder: " + unbekannt.join(", ") };
+  }
+
+  // Nur die Zellen der übergebenen Felder schreiben (wie bisher),
+  // damit Formeln in anderen Spalten unberührt bleiben
+  var zielZeile = Math.max(sheet.getLastRow() + 1, KOPFZEILE_ + 1);
+  sheet.getRange(zielZeile, datumSpalte + 1).setValue(datum);
+  namen.forEach(function (n) {
+    var v = werte[n];
+    var zahl = (typeof v === "number" || (typeof v === "string" && /^-?\d+(\.\d+)?$/.test(v.trim()))) ? Number(v) : NaN;
+    sheet.getRange(zielZeile, kopf.indexOf(String(n).trim()) + 1).setValue(isFinite(zahl) ? zahl : bereinigeText_(v, MAX_TEXT_));
+  });
+  SpreadsheetApp.flush();
+
+  return { ok: true, datum: data.datum };
 }

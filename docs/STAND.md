@@ -4,11 +4,11 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.0.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.0.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Laufende Etappe: **Etappe 0 „Start“** (Grundstruktur, Skripte prüfen, Plan Version 1).
-- Nächster Schritt: **0.2 Skripte vereinheitlichen** (Abschnitt 7).
+- Nächster Schritt: **0.3 Plan Version 1 fertigstellen** (Abschnitt 7).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -238,14 +238,15 @@ unter „Info“ die Version prüfen.
 - Zwei alte Apps laufen weiter: Repos `TimMelchert/Tracking-Leben` und `TimMelchert/App-Finazen-Tabelle` (öffentlich, GitHub Pages).
 - Skript-Code beider Apps liegt als Sicherung in den Projektdateien (`apps-script-backup/`).
   - Finanzen: Passwort in Skripteigenschaft `APP_PIN`, Sperre nach Fehlversuchen, `LockService`, Eingabeprüfung.
-  - Tracking: PIN stand im Code (in der Sicherung durch `HIER_PASSWORT` ersetzt), keine Sperre, Antwort als Text, kein `LockService`.
+  - Tracking (ab 0.2): Passwort aus `APP_PIN`, Sperre, JSON-Antworten, `LockService`, Prüfung von Datum und Feldnamen.
+    Aktionen: `ping` (nur prüfen), `eintragen` (`datum` als JJJJ-MM-TT, `values` = Spaltenname → Wert).
+  - Finanzen: Aktionen `stats`, `analyse`, `buchen`.
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
 
 ### 3.2 Offen
 
 - Genaue Beschreibung aller Reiter durch die Person (für Plan Version 1).
-- Neues Passwort festlegen und in beiden Skripten als `APP_PIN` eintragen (Schritt 0.2).
 
 ---
 
@@ -351,3 +352,4 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
 
 - **Etappe 0** (ab 0.0.0): Repo angelegt, Start-Datei `docs/STAND.md` übernommen.
 - **0.0.1** Schritt 0.1: App-Gerüst, Ersteinrichtung, Icons.
+- **0.0.2** Schritt 0.2: Tracking-Skript auf Finanz-Stand, ein Passwort für alle Skripte, neue Bereitstellungen, „Verbindung prüfen“ in der Einrichtung.
