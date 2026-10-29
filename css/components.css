@@ -63,6 +63,9 @@
 
 .meldung { margin-top: 12px; font-weight: 600; min-height: 1.5em; }
 
+.pruefliste { padding-left: 20px; margin: 12px 0 0; }
+.pruefliste li { margin-bottom: 4px; }
+
 .update-hinweis {
     position: fixed;
     left: var(--abstand);

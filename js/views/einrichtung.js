@@ -1,8 +1,9 @@
 // Ersteinrichtung: Passwort und Script-Adressen, gespeichert nur im Gerät.
 
-import { el } from '../ui/dom.js';
+import { el, leeren } from '../ui/dom.js';
 import { lesen, schreiben, abmelden } from '../store.js';
 import { SKRIPTE } from '../config.js';
+import { api } from '../api.js';
 
 // Eine gültige Adresse einer Apps-Script-Web-App
 const SKRIPT_MUSTER = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/;
@@ -48,6 +49,29 @@ export function render(container) {
         if (ok) passwortFeld.setAttribute('placeholder', 'gespeichert – nur zum Ändern ausfüllen');
     }
 
+    // Fragt jedes eingetragene Skript mit einer Aktion, die nur liest.
+    async function pruefen() {
+        const gespeichert = lesen('skripte', {}) || {};
+        leeren(ergebnis);
+        const liste = SKRIPTE.filter((s) => gespeichert[s.id]);
+        if (!liste.length) {
+            ergebnis.append(el('li', { text: 'Noch keine Script-Adresse gespeichert.' }));
+            return;
+        }
+        pruefKnopf.disabled = true;
+        for (const s of liste) {
+            const zeile = el('li', { text: s.titel + ': wird geprüft …' });
+            ergebnis.append(zeile);
+            try {
+                await api(s.id, s.test);
+                zeile.textContent = s.titel + ': Verbindung klappt.';
+            } catch (e) {
+                zeile.textContent = s.titel + ': ' + e.message;
+            }
+        }
+        pruefKnopf.disabled = false;
+    }
+
     function allesLoeschen() {
         if (!confirm('Passwort und Script-Adressen von diesem Gerät löschen?')) return;
         abmelden();
@@ -64,11 +88,18 @@ export function render(container) {
         el('button', { class: 'knopf', text: 'Speichern', attrs: { type: 'submit' } })
     ]);
 
+    const ergebnis = el('ul', { class: 'pruefliste', attrs: { 'aria-live': 'polite' } });
+    const pruefKnopf = el('button', { class: 'knopf knopf-zweit', text: 'Verbindung prüfen', attrs: { type: 'button' }, on: { click: pruefen } });
+
     container.append(
         el('h1', { text: 'Einrichtung' }),
         el('p', { class: 'leise', text: 'Alles hier bleibt nur auf diesem Gerät gespeichert. Nichts davon landet im Repo.' }),
         formular,
         meldung,
+        el('h2', { text: 'Verbindung' }),
+        el('p', { text: 'Prüft mit den gespeicherten Angaben, ob jedes Skript antwortet. Es wird nichts eingetragen.' }),
+        pruefKnopf,
+        ergebnis,
         el('h2', { text: 'Abmelden' }),
         el('p', { text: 'Löscht Passwort und Adressen von diesem Gerät.' }),
         el('button', { class: 'knopf knopf-zweit', text: 'Abmelden', attrs: { type: 'button' }, on: { click: allesLoeschen } })
