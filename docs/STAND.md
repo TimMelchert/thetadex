@@ -1,13 +1,5 @@
 # STAND – Thetadex
 
-> **So benutzt du diese Start-Datei (für die Person, danach löschen):**
-> 1. Im neuen Repo die Datei `docs/STAND.md` anlegen und diesen Text hineinkopieren (ohne diesen grauen Kasten).
-> 2. Im Hauptordner die Datei `CLAUDE.md` anlegen, Text aus Anhang A.
-> 3. In den Projekt-Einstellungen bei Claude die Projektanweisungen aus Anhang B eintragen.
-> 4. Die Skript-Dateien aus `apps-script-backup/` in den Projektdateien nach `apps-script/tracking/Code.gs` und
->    `apps-script/finanzen/Code.gs` im Repo kopieren. Die Tracking-Datei ist schon bereinigt (kein Passwort darin).
-> 5. Alle Stellen mit **[OFFEN: …]** füllt Claude in Schritt 0.3 zusammen mit dir.
-
 **Diese Datei ist die einzige Doku-Datei für den Agenten:** Arbeitsregeln, Aufbau, aktueller Stand, Festlegungen und Pläne.
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
@@ -349,35 +341,3 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
 ## 8. Geschichte (kurz)
 
 - **Etappe 0** (ab 0.0.0): Repo angelegt, Start-Datei `docs/STAND.md` übernommen.
-
----
-
-## Anhang A: Inhalt für `CLAUDE.md` (Hauptordner)
-
-```
-# CLAUDE.md – Thetadex
-
-Lies zuerst `docs/STAND.md`, bei jeder Aufgabe. Dort stehen alle Arbeitsregeln, der aktuelle Stand, die Festlegungen und die Pläne.
-Diese Datei zeigt nur dorthin, weil Claude Code von selbst nur `CLAUDE.md` im Hauptordner liest.
-```
-
-## Anhang B: Projektanweisungen für das Claude-Projekt
-
-```
-PROJEKT: Persönliche Web-App (PWA) "Thetadex". Führt meine Apps Tracking Leben und Finanzmanager zusammen und bekommt neue Reiter (ToDos, DSA, Einkauf/Essen, Besitz, Uni).
-Repo: TimMelchert/thetadex (öffentlich, GitHub Pages). Daten liegen in meinen Google Sheets, nie im Repo.
-
-WICHTIG: Alle Arbeitsregeln, der Aufbau, der aktuelle Stand, die Festlegungen und die Pläne stehen in EINER Datei: docs/STAND.md im Repo.
-Lies sie zuerst, bei jeder Aufgabe. Sie ist maßgeblich. Bei Widerspruch zu diesem Text gilt docs/STAND.md.
-
-KURZ (Einzelheiten in docs/STAND.md, Abschnitt 1):
-- Immer auf Datenschutz und Sicherheit achten (außer bei anders getroffenen Entscheidungen). Effektiv statt kompliziert. Nichts darf verloren gehen.
-- Antworte auf Deutsch in einfachen Worten. Nenne immer Dateipfad und Schrittnummer.
-- Ich arbeite nur im Browser (GitHub, Google Sheet, Apps-Script-Editor). Die Browser-Konsole ist bei mir gesperrt. Sage kurz, wo ich klicken muss.
-- Ein Schritt = ein Zweig = ein Pull Request. Nie direkt auf main. Am Ende jedes Schritts eine Prüfliste.
-- Bei jeder Änderung VERSION in js/config.js UND sw.js gemeinsam hochzählen.
-- Das Repo ist öffentlich: keine Passwörter, keine Script-Adressen, keine Namen oder persönlichen Listen im Repo.
-- Änderungen an Skript oder Sheet: Abschnitt "Von Hand zu erledigen" im Pull Request.
-- Stelle alle Rückfragen gesammelt am Ende der Antwort.
-- Meine Anmerkungen zur Anzeige sammle ich und melde sie gesammelt.
-```
