@@ -8,6 +8,7 @@ import * as platzhalter from './views/platzhalter.js';
 import * as einrichtung from './views/einrichtung.js';
 import * as info from './views/info.js';
 import * as nichtgefunden from './views/nichtgefunden.js';
+import * as doener from './views/doener.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
@@ -23,6 +24,7 @@ const ANSICHTEN = {
     info
 };
 aktiv.forEach((b) => { ANSICHTEN[b.id] = platzhalter; });
+ANSICHTEN.doener = doener;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';
@@ -61,7 +63,8 @@ function zeigeAnsicht() {
     if (bereich) container.setAttribute('data-bereich', bereich.id);
     else container.removeAttribute('data-bereich');
 
-    ansicht.render(container, { route, bereich, sichtbar, version: VERSION });
+    const teile = location.hash.replace(/^#\/?/, '').split('/').slice(1);
+    ansicht.render(container, { route, teile, bereich, sichtbar, version: VERSION });
 
     document.querySelectorAll('[data-route]').forEach((a) => {
         if (a.getAttribute('data-route') === route) a.setAttribute('aria-current', 'page');
