@@ -424,3 +424,35 @@
     .vergleich-gruppe > summary::before,
     .doener-krit-gruppe > summary::before { transition: none; }
 }
+
+/* Tracking: Felder je Gruppe in einem Raster (Handy 2 Spalten, PC 3) */
+.tracking-gruppe { border: none; margin: 12px 0 0; }
+.tracking-gruppe legend { float: left; width: 100%; padding: 0; margin: 0 0 10px; font-size: 1.05rem; font-weight: 700; }
+.tracking-raster { clear: both; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tracking-feld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.formular .tracking-feld label { margin-top: 0; overflow-wrap: anywhere; }
+.formular .tracking-feld input,
+.formular .tracking-feld select { width: 100%; }
+
+.formular .tracking-haken {
+    align-self: end;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 10px;
+    border: 1px solid var(--linie);
+    border-radius: var(--rund);
+    background: var(--hintergrund);
+    font-size: 1rem;
+    font-weight: 400;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+
+.formular .tracking-haken input { width: 22px; height: 22px; min-height: 0; margin: 0; flex: 0 0 auto; accent-color: var(--bereich); }
+
+@media (min-width: 768px) {
+    .tracking-raster { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

@@ -7,6 +7,9 @@ var BLATT_ = "Tabellenblatt1";
 var KOPFZEILE_ = 4;          // In dieser Zeile stehen die Spaltennamen
 var MAX_FELDER_ = 60;        // Höchstzahl Felder pro Eintrag
 var MAX_TEXT_ = 100;         // Höchstlänge eines Textwerts
+var BLATT_EINST_ = "Einstellungen";  // Felder des Formulars (siehe docs/PLAN-ETAPPE-2.md, Schritt 2.1)
+var EINST_KOPF_ = ["feld", "gruppe", "art", "vorgabe", "optionen", "schritt"];
+var ARTEN_ = ["haken", "zahl", "auswahl"];
 
 // --- 1. HILFSFUNKTIONEN FÜR ANTWORTEN & PASSWORT ---
 
@@ -65,6 +68,7 @@ function doPost(e) {
 
   try {
     if (data.action === "ping") return jsonOut_({ ok: true });
+    if (data.action === "einstellungen") return jsonOut_(einstellungenLesen_());
 
     if (data.action === "eintragen") {
       // Sperre: Es kann immer nur ein Eintrag gleichzeitig laufen
@@ -130,4 +134,69 @@ function eintragSpeichern_(data) {
   SpreadsheetApp.flush();
 
   return { ok: true, datum: data.datum };
+}
+
+// --- 4. EINSTELLUNGEN (Felder des Formulars) ---
+
+// Einmal im Editor ausführen: legt das Blatt "Einstellungen" an und trägt jede Spalte
+// aus der Kopfzeile von Tabellenblatt1 als Feld ein (Art "zahl"). Ein vorhandenes Blatt bleibt unverändert.
+function einrichten() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss.getSheetByName(BLATT_EINST_)) {
+    Logger.log("Blatt '" + BLATT_EINST_ + "' gibt es schon. Nichts geändert.");
+    return;
+  }
+  var daten = ss.getSheetByName(BLATT_);
+  if (!daten) throw new Error("Blatt '" + BLATT_ + "' nicht gefunden");
+  var kopf = daten.getRange(KOPFZEILE_, 1, 1, daten.getLastColumn()).getValues()[0]
+    .map(function (h) { return String(h).trim(); })
+    .filter(function (h) { return h && h !== "Datum"; });
+
+  var blatt = ss.insertSheet(BLATT_EINST_);
+  var zeilen = [EINST_KOPF_].concat(kopf.map(function (h) { return [h, "", "zahl", "", "", ""]; }));
+  blatt.getRange(1, 1, zeilen.length, EINST_KOPF_.length).setNumberFormat("@").setValues(zeilen);
+  blatt.setFrozenRows(1);
+  Logger.log("Blatt '" + BLATT_EINST_ + "' angelegt mit " + kopf.length + " Feldern.");
+}
+
+// Liefert die Felder in der Reihenfolge des Blatts. Felder, die nicht in der Kopfzeile stehen, kommen als Hinweis zurück.
+function einstellungenLesen_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var blatt = ss.getSheetByName(BLATT_EINST_);
+  if (!blatt) return { error: "blatt", message: "Blatt '" + BLATT_EINST_ + "' fehlt. Bitte im Editor einmal 'einrichten' ausführen." };
+  var daten = ss.getSheetByName(BLATT_);
+  if (!daten) return { error: "blatt", message: "Blatt '" + BLATT_ + "' nicht gefunden" };
+
+  var kopf = daten.getRange(KOPFZEILE_, 1, 1, daten.getLastColumn()).getValues()[0].map(function (h) { return String(h).trim(); });
+  var werte = blatt.getDataRange().getDisplayValues();
+  var spalten = werte[0].map(function (h) { return String(h).trim().toLowerCase(); });
+  var sp = {};
+  EINST_KOPF_.forEach(function (n) { sp[n] = spalten.indexOf(n); });
+  if (sp.feld === -1) return { error: "blatt", message: "Im Blatt '" + BLATT_EINST_ + "' fehlt die Spalte 'feld' in Zeile 1." };
+  var zelle = function (z, n) { return sp[n] === -1 ? "" : String(z[sp[n]]).trim(); };
+
+  var felder = [];
+  var fehlend = [];
+  werte.slice(1).forEach(function (z) {
+    var feld = zelle(z, "feld");
+    if (!feld || felder.length >= MAX_FELDER_) return;
+    if (kopf.indexOf(feld) === -1) { fehlend.push(feld); return; }
+    var art = zelle(z, "art").toLowerCase();
+    if (ARTEN_.indexOf(art) === -1) art = "zahl";
+    var optionen = zelle(z, "optionen").split(";").map(function (o) {
+      var t = o.trim().replace(/^'/, "");  // Hochkomma vor "-1=…" (damit Sheets keine Formel draus macht)
+      var gleich = t.indexOf("=");
+      return gleich === -1 ? { wert: t, text: t } : { wert: t.slice(0, gleich).trim(), text: t.slice(gleich + 1).trim() };
+    }).filter(function (o) { return o.wert !== ""; });
+    var schritt = Number(zelle(z, "schritt").replace(",", "."));
+    felder.push({
+      feld: feld,
+      gruppe: zelle(z, "gruppe"),
+      art: art,
+      vorgabe: zelle(z, "vorgabe"),
+      optionen: art === "auswahl" ? optionen : [],
+      schritt: isFinite(schritt) && schritt > 0 ? schritt : null
+    });
+  });
+  return { felder: felder, fehlend: fehlend };
 }
