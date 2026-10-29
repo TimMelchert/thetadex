@@ -69,7 +69,19 @@ Projektdateien im Chat (`etappe-2/`), **nie ins Repo**. Die Person fügt sie ins
   - Die Combo-Auswahl wird ein kleiner Baustein `js/ui/auswahl.js`, damit Einkauf (Etappe 4) ihn wiederverwenden kann.
 - Einrichtung „Verbindung prüfen“ nutzt für Finanzen künftig `einstellungen`.
 
-## Schritt 2.3 Finanzen: Auswertung (0.2.3 → 0.2.4)
+## Schritt 2.3 Tracking-Übersicht und Rückmeldung (0.2.3 → 0.2.4)
+
+Wünsche der Person (29.10.2026), eingeschoben vor die Finanz-Auswertung:
+- Nach dem Speichern (Tracking und Finanzen) ein kurzes Fenster mit grünem Haken und „Gespeichert“, wie in der alten Finanz-App.
+- Haken im Döner-Formular („Ausführlich bewerten“) in der Döner-Farbe.
+- Tracking bekommt einen Umschalter „Eingabe / Übersicht“. Übersicht: Auswahl des Jahres, darunter eine Tabelle
+  (Zeile = Tag, Spalte = Feld) mit farbigen Zellen ohne Zahlen. Kopf und Datum bleiben beim Scrollen stehen.
+- Sheet Tracking, Blatt `Einstellungen`: neue Spalte `farben` (G). Regeln mit `;` getrennt, die erste passende zählt:
+  `1=grün` (genau), `7-10=grün` (von bis), `<7=rot`, `>10=gelb`, `<=`, `>=`, `sonst=rot`, `skala 1-10` (rot → weiß → grün).
+  Farben: grün, hellgrün, dunkelgrün, rot, dunkelrot, gelb, blau, rosa, grau. Ohne Regel bleibt die Zelle farblos.
+- Skript: neue Aktion `tabelle` (`jahr`): alle Einträge des Jahres für die Felder aus `Einstellungen` und die Liste der Jahre. Liest nur.
+
+## Schritt 2.4 Finanzen: Auswertung (0.2.4 → 0.2.5)
 
 - Skript: `analyse` liefert die Kategorien zusätzlich allgemein: alle Spalten aus `Analyse Monate` Zeile 7 mit Endung `-Out`, `-In`
   und Anfang `Netto-` als Liste `{name, wert}` je Monat. So braucht die App keine Kategorie-Namen im Code, und neue Kategorien
@@ -87,7 +99,7 @@ Projektdateien im Chat (`etappe-2/`), **nie ins Repo**. Die Person fügt sie ins
   Farben der Kategorien: feste Reihe von Farbtönen, die hell und dunkel gut lesbar sind; Schrift und Gitter aus den Farb-Variablen in `css/base.css`.
   Chart.js kommt in `sw.js` (`HUELLE`) und wird nur im Reiter Finanzen geladen. Die Content-Security-Policy bleibt gleich.
 
-## Schritt 2.4 Nachbesserungen und Umstieg (0.2.5 …)
+## Schritt 2.5 Nachbesserungen und Umstieg (0.2.6 …)
 
 - Anmerkungen der Person aus dem Testen, gesammelt in einem oder mehreren Schritten.
 - **Tor:** Die Person nutzt etwa zwei Wochen nur Thetadex und ist zufrieden. Dann (von Hand, der Agent ändert die alten Repos nicht):

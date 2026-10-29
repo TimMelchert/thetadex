@@ -8,7 +8,7 @@ var KOPFZEILE_ = 4;          // In dieser Zeile stehen die Spaltennamen
 var MAX_FELDER_ = 60;        // Höchstzahl Felder pro Eintrag
 var MAX_TEXT_ = 100;         // Höchstlänge eines Textwerts
 var BLATT_EINST_ = "Einstellungen";  // Felder des Formulars (siehe docs/PLAN-ETAPPE-2.md, Schritt 2.1)
-var EINST_KOPF_ = ["feld", "gruppe", "art", "vorgabe", "optionen", "schritt"];
+var EINST_KOPF_ = ["feld", "gruppe", "art", "vorgabe", "optionen", "schritt", "farben"];
 var ARTEN_ = ["haken", "zahl", "auswahl"];
 
 // --- 1. HILFSFUNKTIONEN FÜR ANTWORTEN & PASSWORT ---
@@ -69,6 +69,7 @@ function doPost(e) {
   try {
     if (data.action === "ping") return jsonOut_({ ok: true });
     if (data.action === "einstellungen") return jsonOut_(einstellungenLesen_());
+    if (data.action === "tabelle") return jsonOut_(tabelleLesen_(data.jahr));
 
     if (data.action === "eintragen") {
       // Sperre: Es kann immer nur ein Eintrag gleichzeitig laufen
@@ -153,7 +154,7 @@ function einrichten() {
     .filter(function (h) { return h && h !== "Datum"; });
 
   var blatt = ss.insertSheet(BLATT_EINST_);
-  var zeilen = [EINST_KOPF_].concat(kopf.map(function (h) { return [h, "", "zahl", "", "", ""]; }));
+  var zeilen = [EINST_KOPF_].concat(kopf.map(function (h) { return [h, "", "zahl", "", "", "", ""]; }));
   blatt.getRange(1, 1, zeilen.length, EINST_KOPF_.length).setNumberFormat("@").setValues(zeilen);
   blatt.setFrozenRows(1);
   Logger.log("Blatt '" + BLATT_EINST_ + "' angelegt mit " + kopf.length + " Feldern.");
@@ -195,8 +196,55 @@ function einstellungenLesen_() {
       art: art,
       vorgabe: zelle(z, "vorgabe"),
       optionen: art === "auswahl" ? optionen : [],
-      schritt: isFinite(schritt) && schritt > 0 ? schritt : null
+      schritt: isFinite(schritt) && schritt > 0 ? schritt : null,
+      farben: zelle(z, "farben").replace(/^'/, "")
     });
   });
   return { felder: felder, fehlend: fehlend };
+}
+
+// --- 5. TABELLE (Übersicht eines Jahres) ---
+
+// Liefert alle Einträge eines Jahres für die Felder aus "Einstellungen", dazu alle Jahre mit Einträgen.
+// Werte: Zahl, Text oder null (leer). WAHR/FALSCH wird 1/0.
+function tabelleLesen_(jahrWunsch) {
+  var einst = einstellungenLesen_();
+  if (einst.error) return einst;
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BLATT_);
+  var lastCol = sheet.getLastColumn();
+  var lastRow = sheet.getLastRow();
+  var kopf = sheet.getRange(KOPFZEILE_, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h).trim(); });
+  var datumSpalte = kopf.indexOf("Datum");
+  if (datumSpalte === -1) return { error: "blatt", message: "Spalte 'Datum' nicht gefunden" };
+  var spalten = einst.felder.map(function (f) { return kopf.indexOf(f.feld); });
+
+  var daten = lastRow > KOPFZEILE_ ? sheet.getRange(KOPFZEILE_ + 1, 1, lastRow - KOPFZEILE_, lastCol).getValues() : [];
+  var jahre = {};
+  var gesucht = Number(jahrWunsch) || new Date().getFullYear();
+  var zeilen = [];
+  daten.forEach(function (z) {
+    var d = z[datumSpalte];
+    if (!(d instanceof Date)) return;
+    var j = d.getFullYear();
+    jahre[j] = true;
+    if (j !== gesucht) return;
+    var iso = Utilities.formatDate(d, Session.getScriptTimeZone(), "yyyy-MM-dd");
+    zeilen.push({
+      datum: iso,
+      werte: spalten.map(function (i) {
+        var v = z[i];
+        if (v === "" || v === null) return null;
+        if (v === true) return 1;
+        if (v === false) return 0;
+        return typeof v === "number" ? v : String(v).substring(0, MAX_TEXT_);
+      })
+    });
+  });
+  zeilen.sort(function (a, b) { return a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : 0; });
+  return {
+    jahr: gesucht,
+    jahre: Object.keys(jahre).map(Number).sort(function (a, b) { return b - a; }),
+    felder: einst.felder,
+    zeilen: zeilen
+  };
 }

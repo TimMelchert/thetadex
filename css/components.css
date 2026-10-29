@@ -209,7 +209,7 @@
 .doener-sterne { font-weight: 600; }
 
 .doener-schalter { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 10px; }
-.doener-schalter input { width: 22px; height: 22px; min-height: 0; margin: 0; }
+.doener-schalter input { width: 22px; height: 22px; min-height: 0; margin: 0; accent-color: var(--bereich); }
 .formular .doener-schalter label { margin-top: 0; font-size: 1rem; font-weight: 400; }
 
 .doener-ausfuehrlich { display: flex; flex-direction: column; gap: 8px; }
@@ -276,9 +276,9 @@
 .doener-form-knoepfe .knopf { margin-top: 0; }
 
 /* Umschalter Rangliste / Vergleich */
-.doener-ansichten { display: flex; gap: 0; margin-top: var(--abstand); border: 1px solid var(--linie); border-radius: var(--rund); overflow: hidden; width: fit-content; }
+.doener-ansichten, .ansichten { display: flex; gap: 0; margin-top: var(--abstand); border: 1px solid var(--linie); border-radius: var(--rund); overflow: hidden; width: fit-content; }
 
-.doener-ansicht {
+.doener-ansicht, .ansicht {
     min-height: 44px;
     padding: 0 18px;
     border: none;
@@ -288,7 +288,7 @@
     cursor: pointer;
 }
 
-.doener-ansicht[aria-pressed="true"] { background: var(--bereich); color: var(--schrift-auf-farbe); font-weight: 700; }
+.doener-ansicht[aria-pressed="true"], .ansicht[aria-pressed="true"] { background: var(--bereich); color: var(--schrift-auf-farbe); font-weight: 700; }
 
 /* Vergleich aller Kriterien */
 .vergleich-gruppe {
@@ -523,3 +523,57 @@
 @media (min-width: 768px) {
     .finanz-konten { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
+
+/* Tracking-Übersicht: Tabelle mit farbigen Zellen, Kopf und Datum bleiben beim Scrollen stehen */
+.tracking-jahr-zeile { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px; }
+.formular.tracking-jahr-zeile label { margin-top: 0; }
+.formular.tracking-jahr-zeile .knopf { margin-top: 0; }
+.tracking-tabelle-box { width: fit-content; max-width: 100%; overflow: auto; max-height: 70vh; margin-top: 8px; border: 1px solid var(--linie); border-radius: var(--rund); }
+.tracking-tabelle { border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }
+.tracking-tabelle th, .tracking-tabelle td { border-right: 1px solid var(--linie); border-bottom: 1px solid var(--linie); }
+.tracking-tabelle td { min-width: 22px; height: 22px; padding: 0; }
+.tracking-tabelle thead th { position: sticky; top: 0; z-index: 2; background: var(--kachel); }
+.tracking-tab-feld { vertical-align: bottom; padding: 6px 2px; font-weight: 600; }
+.tracking-tab-feld span { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; display: inline-block; }
+.tracking-tab-datum { position: sticky; left: 0; z-index: 1; padding: 0 6px; background: var(--kachel); text-align: left; font-weight: 400; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tracking-tabelle thead .tracking-tab-datum { z-index: 3; vertical-align: bottom; padding-bottom: 6px; font-weight: 600; }
+
+.zelle-gruen { background: var(--zelle-gruen); }
+.zelle-hellgruen { background: var(--zelle-hellgruen); }
+.zelle-dunkelgruen { background: var(--zelle-dunkelgruen); }
+.zelle-rot { background: var(--zelle-rot); }
+.zelle-dunkelrot { background: var(--zelle-dunkelrot); }
+.zelle-gelb { background: var(--zelle-gelb); }
+.zelle-blau { background: var(--zelle-blau); }
+.zelle-rosa { background: var(--zelle-rosa); }
+.zelle-grau { background: var(--zelle-grau); }
+
+/* Bestätigung „Gespeichert“ mit grünem Haken (js/ui/overlay.js) */
+.overlay-gespeichert {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--overlay-grund);
+    animation: overlay-ein 0.15s ease-out;
+}
+.overlay-inhalt { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.overlay-haken {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--erfolg);
+    color: var(--schrift-auf-farbe);
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.overlay-text { margin: 14px 0 0; font-size: 1.5rem; font-weight: 700; color: var(--overlay-schrift); }
+.overlay-zusatz { margin: 4px 0 0; color: var(--overlay-schrift); }
+@keyframes overlay-ein { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .overlay-gespeichert { animation: none; } }

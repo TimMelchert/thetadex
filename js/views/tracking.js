@@ -1,8 +1,11 @@
-// Reiter Tracking: ein Eintrag pro Tag. Die Felder kommen aus dem Blatt „Einstellungen“ des Tracking-Sheets
+// Reiter Tracking: ein Eintrag pro Tag, dazu eine Übersicht je Jahr als Tabelle mit farbigen Zellen.
+// Eingabe: Die Felder kommen aus dem Blatt „Einstellungen“ des Tracking-Sheets
 // und werden bei jedem Öffnen neu geladen, nie im Gerät gespeichert (sie verraten, was getrackt wird).
 
 import { el, leeren, heute } from '../ui/dom.js';
 import { api } from '../api.js';
+import { zeigeGespeichert } from '../ui/overlay.js';
+import { farbRegeln } from '../ui/farben.js';
 
 function datumText(iso) {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
@@ -53,9 +56,100 @@ function baueFeld(f, nr) {
 
 export function render(container, ctx) {
     const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
-    const inhalt = el('div', {}, [el('p', { class: 'leise', text: 'Lädt …' })]);
+    const inhalt = el('div', { attrs: { id: 'tracking-eingabe' } }, [el('p', { class: 'leise', text: 'Lädt …' })]);
+    const uebersicht = el('div', { attrs: { id: 'tracking-uebersicht', hidden: true } });
+    let uebersichtGeladen = false;
 
-    container.append(el('h1', { class: 'bereich-titel', text: ctx.bereich.titel }), inhalt, status);
+    // Umschalter Eingabe / Übersicht (wie Rangliste / Vergleich bei Döner)
+    const ansichtKnoepfe = [['Eingabe', inhalt], ['Übersicht', uebersicht]].map(([text, box], i) => {
+        const b = el('button', {
+            class: 'ansicht', text,
+            attrs: { type: 'button', 'aria-pressed': i === 0 ? 'true' : 'false', 'aria-controls': box.id },
+            on: {
+                click: () => {
+                    ansichtKnoepfe.forEach(([k, kb]) => {
+                        const an = k === b;
+                        k.setAttribute('aria-pressed', an ? 'true' : 'false');
+                        kb.hidden = !an;
+                    });
+                    status.hidden = box !== inhalt;
+                    if (box === uebersicht && !uebersichtGeladen) ladeTabelle();
+                }
+            }
+        });
+        return [b, box];
+    });
+
+    container.append(
+        el('h1', { class: 'bereich-titel', text: ctx.bereich.titel }),
+        el('div', { class: 'ansichten' }, ansichtKnoepfe.map(([b]) => b)),
+        inhalt, status, uebersicht
+    );
+
+    // --- Übersicht: ein Jahr als Tabelle, Zeile = Tag, Spalte = Feld, Farbe nach Regel aus „Einstellungen“ ---
+    async function ladeTabelle(jahr) {
+        uebersichtGeladen = true;
+        leeren(uebersicht);
+        uebersicht.append(el('p', { class: 'leise', text: 'Lädt …' }));
+        try {
+            const d = await api('tracking', 'tabelle', jahr ? { jahr } : {});
+            zeigeTabelle(d);
+        } catch (e) {
+            uebersichtGeladen = false;
+            leeren(uebersicht);
+            uebersicht.append(
+                el('p', { text: e.message }),
+                el('button', { class: 'knopf knopf-zweit', text: 'Erneut versuchen', attrs: { type: 'button' }, on: { click: () => ladeTabelle(jahr) } })
+            );
+        }
+    }
+
+    function zeigeTabelle(d) {
+        leeren(uebersicht);
+        const felder = Array.isArray(d.felder) ? d.felder : [];
+        const zeilen = Array.isArray(d.zeilen) ? d.zeilen : [];
+        const jahre = Array.isArray(d.jahre) && d.jahre.length ? d.jahre : [d.jahr];
+
+        const wahl = el('select', { attrs: { id: 'tracking-jahr' }, on: { change: () => ladeTabelle(Number(wahl.value)) } },
+            jahre.map((j) => el('option', { text: String(j), attrs: { value: String(j) } })));
+        wahl.value = String(d.jahr);
+        const neu = el('button', { class: 'knopf knopf-zweit', text: 'Neu laden', attrs: { type: 'button' }, on: { click: () => ladeTabelle(Number(wahl.value)) } });
+        uebersicht.append(el('div', { class: 'formular tracking-jahr-zeile' }, [
+            el('label', { text: 'Jahr', attrs: { for: 'tracking-jahr' } }), wahl, neu
+        ]));
+
+        if (!zeilen.length || !felder.length) {
+            uebersicht.append(el('p', { text: 'Keine Einträge in ' + d.jahr + '.' }));
+            return;
+        }
+
+        const regeln = felder.map((f) => farbRegeln(f.farben, f.optionen));
+        const kopf = el('tr', {}, [
+            el('th', { class: 'tracking-tab-datum', text: 'Datum', attrs: { scope: 'col' } }),
+            ...felder.map((f) => el('th', { class: 'tracking-tab-feld', attrs: { scope: 'col' } }, [el('span', { text: f.feld })]))
+        ]);
+        // Zahlen werden nicht gezeigt, nur Farben. Für Bildschirmleser und beim Drüberfahren steht der Wert im Titel.
+        const koerper = zeilen.map((z) => el('tr', {}, [
+            el('th', { class: 'tracking-tab-datum', text: datumText(z.datum).slice(0, 6), attrs: { scope: 'row' } }),
+            ...felder.map((f, i) => {
+                const roh = Array.isArray(z.werte) ? z.werte[i] : null;
+                const farbe = regeln[i](roh);
+                const zelle = el('td', {
+                    class: farbe && farbe.klasse ? 'zelle-' + farbe.klasse : '',
+                    attrs: { title: f.feld + ': ' + (roh == null ? '–' : roh) }
+                }, [el('span', { class: 'unsichtbar', text: roh == null ? '–' : String(roh) })]);
+                if (farbe && farbe.farbe) zelle.style.backgroundColor = farbe.farbe;
+                return zelle;
+            })
+        ]));
+
+        uebersicht.append(
+            el('p', { class: 'leise klein', text: zeilen.length + ' Einträge. Die Farben stehen im Blatt „Einstellungen“, Spalte „farben“.' }),
+            el('div', { class: 'tracking-tabelle-box', attrs: { tabindex: '0', role: 'region', 'aria-label': 'Übersicht ' + d.jahr } }, [
+                el('table', { class: 'tracking-tabelle' }, [el('thead', {}, [kopf]), el('tbody', {}, koerper)])
+            ])
+        );
+    }
 
     async function laden() {
         try {
@@ -120,7 +214,9 @@ export function render(container, ctx) {
             status.textContent = 'Speichere …';
             try {
                 const d = await api('tracking', 'eintragen', { datum: datum.value, values });
-                status.textContent = 'Gespeichert für ' + datumText(d.datum || datum.value) + '.';
+                status.textContent = '';
+                zeigeGespeichert('Gespeichert', 'für ' + datumText(d.datum || datum.value));
+                uebersichtGeladen = false; // Übersicht beim nächsten Öffnen neu laden
                 gebaut.forEach((g) => g.zuruecksetzen());
                 datumManuell = false;
                 datum.value = heute();

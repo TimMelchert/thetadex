@@ -27,6 +27,20 @@
     --knopf-schrift: #F4F2EE;
     --fokus: #1C1B19;
 
+    /* Zellfarben der Tracking-Übersicht und Erfolgs-Grün (Ausnahme, Wunsch der Person 29.10.2026, siehe STAND.md 4) */
+    --erfolg: #5FB06A;
+    --overlay-grund: rgba(28, 27, 25, 0.85);
+    --overlay-schrift: #F4F2EE;
+    --zelle-gruen: #8BCB8F;
+    --zelle-hellgruen: #C6E8C3;
+    --zelle-dunkelgruen: #3E8E47;
+    --zelle-rot: #E8908A;
+    --zelle-dunkelrot: #A63A35;
+    --zelle-gelb: #F2D46B;
+    --zelle-blau: #8FB3E0;
+    --zelle-rosa: #F2B8D2;
+    --zelle-grau: #C9C5BE;
+
     --rund: 10px;
     --abstand: 16px;
 }
@@ -41,6 +55,15 @@
         --knopf-grund: #F4F2EE;
         --knopf-schrift: #1C1B19;
         --fokus: #F4F2EE;
+        --zelle-gruen: #4E9A55;
+        --zelle-hellgruen: #8CC48A;
+        --zelle-dunkelgruen: #2C6B33;
+        --zelle-rot: #B9554F;
+        --zelle-dunkelrot: #7E2A26;
+        --zelle-gelb: #C9A93E;
+        --zelle-blau: #5A80B0;
+        --zelle-rosa: #C47FA0;
+        --zelle-grau: #6E6A64;
     }
 }
 
