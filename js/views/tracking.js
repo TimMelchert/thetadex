@@ -1,14 +1,8 @@
 // Reiter Tracking: ein Eintrag pro Tag. Die Felder kommen aus dem Blatt „Einstellungen“ des Tracking-Sheets
 // und werden bei jedem Öffnen neu geladen, nie im Gerät gespeichert (sie verraten, was getrackt wird).
 
-import { el, leeren } from '../ui/dom.js';
+import { el, leeren, heute } from '../ui/dom.js';
 import { api } from '../api.js';
-
-// Heutiges Datum in Ortszeit als JJJJ-MM-TT
-function heute() {
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-}
 
 function datumText(iso) {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');

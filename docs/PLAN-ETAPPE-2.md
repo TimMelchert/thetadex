@@ -55,8 +55,9 @@ Projektdateien im Chat (`etappe-2/`), **nie ins Repo**. Die Person fügt sie ins
   | `rueckzahlung` | Name, wie er bei den Haken steht | `Abos` oder `Wohnen` | – | Zweck, mit dem die Person zurückzahlt |
   | `eigenanteil` | – | `Abos` oder `Wohnen` | eigener fester Anteil | – |
 - Skript `apps-script/finanzen/Code.gs`:
-  - Funktion `einrichten`: legt `Einstellungen` mit Kopfzeile an. Kategorien trägt sie aus den Spaltennamen von
-    `Analyse Monate` Zeile 7 ein (alles mit Endung `-Out` oder `-In`, ohne die Endung, ohne doppelte). Vorhandenes Blatt bleibt.
+  - Funktion `einrichten`: legt `Einstellungen` nur mit Kopfzeile an. Vorhandenes Blatt bleibt.
+    (Geändert beim Bauen: Die Spaltennamen in `Analyse Monate` weichen von den Kategorien beim Buchen ab, zum Beispiel
+    Mehrzahl. Darum kommen die Kategorien aus der Tabelle zum Einfügen, genau wie in der alten App.)
   - Neue Aktion `einstellungen`: liefert Zwecke, Kategorien, Rückzahlungen, Eigenanteile.
   - `buchen` und `stats` bleiben, wie sie sind. Konten bleiben fest im Skript (Konto, Paypal, Kreditkarte, Portemonnaie, Münzglas, Pfandbons).
 - Reiter Finanzen `js/views/finanzen.js`, Umschalter „Buchen / Auswertung“ (wie „Rangliste / Vergleich“ bei Döner):
