@@ -248,8 +248,8 @@
     white-space: nowrap;
 }
 
-.doener-titel { display: flex; align-items: center; gap: 10px; }
-.doener-emoji { font-size: 2rem; line-height: 1; }
+.doener-titel, .titel-mit-emoji { display: flex; align-items: center; gap: 10px; }
+.doener-emoji, .titel-emoji { font-size: 2rem; line-height: 1; }
 
 /* Knöpfe im Döner-Reiter in der Döner-Farbe */
 [data-bereich="doener"] .knopf { background: var(--bereich); color: var(--schrift-auf-farbe); }
@@ -577,3 +577,10 @@
 .overlay-zusatz { margin: 4px 0 0; color: var(--overlay-schrift); }
 @keyframes overlay-ein { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .overlay-gespeichert { animation: none; } }
+
+/* Finanzen: Vermögen grün oder rot, Knöpfe Ausgabe rot und Einnahme grün (Wunsch der Person, 29.10.2026) */
+.finanz-gesamt-wert.finanz-plus { color: var(--plus-schrift); }
+.finanz-gesamt-wert.finanz-minus { color: var(--minus-schrift); }
+.knopf.knopf-aus { background: var(--knopf-rot); color: #FFFFFF; }
+.knopf.knopf-ein { background: var(--knopf-gruen); color: #FFFFFF; }
+input[type="date"] { cursor: pointer; }

@@ -2,7 +2,7 @@
 // Eingabe: Die Felder kommen aus dem Blatt „Einstellungen“ des Tracking-Sheets
 // und werden bei jedem Öffnen neu geladen, nie im Gerät gespeichert (sie verraten, was getrackt wird).
 
-import { el, leeren, heute } from '../ui/dom.js';
+import { el, leeren, heute, kalenderBeiKlick } from '../ui/dom.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { farbRegeln } from '../ui/farben.js';
@@ -175,10 +175,10 @@ export function render(container, ctx) {
 
         // Datum: heute, nach Mitternacht wieder heute, solange es nicht von Hand geändert wurde
         let datumManuell = false;
-        const datum = el('input', {
-            attrs: { id: 'tracking-datum', type: 'date', value: heute(), required: true },
+        const datum = kalenderBeiKlick(el('input', {
+            attrs: { id: 'tracking-datum', type: 'date', value: heute(), required: true, autocomplete: 'off' },
             on: { change: () => { datumManuell = true; } }
-        });
+        }));
         const wiederDa = () => {
             if (!datum.isConnected) { document.removeEventListener('visibilitychange', wiederDa); return; }
             if (!document.hidden && !datumManuell) datum.value = heute();

@@ -40,6 +40,10 @@
     --zelle-blau: #8FB3E0;
     --zelle-rosa: #F2B8D2;
     --zelle-grau: #C9C5BE;
+    --plus-schrift: #2E7D32;
+    --minus-schrift: #B3261E;
+    --knopf-rot: #B3261E;
+    --knopf-gruen: #2E7D32;
 
     --rund: 10px;
     --abstand: 16px;
@@ -64,6 +68,8 @@
         --zelle-blau: #5A80B0;
         --zelle-rosa: #C47FA0;
         --zelle-grau: #6E6A64;
+        --plus-schrift: #81C784;
+        --minus-schrift: #F28B82;
     }
 }
 
