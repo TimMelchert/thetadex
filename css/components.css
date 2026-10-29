@@ -85,3 +85,46 @@
 @media (min-width: 768px) {
     .update-hinweis { left: auto; bottom: var(--abstand); max-width: 420px; }
 }
+
+/* Symbol eines Reiters: SVG als Maske, Farbe = Schriftfarbe */
+.reiter-symbol {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    background-color: currentColor;
+    -webkit-mask: var(--symbol) center / contain no-repeat;
+    mask: var(--symbol) center / contain no-repeat;
+}
+
+[data-symbol="tracking"] { --symbol: url("../icons/reiter/tracking.svg"); }
+[data-symbol="finanzen"] { --symbol: url("../icons/reiter/finanzen.svg"); }
+[data-symbol="dsa"]      { --symbol: url("../icons/reiter/dsa.svg"); }
+[data-symbol="einkauf"]  { --symbol: url("../icons/reiter/einkauf.svg"); }
+[data-symbol="besitz"]   { --symbol: url("../icons/reiter/besitz.svg"); }
+[data-symbol="uni"]      { --symbol: url("../icons/reiter/uni.svg"); }
+[data-symbol="doener"]   { --symbol: url("../icons/reiter/doener.svg"); }
+
+/* Kacheln auf der Startseite */
+.kacheln {
+    list-style: none;
+    padding: 0;
+    margin: var(--abstand) 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.kachel-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 56px;
+    padding: 0 14px;
+    border-radius: var(--rund);
+    background: var(--kachel);
+    border-left: 6px solid var(--bereich);
+    color: var(--schrift);
+    text-decoration: none;
+    font-weight: 600;
+}

@@ -2,13 +2,19 @@
 
 import { VERSION, features, BEREICHE } from './config.js';
 import { el, leeren } from './ui/dom.js';
+import { istEingerichtet } from './store.js';
 import * as start from './views/start.js';
 import * as platzhalter from './views/platzhalter.js';
 import * as einrichtung from './views/einrichtung.js';
 import * as info from './views/info.js';
 import * as nichtgefunden from './views/nichtgefunden.js';
 
-const sichtbar = BEREICHE.filter((b) => features[b.id]);
+const aktiv = BEREICHE.filter((b) => features[b.id]);
+
+// Ohne Einrichtung nur die öffentlichen Reiter.
+function sichtbareBereiche() {
+    return istEingerichtet() ? aktiv : aktiv.filter((b) => b.oeffentlich);
+}
 
 // Adresse → Ansicht. Reiter ohne eigene Ansicht zeigen vorerst den Platzhalter.
 const ANSICHTEN = {
@@ -16,17 +22,24 @@ const ANSICHTEN = {
     einrichtung,
     info
 };
-sichtbar.forEach((b) => { ANSICHTEN[b.id] = platzhalter; });
+aktiv.forEach((b) => { ANSICHTEN[b.id] = platzhalter; });
 
-function baueReiter() {
+// Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
+let leisteFuer = '';
+function baueReiter(sichtbar) {
+    const schluessel = sichtbar.map((b) => b.id).join(',');
+    if (schluessel === leisteFuer) return;
+    leisteFuer = schluessel;
     const leiste = document.getElementById('reiter');
     leeren(leiste);
     sichtbar.forEach((b) => {
         leiste.append(el('a', {
             class: 'reiter-link',
-            text: b.titel,
             attrs: { href: '#/' + b.id, 'data-route': b.id, 'data-bereich': b.id }
-        }));
+        }, [
+            el('span', { class: 'reiter-symbol', attrs: { 'data-symbol': b.id, 'aria-hidden': 'true' } }),
+            el('span', { class: 'reiter-name', text: b.titel })
+        ]));
     });
 }
 
@@ -35,7 +48,11 @@ function aktuelleRoute() {
 }
 
 function zeigeAnsicht() {
-    const route = aktuelleRoute();
+    const sichtbar = sichtbareBereiche();
+    baueReiter(sichtbar);
+    let route = aktuelleRoute();
+    // Private Reiter ohne Einrichtung: zur Startseite
+    if (aktiv.some((b) => b.id === route) && !sichtbar.some((b) => b.id === route)) route = '';
     const ansicht = ANSICHTEN[route] || nichtgefunden;
     const container = document.getElementById('inhalt');
     const bereich = sichtbar.find((b) => b.id === route) || null;
@@ -44,7 +61,7 @@ function zeigeAnsicht() {
     if (bereich) container.setAttribute('data-bereich', bereich.id);
     else container.removeAttribute('data-bereich');
 
-    ansicht.render(container, { route, bereich, version: VERSION });
+    ansicht.render(container, { route, bereich, sichtbar, version: VERSION });
 
     document.querySelectorAll('[data-route]').forEach((a) => {
         if (a.getAttribute('data-route') === route) a.setAttribute('aria-current', 'page');
@@ -82,7 +99,6 @@ function beobachteUpdates(reg) {
     });
 }
 
-baueReiter();
 window.addEventListener('hashchange', zeigeAnsicht);
 zeigeAnsicht();
 
