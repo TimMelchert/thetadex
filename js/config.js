@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '0.1.1';
+export const VERSION = '0.1.3';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {
@@ -11,18 +11,20 @@ export const features = {
     dsa: true,
     einkauf: true,
     besitz: true,
-    uni: true
+    uni: true,
+    doener: true
 };
 
-// Die sechs Bereiche in der Reihenfolge der Reiterleiste.
+// Die sieben Bereiche in der Reihenfolge der Reiterleiste.
 // etappe = in welcher Etappe der Reiter Inhalt bekommt (siehe docs/STAND.md, Abschnitt 7).
 export const BEREICHE = [
     { id: 'tracking', titel: 'Tracking', etappe: 1 },
     { id: 'finanzen', titel: 'Finanzen', etappe: 1 },
-    { id: 'dsa',      titel: 'DSA',      etappe: 5 },
-    { id: 'einkauf',  titel: 'Einkauf',  etappe: 3 },
-    { id: 'besitz',   titel: 'Besitz',   etappe: 2 },
-    { id: 'uni',      titel: 'Uni',      etappe: 4 }
+    { id: 'dsa',      titel: 'DSA',      etappe: 6 },
+    { id: 'einkauf',  titel: 'Einkauf',  etappe: 4 },
+    { id: 'besitz',   titel: 'Besitz',   etappe: 3 },
+    { id: 'uni',      titel: 'Uni',      etappe: 5 },
+    { id: 'doener',   titel: 'Döner',    etappe: 2 }
 ];
 
 // Skripte, deren Adresse in der Ersteinrichtung eingetragen wird.
