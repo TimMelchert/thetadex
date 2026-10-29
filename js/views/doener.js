@@ -115,7 +115,7 @@ export function render(container, ctx) {
 
     container.append(el('h1', { class: 'bereich-titel doener-titel' }, [
         el('span', { class: 'doener-emoji', text: '🥙', attrs: { 'aria-hidden': 'true' } }),
-        el('span', { text: 'Döner-Rating Landau' })
+        el('span', { text: 'Veganes Döner-Rating Landau' })
     ]));
 
     if (!kennung) {
@@ -180,7 +180,10 @@ export function render(container, ctx) {
                         balken.style.setProperty('--anteil', String(x.w / 10));
                         const sieger = x.w === best;
                         return el('li', { class: sieger ? 'vergleich-zeile sieger' : 'vergleich-zeile' }, [
-                            el('span', { class: 'vergleich-laden', text: (sieger ? '🏆 ' : '') + x.name }),
+                            el('span', { class: 'vergleich-laden' }, [
+                                el('span', { class: 'vergleich-pokal', text: sieger ? '🏆' : '' }),
+                                el('span', { text: x.name })
+                            ]),
                             el('span', { class: 'doener-leiste', attrs: { 'aria-hidden': 'true' } }, [balken]),
                             el('span', { class: 'doener-wert', text: zahl(x.w) })
                         ]);
@@ -378,7 +381,10 @@ export function render(container, ctx) {
             await apiOeffentlich(adresse, 'bewerten', daten);
             formularLeeren();
             zeigeFormular(false);
-            status.textContent = 'Danke! Deine Bewertung ist gespeichert.';
+            const danke = 'Danke! Deine Bewertung ist gespeichert.';
+            status.textContent = danke;
+            // Nach ein paar Sekunden wieder ausblenden, wenn nichts anderes dort steht
+            setTimeout(() => { if (status.textContent === danke) status.textContent = ''; }, 6000);
             laden();
         } catch (e) {
             formMeldung.textContent = e.message;
