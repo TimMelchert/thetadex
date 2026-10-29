@@ -58,6 +58,12 @@ Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelösc
 - Umschalter „Rangliste / Vergleich“: Vergleich je Teil und je Kriterium mit allen Läden als Balken, Gewinner mit 🏆.
 - Fehler behoben: Die Seite lud beim ersten Besuch von selbst neu (Service Worker), dadurch verschwand das Formular.
 
+## Schritt 1.6 Feinschliff (0.1.8 → 0.1.9)
+
+- Überschrift „Veganes Döner-Rating Landau“. „Danke!“ verschwindet nach 6 Sekunden.
+- Vergleich: Pokal in eigener Spalte, alle Namen beginnen auf gleicher Höhe. Gruppen als Kacheln mit gelbem Balken links.
+- Aufklappbare Gruppen (Vergleich und ausführliches Bewerten) mit kleinem gelbem Dreieck.
+
 ## Prüfen am Ende der Etappe
 
 - Bewerten am Handy ohne Einrichtung (privates Fenster mit dem Link) und mit Einrichtung.

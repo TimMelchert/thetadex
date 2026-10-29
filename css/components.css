@@ -291,7 +291,13 @@
 .doener-ansicht[aria-pressed="true"] { background: var(--bereich); color: var(--schrift-auf-farbe); font-weight: 700; }
 
 /* Vergleich aller Kriterien */
-.vergleich-gruppe { margin: var(--abstand) 0; }
+.vergleich-gruppe {
+    margin: 12px 0;
+    padding: 0 14px 6px;
+    background: var(--kachel);
+    border-left: 6px solid var(--bereich);
+    border-radius: var(--rund);
+}
 
 .vergleich-gruppe > summary {
     min-height: 44px;
@@ -316,7 +322,9 @@
 }
 
 .vergleich-zeile.sieger { font-weight: 700; }
-.vergleich-laden { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vergleich-laden { display: flex; min-width: 0; }
+.vergleich-laden > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vergleich-pokal { flex: 0 0 1.5em; }
 .vergleich-zeile .doener-wert { text-align: right; }
 
 .doener-bewerten { margin-top: 12px; }
@@ -389,3 +397,30 @@
 .doener-krit-knopf[aria-expanded="true"] { background: var(--kachel); }
 
 .doener-kriterien { margin: 4px 0 0 8px; padding-left: 10px; border-left: 2px solid var(--linie); }
+
+/* Aufklappbare Gruppen: kleines gelbes Dreieck, zeigt nach unten, wenn offen */
+.vergleich-gruppe > summary,
+.doener-krit-gruppe > summary { list-style: none; gap: 10px; }
+
+.vergleich-gruppe > summary::-webkit-details-marker,
+.doener-krit-gruppe > summary::-webkit-details-marker { display: none; }
+
+.vergleich-gruppe > summary::before,
+.doener-krit-gruppe > summary::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-left: 9px solid var(--bereich);
+    transition: transform 0.15s;
+}
+
+.vergleich-gruppe[open] > summary::before,
+.doener-krit-gruppe[open] > summary::before { transform: rotate(90deg); }
+
+@media (prefers-reduced-motion: reduce) {
+    .vergleich-gruppe > summary::before,
+    .doener-krit-gruppe > summary::before { transition: none; }
+}
