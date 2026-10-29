@@ -6,7 +6,6 @@
     color-scheme: light dark;
 
     /* Bereichsfarben (gleich in hell und dunkel) */
-    --farbe-todos: #E2A23B;
     --farbe-tracking: #E07A5F;
     --farbe-finanzen: #8DB580;
     --farbe-dsa: #B5838D;
@@ -42,7 +41,6 @@
 }
 
 /* Bereichsfarbe je Reiter in --bereich */
-[data-bereich="todos"]    { --bereich: var(--farbe-todos); }
 [data-bereich="tracking"] { --bereich: var(--farbe-tracking); }
 [data-bereich="finanzen"] { --bereich: var(--farbe-finanzen); }
 [data-bereich="dsa"]      { --bereich: var(--farbe-dsa); }
