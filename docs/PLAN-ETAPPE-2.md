@@ -17,11 +17,11 @@ Grund: Sie verraten, was getrackt wird. Ohne Netz kann man ohnehin nichts senden
 Hilfe zum Ausfüllen: Die Werte der alten Apps (Felder, Zwecke, Personen) legt der Agent als Tabelle zum Kopieren in die
 Projektdateien im Chat (`etappe-2/`), **nie ins Repo**. Die Person fügt sie ins Blatt `Einstellungen` ein.
 
-## Schritt 2.0 Plan (0.1.10 → 0.2.0)
+## Schritt 2.0 Plan (0.1.10 → 0.2.1)
 
-- Dieser Plan. Sheet und Skript bleiben unverändert.
+- Dieser Plan. Sheet und Skript bleiben unverändert. Nachbesserung 0.2.1: Diagramme mit Chart.js (Entscheidung der Person, 29.10.2026).
 
-## Schritt 2.1 Tracking (0.2.0 → 0.2.1)
+## Schritt 2.1 Tracking (0.2.1 → 0.2.2)
 
 - Sheet Tracking, neues Blatt `Einstellungen`, Kopfzeile in Zeile 1:
   `feld, gruppe, art, vorgabe, optionen, schritt`
@@ -45,7 +45,7 @@ Projektdateien im Chat (`etappe-2/`), **nie ins Repo**. Die Person fügt sie ins
   dann kurze Meldung „Gespeichert für <Datum>“ und das Formular steht wieder auf den Vorgaben. Bei Fehler bleibt alles stehen.
 - Einrichtung „Verbindung prüfen“ nutzt für Tracking künftig `einstellungen` (prüft damit auch das neue Blatt).
 
-## Schritt 2.2 Finanzen: Kontostände und Buchen (0.2.1 → 0.2.2)
+## Schritt 2.2 Finanzen: Kontostände und Buchen (0.2.2 → 0.2.3)
 
 - Sheet Finanzen, neues Blatt `Einstellungen`, Kopfzeile in Zeile 1: `liste, name, kategorie, betrag, zweck`
   | `liste` | `name` | `kategorie` | `betrag` | `zweck` |
@@ -68,7 +68,7 @@ Projektdateien im Chat (`etappe-2/`), **nie ins Repo**. Die Person fügt sie ins
   - Die Combo-Auswahl wird ein kleiner Baustein `js/ui/auswahl.js`, damit Einkauf (Etappe 4) ihn wiederverwenden kann.
 - Einrichtung „Verbindung prüfen“ nutzt für Finanzen künftig `einstellungen`.
 
-## Schritt 2.3 Finanzen: Auswertung (0.2.2 → 0.2.3)
+## Schritt 2.3 Finanzen: Auswertung (0.2.3 → 0.2.4)
 
 - Skript: `analyse` liefert die Kategorien zusätzlich allgemein: alle Spalten aus `Analyse Monate` Zeile 7 mit Endung `-Out`, `-In`
   und Anfang `Netto-` als Liste `{name, wert}` je Monat. So braucht die App keine Kategorie-Namen im Code, und neue Kategorien
@@ -81,9 +81,12 @@ Projektdateien im Chat (`etappe-2/`), **nie ins Repo**. Die Person fügt sie ins
   - Jahrestabelle (Monat, Ausgaben, Einnahmen, Bilanz; Tipp auf eine Zeile wählt den Monat), am Handy als Karten.
   - Bafög: erhalten, Darlehen, Rückzahlung.
   - Knopf „Neu laden“. Die Auswertung wird beim Öffnen geladen und nach einer Buchung neu geholt.
-- Diagramme: siehe Rückfrage im Pull Request von Schritt 2.0 (Vorschlag: Balken mit CSS statt Chart.js).
+- Diagramme mit Chart.js 4.4.1 als lokale Datei `vendor/chart.umd.min.js` (Festlegung in STAND.md 4, Entscheidung der Person 29.10.2026):
+  Ringe für Ausgaben und Einnahmen, Säulen der Ausgaben netto mit gestrichelter Budget-Linie, wie bisher.
+  Farben der Kategorien: feste Reihe von Farbtönen, die hell und dunkel gut lesbar sind; Schrift und Gitter aus den Farb-Variablen in `css/base.css`.
+  Chart.js kommt in `sw.js` (`HUELLE`) und wird nur im Reiter Finanzen geladen. Die Content-Security-Policy bleibt gleich.
 
-## Schritt 2.4 Nachbesserungen und Umstieg (0.2.4 …)
+## Schritt 2.4 Nachbesserungen und Umstieg (0.2.5 …)
 
 - Anmerkungen der Person aus dem Testen, gesammelt in einem oder mehreren Schritten.
 - **Tor:** Die Person nutzt etwa zwei Wochen nur Thetadex und ist zufrieden. Dann (von Hand, der Agent ändert die alten Repos nicht):
