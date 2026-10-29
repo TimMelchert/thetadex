@@ -6,6 +6,7 @@ import { el, heute } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
 import { lesen, schreiben } from '../store.js';
 import { api } from '../api.js';
+import { zeigeGespeichert } from '../ui/overlay.js';
 
 // Konten wie im Finanz-Skript (KONTEN_). [Wert fürs Skript, Name in der Auswahl, Schlüssel in den Ständen, kurzer Name]
 const KONTEN = [
@@ -115,6 +116,7 @@ export function render(container, ctx) {
             split.checked = false;
             const art = mode === 'aus' ? 'Ausgabe' : mode === 'ein' ? 'Einnahme' : 'Umbuchung';
             status.textContent = art + ' über ' + euro(wert) + ' gespeichert.';
+            zeigeGespeichert('Gespeichert', art + ' ' + euro(wert));
         } catch (e) {
             status.textContent = 'NICHT gespeichert: ' + e.message;
         } finally {

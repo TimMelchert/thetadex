@@ -4,11 +4,11 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.2.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.2.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Laufende Etappe: **Etappe 2 „Bestehendes umziehen“**, Plan in `docs/PLAN-ETAPPE-2.md`.
-- Nächster Schritt: **2.3 Finanzen: Auswertung**.
+- Nächster Schritt: **2.4 Finanzen: Auswertung**.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -263,7 +263,8 @@ unter „Info“ die Version prüfen.
   - Finanzen: Passwort in Skripteigenschaft `APP_PIN`, Sperre nach Fehlversuchen, `LockService`, Eingabeprüfung.
   - Tracking (ab 0.2): Passwort aus `APP_PIN`, Sperre, JSON-Antworten, `LockService`, Prüfung von Datum und Feldnamen.
     Aktionen: `ping` (nur prüfen), `einstellungen` (Felder aus Blatt `Einstellungen`, ab 2.1), `eintragen` (`datum` als JJJJ-MM-TT, `values` = Spaltenname → Wert).
-    Funktion `einrichten` legt das Blatt `Einstellungen` an (Spalten `feld, gruppe, art, vorgabe, optionen, schritt`).
+    `tabelle` (`jahr`: Einträge eines Jahres und Liste der Jahre, ab 2.3).
+    Funktion `einrichten` legt das Blatt `Einstellungen` an (Spalten `feld, gruppe, art, vorgabe, optionen, schritt, farben`).
   - Finanzen: Aktionen `stats`, `analyse`, `buchen`, `einstellungen` (ab 2.2: Zwecke, Kategorien, Rückzahlungen, Eigenanteile
     aus Blatt `Einstellungen`, Spalten `liste, name, kategorie, betrag, zweck`). Funktion `einrichten` legt das Blatt an.
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
@@ -299,6 +300,9 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     Besitz `#7FA7A0`, Uni `#C9784A`, Döner `#E2A23B` (frühere Farbe von ToDos, der Reiter ist am 29.10.2026 entfallen). Kein Blau.
     Damit gibt es wieder sieben Reiter, passend zum Icon.
   - Bereichsfarben auf hellem Grund nur als Fläche oder Marke, nicht als Schriftfarbe (zu wenig Kontrast nach WCAG AA).
+  - Ausnahme (Wunsch der Person, 29.10.2026): Nach dem Speichern erscheint kurz ein Fenster mit grünem Haken (`--erfolg`).
+    Die Tracking-Übersicht färbt Zellen mit eigenen Zellfarben (`--zelle-…` in `css/base.css`, hell und dunkel) nach Regeln
+    aus dem Blatt `Einstellungen`, Spalte `farben`. Zahlen zeigt die Übersicht nicht.
   - Ausnahme (Wunsch der Person, 29.10.2026): Der Reiter Döner zeigt das Emoji 🥙 vor der Überschrift und bewertet mit 10 kleinen 🥙
     statt einer Auswahlliste. Seine Knöpfe sind in der Döner-Farbe mit dunkler Schrift (`--schrift-auf-farbe`).
 - **Wer sieht was** (Plan Version 1, 29.10.2026):
@@ -340,7 +344,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 ## 5. Technik-Merkzettel
 
 - **Hilfsmodule** vor dem Neubauen suchen und wiederverwenden. Lies die Datei, bevor du sie benutzt. Rate keine Signaturen.
-  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`), `js/ui/auswahl.js` (`auswahlFeld`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
+  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`), `js/ui/auswahl.js` (`auswahlFeld`), `js/ui/overlay.js` (`zeigeGespeichert`), `js/ui/farben.js` (`farbRegeln`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
   `js/api.js` (`api(skript, action, daten)`, `apiOeffentlich(adresse, action, daten)` ohne Passwort, `ApiFehler` mit `code`).
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
@@ -362,7 +366,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
-- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einrichtung.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie).
+- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einrichtung.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie). `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske).
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (jetzt `PLAN-ETAPPE-2.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
@@ -497,6 +501,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **Etappe 2** Bestehendes umziehen. **0.2.0–0.2.1** Schritt 2.0: Plan `docs/PLAN-ETAPPE-2.md`, Diagramme mit Chart.js.
 - **0.2.2** Schritt 2.1: Reiter Tracking, Felder aus dem Blatt `Einstellungen`, Aktion `einstellungen`.
 - **0.2.3** Schritt 2.2: Reiter Finanzen mit Kontoständen und Buchen, Zwecke und Kategorien aus dem Blatt `Einstellungen`.
+- **0.2.4** Schritt 2.3: Tracking-Übersicht (Tabelle mit farbigen Zellen je Jahr), Fenster „Gespeichert“ mit grünem Haken, Döner-Haken gelb.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
