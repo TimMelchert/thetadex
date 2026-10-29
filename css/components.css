@@ -219,3 +219,35 @@
 .doener-bewertungen li { padding: 8px 0; border-top: 1px solid var(--linie); }
 .doener-bewertungen p { margin: 2px 0; }
 .doener-sterne { font-weight: 600; }
+
+.doener-schalter { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 10px; }
+.doener-schalter input { width: 22px; height: 22px; min-height: 0; margin: 0; }
+.formular .doener-schalter label { margin-top: 0; font-size: 1rem; font-weight: 400; }
+
+.doener-ausfuehrlich { display: flex; flex-direction: column; gap: 8px; }
+
+.doener-krit-gruppe summary,
+.doener-kriterien summary {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.doener-krit-zeile {
+    display: grid;
+    grid-template-columns: 1fr 90px;
+    gap: 6px 10px;
+    align-items: center;
+    padding: 8px 0;
+    border-top: 1px solid var(--linie);
+}
+
+.formular .doener-krit-zeile label { margin-top: 0; font-size: 0.95rem; }
+.doener-krit-zeile input { grid-column: 1 / -1; }
+
+.doener-krit-titel { margin: 8px 0 4px; font-size: 0.9rem; font-weight: 700; }
+.doener-kriterien ul { list-style: none; padding: 0; margin: 0; }
+.doener-kriterien li { padding: 4px 0; border-top: none; display: flex; flex-direction: column; }
+.doener-krit-kopf { display: flex; justify-content: space-between; gap: 10px; font-variant-numeric: tabular-nums; }

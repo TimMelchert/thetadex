@@ -33,6 +33,15 @@ Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelösc
   Erfolg nur, wenn das Skript ihn bestätigt. Bei Fehler bleibt die Eingabe stehen.
 - Startwerte: Die Person trägt die bisherigen Durchschnitte als je eine Zeile pro Laden in `bewertungen` ein.
 
+## Schritt 1.3 Ausführlich nach Kriterien (0.1.5 → 0.1.6)
+
+- Neue Blätter `kriterien` (`teil, name`) und `details` (`bewertung_id, teil, kriterium, wert, begruendung`), neue Spalte `ladennote`.
+  `einrichten` legt sie an, auch in einem schon eingerichteten Sheet (fehlende Spalten kommen ans Ende).
+- Formular: Schalter „Ausführlich bewerten“. Dann je Teil (Döner, Yufka, Pommes, Laden) aufklappbar alle Kriterien,
+  Werte 1 bis 10 in halben Schritten, je eine Begründung. Der Teil-Wert ist der Durchschnitt der Kriterien.
+- Anzeige: Laden-Note in den Einzelheiten, „Alle Kriterien“ je Bewertung aufklappbar.
+- Das Skript prüft Teil und Kriterium gegen das Blatt `kriterien`, höchstens 60 Kriterien je Bewertung, Begründung je Kriterium bis 200 Zeichen.
+
 ## Prüfen am Ende der Etappe
 
 - Bewerten am Handy ohne Einrichtung (privates Fenster mit dem Link) und mit Einrichtung.
