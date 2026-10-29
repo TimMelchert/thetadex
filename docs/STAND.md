@@ -4,11 +4,11 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.2.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.2.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Laufende Etappe: **Etappe 2 „Bestehendes umziehen“**, Plan in `docs/PLAN-ETAPPE-2.md`.
-- Nächster Schritt: **2.1 Tracking** (nach Freigabe des Plans durch die Person).
+- Nächster Schritt: **2.2 Finanzen: Kontostände und Buchen**.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -262,7 +262,8 @@ unter „Info“ die Version prüfen.
 - Skript-Code beider Apps liegt als Sicherung in den Projektdateien (`apps-script-backup/`).
   - Finanzen: Passwort in Skripteigenschaft `APP_PIN`, Sperre nach Fehlversuchen, `LockService`, Eingabeprüfung.
   - Tracking (ab 0.2): Passwort aus `APP_PIN`, Sperre, JSON-Antworten, `LockService`, Prüfung von Datum und Feldnamen.
-    Aktionen: `ping` (nur prüfen), `eintragen` (`datum` als JJJJ-MM-TT, `values` = Spaltenname → Wert).
+    Aktionen: `ping` (nur prüfen), `einstellungen` (Felder aus Blatt `Einstellungen`, ab 2.1), `eintragen` (`datum` als JJJJ-MM-TT, `values` = Spaltenname → Wert).
+    Funktion `einrichten` legt das Blatt `Einstellungen` an (Spalten `feld, gruppe, art, vorgabe, optionen, schritt`).
   - Finanzen: Aktionen `stats`, `analyse`, `buchen`.
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
@@ -360,7 +361,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
-- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einrichtung.js`, `info.js`, `nichtgefunden.js`, `doener.js`.
+- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einrichtung.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske).
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (jetzt `PLAN-ETAPPE-2.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
@@ -493,6 +494,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.1.6** Schritt 1.3: ausführliche Bewertung nach Kriterien (Blatt `kriterien`, `details`), Laden-Note (Service, Gemütlichkeit).
 - **0.1.10** Etappe 1 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-1.md` gelöscht.
 - **Etappe 2** Bestehendes umziehen. **0.2.0–0.2.1** Schritt 2.0: Plan `docs/PLAN-ETAPPE-2.md`, Diagramme mit Chart.js.
+- **0.2.2** Schritt 2.1: Reiter Tracking, Felder aus dem Blatt `Einstellungen`, Aktion `einstellungen`.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
