@@ -9,6 +9,7 @@ import * as einrichtung from './views/einrichtung.js';
 import * as info from './views/info.js';
 import * as nichtgefunden from './views/nichtgefunden.js';
 import * as doener from './views/doener.js';
+import * as tracking from './views/tracking.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
@@ -25,6 +26,7 @@ const ANSICHTEN = {
 };
 aktiv.forEach((b) => { ANSICHTEN[b.id] = platzhalter; });
 ANSICHTEN.doener = doener;
+ANSICHTEN.tracking = tracking;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';
