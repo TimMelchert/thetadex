@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.1.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.1.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Laufende Etappe: **Etappe 0 „Start“** ist fertig. Plan Version 1 steht in 7.2.
@@ -20,7 +20,7 @@ Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegu
 ### 1.1 Worum es geht und mit wem du arbeitest
 
 Eine persönliche App (PWA) für eine Person, am Handy und am PC. Einkauf und Uni teilt sie mit ihrer Partnerin oder ihrem Partner, DSA-Bögen per Link. Sie führt zwei bestehende Apps zusammen
-(Tracking Leben, Finanzmanager) und bekommt neue Reiter: DSA-Charakterbögen, Einkaufsliste und Essensideen,
+(Tracking Leben, Finanzmanager) und bekommt neue Reiter: Döner-Bewertung (öffentlich), DSA-Charakterbögen, Einkaufsliste und Essensideen,
 Besitz-Inventar, Uni mit Stundenplan. Die Daten liegen in Google Sheets der Person, nicht im Repo.
 
 Die Person, die mit dir arbeitet, ist keine Programmiererin und kein Programmierer. Sie arbeitet im Browser
@@ -192,10 +192,11 @@ unter „Info“ die Version prüfen.
   Repo-Bereiche: `index.html`, `manifest.webmanifest`, `sw.js`, `docs/`, `icons/`,
   `css/` (base, layout, components), `js/` (app, config, api, store, ui/, views/), `vendor/` (lokale Bibliotheken, siehe 4),
   `apps-script/` (Code aller Google-Skripte, je Bereich ein Ordner).
-- Hash-Routing: `#/tracking`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einrichtung`, `#/info`.
-  Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“).
+- Hash-Routing: `#/tracking`, `#/doener`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einrichtung`, `#/info`.
+  Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“)
+  und `#/doener/<skript>` (öffentliche Döner-Bewertung, siehe 4 „Döner öffentlich“).
   Unbekannte Adressen zeigen „Seite nicht gefunden“.
-- Startseite: Kacheln aller Reiter. Eine Heute-Übersicht (Termine, Einkauf) kommt in Etappe 6.
+- Startseite: Kacheln aller Reiter. Eine Heute-Übersicht (Termine, Einkauf) kommt in Etappe 7.
 - Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter sichtbar sind, steht in `js/config.js` (`features`).
 - PC und Handy: Reiterleiste unten am Handy, Seitenleiste links am PC (ab 768 px). Einrichtung und Info in der Kopfzeile.
 - Name, Icon und Farben: Thetadex, siehe Abschnitt 4 „Erscheinungsbild“. Die Kopfzeile zeigt immer das vollständige Icon (Karte mit Reitern).
@@ -209,11 +210,12 @@ unter „Info“ die Version prüfen.
   | --- | --- | --- |
   | Tracking | `apps-script/tracking/Code.gs` | bestehendes Tracking-Sheet, Blatt `Tabellenblatt1`, Kopfzeile 4 |
   | Finanzen | `apps-script/finanzen/Code.gs` | bestehendes Finanz-Sheet (Blätter je Konto, `Übersicht`, `Analyse Monate`), Daten ab Zeile 8 |
-  | Besitz | `apps-script/leben/Code.gs` | neues Sheet „Leben“ (ab Etappe 2), nur die Person |
-  | Einkauf und Essen, Uni | `apps-script/gemeinsam/Code.gs` | neues Sheet „Gemeinsam“ (ab Etappe 3), Person und Partner*in |
-  | DSA und DnD | `apps-script/dsa/Code.gs` | neues Sheet „DSA“ (ab Etappe 5), Bögen per Link lesbar |
-- **Warum drei neue Sheets statt einem:** Die Sheets sind nach „Wer darf das sehen?“ getrennt. Ein Fehler in der Freigabe
-  eines Bogens oder im Partner-Zugang kann so nie Besitz, Tracking oder Finanzen verraten.
+  | Besitz | `apps-script/leben/Code.gs` | neues Sheet „Leben“ (ab Etappe 3), nur die Person |
+  | Einkauf und Essen, Uni | `apps-script/gemeinsam/Code.gs` | neues Sheet „Gemeinsam“ (ab Etappe 4), Person und Partner*in |
+  | DSA und DnD | `apps-script/dsa/Code.gs` | neues Sheet „DSA“ (ab Etappe 6), Bögen per Link lesbar |
+  | Döner | `apps-script/doener/Code.gs` | bestehendes Döner-Sheet (ab Etappe 2), öffentlich lesen und bewerten |
+- **Warum eigene Sheets statt einem:** Die Sheets sind nach „Wer darf das sehen?“ getrennt. Ein Fehler in der Freigabe
+  eines Bogens, beim öffentlichen Bewerten oder im Partner-Zugang kann so nie Besitz, Tracking oder Finanzen verraten.
 - Aufruf per POST mit JSON als `text/plain`. Das Feld für die Aktion heißt `action` (wie im bestehenden Finanz-Skript).
   Antwort immer JSON: bei Erfolg die Daten, bei Fehler `{error: "<code>", message: "<Text für die Person>"}`.
   Die App zeigt Erfolg nur, wenn eine Antwort ohne `error` kam.
@@ -224,7 +226,8 @@ unter „Info“ die Version prüfen.
   Damit darf die Partnerin oder der Partner Einkauf und Essen lesen und ändern und Uni nur lesen. Alle anderen Skripte kennen `PARTNER_PIN` nicht.
   Die Aktion `ping` antwortet mit der Rolle (`person` oder `partner`). Die App zeigt danach nur die erlaubten Reiter.
   Die Rechte prüft immer das Skript, nie nur die App.
-- **Ohne Passwort** gibt nur das Skript `dsa` etwas heraus: genau einen Bogen, nur lesen, nur mit seinem Freigabe-Schlüssel.
+- **Ohne Passwort** gibt nur das Skript `dsa` etwas heraus (genau einen Bogen, nur lesen, nur mit seinem Freigabe-Schlüssel)
+  und das Skript `doener` (Bewertungen lesen und neue anlegen, nie ändern oder löschen).
 - **Sonst liefert ohne Passwort kein Skript Daten.** `doGet` antwortet nur mit dem Namen der Schnittstelle.
 - **Freigabe der Sheets:** Die Sheets werden mit niemandem geteilt. Wer ein Sheet bearbeiten darf, sieht auch das Skript
   und seine Skripteigenschaften (also die Passwörter). Geteilt wird nur über die App.
@@ -245,6 +248,7 @@ unter „Info“ die Version prüfen.
   | --- | --- |
   | Leben | `besitz`, `orte` |
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, `semester`, `stundenplan`, `termine`, `module` |
+  | Döner | bestehendes Blatt, Spalten nach der Kopfzeile der Person (kommt in Etappe 2) |
   | DSA | `boegen` (ein Bogen je Zeile, Abschnitte als JSON-Spalten), `verlauf` (Geld, AP, AsP, LeP), `gegenstaende`, `bilder` |
 
 ---
@@ -287,8 +291,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - Grundfarben: Kohle `#1C1B19` (Icon-Grund, Hintergrund dunkel), Graphit `#2A2826` (Kacheln dunkel), Karte im Icon `#3A3734`,
     Hintergrund hell `#FAF9F7`, Kacheln hell `#EEECE8`, Schrift auf Karte `#F4F2EE`.
   - Bereichsfarben: Tracking `#E07A5F`, Finanzen `#8DB580`, DSA `#B5838D`, Einkauf/Essen `#D4B483`,
-    Besitz `#7FA7A0`, Uni `#C9784A`. Kein Blau. Der Reiter ToDos ist entfallen (29.10.2026), seine Farbe `#E2A23B` ist frei.
-    Das Icon behält seine sieben Register-Reiter, bis die Person etwas anderes sagt.
+    Besitz `#7FA7A0`, Uni `#C9784A`, Döner `#E2A23B` (frühere Farbe von ToDos, der Reiter ist am 29.10.2026 entfallen). Kein Blau.
+    Damit gibt es wieder sieben Reiter, passend zum Icon.
   - Bereichsfarben auf hellem Grund nur als Fläche oder Marke, nicht als Schriftfarbe (zu wenig Kontrast nach WCAG AA).
 - **Wer sieht was** (Plan Version 1, 29.10.2026):
   | Bereich | Person | Partner*in | Ohne Passwort |
@@ -297,6 +301,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   | Einkauf und Essen | lesen, ändern | lesen, ändern | – |
   | Uni (alle Zeiten, auch Arbeit und Zug) | lesen, ändern | nur lesen | – |
   | DSA-Bögen | lesen, ändern | – | ein Bogen per Link, nur lesen |
+  | Döner | lesen, bewerten; löschen nur im Sheet | wie alle | lesen, bewerten |
 - **Besitz: keine Daten öffentlich** (Wunsch der Person). Wie bei Finanzen: keine Gegenstände, Orte oder Preise im Repo.
 - **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
   Der Link enthält die Skript-Kennung und diesen Schlüssel, nie das Passwort. „Neuen Link erstellen“ macht alte Links ungültig.
@@ -305,16 +310,22 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Abhaken geht auch ohne Netz. Abgehakte Einträge werden gesendet, sobald wieder Netz da ist. Bis dahin zeigt die App „noch nicht gesendet“.
   Grund: Wunsch der Person, im Laden gibt es oft kein Netz. Abhaken ist harmlos: doppelt senden schadet nicht.
 - **Im Gerät (Ergänzung zu 5):** die Einkaufsliste und die noch nicht gesendeten Haken. Sonst nichts Neues.
+- **Döner öffentlich** (Wunsch der Person, 29.10.2026): Jede Person mit dem Link kann Bewertungen sehen und abgeben.
+  Ändern und Löschen geht nur im Sheet durch die Person. Es werden keine Namen von Bewertenden gespeichert.
+  Schutz gegen Spam und böse Eingaben im Skript: feste Längen (Laden 60, Begründung 300 Zeichen), Sterne nur ganze Zahlen 1 bis 10,
+  Datum setzt das Skript selbst, `bereinigeText_`, höchstens 30 neue Bewertungen pro Stunde für alle zusammen (`CacheService`),
+  ein verstecktes Lockfeld gegen Bots, `LockService`. Die App zeigt alle Texte nur mit `textContent`.
+  Ehrlich: Apps Script kennt keine IP-Adressen. Wer es darauf anlegt, kann im Rahmen der Grenze Unsinn eintragen. Die Person löscht das dann im Sheet.
 - **Bilder** (DSA): Die App verkleinert ein Bild vor dem Senden (etwa 400 px, JPEG) und schickt es als Text.
   Es liegt im Blatt `bilder`. Keine fremden Bild-Server, die Content-Security-Policy bleibt gleich (`img-src 'self' data:`).
 - **Würfel** (W4, W6, W20) rechnen nur im Gerät mit `crypto.getRandomValues`. Nichts wird gespeichert.
 - **Stundenplan am Handy:** im Hochformat eine Liste je Tag, im Querformat automatisch die Wochenansicht.
   Eine Web-App kann das Drehen nicht erzwingen, darum ein Hinweis „Für die Woche das Handy drehen“.
-- **Kontowecker (Etappe 6):** Eine Web-App kann keine SMS lesen, E-Mail geht beim Kontowecker nicht. Die Person nutzt Android.
+- **Kontowecker (Etappe 7):** Eine Web-App kann keine SMS lesen, E-Mail geht beim Kontowecker nicht. Die Person nutzt Android.
   Vorschlag: Eine Automations-App auf dem Handy (zum Beispiel MacroDroid) schickt jede Kontowecker-SMS direkt an das Finanz-Skript (Aktion `sms`).
   Dafür gibt es einen eigenen Schlüssel `SMS_SCHLUESSEL` in den Skripteigenschaften. Er darf nur eine SMS als „offen“ ablegen,
   nichts lesen und nichts buchen. Liegt der Schlüssel in der fremden App, verrät er also keine Daten.
-  Die App zeigt die offenen SMS im Reiter Finanzen, die Person ordnet sie zu. Die Wahl der Automations-App trifft die Person in Etappe 6.
+  Die App zeigt die offenen SMS im Reiter Finanzen, die Person ordnet sie zu. Die Wahl der Automations-App trifft die Person in Etappe 7.
 
 ---
 
@@ -383,7 +394,7 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
 ### 7.2 Plan Version 1 (29.10.2026)
 
 Jede Etappe bekommt vor dem ersten Schritt ihren eigenen Plan `docs/PLAN-ETAPPE-<n>.md` mit Schritten, genauen Spalten und Prüflisten.
-Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.2026). Die Reihenfolge der Etappen 2 bis 5 kann die Person tauschen.
+Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.2026). Die Reihenfolge der Etappen 2 bis 6 kann die Person tauschen.
 
 - **Etappe 1 „Bestehendes umziehen“ (0.1.x)**
   - Ziel: Tracking und Finanzen funktionieren in Thetadex „wie bisher“.
@@ -391,12 +402,19 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     Reiter Tracking (Eingabe wie bisher); Reiter Finanzen (Übersicht, Buchen, Auswertung mit Chart.js aus `vendor/`).
   - Datenschutz: Finanz- und Tracking-Daten nur nach Passwort, nichts im Gerät außer den letzten Kontoständen (5).
   - **Tor:** Die Person ist mit der neuen App zufrieden (Richtwert 2 Wochen). Dann alte Bereitstellungen archivieren und alte Repos löschen.
-- **Etappe 2 „Besitz“ (0.2.x)**
+- **Etappe 2 „Döner Landau“ (0.2.x)**
+  - Ziel: öffentlicher Reiter mit dem bestehenden Döner-Sheet und eigenem Skript `doener`. Ohne Passwort, aber getrennt von allem anderen.
+  - Bewerten: Laden aus einer Auswahl der bisherigen Läden oder neu als Freitext, Sterne 1 bis 10, Begründung freiwillig, Datum automatisch.
+  - Anzeige: Balken-Grafik aller Läden mit ihrem aktuellen Rating (Durchschnitt aller Bewertungen) und der Zahl der Bewertungen.
+    Antippen eines Ladens zeigt alle Begründungen mit Sternen und Datum. Die Balken baut die App selbst mit CSS, ohne Bibliothek.
+  - Teilen: Link `#/doener/<skript>` ohne Einrichtung. Für dich steht der Reiter normal in der Reiterleiste.
+  - Datenschutz: Nur Laden, Sterne, Begründung und Datum. Keine Namen, keine Geräte-Kennung.
+- **Etappe 3 „Besitz“ (0.3.x)**
   - Ziel: neues Sheet „Leben“ mit Skript `leben` (nur die Person).
   - Besitz: Tabelle aller Sachen mit Ort und Anzahl, bei neuen Sachen Kaufpreis und Kaufdatum. Hinzufügen, ändern, weich löschen.
     Suche und Filter nach Ort. Am PC als Tabelle, am Handy als Karten (1.5).
   - Datenschutz: nur mit Passwort; nichts davon im Gerät speichern.
-- **Etappe 3 „Einkauf und Essen“ (0.3.x)**
+- **Etappe 4 „Einkauf und Essen“ (0.4.x)**
   - Ziel: neues Sheet „Gemeinsam“ mit Skript `gemeinsam`, Partner-Zugang (`PARTNER_PIN`).
   - Lebensmittel-Liste mit Suchleiste: suchen, antippen, Anzahl wählen → steht auf der Einkaufsliste.
   - Gerichte eintragen (mit Zutaten und Mengen). Ein Gericht wählen → seine Zutaten werden vorgeschlagen und angehakt.
@@ -405,7 +423,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Einkaufsliste: abhaken, auch ohne Netz (Ausnahme in 4); abgehakte Einträge verschwinden.
   - Gemeinsam nutzen: Die Partnerin oder der Partner richtet Thetadex auf dem eigenen Handy mit dem Skript `gemeinsam` und `PARTNER_PIN` ein.
     Die Liste lädt beim Öffnen und beim Ziehen nach unten neu (kein Live-Abgleich).
-- **Etappe 4 „Uni“ (0.4.x)**, im Sheet „Gemeinsam“
+- **Etappe 5 „Uni“ (0.5.x)**, im Sheet „Gemeinsam“
   - Semester auswählen, je Semester ein Stundenplan (Tag, von, bis, Veranstaltung, Ort, Art).
   - Zusätzlich eintragen: Arbeitszeiten (Stunden je Woche und Monat werden berechnet) und Zugfahrten.
   - Kalender mit Vorlesungen, Prüfungen, Urlaub, Semesterferien, Arbeit und Zug. Jede Art hat ihre eigene Farbe.
@@ -414,7 +432,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     (Monatsraster, Woche, Tage zählen, Schriftfarbe auf Farbfläche) werden vereinfacht übernommen.
   - Master-Übersicht: welche Module erledigt sind, welche noch fehlen, wann und welche Prüfung dazu gehört.
   - Partner*in sieht Uni mit allen Zeiten, nur lesend (Rechte in 4).
-- **Etappe 5 „DSA und DnD“ (0.5.x)**
+- **Etappe 6 „DSA und DnD“ (0.6.x)**
   - Ziel: neues Sheet „DSA“ mit Skript `dsa`. Vier Bögen (drei DSA, ein DnD), jeder einzeln wählbar, alle Daten in der App bearbeitbar.
   - Bogen zeigt: Kopf (Name, GP-Basis, Rasse, Kultur, Profession, Geschlecht, Alter, Größe, Gewicht, Haar- und Augenfarbe, Bild,
     Stand, Titel, Sozialstatus, Herkunft); Vor- und Nachteile; Eigenschaften und Basiswerte (MU, KL, IN, FF, GE, KO, KK zusätzlich
@@ -426,7 +444,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Würfel W4, W6, W20.
   - Die Eigenschaften sind eine Liste aus Kürzel, Name und Wert. So passt auch der DnD-Bogen (STR, DEX …) ohne Sonderbau.
   - Teilen per Link ohne Passwort, nur lesen (4 „DSA teilen“).
-- **Etappe 6 „Ausbau“ (optional)**
+- **Etappe 7 „Ausbau“ (optional)**
   - Startseite mit Heute-Übersicht (heutige Termine, Einkaufsliste).
   - Kontowecker automatisch auslesen (Vorschlag in 4), danach im Reiter Finanzen eine Übersicht „Noch zuordnen“.
 
@@ -445,3 +463,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.0.2** Schritt 0.2: Tracking-Skript auf Finanz-Stand, ein Passwort für alle Skripte, neue Bereitstellungen, „Verbindung prüfen“ in der Einrichtung.
 - **0.1.0** Schritt 0.3: Plan Version 1 (7.2), Rechte je Bereich, drei neue Sheets geplant. Etappe 0 fertig.
 - **0.1.1** Antworten auf die Rückfragen: Reiter ToDos entfällt, Uni-Kalender nach Vorbild AktionsDeck, Vorrat, Kontowecker per SMS-Weiterleitung.
+- **0.1.2** Neuer öffentlicher Reiter Döner Landau als Etappe 2, die übrigen Etappen rücken eins nach hinten.

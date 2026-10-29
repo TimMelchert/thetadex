@@ -12,6 +12,7 @@
     --farbe-einkauf: #D4B483;
     --farbe-besitz: #7FA7A0;
     --farbe-uni: #C9784A;
+    --farbe-doener: #E2A23B;
 
     /* Hell */
     --hintergrund: #FAF9F7;
@@ -47,6 +48,7 @@
 [data-bereich="einkauf"]  { --bereich: var(--farbe-einkauf); }
 [data-bereich="besitz"]   { --bereich: var(--farbe-besitz); }
 [data-bereich="uni"]      { --bereich: var(--farbe-uni); }
+[data-bereich="doener"]   { --bereich: var(--farbe-doener); }
 
 *, *::before, *::after { box-sizing: border-box; }
 
