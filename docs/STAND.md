@@ -98,8 +98,6 @@ Es gibt mehrere Skripte, jedes an sein eigenes Sheet gebunden (Abschnitt 2.2).
 Du kannst die Skripte nicht ausführen und die Sheets nicht ändern. Das macht die Person von Hand. Darum gilt:
 
 - Ändere `.gs`-Dateien im Repo nur, wenn der Schritt es verlangt.
-- **Ausnahme Finanzen:** Das Finanz-Skript ist nicht im Repo. Änderungen daran gibst du als ganze Datei in die Projektdateien
-  im Chat (`finanzen-skript/Code.gs`) und nennst sie im Pull Request nur als „Finanz-Skript: neue Fassung in den Projektdateien“.
 - Die Skripte suchen Spalten über ihre Namen in einer Kopfzeile. Neue Spalten im Sheet müssen **vor** dem Skript da sein.
   Bestehende Blätter und Spaltennamen nie umbenennen (1.2, Punkt 4).
 - Beim Schreiben ins Sheet werden Texte mit `bereinigeText_` geschützt (Zeilenumbrüche weg, Länge begrenzt,
@@ -208,7 +206,7 @@ unter „Info“ die Version prüfen.
   | Bereich | Skript | Sheet |
   | --- | --- | --- |
   | Tracking | `apps-script/tracking/Code.gs` | bestehendes Tracking-Sheet, Blatt `Tabellenblatt1`, Kopfzeile 4 |
-  | Finanzen | nicht im Repo (siehe Abschnitt 4) | bestehendes Finanz-Sheet (Aufbau nur in der privaten Sicherung beschrieben) |
+  | Finanzen | `apps-script/finanzen/Code.gs` | bestehendes Finanz-Sheet (Blätter je Konto, `Übersicht`, `Analyse Monate`), Daten ab Zeile 8 |
   | Alle neuen Reiter | `apps-script/leben/*.gs` | neues Sheet, ein Blatt je Reiter (ab Etappe 2) |
 - Aufruf per POST mit JSON als `text/plain`. Das Feld für die Aktion heißt `action` (wie im bestehenden Finanz-Skript).
   Antwort immer JSON: bei Erfolg die Daten, bei Fehler `{error: "<code>", message: "<Text für die Person>"}`.
@@ -239,7 +237,7 @@ unter „Info“ die Version prüfen.
 
 - Zwei alte Apps laufen weiter: Repos `TimMelchert/Tracking-Leben` und `TimMelchert/App-Finazen-Tabelle` (öffentlich, GitHub Pages).
 - Skript-Code beider Apps liegt als Sicherung in den Projektdateien (`apps-script-backup/`).
-  - Finanzen: Passwort in Skripteigenschaft `APP_PIN`, Sperre nach Fehlversuchen, `LockService`, Eingabeprüfung. Bleibt privat (Abschnitt 4).
+  - Finanzen: Passwort in Skripteigenschaft `APP_PIN`, Sperre nach Fehlversuchen, `LockService`, Eingabeprüfung.
   - Tracking: PIN stand im Code (in der Sicherung durch `HIER_PASSWORT` ersetzt), keine Sperre, Antwort als Text, kein `LockService`.
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
@@ -256,10 +254,9 @@ unter „Info“ die Version prüfen.
 Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von den Grundsätzen (1.2) stehen hier mit Grund.
 
 - **Repo öffentlich** auf GitHub Pages, damit keine Kosten entstehen. Deshalb gelten die Regeln „Script-Adressen“ und „Persönliches“ in 1.5.
-- **Finanzen: nichts öffentlich** (Wunsch der Person, 29.10.2026). Das Finanz-Skript liegt nicht im öffentlichen Repo,
-  sondern nur als Sicherung bei der Person [OFFEN: privates Zweit-Repo oder Google Drive]. Im öffentlichen Code des Finanz-Reiters
-  stehen keine Konten, Kategorien, Blattnamen oder Hinweise auf einzelne Geldquellen. All das liefert das Finanz-Skript
-  nach der Anmeldung (Aktion `einstellungen`). Der Reiter im Repo ist nur eine allgemeine Hülle.
+- **Finanzen: keine Finanzdaten öffentlich** (Wunsch der Person, 29.10.2026). Das Finanz-Skript darf ins Repo, weil es keine Daten,
+  Beträge oder Geheimnisse enthält. Beträge, Kontostände, Buchungen und Namen erscheinen nie im Repo, auch nicht in Kommentaren,
+  Beispielen oder Pull-Request-Texten.
 - **Daten bleiben in den bestehenden Sheets.** Kein Export oder Import. Die neue App spricht dieselben Sheets an.
 - **Jedes Skript bekommt beim Umzug eine neue Bereitstellung** (neue Adresse). Die alten Bereitstellungen werden erst nach dem Umstieg archiviert.
 - **Chart.js** (Finanz-Auswertung) als lokale Datei in `vendor/`, feste Version 4.4.1, statt aus dem Internet. Grund: keine fremden Server.
@@ -303,7 +300,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/views/`: `start.js`, `platzhalter.js` (Reiter ohne Inhalt), `einrichtung.js`, `info.js`, `nichtgefunden.js`.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple).
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan.
-- `apps-script/tracking/Code.gs`: Tracking-Skript (ohne PIN). Das Finanz-Skript ist bewusst nicht im Repo (Abschnitt 4).
+- `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften).
 
 ---
 
@@ -316,7 +313,7 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
 - **0.0 Sichern (Person, ohne Pull Request)**
   - Beide Sheets kopieren (Datei → Kopie erstellen). Kopien bleiben im Google Drive.
   - Neues öffentliches Repo anlegen, `docs/STAND.md` und `CLAUDE.md` hineinkopieren.
-  - Tracking-Skript (ohne PIN) kommt per Pull Request ins Repo, das Finanz-Skript bleibt privat. Icons kommen mit Schritt 0.1.
+  - Beide Skripte kommen per Pull Request ins Repo (Tracking ohne PIN). Icons kommen mit Schritt 0.1.
   - Alte Repos als ZIP herunterladen (Code → Download ZIP).
 - **0.1 Grundstruktur im Repo** (Version 0.0.0 → 0.0.1)
   - Leeres App-Gerüst nach 2.1: `index.html` mit Content-Security-Policy, `manifest.webmanifest`, `sw.js` mit `HUELLE`,
@@ -329,7 +326,6 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
   - Tracking-Skript auf den Stand des Finanz-Skripts bringen: Passwort aus `APP_PIN`, `pruefePin_` mit Sperre, `doGet`,
     JSON-Antworten, `LockService`, `bereinigeText_` bzw. Prüfung der Werte gegen die Spaltennamen.
   - Finanz-Skript nur prüfen; ändern nur, was für die neue App nötig ist (z. B. Aktion `einstellungen`).
-    Die geänderte Fassung kommt als Datei in die Projektdateien im Chat, nicht ins Repo.
   - Ergebnis im Pull Request: Liste „übernommen / angepasst / entfernt“ und Abschnitt „Von Hand zu erledigen“
     (neues Passwort in beiden Skripten als `APP_PIN`, Skript einfügen, **neue Bereitstellung** je Skript, Adressen in der App eintragen).
   - Die alten Apps laufen mit den alten Bereitstellungen weiter. Achtung: Die alte Tracking-App sendet die alte PIN;
