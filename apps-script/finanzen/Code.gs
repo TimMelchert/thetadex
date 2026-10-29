@@ -261,7 +261,7 @@ function getAnalyseData() {
 
 // Summe aller Einnahmen mit Kategorie Abos/Wohnen im Blatt "Konto",
 // sortiert nach Monat und Zweck. Daraus entstehen in der Seite die grünen Haken.
-// Aufbau: { "2026-10": { "internet wg sarah|wohnen": 12.5, ... }, ... }
+// Aufbau: { "2026-10": { "<zweck>|wohnen": 12.5, ... }, ... }
 function getRueckzahlungen_() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Konto");
   var out = {};
