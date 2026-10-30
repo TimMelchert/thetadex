@@ -4,13 +4,13 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.4.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.4.10** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
-- Etappe 4 „Einkauf und Essen“ läuft, Plan in `docs/PLAN-ETAPPE-4.md`.
-- Nächster Schritt: Schritt 4.6 (Abschluss der Etappe 4).
+- Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
+- Nächster Schritt: Etappe 5 „Uni“, zuerst der Plan `docs/PLAN-ETAPPE-5.md` (Schritt 5.0).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -251,7 +251,7 @@ unter „Info“ die Version prüfen.
   | Sheet | Blätter |
   | --- | --- |
   | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026) |
-  | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, `semester`, `stundenplan`, `termine`, `module` |
+  | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `stundenplan`, `termine`, `module` |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
   | DSA | `boegen` (ein Bogen je Zeile, Abschnitte als JSON-Spalten), `verlauf` (Geld, AP, AsP, LeP), `gegenstaende`, `bilder` |
@@ -286,7 +286,7 @@ unter „Info“ die Version prüfen.
   Anzahl 0 ist ausgeblendet (außer mit Zubehör, Haken „Auch Sachen mit Anzahl 0 zeigen“). Spalte `ausgeliehen_an` mit Filter.
   Ab 0.4.2: Spalte `ausgeliehen_anzahl` (wie viele Stück ausgeliehen sind, leer = alle); die Übersicht zeigt keine Balken mehr.
   Unterreiter „Liste“ und „Übersicht“ (Sachen, Stück, ausgeliehen; je Kategorie, je Ort, an wen). Auswahlfelder öffnen die Liste beim Tipp ins Feld.
-- Etappe 4 (läuft): Sheet „Gemeinsam“ mit Skript `gemeinsam` (4.1): Blätter `lebensmittel`, `einkaufsliste`, `gerichte`, `zutaten`, `vorrat`.
+- Etappe 4 (fertig): Sheet „Gemeinsam“ mit Skript `gemeinsam` (4.1): Blätter `lebensmittel`, `einkaufsliste`, `gerichte`, `zutaten`, `vorrat`.
   Zwei Passwörter (`APP_PIN` = Rolle `person`, `PARTNER_PIN` = Rolle `partner`, mindestens 12 Zeichen); das Skript prüft je Aktion, was die Rolle darf.
   Aktionen: `ping` (mit Rolle), `alles`, `lebensmittel_speichern`, `lebensmittel_loeschen`, `auf_liste`, `liste_aendern`, `abhaken` (erhöht gepflegten Vorrat),
   `gericht_speichern`, `gericht_loeschen`, `vorrat_speichern`, `vorrat_loeschen`. Funktion `einrichten`.
@@ -301,7 +301,7 @@ unter „Info“ die Version prüfen.
   (Gruppe „Einzeln“ für alles ohne Gericht, „Gericht von der Liste nehmen“).
   Vorrat (4.4, freiwillig): im Formular des Lebensmittels „Zuhause“ mit je Ort einer Zeile (Ort, Menge ab 0, ×, „+ Ort“).
   Hinweis „zuhause: 2 Keller, 1 Kühlschrank“ auf der Einkaufsliste, bei Lebensmitteln und bei Zutaten. Zutaten mit genug Vorrat sind nicht angehakt.
-  Haken „Nur was zuhause ist (nach Ort)“ bei Lebensmitteln. Abhaken erhöht gepflegten Vorrat (macht das Skript).
+  Haken „Vorrat“ bei Lebensmitteln: nur was zuhause ist, nach Ort. Abhaken erhöht gepflegten Vorrat (macht das Skript).
   Nachbesserung 0.4.9 (Wunsch der Person): bei Lebensmitteln Haken „Vorrat“ rechts neben der Suche, „+ Neues Lebensmittel“ und „Neu laden“
   gleich unter der Suche; im Gericht-Formular „+ Neues Lebensmittel“ mit Name, Abteilung und Einheit, kommt gleich als Zutat dazu.
   Gemeinsam nutzen (4.5): Reiter erscheinen nach eingetragenen Script-Adressen. „Verbindung prüfen“ zeigt bei `gemeinsam`, ob als Hauptperson oder Partner*in angemeldet.
@@ -369,10 +369,33 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
   Der Link enthält die Skript-Kennung und diesen Schlüssel, nie das Passwort. „Neuen Link erstellen“ macht alte Links ungültig.
   Die geteilte Ansicht zeigt den ganzen Bogen, aber keine Knöpfe zum Ändern. Grund: Bögen sollen ohne Passwort an andere gehen.
+- **Einkauf, Sheet „Gemeinsam“** (Etappe 4). Alle Blätter haben zusätzlich `id, erstellt_am, geaendert_am, geloescht`; Löschen ist weich.
+  | Blatt | Spalten (Grenzen) |
+  | --- | --- |
+  | `lebensmittel` | `name` (Pflicht, 60, kein zweites Mal gleich), `abteilung` (40), `einheit` (20), `notiz` (200) |
+  | `einkaufsliste` | `lebensmittel_id`, `anzahl` (0,5 bis 9999, halbe erlaubt), `gericht_id` (leer = einzeln), `notiz` (100), `abgehakt_am` (setzt das Skript) |
+  | `gerichte` | `name` (Pflicht, 60), `notiz` (300), `link` (nur `https://`, 300) |
+  | `zutaten` | `gericht_id`, `lebensmittel_id`, `menge` (wie `anzahl`); höchstens 50 je Gericht |
+  | `vorrat` | `lebensmittel_id`, `ort` (Pflicht, 40), `menge` (0 bis 9999); eine Zeile je Lebensmittel und Ort, keine Zeile = nicht gepflegt |
+  - Zwei Passwörter: `APP_PIN` (Rolle `person`) und `PARTNER_PIN` (Rolle `partner`, mindestens 12 Zeichen, anders als `APP_PIN`), gemeinsame Sperre
+    nach 5 Fehlversuchen. Das Skript prüft je Aktion, was die Rolle darf (`ERLAUBT_`); in Einkauf dürfen beide alles. `PARTNER_PIN` kennt nur `gemeinsam`.
+    Passwort ändern: neues `PARTNER_PIN` in den Skripteigenschaften, das alte gilt sofort nicht mehr.
+  - `auf_liste` zählt zusammen, wenn dasselbe Lebensmittel für dasselbe Gericht (oder einzeln) schon offen draufsteht. Höchstens 100 Einträge je Anfrage.
+  - **Abhaken erhöht den Vorrat** (Entscheidung der Person, 30.10.2026), wenn er gepflegt ist, an dem Ort mit der größten Menge. Doppelt abhaken schadet nicht.
+  - **Zutaten mit genug Vorrat** sind bei einem Gericht nicht angehakt (Entscheidung der Person, 30.10.2026).
+  - Ein Lebensmittel löschen nimmt es auch von der offenen Liste, aus Gerichten und aus dem Vorrat. Ein Gericht löschen lässt die Lebensmittel stehen.
+  - Abteilungen sortiert A–Z, ohne Abteilung zuletzt (eine feste Laden-Reihenfolge kann später kommen). Kein „Ziehen nach unten“:
+    Die Daten laden beim Öffnen, beim Zurückkehren in die App und mit „Neu laden“. Kein Knopf „Zufälliges Gericht“ (Entscheidung der Person).
+  - Abgehakte bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird; erst dann gehen sie ans Skript (Wunsch der Person, 30.10.2026).
+  - Datenschutz: keine Preise, Läden oder Gesundheitsdaten. Über die Partnerin oder den Partner wird nichts gespeichert, auch nicht, wer etwas eingetragen hat.
+    Das Sheet „Gemeinsam“ wird mit niemandem geteilt. Keine Lebensmittel, Gerichte oder Namen im Repo.
+- **Reiter nach Script-Adressen** (Entscheidung der Person, 30.10.2026): Ein Reiter erscheint nur mit der Adresse seines Skripts (siehe 2.1).
+  Die App speichert keine Rolle; die Rechte prüft immer das Skript.
 - **Ausnahme von „Keine Offline-Schreibzugriffe“ (1.5), nur Einkaufsliste:** Die Liste liegt zusätzlich im Gerät.
   Abhaken geht auch ohne Netz. Abgehakte Einträge werden gesendet, sobald wieder Netz da ist. Bis dahin zeigt die App „noch nicht gesendet“.
   Grund: Wunsch der Person, im Laden gibt es oft kein Netz. Abhaken ist harmlos: doppelt senden schadet nicht.
-- **Im Gerät (Ergänzung zu 5):** die Einkaufsliste und die noch nicht gesendeten Haken; bei Besuchern die Kennung des
+- **Im Gerät (Ergänzung zu 5):** die Einkaufsliste (`thetadex_einkaufsliste`), abgehakte vor „Einkauf fertig“ (`thetadex_einkauf_haken`)
+  und die noch nicht gesendeten Haken (`thetadex_einkauf_offen`); bei Besuchern die Kennung des
   geteilten Döner-Skripts (`thetadex_oeffentlich`). Sonst nichts Neues.
 - **Döner öffentlich** (Wunsch der Person, 29.10.2026): Jede Person mit dem Link kann Bewertungen sehen und abgeben.
   Ändern und Löschen geht nur im Sheet durch die Person. Es werden keine Namen von Bewertenden gespeichert.
@@ -427,7 +450,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile.
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-4.md`).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und später Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`).
@@ -516,15 +539,12 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Reiter Besitz mit Unterreitern „Liste“ und „Übersicht“: Liste je Ort (PC Tabelle mit Strich je Sache, Handy Karten), Suche,
     Filter nach Ort, Kategorie und ausgeliehen, Sortieren am PC, Zubehör aufklappbar, Bild je Sache aus Google Drive.
   - Datenschutz: nur mit Passwort; die Liste nur im Arbeitsspeicher, nichts davon im Gerät. Bilder bleiben privat im Drive der Person.
-- **Etappe 4 „Einkauf und Essen“ (0.4.x)** – läuft, Plan mit Schritten 4.0 bis 4.6 in `docs/PLAN-ETAPPE-4.md`.
-  - Ziel: neues Sheet „Gemeinsam“ mit Skript `gemeinsam`, Partner-Zugang (`PARTNER_PIN`).
-  - Lebensmittel-Liste mit Suchleiste: suchen, antippen, Anzahl wählen → steht auf der Einkaufsliste.
-  - Gerichte eintragen (mit Zutaten und Mengen). Ein Gericht wählen → seine Zutaten werden vorgeschlagen und angehakt.
-  - Vorrat (freiwillig): eine Liste, was gerade zuhause ist, mit Menge und Ort (Schrank, Kühlschrank).
-    Auf der Einkaufsliste und bei Gerichten steht dann dabei „zuhause: 2, Kühlschrank“. Wird die Liste nicht gepflegt, fehlt der Hinweis einfach.
-  - Einkaufsliste: abhaken, auch ohne Netz (Ausnahme in 4); abgehakte Einträge verschwinden.
-  - Gemeinsam nutzen: Die Partnerin oder der Partner richtet Thetadex auf dem eigenen Handy mit dem Skript `gemeinsam` und `PARTNER_PIN` ein.
-    Die Liste lädt beim Öffnen, beim Zurückkehren in die App und mit „Neu laden“ neu (kein Live-Abgleich, kein „Ziehen nach unten“, Entscheidung 30.10.2026).
+- **Etappe 4 „Einkauf und Essen“ (0.4.x)** – fertig (30.10.2026), Plan eingearbeitet (2.3, 3.1 und 4).
+  - Gebaut: neues Sheet „Gemeinsam“ mit Skript `gemeinsam` und zweitem Passwort `PARTNER_PIN` für die Partnerin oder den Partner.
+  - Reiter Einkauf mit Unterreitern „Einkaufsliste“ (nach Abteilung oder nach Gericht, abhaken auch ohne Netz, „Einkauf fertig“),
+    „Lebensmittel“ (Suche, ankreuzen, zusammen auf die Liste, Vorrat je Ort) und „Gerichte“ (Zutaten mit Menge, Zutaten mit genug Vorrat nicht angehakt).
+  - Reiter erscheinen nach eingetragenen Script-Adressen; so sieht die Partnerin oder der Partner nur Einkauf, Uni und Döner.
+  - Datenschutz: nur mit Passwort; im Gerät nur die Einkaufsliste und die noch nicht gesendeten Haken. Über die Partnerin oder den Partner wird nichts gespeichert.
 - **Etappe 5 „Uni“ (0.5.x)**, im Sheet „Gemeinsam“
   - Semester auswählen, je Semester ein Stundenplan (Tag, von, bis, Veranstaltung, Ort, Art).
   - Zusätzlich eintragen: Arbeitszeiten (Stunden je Woche und Monat werden berechnet) und Zugfahrten.
@@ -600,6 +620,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.4.7** Schritt 4.4: Vorrat je Ort am Lebensmittel, Hinweis „zuhause“, Zutaten mit genug Vorrat nicht angehakt, Filter „Nur was zuhause ist“.
 - **0.4.8** Schritt 4.5: Reiter nach eingetragenen Script-Adressen (DSA-Platzhalter verschwindet), Rolle bei „Verbindung prüfen“.
 - **0.4.9** Nachbesserung: Haken „Vorrat“ neben der Suche, Knöpfe unter der Suche, neues Lebensmittel im Gericht mit Abteilung und Einheit.
+- **0.4.10** Etappe 4 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-4.md` gelöscht.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
