@@ -72,14 +72,16 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
 - Jede Eingabe wird geprüft (Art, Länge, erlaubte Werte, vorhandene ids) und mit `bereinigeText_` geschützt. Schreiben mit `LockService`.
 - Das ganze Skript kommt in Schritt 4.1 auf einmal, damit die Person `Code.gs` möglichst nur einmal einfügen muss.
 
-## Schritt 4.0 Plan (0.3.9 → 0.4.1)
+## Schritt 4.0 Plan (0.3.9 → 0.4.2)
 
 - Dieser Plan. Sheet und Skript bleiben unverändert.
 - 0.4.1: Antworten der Person eingearbeitet (30.10.2026): Vorrat als eigenes Blatt mit mehreren Orten; kein „Ziehen nach unten“;
   Abhaken erhöht den Vorrat, Zutaten mit genug Vorrat sind nicht angehakt; Abteilungen erst einmal A–Z; Reiter nach Script-Adressen;
   kein Knopf „Zufälliges Gericht“; zusätzliche Ansicht der Einkaufsliste nach Gericht.
+- 0.4.2: Wunsch der Person für Besitz, im selben Pull Request (30.10.2026): ausgeliehene Anzahl (neue Spalte `ausgeliehen_anzahl` im Sheet „Leben“),
+  Balken in der Besitz-Übersicht entfernt. Das ist die einzige Änderung an Sheet und Skript in Schritt 4.0.
 
-## Schritt 4.1 Sheet „Gemeinsam“, Skript `gemeinsam`, Lebensmittel und Einkaufsliste (0.4.1 → 0.4.2)
+## Schritt 4.1 Sheet „Gemeinsam“, Skript `gemeinsam`, Lebensmittel und Einkaufsliste (0.4.2 → 0.4.3)
 
 - Skript wie oben. `js/config.js`: `SKRIPTE` bekommt `gemeinsam` (Titel „Einkauf und Uni“, Test `ping`).
 - Neue Ansicht `js/views/einkauf.js` statt Platzhalter.
@@ -97,7 +99,7 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
   In diesem Schritt geht Abhaken nur mit Netz (wie alles andere).
 - Neu laden: beim Öffnen, mit Knopf „Neu laden“ und von selbst, wenn man in die App zurückkehrt (kein „Ziehen nach unten“, Entscheidung der Person 30.10.2026).
 
-## Schritt 4.2 Einkaufsliste ohne Netz (0.4.2 → 0.4.3)
+## Schritt 4.2 Einkaufsliste ohne Netz (0.4.3 → 0.4.4)
 
 - Die offene Einkaufsliste liegt zusätzlich im Gerät (`thetadex_einkaufsliste`). Ohne Netz zeigt die App diese Fassung mit dem Hinweis „Stand von <Uhrzeit>“.
 - Abhaken geht immer. Der Haken landet zuerst im Gerät (`thetadex_einkauf_offen`), der Eintrag verschwindet sofort.
@@ -106,7 +108,7 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
 - Alles andere (Lebensmittel anlegen, auf die Liste setzen, Gerichte) braucht weiter Netz und sagt das klar.
 - „Abmelden“ löscht beides mit.
 
-## Schritt 4.3 Gerichte (0.4.3 → 0.4.4)
+## Schritt 4.3 Gerichte (0.4.4 → 0.4.5)
 
 - Unterreiter Gerichte: Liste aller Gerichte mit Suche. „+ Gericht“ öffnet das Formular: Name, Notiz, Link, Zutaten.
   Eine Zutat fügt man mit derselben Suche wie bei Lebensmitteln hinzu (neue Lebensmittel lassen sich dort gleich anlegen), dazu die Menge.
@@ -117,7 +119,7 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
   Ein Knopf je Gericht „Gericht von der Liste nehmen“ entfernt alle seine noch offenen Zutaten.
 - Ändern und Löschen eines Gerichts löscht nie die Lebensmittel.
 
-## Schritt 4.4 Vorrat (0.4.4 → 0.4.5)
+## Schritt 4.4 Vorrat (0.4.5 → 0.4.6)
 
 - Freiwillig. Am Lebensmittel ein Bereich „Zuhause“: je Ort eine Zeile mit Menge (− +) und Ort (Auswahl mit Freitext), „+ Ort“ fügt einen weiteren hinzu.
   Kein Ort = wird nicht gepflegt.
@@ -128,7 +130,7 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
 - **Zutaten mit genug Vorrat** (Entscheidung der Person, 30.10.2026): Bei einem Gericht ist eine Zutat, von der zuhause mindestens die Menge da ist, schon **nicht** angehakt.
 - Unterreiter Lebensmittel bekommt den Haken „Nur was zuhause ist“, dann nach Ort gruppiert. So dient die Liste auch als Vorrat-Übersicht.
 
-## Schritt 4.5 Gemeinsam nutzen (0.4.5 → 0.4.6)
+## Schritt 4.5 Gemeinsam nutzen (0.4.6 → 0.4.7)
 
 - **Welche Reiter jemand sieht, folgt aus den eingetragenen Script-Adressen:** Tracking nur mit Adresse `tracking`, Finanzen mit `finanzen`,
   Besitz mit `leben`, Einkauf (und später Uni) mit `gemeinsam`. Döner ist immer da. So sieht die Partnerin oder der Partner nur Einkauf und Döner,
@@ -139,7 +141,7 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
   Einstellungen → Passwort = `PARTNER_PIN`, nur die Adresse `gemeinsam` eintragen. Weitergeben am besten persönlich, nicht im Chat.
 - Passwort ändern: neues `PARTNER_PIN` in den Skripteigenschaften eintragen. Das alte gilt sofort nicht mehr (ohne neue Bereitstellung).
 
-## Schritt 4.6 Abschluss (0.4.6 …)
+## Schritt 4.6 Abschluss (0.4.7 …)
 
 - Anmerkungen der Person nach dem Testen, dann Etappe 4 abschließen: Plan in STAND.md einarbeiten, diese Datei löschen.
 

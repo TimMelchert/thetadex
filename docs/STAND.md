@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.4.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.4.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
@@ -282,6 +282,7 @@ unter „Info“ die Version prüfen.
   Bild (3.5): Spalte `bild` (Drive-Datei-Kennung), Aktion `bild` (nur Bilder, die bei einer Sache stehen), Ordner „Thetadex Besitz“.
   Nachbesserungen (3.6): Tipp auf eine Sache zeigt erst ihre Daten mit Bild, „Bearbeiten“ öffnet das Formular; Formular schließt nach dem Speichern.
   Anzahl 0 ist ausgeblendet (außer mit Zubehör, Haken „Auch Sachen mit Anzahl 0 zeigen“). Spalte `ausgeliehen_an` mit Filter.
+  Ab 0.4.2: Spalte `ausgeliehen_anzahl` (wie viele Stück ausgeliehen sind, leer = alle); die Übersicht zeigt keine Balken mehr.
   Unterreiter „Liste“ und „Übersicht“ (Sachen, Stück, ausgeliehen; je Kategorie, je Ort, an wen). Auswahlfelder öffnen die Liste beim Tipp ins Feld.
 
 ### 3.2 Offen
@@ -336,8 +337,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Besitz: keine Daten öffentlich** (Wunsch der Person). Wie bei Finanzen: keine Gegenstände, Orte oder Preise im Repo.
   Auch die Namen bei „Ausgeliehen an“ stehen nur im Sheet „Leben“, nie im Repo, in Beispielen oder Pull-Request-Texten.
 - **Besitz, Blatt `besitz` im Sheet „Leben“** (Etappe 3): Spalten `id, name, kategorie, ort, anzahl, kaufpreis, kaufdatum, notiz,
-  erstellt_am, geaendert_am, geloescht, gehoert_zu, bild, ausgeliehen_an`. Pflicht: Name (80), Kategorie (40), Ort (60), Anzahl (0 bis 9999).
-  Freiwillig: Kaufpreis (bis 1.000.000 €), Kaufdatum (nicht in der Zukunft), Notiz (300), Ausgeliehen an (60). `einrichten` ergänzt fehlende Spalten am Ende.
+  erstellt_am, geaendert_am, geloescht, gehoert_zu, bild, ausgeliehen_an, ausgeliehen_anzahl`. Pflicht: Name (80), Kategorie (40), Ort (60), Anzahl (0 bis 9999).
+  Freiwillig: Kaufpreis (bis 1.000.000 €), Kaufdatum (nicht in der Zukunft), Notiz (300), Ausgeliehen an (60), davon ausgeliehen (ganze Zahl 1 bis Anzahl, leer = alle, nur mit „Ausgeliehen an“). `einrichten` ergänzt fehlende Spalten am Ende.
   Orte und Kategorien haben kein eigenes Blatt: Die Auswahl entsteht aus der Liste, Umbenennen im Sheet mit „Suchen und ersetzen“.
   Keine Summe der Kaufpreise (Wunsch der Person). Ändern schickt `geaendert_am` mit; ist die Zeile inzwischen anders, speichert das Skript nicht.
   Löschen ist weich (`geloescht = TRUE`, im Sheet zurückholbar); Zubehör einer gelöschten Hauptsache bleibt als eigene Sache.
@@ -567,6 +568,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.3.9** Etappe 3 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-3.md` gelöscht. Dazu: Startseite mit Logo neben dem Namen, beides größer.
 - **Etappe 4** Einkauf und Essen. **0.4.0** Schritt 4.0: Plan `docs/PLAN-ETAPPE-4.md` (Sheet „Gemeinsam“, Skript `gemeinsam` mit `PARTNER_PIN`, Lebensmittel, Einkaufsliste offline, Gerichte, Vorrat).
 - **0.4.1** Antworten zum Plan: Vorrat als eigenes Blatt mit mehreren Orten, Abhaken erhöht den Vorrat, Einkaufsliste auch nach Gericht, Reiter nach Script-Adressen.
+- **0.4.2** Wunsch der Person zu Besitz: ausgeliehene Anzahl (Spalte `ausgeliehen_anzahl`), Balken in der Übersicht entfernt.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

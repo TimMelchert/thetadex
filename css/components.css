@@ -759,7 +759,5 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .besitz-zaehlung thead th { font-size: 0.8rem; color: var(--schrift-leise); font-weight: 600; }
 .besitz-zaehlung .zahl { text-align: right; font-variant-numeric: tabular-nums; width: 4.5em; }
 .besitz-zaehlung .besitz-oeffnen { min-height: 32px; }
-.besitz-balken-spalte { width: 32%; }
-.besitz-balken { display: block; height: 10px; border-radius: 5px; background: var(--bereich); }
 .besitz-uebersicht .besitz-hinweis { margin-top: var(--abstand); }
 .besitz-lade:empty { display: none; }

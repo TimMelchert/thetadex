@@ -40,6 +40,10 @@ const datumText = (t) => (/^\d{4}-\d{2}-\d{2}$/.test(t) ? t.slice(8, 10) + '.' +
 const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
 const klein = (t) => String(t == null ? '' : t).toLocaleLowerCase('de');
 const verliehen = (s) => String(s.ausgeliehen_an || '').trim();
+// Wie viele Stück ausgeliehen sind: die eingetragene Zahl, sonst alle (0 = nicht ausgeliehen)
+const leihStueck = (s) => (verliehen(s) ? (s.ausgeliehen_anzahl || s.anzahl) : 0);
+// „2 an Name“, wenn nur ein Teil ausgeliehen ist, sonst „an Name“
+const leihText = (s) => (s.ausgeliehen_anzahl && s.ausgeliehen_anzahl < s.anzahl ? s.ausgeliehen_anzahl + ' ' : '') + 'an ' + verliehen(s);
 
 // Vergleich nach der gewählten Spalte; leere Werte immer ans Ende, bei Gleichstand nach Name
 function nachSpalte(a, b) {
@@ -66,6 +70,7 @@ export function render(container, ctx) {
     const preis = el('input', { attrs: { id: 'besitz-preis', type: 'number', inputmode: 'decimal', min: '0', step: '0.01', placeholder: 'freiwillig' } });
     const datum = kalenderBeiKlick(el('input', { attrs: { id: 'besitz-datum', type: 'date', max: heute(), autocomplete: 'off' } }));
     const ausgeliehen = auswahlFeld({ id: 'besitz-ausgeliehen', maxlength: 60, placeholder: 'Name, leer = nicht ausgeliehen' });
+    const leihAnzahl = el('input', { attrs: { id: 'besitz-leih-anzahl', type: 'number', inputmode: 'numeric', min: '1', max: '9999', step: '1', placeholder: 'leer = alle' } });
     const notiz = el('textarea', { attrs: { id: 'besitz-notiz', maxlength: 300, rows: 2, placeholder: 'freiwillig' } });
     // Gehört zu: Auswahl der Hauptsachen. Wer selbst Zubehör hat, kann nicht Zubehör werden (nur eine Ebene).
     const gehoert = el('select', { attrs: { id: 'besitz-gehoert' }, on: { change: () => hauptGewaehlt() } });
@@ -140,6 +145,7 @@ export function render(container, ctx) {
             kaufdatum: datum.value,
             notiz: notiz.value.trim(),
             ausgeliehen_an: ausgeliehen.feld.value.trim(),
+            ausgeliehen_anzahl: '',
             gehoert_zu: gehoert.value
         };
         // Bild: neu gewählt geht als Text mit, sonst Link oder das bisherige Bild (leer = kein Bild)
@@ -157,6 +163,17 @@ export function render(container, ctx) {
             status.textContent = 'Anzahl bitte als ganze Zahl von 0 bis 9999.';
             anzahl.focus();
             return;
+        }
+        // Ausgeliehene Anzahl zählt nur, wenn „Ausgeliehen an“ ausgefüllt ist
+        const leih = leihAnzahl.value.trim();
+        if (werte.ausgeliehen_an && leih !== '') {
+            const l = Number(leih);
+            if (!Number.isInteger(l) || l < 1 || l > n) {
+                status.textContent = 'Ausgeliehen bitte als ganze Zahl von 1 bis ' + n + ' (oder leer = alle).';
+                leihAnzahl.focus();
+                return;
+            }
+            werte.ausgeliehen_anzahl = l;
         }
         if (werte.kaufpreis !== '' && !(Number(werte.kaufpreis) >= 0)) {
             status.textContent = 'Bitte einen gültigen Kaufpreis eingeben oder das Feld leer lassen.';
@@ -209,6 +226,7 @@ export function render(container, ctx) {
         el('label', { text: 'Kaufpreis (€)', attrs: { for: 'besitz-preis' } }), preis,
         el('label', { text: 'Kaufdatum', attrs: { for: 'besitz-datum' } }), datum,
         el('label', { text: 'Ausgeliehen an', attrs: { for: 'besitz-ausgeliehen' } }), ausgeliehen.box,
+        el('label', { text: 'Davon ausgeliehen (Stück)', attrs: { for: 'besitz-leih-anzahl' } }), leihAnzahl,
         el('label', { text: 'Notiz', attrs: { for: 'besitz-notiz' } }), notiz,
         el('label', { text: 'Gehört zu (Zubehör von)', attrs: { for: 'besitz-gehoert' } }), gehoert, gehoertHinweis,
         el('label', { text: 'Bild (freiwillig): wählen oder aufnehmen', attrs: { for: 'besitz-bild' } }), bildDatei,
@@ -226,6 +244,7 @@ export function render(container, ctx) {
         datum.value = '';
         notiz.value = '';
         ausgeliehen.feld.value = '';
+        leihAnzahl.value = '';
         setzeBild({ id: '', daten: null });
     }
 
@@ -312,6 +331,7 @@ export function render(container, ctx) {
             datum.value = sache.kaufdatum || '';
             notiz.value = sache.notiz || '';
             ausgeliehen.feld.value = verliehen(sache);
+            leihAnzahl.value = sache.ausgeliehen_anzahl ? String(sache.ausgeliehen_anzahl) : '';
             setzeBild({ id: sache.bild || '', daten: null });
         } else if (warBearbeiten) {
             // Vom Ändern zurück: keine Werte der geänderten Sache stehen lassen
@@ -342,7 +362,7 @@ export function render(container, ctx) {
             ['Anzahl', String(s.anzahl)],
             ['Kaufpreis', s.kaufpreis == null ? '' : euro(s.kaufpreis)],
             ['Kaufdatum', datumText(s.kaufdatum)],
-            ['Ausgeliehen an', verliehen(s)],
+            ['Ausgeliehen', verliehen(s) ? leihText(s) : ''],
             ['Gehört zu', haupt ? haupt.name : ''],
             ['Zubehör', zubehoer.map((z) => z.name + (z.anzahl > 1 ? ' (' + z.anzahl + ')' : '')).join(', ')],
             ['Notiz', s.notiz]
@@ -505,7 +525,7 @@ export function render(container, ctx) {
         const merkmale = [
             eintrag && eintrag.kinder.length ? aufklapper(eintrag) : null,
             s.bild ? el('span', { class: 'besitz-hat-bild', text: '📷', attrs: { title: 'hat ein Bild', role: 'img', 'aria-label': 'hat ein Bild' } }) : null,
-            verliehen(s) ? el('span', { class: 'besitz-verliehen', text: '🤝 an ' + verliehen(s) }) : null
+            verliehen(s) ? el('span', { class: 'besitz-verliehen', text: '🤝 ' + leihText(s) }) : null
         ].filter(Boolean);
         return el('tr', {
             class: klasse,
@@ -572,22 +592,22 @@ export function render(container, ctx) {
             zaehlung('Je Kategorie', da, (s) => s.kategorie, (w) => { katFilter.value = w; }),
             zaehlung('Je Ort', da, (s) => s.ort, (w) => { ortFilter.value = w; })
         );
-        if (leihen.length) uebersichtBox.append(zaehlung('Ausgeliehen an', leihen, verliehen, (w) => { leihFilter.value = 'an:' + w; }));
-        uebersichtBox.append(el('p', { class: 'leise besitz-hinweis', text: 'Gezählt sind alle Sachen mit Anzahl über 0, Zubehör eingeschlossen. Der Balken zeigt, wie viele Sachen es im Vergleich zur größten Gruppe sind. Tipp auf eine Zeile zeigt diese Sachen in der Liste.' }));
+        if (leihen.length) uebersichtBox.append(zaehlung('Ausgeliehen an', leihen, verliehen, (w) => { leihFilter.value = 'an:' + w; }, leihStueck));
+        uebersichtBox.append(el('p', { class: 'leise besitz-hinweis', text: 'Gezählt sind alle Sachen mit Anzahl über 0, Zubehör eingeschlossen. Bei „Ausgeliehen an“ zählen nur die ausgeliehenen Stück. Tipp auf eine Zeile zeigt diese Sachen in der Liste.' }));
     }
 
-    // Eine Tabelle: Gruppe, Sachen, Stück und ein Balken. Tipp auf eine Zeile öffnet die Liste mit diesem Filter.
-    function zaehlung(titel, liste, schluessel, filtern) {
+    // Eine Tabelle: Gruppe, Sachen und Stück. Tipp auf eine Zeile öffnet die Liste mit diesem Filter.
+    // stueckVon = was als Stück zählt (sonst die Anzahl)
+    function zaehlung(titel, liste, schluessel, filtern, stueckVon = (s) => s.anzahl) {
         const gruppen = new Map();
         liste.forEach((s) => {
             const k = schluessel(s);
             const g = gruppen.get(k) || { sachen: 0, stueck: 0 };
             g.sachen += 1;
-            g.stueck += s.anzahl;
+            g.stueck += stueckVon(s);
             gruppen.set(k, g);
         });
         const reihe = [...gruppen.entries()].sort((a, b) => b[1].sachen - a[1].sachen || vergleiche(a[0], b[0]));
-        const meiste = reihe.length ? reihe[0][1].sachen : 1;
         const zeigeGefiltert = (w) => {
             suche.value = '';
             ortFilter.value = '';
@@ -602,19 +622,15 @@ export function render(container, ctx) {
                 el('thead', {}, [el('tr', {}, [
                     el('th', { text: titel.replace(/^Je /, ''), attrs: { scope: 'col' } }),
                     el('th', { class: 'zahl', text: 'Sachen', attrs: { scope: 'col' } }),
-                    el('th', { class: 'zahl', text: 'Stück', attrs: { scope: 'col' } }),
-                    el('th', { class: 'besitz-balken-spalte', attrs: { scope: 'col', 'aria-hidden': 'true' } })
+                    el('th', { class: 'zahl', text: 'Stück', attrs: { scope: 'col' } })
                 ])]),
                 el('tbody', {}, reihe.map(([name, g]) => {
-                    const balken = el('span', { class: 'besitz-balken' });
-                    balken.style.width = Math.max(4, Math.round((g.sachen / meiste) * 100)) + '%';
                     return el('tr', { class: 'besitz-zeile', on: { click: (ev) => { if (!ev.target.closest('button')) zeigeGefiltert(name); } } }, [
                         el('th', { attrs: { scope: 'row' } }, [
                             el('button', { class: 'besitz-oeffnen', text: name, attrs: { type: 'button', 'aria-label': name + ': in der Liste zeigen' }, on: { click: () => zeigeGefiltert(name) } })
                         ]),
                         el('td', { class: 'zahl', text: String(g.sachen) }),
-                        el('td', { class: 'zahl', text: String(g.stueck) }),
-                        el('td', { class: 'besitz-balken-spalte', attrs: { 'aria-hidden': 'true' } }, [balken])
+                        el('td', { class: 'zahl', text: String(g.stueck) })
                     ]);
                 }))
             ])
