@@ -2,7 +2,7 @@
 
 import { VERSION, features, BEREICHE } from './config.js';
 import { el, leeren } from './ui/dom.js';
-import { istEingerichtet } from './store.js';
+import { istEingerichtet, lesen } from './store.js';
 import * as start from './views/start.js';
 import * as platzhalter from './views/platzhalter.js';
 import * as einstellungen from './views/einstellungen.js';
@@ -17,9 +17,11 @@ import * as einkauf from './views/einkauf.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
-// Ohne Einrichtung nur die öffentlichen Reiter.
+// Öffentliche Reiter immer, die anderen nur mit Passwort und eingetragener Adresse ihres Skripts.
 function sichtbareBereiche() {
-    return istEingerichtet() ? aktiv : aktiv.filter((b) => b.oeffentlich);
+    if (!istEingerichtet()) return aktiv.filter((b) => b.oeffentlich);
+    const skripte = lesen('skripte', {}) || {};
+    return aktiv.filter((b) => b.oeffentlich || (b.skript && skripte[b.skript]));
 }
 
 // Adresse → Ansicht. Reiter ohne eigene Ansicht zeigen vorerst den Platzhalter.
@@ -124,6 +126,8 @@ function beobachteUpdates(reg) {
 
 wendeAussehenAn();
 window.addEventListener('hashchange', zeigeAnsicht);
+// Nach dem Speichern in den Einstellungen: Reiterleiste gleich anpassen, ohne die Seite neu zu zeichnen
+window.addEventListener('thetadex-skripte', () => baueReiter(sichtbareBereiche()));
 zeigeAnsicht();
 // Tracking-Felder schon im Hintergrund holen, damit das Formular schneller da ist (nur im Arbeitsspeicher)
 if (istEingerichtet()) tracking.vorladen();
