@@ -9,6 +9,10 @@ const TEILE = [['doener', 'Döner'], ['yufka', 'Yufka'], ['pommes', 'Pommes']];
 // Für die ausführliche Bewertung; „laden“ (Service, Gemütlichkeit …) zählt nicht zu „Insgesamt“
 const ALLE_TEILE = [...TEILE, ['laden', 'Laden']];
 const NEU = '__neu__';
+// Bei Fleisch heißt das Kriterium „Seitan“ „Fleisch“ (das Skript speichert es auch so)
+const TAUSCH_FLEISCH = { Seitan: 'Fleisch' };
+const kritName = (name, fleisch) => (fleisch && TAUSCH_FLEISCH[name]) || name;
+const SORTEN = [['vegan', 'Vegan', '🌱'], ['fleisch', 'Fleisch', '🥩']];
 const KENNUNG = /^[A-Za-z0-9_-]{20,120}$/;
 const ADRESSE = /^https:\/\/script\.google\.com\/macros\/s\/([A-Za-z0-9_-]+)\/exec$/;
 
@@ -113,9 +117,10 @@ export function render(container, ctx) {
     const kennung = kennungFinden(ctx.teile || []);
     const eigeneAdresse = Boolean(ADRESSE.exec((lesen('skripte', {}) || {}).doener || ''));
 
+    const titelText = el('span', { text: 'Döner-Rating Landau' });
     container.append(el('h1', { class: 'bereich-titel doener-titel' }, [
         el('span', { class: 'doener-emoji', text: '🥙', attrs: { 'aria-hidden': 'true' } }),
-        el('span', { text: 'Veganes Döner-Rating Landau' })
+        titelText
     ]));
 
     if (!kennung) {
@@ -131,6 +136,7 @@ export function render(container, ctx) {
     const listeBox = el('div', { class: 'doener-liste' });
     let laedenNamen = [];
     let kriterien = {};
+    let alleBewertungen = [];
 
     async function laden() {
         try {
@@ -139,9 +145,8 @@ export function render(container, ctx) {
             kriterien = d.kriterien && typeof d.kriterien === 'object' ? d.kriterien : {};
             baueLadenAuswahl();
             baueAusfuehrlich();
-            const laeden = rangliste(Array.isArray(d.bewertungen) ? d.bewertungen : []);
-            zeigeListe(laeden);
-            zeigeVergleich(laeden);
+            alleBewertungen = Array.isArray(d.bewertungen) ? d.bewertungen : [];
+            zeige();
             if (status.textContent === 'Lädt …') status.textContent = '';
         } catch (e) {
             status.textContent = e.message;
@@ -150,17 +155,43 @@ export function render(container, ctx) {
         }
     }
 
+    // Vegan und Fleisch werden getrennt ausgewertet und je Laden nebeneinander gezeigt
+    function zeige() {
+        const je = {
+            vegan: rangliste(alleBewertungen.filter((b) => b.fleisch !== true)),
+            fleisch: rangliste(alleBewertungen.filter((b) => b.fleisch === true))
+        };
+        const paare = new Map();
+        for (const [sorte] of SORTEN) {
+            for (const l of je[sorte]) {
+                const schl = l.name.toLowerCase();
+                if (!paare.has(schl)) paare.set(schl, { name: l.name, vegan: null, fleisch: null });
+                paare.get(schl)[sorte] = l;
+            }
+        }
+        // Reihenfolge: zuerst nach der veganen Wertung, Läden nur mit Fleisch danach
+        const laeden = [...paare.values()].map((p) => ({
+            ...p,
+            liste: [...(p.vegan ? p.vegan.liste : []), ...(p.fleisch ? p.fleisch.liste : [])]
+                .sort((a, b) => String(b.datum).localeCompare(String(a.datum)))
+        })).sort((a, b) => (b.vegan ? b.vegan.insgesamt || 0 : -1) - (a.vegan ? a.vegan.insgesamt || 0 : -1)
+            || (b.fleisch ? b.fleisch.insgesamt || 0 : -1) - (a.fleisch ? a.fleisch.insgesamt || 0 : -1)
+            || a.name.localeCompare(b.name, 'de'));
+        zeigeListe(laeden);
+        zeigeVergleich(je);
+    }
+
     // Vergleich: je Teil und je Kriterium alle Läden nebeneinander, Gewinner mit 🏆
-    function zeigeVergleich(laeden) {
+    function zeigeVergleich(je) {
         leeren(vergleichBox);
-        if (!laeden.length) {
+        if (!je.vegan.length && !je.fleisch.length) {
             vergleichBox.append(el('p', { text: 'Noch keine Bewertungen.' }));
             return;
         }
         const gruppen = [['gesamt', 'Gesamt', [['', 'Insgesamt'], ...ALLE_TEILE]]];
         for (const [t, titel] of ALLE_TEILE) {
             const namen = Array.isArray(kriterien[t]) ? kriterien[t] : [];
-            if (namen.length) gruppen.push([t, titel, namen.map((n) => [n, n])]);
+            if (namen.length) gruppen.push([t, titel, namen.map((n) => [n, kritName(n, true) === n ? n : n + ' / ' + kritName(n, true)])]);
         }
         gruppen.forEach(([gruppe, titel, zeilen], gi) => {
             const wert = (l, schl) => {
@@ -168,7 +199,9 @@ export function render(container, ctx) {
                 return schl === '' ? l.insgesamt : l.teile[schl];
             };
             const karten = zeilen.map(([schl, name]) => {
-                const mit = laeden.map((l) => ({ name: l.name, w: wert(l, schl) }))
+                const mit = SORTEN.flatMap(([sorte, , zeichen]) => je[sorte].map((l) => ({
+                    name: zeichen + ' ' + l.name, w: wert(l, kritName(schl, sorte === 'fleisch'))
+                })))
                     .filter((x) => typeof x.w === 'number')
                     .sort((a, b) => b.w - a.w || a.name.localeCompare(b.name, 'de'));
                 if (!mit.length) return null;
@@ -216,14 +249,26 @@ export function render(container, ctx) {
         });
     }
 
-    function zeigeLaden(l, i) {
+    // Ein Balken je Sorte: 🌱 vegan, 🥩 Fleisch („–“, wenn es noch keine Bewertung gibt)
+    function sorteBalken(teil, zeichen, titel) {
+        const w = teil ? teil.insgesamt : null;
         const balken = el('span', { class: 'doener-balken' });
-        balken.style.setProperty('--anteil', String((l.insgesamt || 0) / 10));
+        balken.style.setProperty('--anteil', String((w || 0) / 10));
+        return el('span', { class: 'doener-sorte', attrs: { 'aria-label': titel + ': ' + (w == null ? 'keine Bewertung' : zahl(w)) } }, [
+            el('span', { text: zeichen, attrs: { 'aria-hidden': 'true' } }),
+            el('span', { class: 'doener-leiste', attrs: { 'aria-hidden': 'true' } }, [balken]),
+            el('span', { class: 'doener-wert', text: w == null ? '–' : zahl(w), attrs: { 'aria-hidden': 'true' } })
+        ]);
+    }
+
+    function zeigeLaden(l, i) {
         const details = el('div', { class: 'doener-details', attrs: { id: 'doener-details-' + i, hidden: true } }, [
-            el('dl', { class: 'doener-teile' }, ALLE_TEILE.filter(([t]) => t !== 'laden' || l.teile.laden != null).flatMap(([t, titel]) => [
-                el('dt', { text: titel }),
-                el('dd', { text: l.teile[t] == null ? '–' : zahl(l.teile[t]) })
-            ])),
+            el('dl', { class: 'doener-teile' }, ALLE_TEILE.filter(([t]) => t !== 'laden'
+                || SORTEN.some(([sorte]) => l[sorte] && l[sorte].teile.laden != null)).flatMap(([t, titel]) => {
+                const werte = SORTEN.filter(([sorte]) => l[sorte] && l[sorte].teile[t] != null)
+                    .map(([sorte, , zeichen]) => el('span', { class: 'doener-teil-wert', text: zeichen + ' ' + zahl(l[sorte].teile[t]) }));
+                return [el('dt', { text: titel }), el('dd', {}, werte.length ? werte : [el('span', { text: '–' })])];
+            })),
             el('ul', { class: 'doener-bewertungen' }, l.liste.map((b, j) => zeigeBewertung(b, i + '-' + j)))
         ]);
         const anzahl = l.liste.length === 1 ? '1 Bewertung' : l.liste.length + ' Bewertungen';
@@ -235,10 +280,9 @@ export function render(container, ctx) {
                 el('span', { class: 'doener-name' }, [
                     el('span', { text: (i + 1) + '. ' + l.name }),
                     el('span', { class: 'doener-anzahl', text: anzahl })
-                ]),
-                el('span', { class: 'doener-wert', text: zahl(l.insgesamt || 0) })
+                ])
             ]),
-            el('span', { class: 'doener-leiste', attrs: { 'aria-hidden': 'true' } }, [balken])
+            el('span', { class: 'doener-paar' }, SORTEN.map(([sorte, titel, zeichen]) => sorteBalken(l[sorte], zeichen, titel)))
         ]);
         klapper(knopf, details);
         return el('li', {}, [knopf, details]);
@@ -248,6 +292,7 @@ export function render(container, ctx) {
     function zeigeBewertung(b, nr) {
         const werte = ALLE_TEILE.map(([t, titel]) => [titel, t === 'laden' ? b.laden_note : b[t]])
             .filter(([, w]) => typeof w === 'number').map(([titel, w]) => titel + ' ' + zahl(w)).join(' · ');
+        const zeichen = b.fleisch === true ? '🥩 ' : '🌱 ';
         const liste = Array.isArray(b.kriterien) ? b.kriterien : [];
         let kriterienBox = null;
         let kriterienKnopf = null;
@@ -267,7 +312,7 @@ export function render(container, ctx) {
             klapper(kriterienKnopf, kriterienBox);
         }
         return el('li', {}, [
-            el('div', { class: 'doener-bew-zeile' }, [el('p', { class: 'doener-sterne', text: werte }), kriterienKnopf]),
+            el('div', { class: 'doener-bew-zeile' }, [el('p', { class: 'doener-sterne', text: zeichen + werte }), kriterienKnopf]),
             b.begruendung ? el('p', { text: b.begruendung }) : null,
             b.datum ? el('p', { class: 'leise', text: datumText(b.datum) }) : null,
             kriterienBox
@@ -295,6 +340,18 @@ export function render(container, ctx) {
     }
     baueLadenAuswahl();
 
+    // Sorte im Formular: Vegan (Vorgabe) oder Fleisch
+    let fleisch = false;
+    const sorteKnoepfe = SORTEN.map(([sorte, titel, zeichen]) => el('button', {
+        class: 'doener-ansicht', text: zeichen + ' ' + titel,
+        attrs: { type: 'button', 'aria-pressed': sorte === 'vegan' ? 'true' : 'false', 'data-sorte': sorte },
+        on: { click: () => setzeFleisch(sorte === 'fleisch') }
+    }));
+    function setzeFleisch(neu) {
+        fleisch = neu;
+        sorteKnoepfe.forEach((k) => k.setAttribute('aria-pressed', (k.dataset.sorte === 'fleisch') === fleisch ? 'true' : 'false'));
+        kriterienBenennen();
+    }
     const schnellWahl = TEILE.map(([t, titel]) => ({ t, titel, wahl: sterneWahl('doener-titel-' + t, titel) }));
 
     // Ausführlich: je Kriterium ein Wert (halbe erlaubt) und eine Begründung
@@ -317,10 +374,9 @@ export function render(container, ctx) {
                 nr += 1;
                 const wahl = sterneWahl('doener-k' + nr, name);
                 const begr = el('input', { attrs: { type: 'text', maxlength: 200, placeholder: 'Begründung (freiwillig)', 'aria-label': 'Begründung ' + name } });
-                kriterienFelder.push({ teil: t, kriterium: name, wahl, begr });
-                return el('div', { class: 'doener-krit-zeile' }, [
-                    el('span', { class: 'doener-wahl-titel', text: name, attrs: { id: 'doener-k' + nr } }), wahl.box, begr
-                ]);
+                const titelEl = el('span', { class: 'doener-wahl-titel', text: kritName(name, fleisch), attrs: { id: 'doener-k' + nr } });
+                kriterienFelder.push({ teil: t, kriterium: name, wahl, begr, titelEl });
+                return el('div', { class: 'doener-krit-zeile' }, [titelEl, wahl.box, begr]);
             });
             ausfuehrlichBox.append(el('details', { class: 'doener-krit-gruppe' }, [
                 el('summary', { text: titel + ' (' + namen.length + (namen.length === 1 ? ' Kriterium)' : ' Kriterien)') }),
@@ -328,6 +384,11 @@ export function render(container, ctx) {
             ]));
         }
         ausfuehrlichSchalter.disabled = !kriterienFelder.length;
+    }
+
+    // Bei Fleisch heißen die getauschten Kriterien im Formular anders
+    function kriterienBenennen() {
+        kriterienFelder.forEach((k) => { k.titelEl.textContent = kritName(k.kriterium, fleisch); });
     }
 
     ausfuehrlichSchalter.addEventListener('change', () => {
@@ -342,6 +403,7 @@ export function render(container, ctx) {
 
     function formularLeeren() {
         formular.reset();
+        setzeFleisch(false);
         ladenNeu.hidden = true;
         schnellWahl.forEach((s) => s.wahl.leeren());
         kriterienFelder.forEach((k) => k.wahl.leeren());
@@ -353,7 +415,7 @@ export function render(container, ctx) {
     async function senden(ev) {
         ev.preventDefault();
         const ladenName = ladenWahl.value === NEU ? ladenNeu.value.trim() : ladenWahl.value;
-        const daten = { laden: ladenName, begruendung: begruendungFeld.value.trim(), web: lockFeld.value };
+        const daten = { laden: ladenName, fleisch, begruendung: begruendungFeld.value.trim(), web: lockFeld.value };
         const ausfuehrlich = ausfuehrlichSchalter.checked;
         if (ausfuehrlich) {
             daten.details = kriterienFelder.filter((k) => k.wahl.wert() != null).map((k) => ({
@@ -397,6 +459,8 @@ export function render(container, ctx) {
         el('label', { text: 'Laden', attrs: { for: 'doener-laden' } }),
         ladenWahl,
         ladenNeu,
+        el('p', { class: 'doener-feld-titel', text: 'Sorte', attrs: { id: 'doener-sorte' } }),
+        el('div', { class: 'doener-ansichten doener-sorte-wahl', attrs: { role: 'group', 'aria-labelledby': 'doener-sorte' } }, sorteKnoepfe),
         el('div', { class: 'doener-schalter' }, [
             ausfuehrlichSchalter,
             el('label', { text: 'Ausführlich bewerten (alle Kriterien)', attrs: { for: 'doener-ausfuehrlich' } })

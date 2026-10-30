@@ -253,7 +253,7 @@ unter „Info“ die Version prüfen.
   | --- | --- |
   | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026) |
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `stundenplan`, `termine`, `module`, `uni_einstellungen` |
-  | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung` + Standardspalten), `laeden` (`name`),
+  | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
   | DSA | `boegen` (ein Bogen je Zeile, Abschnitte als JSON-Spalten), `verlauf` (Geld, AP, AsP, LeP), `gegenstaende`, `bilder` |
 
@@ -516,6 +516,11 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Anzeige: Balken-Grafik aller Läden mit „Insgesamt“ und der Zahl der Bewertungen. Je Teil (Döner, Yufka, Pommes) zählt der
     Durchschnitt aller Bewertungen; „Insgesamt“ ist der Durchschnitt der Teile, die schon Bewertungen haben.
     Antippen eines Ladens zeigt die drei Teile und alle Begründungen mit Sternen und Datum. Die Balken baut die App selbst mit CSS, ohne Bibliothek.
+  - Fleisch (Wunsch der Person, 30.10.2026, 0.4.12–0.4.14): Im Formular wählt der Umschalter „🌱 Vegan / 🥩 Fleisch“ die Sorte
+    (Vorgabe vegan; Spalte `fleisch` = `true` oder leer). Bei Fleisch heißt das Kriterium „Seitan“ „Fleisch“
+    (das Skript speichert dann „Fleisch“ im Blatt `details`, Tausch in `TAUSCH_FLEISCH_`). Überschrift „Döner-Rating Landau“.
+    Rangliste: je Laden zwei Balken nebeneinander (🌱 und 🥩), sortiert nach der veganen Wertung. Vergleich: jeder Laden
+    erscheint je Sorte als eigene Zeile mit 🌱 oder 🥩.
   - Teilen: Link `#/doener/<skript>` ohne Einrichtung. Für dich steht der Reiter normal in der Reiterleiste.
   - Reiter-Symbole (Wunsch der Person): jeder Reiter hat ein Symbol, am Handy nur das Symbol, am PC Symbol und Name.
     Ohne Einrichtung zeigt die Reiterleiste nur öffentliche Reiter.
@@ -626,6 +631,9 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.4.9** Nachbesserung: Haken „Vorrat“ neben der Suche, Knöpfe unter der Suche, neues Lebensmittel im Gericht mit Abteilung und Einheit.
 - **0.4.10** Etappe 4 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-4.md` gelöscht.
 - **0.4.11** Nachbesserung: Lebensmittel nach Abteilung filtern.
+- **0.4.12** Döner: Häkchen „Fleisch“ (leer = vegan), getrennte Ranglisten Vegan und Fleisch, Spalte `fleisch`.
+- **0.4.13** Döner: Kriterium „Seitan“ heißt bei Fleisch „Fleisch“.
+- **0.4.14** Döner: Sorte im Formular statt Häkchen, je Laden zwei Balken 🌱 und 🥩, Vergleich mit beiden Sorten.
 - **Etappe 5** Uni. **0.5.0** Schritt 5.0: Plan `docs/PLAN-ETAPPE-5.md` (vier Blätter im Sheet „Gemeinsam“, Kalender mit Arten, Arbeitsstunden, Module).
 - **0.5.1** Antworten zum Plan: keine Noten, Ziel 120 ECTS, Arbeitszeiten „einmal anders“, Uni auch ohne Netz, Partner*in sieht auch Module, Raum im Kalender.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
