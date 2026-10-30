@@ -4,14 +4,15 @@
 // Zubehör (ab 3.4): Spalte „gehoert_zu“ mit der id der Hauptsache. Nur eine Ebene.
 // Bild (ab 3.5): Spalte „bild“ mit der Kennung einer Datei im Google Drive der Person. Hochgeladene Bilder
 // liegen im privaten Drive-Ordner „Thetadex Besitz“. Bilder gibt das Skript nur mit Passwort heraus.
+// Ausgeliehen (ab 3.6): Spalte „ausgeliehen_an“, freier Text (an wen), leer = nicht ausgeliehen.
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN).
-// Siehe docs/PLAN-ETAPPE-3.md, Schritte 3.2 bis 3.5.
+// Siehe docs/PLAN-ETAPPE-3.md, Schritte 3.2 bis 3.6.
 // =====================================================
 
 var BLATT_BESITZ_ = "besitz";
-var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht", "gehoert_zu", "bild"];
-var TEXT_SPALTEN_ = ["id", "name", "kategorie", "ort", "notiz", "gehoert_zu", "bild"];   // bleiben im Sheet reiner Text (kein Datum, keine Zahl)
-var MAX_ = { name: 80, kategorie: 40, ort: 60, notiz: 300 };       // Höchstlängen
+var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht", "gehoert_zu", "bild", "ausgeliehen_an"];
+var TEXT_SPALTEN_ = ["id", "name", "kategorie", "ort", "notiz", "gehoert_zu", "bild", "ausgeliehen_an"];   // bleiben im Sheet reiner Text (kein Datum, keine Zahl)
+var MAX_ = { name: 80, kategorie: 40, ort: 60, notiz: 300, ausgeliehen_an: 60 };       // Höchstlängen
 var MAX_ANZAHL_ = 9999;
 var MAX_PREIS_ = 1000000;
 var BILD_ORDNER_NAME_ = "Thetadex Besitz";      // privater Ordner im Drive für hochgeladene Bilder
@@ -161,6 +162,7 @@ function sacheAus_(z, sp) {
     notiz: ohneSchutz_(zelle_(z, sp, "notiz")),
     gehoert_zu: String(zelle_(z, sp, "gehoert_zu")).trim(),
     bild: String(zelle_(z, sp, "bild")).trim(),
+    ausgeliehen_an: ohneSchutz_(zelle_(z, sp, "ausgeliehen_an")),
     geaendert_am: stempel_(zelle_(z, sp, "geaendert_am"))
   };
 }
@@ -233,12 +235,13 @@ function liste_() {
 function pruefeSache_(data) {
   var w = {};
   var namen = { name: "Name", kategorie: "Kategorie", ort: "Ort" };
-  var felder = ["name", "kategorie", "ort", "notiz"];
+  var felder = ["name", "kategorie", "ort", "notiz", "ausgeliehen_an"];
+  var titel = { notiz: "Notiz", ausgeliehen_an: "Ausgeliehen an" };
   for (var i = 0; i < felder.length; i++) {
     var f = felder[i];
     var t = String(data[f] == null ? "" : data[f]).replace(/\s+/g, " ").trim();
     if (!t && namen[f]) return { fehler: "Bitte " + namen[f] + " angeben." };
-    if (t.length > MAX_[f]) return { fehler: (namen[f] || "Notiz") + " ist zu lang (höchstens " + MAX_[f] + " Zeichen)." };
+    if (t.length > MAX_[f]) return { fehler: (namen[f] || titel[f]) + " ist zu lang (höchstens " + MAX_[f] + " Zeichen)." };
     w[f] = bereinigeText_(t, MAX_[f]);
   }
 

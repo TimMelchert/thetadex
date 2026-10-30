@@ -98,9 +98,25 @@ Wunsch der Person (30.10.2026): Zu einer Sache gehören andere Sachen (zum Beisp
   (die App verkleinert es, das Skript legt es in einen privaten Drive-Ordner). Das Skript liest die Datei als die Person
   und gibt sie nur mit Passwort als Text an die App (`data:`-Bild). Content-Security-Policy bleibt gleich, nichts wird öffentlich.
 
-## Schritt 3.6 Nachbesserungen und Abschluss (0.3.6 …)
+## Schritt 3.6 Nachbesserungen (0.3.6 → 0.3.7) – erledigt
 
-- Anmerkungen der Person aus dem Testen, gesammelt in einem oder mehreren Schritten.
+- Anmerkungen der Person (30.10.2026), alle umgesetzt:
+  - Buntes 📦 (Umzugskarton) vor der Überschrift.
+  - Nach dem Speichern schließt sich das Formular. Der Ort bleibt für die nächste neue Sache stehen.
+  - Am PC jede Sache als Block mit buntem Strich links, wie die Karten am Handy.
+  - Unter dem Namen eine Zeile: Zubehör-Knopf, rechts daneben 📷 (auch ohne Zubehör in derselben Zeile), dann „🤝 an …“.
+  - Tipp auf eine Sache zeigt erst nur Daten und Bild, „Bearbeiten“ öffnet das Formular.
+  - Anzahl 0 ist ausgeblendet, außer die Sache hat Zubehör. Haken „Auch Sachen mit Anzahl 0 zeigen“ holt sie zurück (sonst könnte man sie nie mehr ändern).
+  - Kategorie, Ort und „Ausgeliehen an“: Tipp irgendwo ins Feld öffnet die Liste, Eintippen bleibt möglich (gilt auch in Finanzen).
+  - Neue Spalte `ausgeliehen_an` (freier Text, höchstens 60 Zeichen, leer = nicht ausgeliehen) mit Filter „Ausgeliehen“
+    (alle, nur ausgeliehene, nicht ausgeliehen, an eine bestimmte Person). Die Suche findet auch den Namen.
+  - Unterreiter „Übersicht“: Sachen, Stück und ausgeliehen insgesamt; je Kategorie, je Ort und an wen, mit Balken.
+    Gezählt werden Sachen mit Anzahl über 0, Zubehör eingeschlossen. Tipp auf eine Zeile zeigt diese Sachen in der Liste.
+- Von Hand: neuen Code ins Skript `leben`, `einrichten` ausführen (legt `ausgeliehen_an` an), neue Version bereitstellen.
+
+## Schritt 3.7 Abschluss (0.3.7 …)
+
+- Falls nötig weitere Anmerkungen der Person aus dem Testen.
 - Danach Etappe 3 abschließen: Plan in STAND.md einarbeiten, diese Datei löschen.
 
 ## Datenschutz und Sicherheit (für die ganze Etappe)

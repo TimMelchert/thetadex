@@ -655,6 +655,12 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
     .besitz-tabelle thead th:nth-child(3) { width: 10%; }
     .besitz-tabelle thead th:nth-child(4) { width: 16%; }
     .besitz-tabelle thead th:nth-child(5) { width: 16%; }
+    /* Jede Sache als Block mit buntem Strich links, wie die Karten am Handy */
+    .besitz-tabelle { border-collapse: separate; border-spacing: 0 6px; }
+    .besitz-tabelle tbody th, .besitz-tabelle tbody td { background: var(--kachel); border-bottom: none; padding: 10px 8px; }
+    .besitz-tabelle tbody tr > :first-child { border-left: 6px solid var(--bereich); border-radius: var(--rund) 0 0 var(--rund); padding-left: 12px; }
+    .besitz-tabelle tbody tr > :last-child { border-radius: 0 var(--rund) var(--rund) 0; }
+    .besitz-tabelle tbody tr.besitz-kind > :first-child { border-left-width: 3px; padding-left: 32px; }
 }
 .besitz-tabelle td { overflow-wrap: anywhere; }
 .besitz-tabelle th, .besitz-tabelle td { padding: 8px 6px; border-bottom: 1px solid var(--linie); text-align: left; vertical-align: top; }
@@ -678,7 +684,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 /* Besitz: Suche, Filter, Sortieren, Ändern */
 .besitz-suche { margin-top: 8px; }
 .besitz-suche label { margin-top: 4px; }
-.besitz-filter { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.besitz-filter { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
 .besitz-filter > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .besitz-filter select { width: 100%; }
 .besitz-treffer { margin: 8px 0 0; }
@@ -688,16 +694,19 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .besitz-zeile { cursor: pointer; }
 .besitz-oeffnen { padding: 0; border: none; background: none; color: inherit; font: inherit; font-weight: 600; text-align: left; cursor: pointer; overflow-wrap: anywhere; }
 @media (hover: hover) {
-    .besitz-zeile:hover { background: var(--kachel); }
+    /* leicht dunkler beim Darüberfahren, in hell und dunkel (am Handy-Layout die ganze Karte) */
+    .besitz-zeile:hover > * { background-image: linear-gradient(rgba(128, 128, 128, 0.14), rgba(128, 128, 128, 0.14)); }
     .besitz-oeffnen:hover { text-decoration: underline; }
 }
 @media (max-width: 767px) {
     .besitz-oeffnen { min-height: 32px; }
+    .besitz-tabelle .besitz-zeile:hover { background-image: linear-gradient(rgba(128, 128, 128, 0.14), rgba(128, 128, 128, 0.14)); }
+    .besitz-tabelle .besitz-zeile:hover > * { background-image: none; }
 }
 
 /* Besitz: Zubehör eingerückt unter der Hauptsache, zum Aufklappen */
 .besitz-hinweis { margin: 0; font-size: 0.85rem; }
-.besitz-aufklappen { display: block; margin-top: 4px; padding: 0 8px; min-height: 32px; border: 1px solid var(--linie); border-radius: var(--rund); background: none; color: var(--schrift); font: inherit; font-size: 0.85rem; font-weight: 400; cursor: pointer; }
+.besitz-aufklappen { display: inline-flex; align-items: center; padding: 0 8px; min-height: 32px; border: 1px solid var(--linie); border-radius: var(--rund); background: none; color: var(--schrift); font: inherit; font-size: 0.85rem; font-weight: 400; cursor: pointer; }
 .besitz-kind .besitz-name { padding-left: 28px; }
 .besitz-kind-pfeil { color: var(--schrift-leise); margin-left: -18px; }
 .besitz-kind th, .besitz-kind td { font-size: 0.85rem; }
@@ -712,3 +721,45 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 /* Besitz: Bild im Formular */
 .formular input[type="file"] { padding: 8px; }
 .besitz-vorschau { display: block; max-width: 100%; max-height: 280px; margin-top: 10px; border-radius: var(--rund); border: 1px solid var(--linie); object-fit: contain; }
+
+/* Besitz 3.6: Zeile unter dem Namen mit Zubehör-Knopf, Bild-Zeichen und „ausgeliehen“ */
+.besitz-merkmale { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-top: 4px; font-size: 0.85rem; font-weight: 400; }
+.besitz-hat-bild { font-size: 1.05rem; line-height: 1; }
+.besitz-verliehen { padding: 2px 8px; border: 1px solid var(--bereich); border-radius: var(--rund); overflow-wrap: anywhere; }
+.besitz-null-zeile .besitz-oeffnen, .besitz-null-zeile td { color: var(--schrift-leise); }
+.formular label.besitz-null { display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer; }
+.formular .besitz-null input { min-height: 0; width: 20px; height: 20px; margin: 0; accent-color: var(--bereich); }
+
+/* Besitz 3.6: Ansicht einer Sache (nur lesen) */
+.besitz-dialog {
+    width: min(560px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    padding: 0;
+    border: none;
+    border-left: 6px solid var(--bereich);
+    border-radius: var(--rund);
+    background: var(--hintergrund);
+    color: var(--schrift);
+}
+.besitz-dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+.besitz-dialog-inhalt { padding: 8px var(--abstand) var(--abstand); }
+.besitz-dialog-inhalt h2 { overflow-wrap: anywhere; }
+.besitz-dialog-bild { display: block; max-width: 100%; max-height: 50vh; margin: 8px auto 0; border-radius: var(--rund); object-fit: contain; }
+.besitz-angaben { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; margin: 12px 0 0; }
+.besitz-angaben dt { color: var(--schrift-leise); }
+.besitz-angaben dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+
+/* Besitz 3.6: Übersicht */
+.besitz-zahlen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: var(--abstand); }
+.besitz-zahl-kachel { display: flex; flex-direction: column; align-items: center; padding: 12px 6px; background: var(--kachel); border-radius: var(--rund); border-left: 6px solid var(--bereich); }
+.besitz-zahl-wert { font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.besitz-zahl-kachel .leise { font-size: 0.85rem; }
+.besitz-zaehlung { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.besitz-zaehlung th, .besitz-zaehlung td { padding: 8px 6px; border-bottom: 1px solid var(--linie); text-align: left; vertical-align: middle; }
+.besitz-zaehlung thead th { font-size: 0.8rem; color: var(--schrift-leise); font-weight: 600; }
+.besitz-zaehlung .zahl { text-align: right; font-variant-numeric: tabular-nums; width: 4.5em; }
+.besitz-zaehlung .besitz-oeffnen { min-height: 32px; }
+.besitz-balken-spalte { width: 32%; }
+.besitz-balken { display: block; height: 10px; border-radius: 5px; background: var(--bereich); }
+.besitz-uebersicht .besitz-hinweis { margin-top: var(--abstand); }
+.besitz-lade:empty { display: none; }
