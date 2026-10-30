@@ -4,6 +4,7 @@
 
 import { el, leeren, heute, kalenderBeiKlick } from '../ui/dom.js';
 import { api } from '../api.js';
+import { lesen } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { farbRegeln } from '../ui/farben.js';
 
@@ -14,6 +15,22 @@ function datumText(iso) {
 
 const MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+
+// Die Felder bleiben nur im Arbeitsspeicher (nie im Gerät gespeichert) und gelten 10 Minuten.
+// So öffnet sich das Formular sofort, wenn die App sie beim Start schon geholt hat.
+let vorrat = null;
+function felderHolen(neu = false) {
+    if (!neu && vorrat && Date.now() - vorrat.zeit < 10 * 60 * 1000) return vorrat.anfrage;
+    const anfrage = api('tracking', 'einstellungen');
+    vorrat = { zeit: Date.now(), anfrage };
+    anfrage.catch(() => { if (vorrat && vorrat.anfrage === anfrage) vorrat = null; });
+    return anfrage;
+}
+
+// Beim Start der App aufgerufen: holt die Felder schon im Hintergrund, wenn Tracking eingerichtet ist.
+export function vorladen() {
+    if ((lesen('skripte', {}) || {}).tracking && lesen('passwort')) felderHolen().catch(() => {});
+}
 
 const istJa = (text) => /^(wahr|true|ja|x|1)$/i.test(String(text).trim());
 const alsZahl = (text) => String(text).trim().replace(',', '.');
@@ -86,7 +103,7 @@ export function render(container, ctx) {
     container.append(
         el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
             el('span', { class: 'titel-emoji', text: '📊', attrs: { 'aria-hidden': 'true' } }),
-            el('span', { text: ctx.bereich.titel })
+            el('span', { text: 'Tracking Leben' })
         ]),
         el('div', { class: 'ansichten' }, ansichtKnoepfe.map(([b]) => b)),
         inhalt, status, uebersicht
@@ -196,7 +213,7 @@ export function render(container, ctx) {
 
     async function laden() {
         try {
-            const d = await api('tracking', 'einstellungen');
+            const d = await felderHolen();
             zeigeFormular(Array.isArray(d.felder) ? d.felder : [], Array.isArray(d.fehlend) ? d.fehlend : []);
         } catch (e) {
             leeren(inhalt);

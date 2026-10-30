@@ -115,6 +115,8 @@ function beobachteUpdates(reg) {
 
 window.addEventListener('hashchange', zeigeAnsicht);
 zeigeAnsicht();
+// Tracking-Felder schon im Hintergrund holen, damit das Formular schneller da ist (nur im Arbeitsspeicher)
+if (istEingerichtet()) tracking.vorladen();
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

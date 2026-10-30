@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.2.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.2.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Laufende Etappe: **Etappe 2 „Bestehendes umziehen“**, Plan in `docs/PLAN-ETAPPE-2.md`.
@@ -354,6 +354,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`.
 - **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen und zuletzt bekannte Kontostände.
   Schlüssel mit Vorsilbe `thetadex_`. Keine Tracking-Einträge im Gerät speichern. Abmelden löscht alles.
+  Die Tracking-Felder hält die App nur im Arbeitsspeicher (10 Minuten), damit das Formular schnell da ist.
 - **Neu laden** nach einem Update nur, wenn auf dieser Seite „Jetzt neu laden“ getippt wurde (`js/app.js`). Sonst lud die Seite
   beim ersten Besuch von selbst neu, weil der Service Worker die Seite übernimmt (`clients.claim`), und Formulare waren weg.
 - **Service Worker** (`sw.js`): App-Dateien zwischenspeichern (`<name>-<VERSION>`), Daten nicht im Service Worker,
@@ -507,6 +508,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.2.5** Nachbesserung 2.3: Finanzen mit 💶, Vermögen grün/rot, Knöpfe rot/grün, Kalender öffnet bei Klick ins Datumsfeld.
 - **0.2.6** Nachbesserung 2.3: Tracking mit 📊, Übersicht mit allen Tagen, je Monat eine Tabelle, Filter nach Monat.
 - **0.2.7** Schritt 2.4: Finanzen → Auswertung mit Chart.js (lokal), Kategorien allgemein aus dem Skript, Haken für Rückzahlungen.
+- **0.2.8** Schritt 2.5: Überschrift „Tracking Leben“, Tracking-Felder werden beim Start im Hintergrund geholt (nur Arbeitsspeicher, 10 Minuten), Bafög-Kacheln schmal.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
