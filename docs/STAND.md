@@ -4,14 +4,14 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.5.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.5.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
-- Etappe 5 „Uni“ läuft: Plan `docs/PLAN-ETAPPE-5.md`. Gebaut: 5.1 (Blätter, Skript, Semester und Stundenplan), 5.2 (Termine, Kalender und ohne Netz), 5.3 (Arbeitsstunden).
-- Nächster Schritt: 5.4 (Module und Master-Übersicht).
+- Etappe 5 „Uni“ läuft: Plan `docs/PLAN-ETAPPE-5.md`. Gebaut: 5.1 (Blätter, Skript, Semester und Stundenplan), 5.2 (Termine, Kalender und ohne Netz), 5.3 (Arbeitsstunden), 5.4 (Module und Master-Übersicht).
+- Nächster Schritt: 5.5 (Anmerkungen der Person, dann Etappe 5 abschließen).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -312,6 +312,7 @@ unter „Info“ die Version prüfen.
   Kalender (5.2): Woche (PC und Querformat Raster, Hochformat Liste je Tag), Monat, Liste; Filter nach Art; Termine; „Nur an diesem Tag ändern“,
   „Fällt an diesem Tag aus“, „Wieder wie immer“ (Termin mit `stunde_id`). Ohne Netz die zuletzt geladenen Uni-Daten aus dem Gerät, ohne Knöpfe.
   Arbeitsstunden (5.3): im Kalender für die gezeigte Woche, den Monat oder die vier Wochen der Liste; im Stundenplan „Arbeit: … je Woche“. Nur gerechnet, nichts gespeichert.
+  Module (5.4): „… von 120 ECTS bestanden“ mit Balken, Kacheln Bestanden, Läuft, Offen, „Noch ohne Modul“; Module nach Bereich mit nächster Prüfung; Filter nach Stand.
 
 ### 3.2 Offen
 
@@ -649,6 +650,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.5.2** Schritt 5.1: Uni-Blätter und -Aktionen im Skript `gemeinsam`, Reiter Uni mit Semestern und Stundenplan.
 - **0.5.3** Schritt 5.2: Kalender (Woche, Monat, Liste, Filter, Farben je Art), Termine, „einmal anders“, Uni-Daten ohne Netz.
 - **0.5.4** Schritt 5.3: Arbeitsstunden je Woche, Monat und im Stundenplan.
+- **0.5.5** Schritt 5.4: Module mit Master-Übersicht (Ziel aus `uni_einstellungen`), Prüfungen je Modul.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

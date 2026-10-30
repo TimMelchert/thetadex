@@ -1,13 +1,14 @@
 // Reiter Uni (Etappe 5, Plan docs/PLAN-ETAPPE-5.md).
 // Schritt 5.1: Semester wählen, anlegen und ändern; Stundenplan je Wochentag (jede Woche gleich).
 // Schritt 5.2: Kalender (Woche, Monat, Liste, Filter nach Art), Termine, „einmal anders“ und „fällt aus“, Uni-Daten ohne Netz.
-// Module (5.4) kommen später.
+// Schritt 5.3: Arbeitsstunden. Schritt 5.4: Module mit Master-Übersicht (… von 120 ECTS, Ziel aus dem Blatt uni_einstellungen).
 // Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“). Die Person darf ändern, Partner*in nur lesen.
 // Die Rolle kommt mit jeder Antwort des Skripts; die App speichert sie nicht. Die Rechte prüft immer das Skript.
 // Ohne Netz (Ausnahme in docs/STAND.md 4): Die zuletzt geladenen Uni-Daten liegen im Gerät (thetadex_uni), ohne Rolle.
 // Dann gibt es keine Knöpfe zum Ändern; Ändern geht nur mit Netz.
 
 import { el, leeren, heute, kalenderBeiKlick } from '../ui/dom.js';
+import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
@@ -49,9 +50,7 @@ export function render(container, ctx) {
     const ladeStatus = el('p', { class: 'meldung besitz-lade', attrs: { role: 'status', 'aria-live': 'polite' } });
     const kalenderBox = el('div', { attrs: { id: 'uni-teil-kalender', hidden: true } });
     const planBox = el('div', { attrs: { id: 'uni-teil-stundenplan', hidden: true } });
-    const moduleBox = el('div', { attrs: { id: 'uni-teil-module', hidden: true } }, [
-        el('p', { class: 'leise', text: 'Die Module kommen mit Schritt 5.4.' })
-    ]);
+    const moduleBox = el('div', { attrs: { id: 'uni-teil-module', hidden: true } });
     const semesterLeiste = el('div', { class: 'uni-leiste' });
     const dialog = el('dialog', { class: 'besitz-dialog', attrs: { 'aria-labelledby': 'uni-dialog-titel' } });
     dialog.addEventListener('click', (ev) => { if (ev.target === dialog) dialog.close(); });
@@ -324,11 +323,12 @@ export function render(container, ctx) {
 
     // --- Termin anlegen oder ändern ---
     // x = Termin oder null (neu). vorgabe = { beginn } für einen neuen Termin an einem Tag,
+    // oder { art, modul_id, titel } für „+ Prüfung“ bei einem Modul,
     // oder { beginn, stunde } für „Nur an diesem Tag ändern“ (Termin mit stunde_id, nur Uhrzeit, Titel, Raum, Notiz).
     function zeigeTerminForm(x, vorgabe = {}) {
         const stunde = x && x.stunde_id ? daten.stundenplan.find((s) => s.id === x.stunde_id) : vorgabe.stunde;
         const anders = Boolean(stunde);
-        const quelle = x || (stunde ? { ...stunde, beginn: vorgabe.beginn, ende: '' } : { beginn: vorgabe.beginn || heute() });
+        const quelle = x || (stunde ? { ...stunde, beginn: vorgabe.beginn, ende: '' } : { beginn: vorgabe.beginn || heute(), art: vorgabe.art, modul_id: vorgabe.modul_id, titel: vorgabe.titel });
         const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
         const titel = el('input', { attrs: { id: 'uni-te-titel', type: 'text', maxlength: 80, autocomplete: 'off', value: quelle.titel || '' } });
         const art = el('select', { attrs: { id: 'uni-te-art' } },
@@ -480,10 +480,174 @@ export function render(container, ctx) {
         });
     }
 
+    // --- Module (5.4) ---
+    const STATUS = [['offen', 'Offen'], ['laeuft', 'Läuft'], ['bestanden', 'Bestanden']];
+    const STATUS_NAME = Object.fromEntries(STATUS);
+    const ectsText = (n) => String(n).replace('.', ',') + ' ECTS';
+    const ectsVon = (m) => (typeof m.ects === 'number' ? m.ects : 0);
+    // Prüfungen eines Moduls (Termine der Art Prüfung), nach Datum
+    const pruefungenVon = (m) => daten.termine.filter((t) => t.modul_id === m.id && t.art === 'pruefung')
+        .sort((a, b) => (a.beginn + a.von).localeCompare(b.beginn + b.von));
+    // Die nächste Prüfung ab heute, sonst keine
+    const naechstePruefung = (m) => pruefungenVon(m).find((t) => (t.ende || t.beginn) >= heute()) || null;
+    const pruefungText = (t) => langDatum(t.beginn) + (t.von ? ', ' + t.von + ' Uhr' : '') + (t.ort ? ', ' + t.ort : '');
+    // Status-Filter. Bleibt, solange die Seite offen ist.
+    let statusFilter = '';
+
+    function zeigeModulForm(m) {
+        const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
+        const name = el('input', { attrs: { id: 'uni-mo-name', type: 'text', maxlength: 80, autocomplete: 'off', value: m ? m.name : '' } });
+        const kuerzel = el('input', { attrs: { id: 'uni-mo-kuerzel', type: 'text', maxlength: 20, autocomplete: 'off', placeholder: 'freiwillig', value: m ? m.kuerzel : '' } });
+        const bereich = auswahlFeld({ id: 'uni-mo-bereich', maxlength: 40, placeholder: 'freiwillig, zum Beispiel Pflichtbereich' });
+        bereich.setzeEintraege(daten.module.map((x) => x.bereich).filter(Boolean));
+        if (m) bereich.feld.value = m.bereich;
+        const ects = el('input', { attrs: { id: 'uni-mo-ects', type: 'text', inputmode: 'decimal', maxlength: 4, autocomplete: 'off', value: m && m.ects != null ? String(m.ects).replace('.', ',') : '' } });
+        const stand = el('select', { attrs: { id: 'uni-mo-status' } },
+            STATUS.map(([k, t]) => el('option', { text: t, attrs: { value: k, selected: (m ? m.status : 'offen') === k } })));
+        const semester = el('select', { attrs: { id: 'uni-mo-semester' } }, [
+            el('option', { text: '– kein Semester –', attrs: { value: '' } }),
+            ...[...daten.semester].sort((a, b) => b.beginn.localeCompare(a.beginn))
+                .map((x) => el('option', { text: x.name, attrs: { value: x.id, selected: m ? m.semester_id === x.id : false } }))
+        ]);
+        const notiz = el('input', { attrs: { id: 'uni-mo-notiz', type: 'text', maxlength: 200, autocomplete: 'off', placeholder: 'freiwillig', value: m ? m.notiz : '' } });
+        const knoepfe = formKnoepfe(m ? loeschen : null);
+
+        async function absenden(ev) {
+            ev.preventDefault();
+            const eintrag = {
+                name: name.value.trim(), kuerzel: kuerzel.value.trim(), bereich: bereich.feld.value.trim(),
+                ects: ects.value.trim().replace(',', '.'), status: stand.value, semester_id: semester.value, notiz: notiz.value.trim()
+            };
+            if (!eintrag.name) { status.textContent = 'Bitte einen Namen angeben.'; name.focus(); return; }
+            const n = Number(eintrag.ects);
+            if (eintrag.ects !== '' && !(Number.isFinite(n) && n >= 0 && n <= 60 && Math.round(n * 2) === n * 2)) {
+                status.textContent = 'ECTS bitte als Zahl von 0 bis 60 (halbe erlaubt).'; ects.focus(); return;
+            }
+            if (m) Object.assign(eintrag, { id: m.id, geaendert_am: m.geaendert_am });
+            if (!await senden(status, knoepfe, 'uni_speichern', { blatt: 'module', eintrag })) return;
+            dialog.close();
+            zeigeGespeichert(m ? 'Geändert' : 'Gespeichert', eintrag.name);
+            zeigeAlles();
+        }
+
+        async function loeschen() {
+            if (!confirm('„' + m.name + '“ löschen? Termine und Stundenplan bleiben, nur das Modul wird dort ausgetragen.')) return;
+            if (!await senden(status, knoepfe, 'uni_loeschen', { blatt: 'module', id: m.id, geaendert_am: m.geaendert_am })) return;
+            dialog.close();
+            zeigeGespeichert('Gelöscht', m.name);
+            zeigeAlles();
+        }
+
+        oeffneDialog(m ? 'Modul ändern' : 'Neues Modul', [
+            el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: absenden } }, [
+                el('label', { text: 'Name', attrs: { for: 'uni-mo-name' } }), name,
+                el('label', { text: 'Kürzel oder Modulnummer', attrs: { for: 'uni-mo-kuerzel' } }), kuerzel,
+                el('label', { text: 'Bereich', attrs: { for: 'uni-mo-bereich' } }), bereich.box,
+                el('div', { class: 'uni-zeiten' }, [
+                    el('div', {}, [el('label', { text: 'ECTS', attrs: { for: 'uni-mo-ects' } }), ects]),
+                    el('div', {}, [el('label', { text: 'Stand', attrs: { for: 'uni-mo-status' } }), stand])
+                ]),
+                el('label', { text: 'Semester (belegt oder geplant)', attrs: { for: 'uni-mo-semester' } }), semester,
+                el('label', { text: 'Notiz', attrs: { for: 'uni-mo-notiz' } }), notiz,
+                el('p', { class: 'leise besitz-hinweis', text: 'Prüfungen trägst du im Kalender als Termin der Art „Prüfung“ mit diesem Modul ein.' }),
+                el('div', { class: 'besitz-form-knoepfe' }, knoepfe),
+                status
+            ])
+        ]);
+        name.focus();
+    }
+
+    function zeigeModul(m) {
+        const s = semesterVon(m.semester_id);
+        const angaben = [
+            ['Kürzel', m.kuerzel], ['Bereich', m.bereich], ['ECTS', m.ects != null ? String(m.ects).replace('.', ',') : ''],
+            ['Stand', STATUS_NAME[m.status] || m.status], ['Semester', s ? s.name : ''], ['Notiz', m.notiz]
+        ].filter(([, w]) => w);
+        const pruefungen = pruefungenVon(m);
+        oeffneDialog(m.name, [
+            el('dl', { class: 'besitz-angaben' }, angaben.flatMap(([k, w]) => [el('dt', { text: k }), el('dd', { text: w })])),
+            el('h3', { class: 'uni-unter', text: 'Prüfungen' }),
+            pruefungen.length
+                ? el('ul', { class: 'uni-pruefungen' }, pruefungen.map((t) => el('li', { text: pruefungText(t) + (t.titel && t.titel !== m.name ? ' – ' + t.titel : '') })))
+                : el('p', { class: 'leise besitz-hinweis', text: 'Noch keine Prüfung eingetragen.' }),
+            darfAendern() ? el('div', { class: 'besitz-form-knoepfe' }, [
+                el('button', { class: 'knopf knopf-bereich', text: 'Bearbeiten', attrs: { type: 'button' }, on: { click: () => zeigeModulForm(m) } }),
+                el('button', { class: 'knopf knopf-zweit', text: '+ Prüfung', attrs: { type: 'button' }, on: { click: () => zeigeTerminForm(null, { art: 'pruefung', modul_id: m.id, titel: m.name }) } })
+            ]) : null
+        ]);
+    }
+
+    function zeigeModule() {
+        leeren(moduleBox);
+        if (!daten) return;
+        const alle = daten.module;
+        const summe = (st) => alle.filter((m) => m.status === st).reduce((n, m) => n + ectsVon(m), 0);
+        const ziel = daten.ects_ziel || 0;
+        const bestanden = summe('bestanden');
+        const eingetragen = alle.reduce((n, m) => n + ectsVon(m), 0);
+
+        // Fortschritt: bestandene ECTS vom Ziel
+        if (ziel) {
+            const balken = el('div', { class: 'uni-fortschritt-fuell' });
+            balken.style.width = Math.min(100, bestanden / ziel * 100) + '%';
+            moduleBox.append(el('div', { class: 'uni-fortschritt' }, [
+                el('p', { class: 'uni-fortschritt-text', text: String(bestanden).replace('.', ',') + ' von ' + String(ziel).replace('.', ',') + ' ECTS bestanden' }),
+                el('div', { class: 'uni-fortschritt-balken', attrs: { role: 'img', 'aria-label': Math.round(bestanden / ziel * 100) + ' Prozent' } }, [balken])
+            ]));
+        }
+        moduleBox.append(el('div', { class: 'besitz-zahlen' }, STATUS.slice().reverse().map(([k, t]) => el('div', { class: 'besitz-zahl-kachel' }, [
+            el('span', { class: 'besitz-zahl-wert', text: String(alle.filter((m) => m.status === k).length) }),
+            el('span', { class: 'leise', text: t + ' · ' + ectsText(summe(k)) })
+        ]))));
+        if (ziel && eingetragen < ziel) {
+            moduleBox.append(el('p', { class: 'leise besitz-hinweis uni-noch', text: 'Noch ohne Modul: ' + ectsText(ziel - eingetragen) + ' bis zum Ziel.' }));
+        }
+
+        // Filter nach Stand und „+ Modul“
+        const filter = el('select', { attrs: { id: 'uni-mo-filter', 'aria-label': 'Nach Stand filtern' }, on: { change: () => { statusFilter = filter.value; zeigeModule(); } } }, [
+            el('option', { text: 'Alle Module', attrs: { value: '' } }),
+            ...STATUS.map(([k, t]) => el('option', { text: t, attrs: { value: k, selected: statusFilter === k } }))
+        ]);
+        moduleBox.append(el('div', { class: 'uni-leiste' }, [
+            filter,
+            darfAendern() ? el('button', { class: 'knopf knopf-bereich', text: '+ Modul', attrs: { type: 'button' }, on: { click: () => zeigeModulForm(null) } }) : null
+        ]));
+
+        const gezeigt = alle.filter((m) => !statusFilter || m.status === statusFilter);
+        if (!gezeigt.length) {
+            moduleBox.append(el('p', { class: 'leise', text: alle.length ? 'Keine Module mit diesem Stand.' : 'Noch keine Module eingetragen.' }));
+            return;
+        }
+        // Nach Bereich (A–Z, ohne Bereich zuletzt), darin nach Name
+        const bereiche = [...new Set(gezeigt.map((m) => m.bereich))].sort((a, b) => (!a) - (!b) || vergleiche(a, b));
+        bereiche.forEach((b) => {
+            const drin = gezeigt.filter((m) => m.bereich === b).sort((x, y) => vergleiche(x.name, y.name));
+            moduleBox.append(el('section', { class: 'uni-tag' }, [
+                el('h2', { class: 'besitz-ort' }, [
+                    el('span', { text: b || 'Ohne Bereich' }),
+                    el('span', { class: 'besitz-zahl', text: ectsText(drin.reduce((n, m) => n + ectsVon(m), 0)) })
+                ]),
+                el('ul', { class: 'einkauf-liste' }, drin.map((m) => {
+                    const p = naechstePruefung(m);
+                    const s = semesterVon(m.semester_id);
+                    return el('li', {}, [el('button', { class: 'uni-eintrag uni-modul', attrs: { type: 'button', 'data-status': m.status }, on: { click: () => zeigeModul(m) } }, [
+                        el('span', { class: 'uni-modul-stand', text: STATUS_NAME[m.status] || m.status }),
+                        el('span', { class: 'uni-was' }, [
+                            el('span', { class: 'uni-titel', text: m.name + (m.kuerzel ? ' (' + m.kuerzel + ')' : '') }),
+                            el('span', { class: 'leise einkauf-klein', text: [m.ects != null ? ectsText(m.ects) : '', s ? s.name : ''].filter(Boolean).join(' · ') }),
+                            p ? el('span', { class: 'einkauf-klein', text: 'Prüfung: ' + pruefungText(p) }) : null
+                        ])
+                    ])]);
+                }))
+            ]));
+        });
+    }
+
     function zeigeAlles() {
         zeigeSemesterLeiste();
         zeigePlan();
         zeigeKalender();
+        zeigeModule();
     }
 
     // --- Unterreiter ---
