@@ -101,7 +101,11 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
 - Gebaut: Das Skript kann schon alles für die ganze Etappe (Gerichte, Vorrat, Abhaken mit Vorrat). Die App nutzt Gerichte ab 4.3 und Vorrat ab 4.4.
   Ein Lebensmittel löschen nimmt es auch von der offenen Einkaufsliste, aus Gerichten und aus dem Vorrat (weich, im Sheet zurückholbar).
 
-## Schritt 4.2 Einkaufsliste ohne Netz (0.4.3 → 0.4.4)
+## Schritt 4.2 Einkaufsliste ohne Netz (0.4.3 → 0.4.5) – erledigt
+
+- Nachbesserung 0.4.5 (Wunsch der Person, 30.10.2026): Lebensmittel mit Ankreuzen statt Stift; „Auf die Einkaufsliste“ oben öffnet ein Fenster
+  mit allen angekreuzten und je einer Menge; die Auswahl bleibt bei Suche erhalten. Menge rechts in der Zeile. Start im Unterreiter „Lebensmittel“.
+  Abgehakte bleiben grau und durchgestrichen stehen (nochmal tippen löst den Haken), bis „Einkauf fertig“ getippt wird; erst dann geht es ans Skript.
 
 - Die offene Einkaufsliste liegt zusätzlich im Gerät (`thetadex_einkaufsliste`). Ohne Netz zeigt die App diese Fassung mit dem Hinweis „Stand von <Uhrzeit>“.
 - Abhaken geht immer. Der Haken landet zuerst im Gerät (`thetadex_einkauf_offen`), der Eintrag verschwindet sofort.

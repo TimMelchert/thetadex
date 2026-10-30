@@ -4,13 +4,13 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.4.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.4.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ läuft, Plan in `docs/PLAN-ETAPPE-4.md`.
-- Nächster Schritt: Schritt 4.2 (Einkaufsliste ohne Netz).
+- Nächster Schritt: Schritt 4.3 (Gerichte, Einkaufsliste nach Gericht).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -289,6 +289,11 @@ unter „Info“ die Version prüfen.
   Aktionen: `ping` (mit Rolle), `alles`, `lebensmittel_speichern`, `lebensmittel_loeschen`, `auf_liste`, `liste_aendern`, `abhaken` (erhöht gepflegten Vorrat),
   `gericht_speichern`, `gericht_loeschen`, `vorrat_speichern`, `vorrat_loeschen`. Funktion `einrichten`.
   Reiter Einkauf (4.1): Unterreiter „Einkaufsliste“ (nach Abteilung, großer Haken) und „Lebensmittel“ (Suche, antippen → Anzahl → auf die Liste, neu anlegen aus der Suche).
+  Ohne Netz (4.2): Einkaufsliste im Gerät (`thetadex_einkaufsliste`), Abhaken geht immer, wartende Haken in `thetadex_einkauf_offen`,
+  gesendet beim Öffnen, beim Zurückkehren in die App und bei „wieder online“.
+  Nachbesserung 0.4.5 (Wunsch der Person): Start im Unterreiter „Lebensmittel“; Lebensmittel ankreuzen (bleibt bei Suche), oben „Auf die Einkaufsliste“
+  öffnet ein Fenster mit allen angekreuzten und je einer Menge; Tipp auf den Namen ändert das Lebensmittel. Auf der Liste steht die Menge rechts in der Zeile.
+  Abgehakte bleiben grau und durchgestrichen (wieder lösbar, im Gerät `thetadex_einkauf_haken`), bis „Einkauf fertig“ sie sendet.
 
 ### 3.2 Offen
 
@@ -390,7 +395,9 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
 - **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `leben` legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
-- **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen, zuletzt bekannte Kontostände und die Wahl beim Aussehen (`thetadex_aussehen`).
+- **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen, zuletzt bekannte Kontostände, die Wahl beim Aussehen (`thetadex_aussehen`),
+  die offene Einkaufsliste (`thetadex_einkaufsliste`, nur Einträge mit Namen, Abteilung, Einheit), abgehakte Einträge vor „Einkauf fertig“ (`thetadex_einkauf_haken`)
+  und noch nicht gesendete Haken (`thetadex_einkauf_offen`).
   Schlüssel mit Vorsilbe `thetadex_`. Keine Tracking-Einträge im Gerät speichern. Abmelden löscht alles.
   Die Tracking-Felder hält die App nur im Arbeitsspeicher (10 Minuten), damit das Formular schnell da ist.
 - **Neu laden** nach einem Update nur, wenn auf dieser Seite „Jetzt neu laden“ getippt wurde (`js/app.js`). Sonst lud die Seite
@@ -576,6 +583,8 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.4.1** Antworten zum Plan: Vorrat als eigenes Blatt mit mehreren Orten, Abhaken erhöht den Vorrat, Einkaufsliste auch nach Gericht, Reiter nach Script-Adressen.
 - **0.4.2** Wunsch der Person zu Besitz: ausgeliehene Anzahl (Spalte `ausgeliehen_anzahl`), Balken in der Übersicht entfernt.
 - **0.4.3** Schritt 4.1: Sheet „Gemeinsam“, Skript `gemeinsam` (alle Aktionen der Etappe), Reiter Einkauf mit Einkaufsliste und Lebensmitteln.
+- **0.4.4** Schritt 4.2: Einkaufsliste ohne Netz, Haken werden später gesendet.
+- **0.4.5** Nachbesserung 4.2: Lebensmittel ankreuzen und zusammen auf die Liste, Menge rechts, Abgehakte bleiben bis „Einkauf fertig“, Start bei Lebensmittel.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

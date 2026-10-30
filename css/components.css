@@ -770,14 +770,19 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .einkauf-haken.ist-an::after { content: "✓"; }
 .einkauf-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; padding-top: 2px; }
 .einkauf-text .besitz-oeffnen { min-height: 32px; font-size: 1.05rem; }
-.einkauf-menge { font-variant-numeric: tabular-nums; }
+.einkauf-kopfzeile { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.einkauf-menge { flex: 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+/* Abgehakt, aber noch nicht „Einkauf fertig“: grau und durchgestrichen */
+.einkauf-abgehakt .einkauf-text, .einkauf-abgehakt .einkauf-text .besitz-oeffnen { color: var(--schrift-leise); text-decoration: line-through; }
+.einkauf-fertig { margin-top: var(--abstand); }
+/* Leiste über der Lebensmittel-Liste: bleibt beim Scrollen oben */
+.einkauf-auswahl-leiste { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 10px; margin-top: var(--abstand); padding: 8px 0; background: var(--hintergrund); }
+.einkauf-auswahl-leiste .knopf[disabled] { opacity: 0.5; cursor: default; }
 .einkauf-klein { font-size: 0.85rem; overflow-wrap: anywhere; }
-.einkauf-zeilen-status:empty { display: none; }
-.einkauf-zeilen-status { font-size: 0.85rem; font-weight: 600; }
-.einkauf-lm { align-items: center; padding: 0 0 0 12px; }
+.einkauf-warten:empty { display: none; }
+.einkauf-lm { align-items: center; }
 .einkauf-lm-wahl { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: 1; min-width: 0; min-height: 52px; padding: 8px 0; border: none; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .einkauf-lm-name { font-weight: 600; overflow-wrap: anywhere; }
-.einkauf-stift { flex: 0 0 auto; width: 52px; min-height: 52px; border: none; border-left: 1px solid var(--linie); background: none; color: var(--schrift); font: inherit; font-size: 1.2rem; cursor: pointer; }
 .einkauf-neu-aus-suche { margin-top: 8px; }
 .einkauf-anzahl { display: flex; gap: 8px; align-items: stretch; }
 .einkauf-anzahl input { width: 6em; text-align: center; }

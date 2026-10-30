@@ -118,7 +118,7 @@ export function render(container) {
         pruefKnopf,
         ergebnis,
         el('h2', { text: 'Abmelden' }),
-        el('p', { text: 'Löscht Passwort, Adressen und die Wahl beim Aussehen von diesem Gerät.' }),
+        el('p', { text: 'Löscht Passwort, Adressen, die Wahl beim Aussehen und die Einkaufsliste von diesem Gerät.' }),
         el('button', { class: 'knopf knopf-zweit', text: 'Abmelden', attrs: { type: 'button' }, on: { click: allesLoeschen } })
     );
 }
