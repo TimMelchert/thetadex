@@ -4,12 +4,12 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.3.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.3.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
-- Etappe 3 „Besitz“ läuft, Plan in `docs/PLAN-ETAPPE-3.md`.
-- Nächster Schritt: weitere Anmerkungen der Person nach dem Testen von 3.6 (falls nötig), dann Etappe 3 abschließen.
+- Etappe 3 „Besitz“ ist fertig (30.10.2026).
+- Nächster Schritt: **Etappe 4 „Einkauf und Essen“**, zuerst der Plan `docs/PLAN-ETAPPE-4.md` (Schritt 4.0).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -274,7 +274,7 @@ unter „Info“ die Version prüfen.
   Döner-Skript: Aktionen `liste`, `bewerten`, `ping`, ohne Passwort. Schnell (drei Werte) oder ausführlich nach Kriterien (1.3).
 - Etappe 2: Reiter Tracking (Eingabe und Übersicht je Jahr und Monat mit farbigen Zellen) und Finanzen (Kontostände, Buchen,
   Auswertung mit Chart.js). Felder, Zwecke, Kategorien, Rückzahlungen und Farbregeln stehen im Blatt `Einstellungen` des jeweiligen Sheets.
-- Etappe 3 (läuft): Einstellungen mit Aussehen (3.1). Sheet „Leben“ mit Skript `leben` (3.2): Blatt `besitz`, Aktionen `ping`, `liste`,
+- Etappe 3 (fertig): Einstellungen mit Aussehen (3.1). Sheet „Leben“ mit Skript `leben` (3.2): Blatt `besitz`, Aktionen `ping`, `liste`,
   `speichern` (neu ohne `id`, ändern mit `id` und `geaendert_am` als Schutz vor Überschreiben), `loeschen` (weich). Funktion `einrichten`.
   Reiter Besitz: Liste je Ort (PC Tabelle, Handy Karten), Hinzufügen; Ändern und Löschen per Tipp auf eine Sache, Suche, Filter nach Ort und Kategorie, Sortieren am PC (3.3).
   Zubehör (3.4): Spalte `gehoert_zu`, eine Ebene, eingerückt und aufklappbar unter der Hauptsache.
@@ -333,6 +333,16 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   | DSA-Bögen | lesen, ändern | – | ein Bogen per Link, nur lesen |
   | Döner | lesen, bewerten; löschen nur im Sheet | wie alle | lesen, bewerten |
 - **Besitz: keine Daten öffentlich** (Wunsch der Person). Wie bei Finanzen: keine Gegenstände, Orte oder Preise im Repo.
+  Auch die Namen bei „Ausgeliehen an“ stehen nur im Sheet „Leben“, nie im Repo, in Beispielen oder Pull-Request-Texten.
+- **Besitz, Blatt `besitz` im Sheet „Leben“** (Etappe 3): Spalten `id, name, kategorie, ort, anzahl, kaufpreis, kaufdatum, notiz,
+  erstellt_am, geaendert_am, geloescht, gehoert_zu, bild, ausgeliehen_an`. Pflicht: Name (80), Kategorie (40), Ort (60), Anzahl (0 bis 9999).
+  Freiwillig: Kaufpreis (bis 1.000.000 €), Kaufdatum (nicht in der Zukunft), Notiz (300), Ausgeliehen an (60). `einrichten` ergänzt fehlende Spalten am Ende.
+  Orte und Kategorien haben kein eigenes Blatt: Die Auswahl entsteht aus der Liste, Umbenennen im Sheet mit „Suchen und ersetzen“.
+  Keine Summe der Kaufpreise (Wunsch der Person). Ändern schickt `geaendert_am` mit; ist die Zeile inzwischen anders, speichert das Skript nicht.
+  Löschen ist weich (`geloescht = TRUE`, im Sheet zurückholbar); Zubehör einer gelöschten Hauptsache bleibt als eigene Sache.
+  Zubehör nur eine Ebene. Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer mit Zubehör oder mit dem Haken „Auch Sachen mit Anzahl 0 zeigen“.
+  Tipp auf eine Sache zeigt erst ihre Daten mit Bild, „Bearbeiten“ öffnet das Formular. Nach dem Speichern schließt es sich, der Ort bleibt stehen.
+  Übersicht zählt Sachen mit Anzahl über 0, Zubehör eingeschlossen, als Sachen und als Stück.
 - **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
   Der Link enthält die Skript-Kennung und diesen Schlüssel, nie das Passwort. „Neuen Link erstellen“ macht alte Links ungültig.
   Die geteilte Ansicht zeigt den ganzen Bogen, aber keine Knöpfe zum Ändern. Grund: Bögen sollen ohne Passwort an andere gehen.
@@ -475,11 +485,11 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     Reiter Tracking (Eingabe wie bisher); Reiter Finanzen (Übersicht, Buchen, Auswertung mit Chart.js aus `vendor/`).
   - Datenschutz: Finanz- und Tracking-Daten nur nach Passwort, nichts im Gerät außer den letzten Kontoständen (5).
   - **Tor:** Die Person ist mit der neuen App zufrieden (Richtwert 2 Wochen). Dann alte Bereitstellungen archivieren und alte Repos löschen.
-- **Etappe 3 „Besitz“ (0.3.x)** – läuft, Plan mit Schritten 3.0 bis 3.7 in `docs/PLAN-ETAPPE-3.md`.
-  - Ziel: neues Sheet „Leben“ mit Skript `leben` (nur die Person).
-  - Besitz: Tabelle aller Sachen mit Kategorie, Ort und Anzahl, bei neuen Sachen Kaufpreis und Kaufdatum. Hinzufügen, ändern, weich löschen.
-    Suche und Filter nach Ort und Kategorie. Am PC als Tabelle, am Handy als Karten (1.5).
-  - Datenschutz: nur mit Passwort; nichts davon im Gerät speichern.
+- **Etappe 3 „Besitz“ (0.3.x)** – fertig (30.10.2026), Plan eingearbeitet (3.1 und 4).
+  - Gebaut: „Einstellungen“ statt „Einrichtung“ mit Aussehen Hell, Dunkel, Wie Gerät. Neues Sheet „Leben“ mit Skript `leben` (nur die Person).
+  - Reiter Besitz mit Unterreitern „Liste“ und „Übersicht“: Liste je Ort (PC Tabelle mit Strich je Sache, Handy Karten), Suche,
+    Filter nach Ort, Kategorie und ausgeliehen, Sortieren am PC, Zubehör aufklappbar, Bild je Sache aus Google Drive.
+  - Datenschutz: nur mit Passwort; die Liste nur im Arbeitsspeicher, nichts davon im Gerät. Bilder bleiben privat im Drive der Person.
 - **Etappe 4 „Einkauf und Essen“ (0.4.x)**
   - Ziel: neues Sheet „Gemeinsam“ mit Skript `gemeinsam`, Partner-Zugang (`PARTNER_PIN`).
   - Lebensmittel-Liste mit Suchleiste: suchen, antippen, Anzahl wählen → steht auf der Einkaufsliste.
@@ -553,6 +563,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.3.6** Schritt 3.5: Bild je Sache aus Google Drive (hochladen oder Link), Spalte `bild`.
 - **0.3.7** Schritt 3.6: 📦 im Titel, Ansicht vor dem Bearbeiten, Anzahl 0 ausgeblendet, „Ausgeliehen an“ mit Filter, Übersicht, Strich je Sache am PC.
 - **0.3.8** Schritt 3.7: Besitz-Übersicht mit Farbstrich oben an den Zahlen, Haken „Anzahl 0 zeigen“ immer sichtbar.
+- **0.3.9** Etappe 3 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-3.md` gelöscht. Dazu: Startseite mit Logo neben dem Namen, beides größer.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

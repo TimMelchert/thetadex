@@ -637,7 +637,7 @@ input[type="date"] { cursor: pointer; }
 .knopf.knopf-bereich { background: var(--bereich); color: var(--schrift-auf-farbe); }
 
 /* Startseite: Logo groß in der Mitte, oben links ausgeblendet */
-.start-logo { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 12px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: 2rem; }
+.start-logo { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 12px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: 2.6rem; }
 .start-version { text-align: center; }
 body[data-seite="start"] .kopf-marke { visibility: hidden; }
 

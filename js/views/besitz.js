@@ -4,7 +4,7 @@
 // 3.6: Tipp auf eine Sache zeigt erst ihre Daten mit Bild (Knopf „Bearbeiten“ öffnet das Formular).
 // Sachen mit Anzahl 0 sind ausgeblendet (außer mit Zubehör). „Ausgeliehen an“ mit eigenem Filter. Unterreiter „Übersicht“.
 // Daten aus dem Skript „leben“ (Sheet „Leben“, Blatt „besitz“). Nur mit Passwort.
-// Die Liste liegt nur im Arbeitsspeicher, solange die Seite offen ist, nie im Gerät (docs/PLAN-ETAPPE-3.md).
+// Die Liste liegt nur im Arbeitsspeicher, solange die Seite offen ist, nie im Gerät (docs/STAND.md, Abschnitt 4).
 
 import { el, leeren, heute, kalenderBeiKlick } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
