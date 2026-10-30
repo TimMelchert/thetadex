@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.3.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.3.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
@@ -552,6 +552,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.3.5** Schritt 3.4: Zubehör unter einer Hauptsache (Spalte `gehoert_zu`), eingerückt und aufklappbar.
 - **0.3.6** Schritt 3.5: Bild je Sache aus Google Drive (hochladen oder Link), Spalte `bild`.
 - **0.3.7** Schritt 3.6: 📦 im Titel, Ansicht vor dem Bearbeiten, Anzahl 0 ausgeblendet, „Ausgeliehen an“ mit Filter, Übersicht, Strich je Sache am PC.
+- **0.3.8** Schritt 3.7: Besitz-Übersicht mit Farbstrich oben an den Zahlen, Haken „Anzahl 0 zeigen“ immer sichtbar.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
