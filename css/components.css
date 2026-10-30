@@ -817,3 +817,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .einkauf-knoepfe .knopf { margin-top: 0; }
 .einkauf-neu-lm { display: flex; flex-direction: column; margin-top: 10px; padding: 0 12px 12px; border-left: 4px solid var(--bereich); }
 .einkauf-neu-lm[hidden] { display: none; }
+.einkauf-knoepfe .einkauf-filter {
+    width: auto; max-width: 100%; min-height: 44px; padding: 8px 12px;
+    border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit;
+}
