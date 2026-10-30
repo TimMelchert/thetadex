@@ -1,5 +1,6 @@
 // Reiter Einkauf: Einkaufsliste nach Abteilung und Lebensmittel mit Suche (Schritt 4.1).
-// Lebensmittel antippen → Anzahl wählen → steht auf der Einkaufsliste. Abhaken lässt Einträge verschwinden.
+// Lebensmittel ankreuzen → „Auf die Einkaufsliste“ → Mengen eintragen. Die Auswahl bleibt bei Suche erhalten.
+// Abgehakte Einträge bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird (Wunsch der Person, 30.10.2026).
 // Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“). Person und Partner*in, beide nur mit Passwort.
 // Ohne Netz (4.2, Ausnahme in docs/STAND.md 4): Die offene Einkaufsliste liegt zusätzlich im Gerät (thetadex_einkaufsliste).
 // Abhaken geht immer; die Haken warten im Gerät (thetadex_einkauf_offen), bis das Skript sie bestätigt.
@@ -13,8 +14,12 @@ import { zeigeGespeichert } from '../ui/overlay.js';
 
 // Zuletzt geladene Daten { lebensmittel, liste, gerichte, vorrat }, im Arbeitsspeicher
 let daten = null;
-// Abgehakte Einträge (ids), die das Skript noch nicht bestätigt hat. Liegen auch im Gerät.
+// Abgehakte Einträge (ids), noch vor „Einkauf fertig“. Liegen im Gerät, lassen sich wieder lösen.
+const haken = () => lesen('einkauf_haken', []) || [];
+// Nach „Einkauf fertig“: ids, die das Skript noch nicht bestätigt hat. Liegen auch im Gerät.
 const offeneHaken = () => lesen('einkauf_offen', []) || [];
+// Angekreuzte Lebensmittel (ids) für „Auf die Einkaufsliste“. Nur im Arbeitsspeicher, bleibt bei Suche erhalten.
+const auswahl = new Set();
 // Die Einkaufsliste im Gerät: offene Einträge mit den Namen, die sie zum Anzeigen braucht
 function merkeListe() {
     if (!daten) return;
@@ -27,15 +32,18 @@ function merkeListe() {
         gerichte: daten.gerichte.filter((g) => gIds.has(g.id)).map(({ id, name }) => ({ id, name }))
     });
 }
-// Neue Liste vom Skript: Einträge mit noch nicht gesendetem Haken bleiben ausgeblendet
+// Neue Liste vom Skript: Einträge nach „Einkauf fertig“, die noch nicht gesendet sind, bleiben ausgeblendet.
+// Haken zu Einträgen, die es nicht mehr gibt (zum Beispiel am anderen Handy entfernt), fallen weg.
 function setzeListe(liste) {
     const warten = new Set(offeneHaken());
     daten.liste = (Array.isArray(liste) ? liste : []).filter((e) => !warten.has(e.id));
+    const da = new Set(daten.liste.map((e) => e.id));
+    schreiben('einkauf_haken', haken().filter((id) => da.has(id)));
     merkeListe();
 }
 const uhrzeit = (ms) => new Date(ms).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 // Einkaufsliste oder Lebensmittel. Bleibt, solange die Seite offen ist.
-let teil = 'liste';
+let teil = 'lebensmittel';
 // Neu laden beim Zurückkehren in die App (nur, wenn der Reiter offen ist)
 let neuLadenBeiRueckkehr = null;
 document.addEventListener('visibilitychange', () => {
@@ -119,40 +127,50 @@ export function render(container, ctx) {
         }
     }
 
-    // --- Auf die Liste setzen ---
-    function zeigeAufListe(lm) {
+    // --- Angekreuzte Lebensmittel auf die Liste setzen: ein Fenster mit allen, je eine Menge ---
+    function zeigeAuswahlFenster() {
+        const gewaehlt = [...auswahl].map(lmVon).filter(Boolean).sort((a, b) => vergleiche(a.name, b.name));
+        if (!gewaehlt.length) return;
         const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
-        const anzahl = anzahlFeld('einkauf-auf-anzahl');
-        const notiz = el('input', { attrs: { id: 'einkauf-auf-notiz', type: 'text', maxlength: 100, autocomplete: 'off', placeholder: 'freiwillig, zum Beispiel „die große“' } });
-        const schon = aufListe(lm.id);
+        const felder = gewaehlt.map((lm, i) => ({ lm, anzahl: anzahlFeld('einkauf-auf-' + i) }));
         const ok = el('button', { class: 'knopf knopf-bereich', text: 'Auf die Liste', attrs: { type: 'submit' } });
         const abbrechen = el('button', { class: 'knopf knopf-zweit', text: 'Abbrechen', attrs: { type: 'button' }, on: { click: () => dialog.close() } });
         async function absenden(ev) {
             ev.preventDefault();
-            const n = leseZahl(anzahl.feld.value);
-            if (!gueltigeAnzahl(n)) {
-                status.textContent = 'Anzahl bitte von 0,5 bis 9999 (halbe erlaubt).';
-                anzahl.feld.focus();
-                return;
+            const eintraege = [];
+            for (const f of felder) {
+                const n = leseZahl(f.anzahl.feld.value);
+                if (!gueltigeAnzahl(n)) {
+                    status.textContent = f.lm.name + ': Menge bitte von 0,5 bis 9999 (halbe erlaubt).';
+                    f.anzahl.feld.focus();
+                    return;
+                }
+                eintraege.push({ lebensmittel_id: f.lm.id, anzahl: n });
             }
-            const antwort = await senden(status, [ok, abbrechen], 'auf_liste', { eintraege: [{ lebensmittel_id: lm.id, anzahl: n, notiz: notiz.value.trim() }] });
+            const antwort = await senden(status, [ok, abbrechen], 'auf_liste', { eintraege });
             if (!antwort) return;
             setzeListe(antwort.liste);
+            auswahl.clear();
             dialog.close();
-            zeigeGespeichert('Auf der Liste', mitEinheit(n, lm) + ' ' + lm.name);
+            zeigeGespeichert('Auf der Liste', eintraege.length === 1 ? felder[0].lm.name : eintraege.length + ' Lebensmittel');
             zeigeAlles();
         }
-        oeffneDialog(lm.name, [
+        oeffneDialog('Auf die Einkaufsliste', [
             el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: absenden } }, [
-                schon ? el('p', { class: 'leise besitz-hinweis', text: 'Schon auf der Liste: ' + mitEinheit(schon, lm) + '. Die Anzahl kommt dazu.' }) : null,
-                el('label', { text: 'Anzahl' + (lm.einheit ? ' (' + lm.einheit + ')' : ''), attrs: { for: 'einkauf-auf-anzahl' } }), anzahl.box,
-                el('label', { text: 'Notiz', attrs: { for: 'einkauf-auf-notiz' } }), notiz,
+                ...felder.flatMap(({ lm, anzahl }, i) => {
+                    const schon = aufListe(lm.id);
+                    return [
+                        el('label', { text: lm.name + (lm.einheit ? ' (' + lm.einheit + ')' : ''), attrs: { for: 'einkauf-auf-' + i } }),
+                        anzahl.box,
+                        schon ? el('p', { class: 'leise besitz-hinweis', text: 'Schon auf der Liste: ' + mitEinheit(schon, lm) + '. Die Menge kommt dazu.' }) : null
+                    ];
+                }),
                 el('div', { class: 'besitz-form-knoepfe' }, [ok, abbrechen]),
                 status
             ])
         ]);
-        anzahl.feld.focus();
-        anzahl.feld.select();
+        felder[0].anzahl.feld.focus();
+        felder[0].anzahl.feld.select();
     }
 
     // --- Lebensmittel anlegen oder ändern (lm = null: neu, name = Vorschlag aus der Suche) ---
@@ -194,13 +212,11 @@ export function render(container, ctx) {
             const i = daten.lebensmittel.findIndex((l) => l.id === neu.id);
             if (i >= 0) daten.lebensmittel[i] = neu; else daten.lebensmittel.push(neu);
             zeigeAlles();
-            // Aus der Suche neu angelegt: gleich auf die Liste setzen
-            if (!lm && name) {
-                zeigeAufListe(neu);
-            } else {
-                dialog.close();
-                zeigeGespeichert(lm ? 'Geändert' : 'Gespeichert', neu.name);
-            }
+            // Neu angelegt: gleich angekreuzt, damit es mit „Auf die Einkaufsliste“ mitkommt
+            if (!lm) auswahl.add(neu.id);
+            zeigeAlles();
+            dialog.close();
+            zeigeGespeichert(lm ? 'Geändert' : 'Gespeichert', neu.name);
         }
 
         async function entfernen() {
@@ -209,6 +225,7 @@ export function render(container, ctx) {
             const antwort = await senden(status, knoepfe, 'lebensmittel_loeschen', { id: lm.id, geaendert_am: lm.geaendert_am });
             if (!antwort) return;
             daten.lebensmittel = daten.lebensmittel.filter((l) => l.id !== lm.id);
+            auswahl.delete(lm.id);
             daten.liste = daten.liste.filter((e) => e.lebensmittel_id !== lm.id);
             merkeListe();
             dialog.close();
@@ -235,8 +252,17 @@ export function render(container, ctx) {
         leeren(listeBox);
         if (!daten) return;
         if (!daten.liste.length) {
-            listeBox.append(el('p', { class: 'leise einkauf-leer', text: 'Die Einkaufsliste ist leer. Unter „Lebensmittel“ etwas antippen.' }));
+            listeBox.append(el('p', { class: 'leise einkauf-leer', text: 'Die Einkaufsliste ist leer. Unter „Lebensmittel“ etwas ankreuzen.' }));
             return;
+        }
+        // „Einkauf fertig“: alle abgehakten Einträge senden, danach verschwinden sie
+        const abgehakt = haken();
+        if (abgehakt.length) {
+            const zahl = new Set(daten.liste.filter((e) => abgehakt.includes(e.id)).map((e) => e.lebensmittel_id)).size;
+            listeBox.append(el('button', {
+                class: 'knopf knopf-bereich einkauf-fertig', text: '✓ Einkauf fertig (' + zahl + ' abgehakt)',
+                attrs: { type: 'button' }, on: { click: () => einkaufFertig() }
+            }));
         }
         const jeLm = new Map();
         daten.liste.forEach((e) => {
@@ -265,38 +291,52 @@ export function render(container, ctx) {
         });
     }
 
+    // Abhaken geht auch ohne Netz: nur im Gerät, nochmal tippen löst den Haken wieder
     function listenZeile({ lm, eintraege }) {
         const summe = eintraege.reduce((n, e) => n + e.anzahl, 0);
         const fuer = eintraege.map((e) => gerichtVon(e.gericht_id)).filter(Boolean).map((g) => g.name);
         const notizen = eintraege.map((e) => e.notiz).filter(Boolean);
-        const haken = el('button', {
-            class: 'einkauf-haken', text: '',
-            attrs: { type: 'button', 'aria-label': lm.name + ' abhaken' },
-            on: { click: () => abhaken() }
+        const ids = eintraege.map((e) => e.id);
+        const an = ids.every((id) => haken().includes(id));
+        const knopf = el('button', {
+            class: 'einkauf-haken' + (an ? ' ist-an' : ''), text: '',
+            attrs: { type: 'button', 'aria-pressed': an ? 'true' : 'false', 'aria-label': lm.name + ' abhaken' },
+            on: {
+                click: () => {
+                    const rest = haken().filter((id) => !ids.includes(id));
+                    schreiben('einkauf_haken', an ? rest : [...rest, ...ids]);
+                    zeigeListe();
+                }
+            }
         });
-        // Abhaken geht auch ohne Netz: erst ins Gerät, Eintrag verschwindet sofort, dann senden
-        function abhaken() {
-            haken.classList.add('ist-an');
-            const ids = eintraege.map((e) => e.id);
-            schreiben('einkauf_offen', [...new Set([...offeneHaken(), ...ids])]);
-            daten.liste = daten.liste.filter((e) => !ids.includes(e.id));
-            merkeListe();
-            setTimeout(zeigeAlles, 250); // kurz den Haken zeigen
-            sendeHaken();
-        }
-        return el('li', { class: 'einkauf-zeile' }, [
-            haken,
+        return el('li', { class: 'einkauf-zeile' + (an ? ' einkauf-abgehakt' : '') }, [
+            knopf,
             el('div', { class: 'einkauf-text' }, [
-                el('button', {
-                    class: 'besitz-oeffnen', text: lm.name,
-                    attrs: { type: 'button', 'aria-label': lm.name + ' ändern' },
-                    on: { click: () => zeigeEintrag(lm, eintraege) }
-                }),
-                el('span', { class: 'einkauf-menge', text: mitEinheit(summe, lm) }),
+                el('div', { class: 'einkauf-kopfzeile' }, [
+                    el('button', {
+                        class: 'besitz-oeffnen', text: lm.name,
+                        attrs: { type: 'button', 'aria-label': lm.name + ' ändern' },
+                        on: { click: () => zeigeEintrag(lm, eintraege) }
+                    }),
+                    el('span', { class: 'einkauf-menge', text: mitEinheit(summe, lm) })
+                ]),
                 notizen.length ? el('span', { class: 'leise einkauf-klein', text: notizen.join(' · ') }) : null,
                 fuer.length ? el('span', { class: 'leise einkauf-klein', text: 'für ' + fuer.join(', ') }) : null
             ])
         ]);
+    }
+
+    // Abgehakte Einträge gehen ans Skript (ohne Netz später) und verschwinden von der Liste
+    function einkaufFertig() {
+        const ids = haken();
+        if (!ids.length) return;
+        schreiben('einkauf_offen', [...new Set([...offeneHaken(), ...ids])]);
+        schreiben('einkauf_haken', []);
+        daten.liste = daten.liste.filter((e) => !ids.includes(e.id));
+        merkeListe();
+        zeigeGespeichert('Einkauf fertig');
+        zeigeAlles();
+        sendeHaken();
     }
 
     // Einträge eines Lebensmittels ändern oder entfernen (je Gericht ein Block, sonst einer)
@@ -341,7 +381,10 @@ export function render(container, ctx) {
     });
     const lmTreffer = el('div');
     const neuLm = el('button', { class: 'knopf knopf-zweit', text: '+ Neues Lebensmittel', attrs: { type: 'button' }, on: { click: () => zeigeLebensmittelForm(null) } });
+    const aufListeKnopf = el('button', { class: 'knopf knopf-bereich', attrs: { type: 'button' }, on: { click: () => zeigeAuswahlFenster() } });
+    const aufheben = el('button', { class: 'knopf knopf-zweit', text: 'Auswahl aufheben', attrs: { type: 'button' }, on: { click: () => { auswahl.clear(); zeigeLebensmittel(); } } });
     lmBox.append(
+        el('div', { class: 'einkauf-auswahl-leiste' }, [aufListeKnopf, aufheben]),
         el('div', { class: 'formular besitz-suche' }, [el('label', { text: 'Suchen', attrs: { for: 'einkauf-suche' } }), suche]),
         lmTreffer,
         neuLm
@@ -349,6 +392,11 @@ export function render(container, ctx) {
 
     function zeigeLebensmittel() {
         leeren(lmTreffer);
+        // Gelöschte Lebensmittel fallen aus der Auswahl
+        if (daten) [...auswahl].forEach((id) => { if (!lmVon(id)) auswahl.delete(id); });
+        aufListeKnopf.textContent = 'Auf die Einkaufsliste' + (auswahl.size ? ' (' + auswahl.size + ')' : '');
+        aufListeKnopf.disabled = !auswahl.size;
+        aufheben.hidden = !auswahl.size;
         if (!daten) return;
         const wort = suche.value.trim();
         const treffer = daten.lebensmittel
@@ -356,25 +404,28 @@ export function render(container, ctx) {
             .sort((a, b) => vergleiche(a.name, b.name));
         if (!daten.lebensmittel.length && !wort) {
             lmTreffer.append(el('p', { class: 'leise', text: 'Noch keine Lebensmittel. Tippe oben einen Namen ein oder auf „+ Neues Lebensmittel“.' }));
+        } else if (!wort) {
+            lmTreffer.append(el('p', { class: 'leise besitz-hinweis einkauf-tipp', text: 'Ankreuzen, dann oben „Auf die Einkaufsliste“. Tipp auf den Namen zum Ändern.' }));
         }
         if (treffer.length) {
             lmTreffer.append(el('ul', { class: 'einkauf-liste' }, treffer.map((l) => {
                 const zahl = aufListe(l.id);
                 const zusatz = [l.abteilung, zahl ? 'auf der Liste: ' + mitEinheit(zahl, l) : ''].filter(Boolean).join(' · ');
+                const an = auswahl.has(l.id);
                 return el('li', { class: 'einkauf-zeile einkauf-lm' }, [
                     el('button', {
+                        class: 'einkauf-haken' + (an ? ' ist-an' : ''), text: '',
+                        attrs: { type: 'button', 'aria-pressed': an ? 'true' : 'false', 'aria-label': l.name + ' auswählen' },
+                        on: { click: () => { if (an) auswahl.delete(l.id); else auswahl.add(l.id); zeigeLebensmittel(); } }
+                    }),
+                    el('button', {
                         class: 'einkauf-lm-wahl',
-                        attrs: { type: 'button', 'aria-label': l.name + ' auf die Liste setzen' },
-                        on: { click: () => zeigeAufListe(l) }
+                        attrs: { type: 'button', 'aria-label': l.name + ' ändern' },
+                        on: { click: () => zeigeLebensmittelForm(l) }
                     }, [
                         el('span', { class: 'einkauf-lm-name', text: l.name }),
                         zusatz ? el('span', { class: 'leise einkauf-klein', text: zusatz }) : null
-                    ]),
-                    el('button', {
-                        class: 'einkauf-stift', text: '✎',
-                        attrs: { type: 'button', 'aria-label': l.name + ' ändern' },
-                        on: { click: () => zeigeLebensmittelForm(l) }
-                    })
+                    ])
                 ]);
             })));
         }
@@ -415,7 +466,7 @@ export function render(container, ctx) {
     let sendetHaken = false;
     function zeigeHakenStatus(fehler = '') {
         const n = offeneHaken().length;
-        hakenStatus.textContent = n ? (n === 1 ? '1 Haken' : n + ' Haken') + ' noch nicht gesendet.' + (fehler ? ' ' + fehler : '') : '';
+        hakenStatus.textContent = n ? '„Einkauf fertig“ noch nicht gesendet (' + n + (n === 1 ? ' Eintrag' : ' Einträge') + ').' + (fehler ? ' ' + fehler : '') : '';
     }
     // Sendet, bis nichts mehr wartet. Ohne Netz bleiben die Haken im Gerät.
     async function sendeHaken() {
@@ -472,7 +523,7 @@ export function render(container, ctx) {
                 const warten = new Set(offeneHaken());
                 daten.liste = im.liste.filter((x) => !warten.has(x.id));
             }
-            ladeStatus.textContent = (e.code === 'netz' && im ? 'Ohne Verbindung: Einkaufsliste von ' + uhrzeit(im.stand) + ' Uhr. Abhaken geht, alles andere braucht Netz.'
+            ladeStatus.textContent = (e.code === 'netz' && im ? 'Ohne Verbindung: Einkaufsliste von ' + uhrzeit(im.stand) + ' Uhr. Abhaken und „Einkauf fertig“ gehen, alles andere braucht Netz.'
                 : 'Laden fehlgeschlagen: ' + e.message);
             zeigeAlles();
         } finally {
