@@ -5,8 +5,11 @@ import { istEingerichtet } from '../store.js';
 
 export function render(container, ctx) {
     container.append(
-        el('h1', { text: 'Thetadex' }),
-        el('p', { class: 'leise', text: 'Version ' + ctx.version })
+        el('h1', { class: 'start-logo' }, [
+            el('img', { attrs: { src: 'icons/thetadex-icon.svg', alt: '', width: '72', height: '72' } }),
+            el('span', { text: 'Thetadex' })
+        ]),
+        el('p', { class: 'leise start-version', text: 'Version ' + ctx.version })
     );
 
     if (ctx.sichtbar.length) {

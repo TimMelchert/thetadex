@@ -4,11 +4,11 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.2.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.2.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
-- Laufende Etappe: **Etappe 2 „Bestehendes umziehen“**, Plan in `docs/PLAN-ETAPPE-2.md`.
-- Nächster Schritt: **2.5 Nachbesserungen und Umstieg** (Tor: etwa zwei Wochen nur Thetadex).
+- Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
+- Nächster Schritt: **Etappe 3 „Besitz“**, zuerst `docs/PLAN-ETAPPE-3.md` schreiben (Abschnitt 7.2).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -258,7 +258,7 @@ unter „Info“ die Version prüfen.
 
 ### 3.1 Stand
 
-- Zwei alte Apps laufen weiter: Repos `TimMelchert/Tracking-Leben` und `TimMelchert/App-Finazen-Tabelle` (öffentlich, GitHub Pages).
+- Zwei alte Apps laufen noch weiter, bis zum Umstieg (3.2): Repos `TimMelchert/Tracking-Leben` und `TimMelchert/App-Finazen-Tabelle` (öffentlich, GitHub Pages).
 - Skript-Code beider Apps liegt als Sicherung in den Projektdateien (`apps-script-backup/`).
   - Finanzen: Passwort in Skripteigenschaft `APP_PIN`, Sperre nach Fehlversuchen, `LockService`, Eingabeprüfung.
   - Tracking (ab 0.2): Passwort aus `APP_PIN`, Sperre, JSON-Antworten, `LockService`, Prüfung von Datum und Feldnamen.
@@ -271,9 +271,19 @@ unter „Info“ die Version prüfen.
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
 - Etappe 1: Symbole für alle Reiter (1.1). Döner-Skript und Reiter mit Rangliste, Einzelheiten, Bewerten und Teilen-Link (1.2).
   Döner-Skript: Aktionen `liste`, `bewerten`, `ping`, ohne Passwort. Schnell (drei Werte) oder ausführlich nach Kriterien (1.3).
+- Etappe 2: Reiter Tracking (Eingabe und Übersicht je Jahr und Monat mit farbigen Zellen) und Finanzen (Kontostände, Buchen,
+  Auswertung mit Chart.js). Felder, Zwecke, Kategorien, Rückzahlungen und Farbregeln stehen im Blatt `Einstellungen` des jeweiligen Sheets.
 
 ### 3.2 Offen
 
+- **ToDo für die Person (Umstieg, Tor von Etappe 2):** Nach etwa zwei Wochen nur mit Thetadex, wenn alles passt:
+  1. Im Apps-Script-Editor je Sheet (Tracking, Finanzen): Bereitstellen → Bereitstellungen verwalten → **alte** Bereitstellung → Archivieren.
+  2. Alte Apps vom Startbildschirm entfernen.
+  3. Alte Repos `Tracking-Leben` und `App-Finazen-Tabelle` löschen: GitHub → Repo → Settings → ganz unten „Delete this repository“
+     (die ZIP-Sicherung aus Schritt 0.0 bleibt).
+- **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
+- **Arbeitsschritt für später (Wunsch der Person, 30.10.2026):** „Einrichtung“ oben rechts wird „Einstellungen“. Dort zusätzlich ein Schalter
+  für das Aussehen: hell, dunkel oder wie das Gerät. Die Wahl liegt nur im Gerät. Passt als eigener Schritt vor oder in Etappe 3.
 - Ein Beispiel-Charakterbogen zum Verständnis (kommt nicht ins Repo).
 
 ---
@@ -370,8 +380,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einrichtung.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie). `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht.
-- `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske).
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (jetzt `PLAN-ETAPPE-2.md`).
+- `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`).
 
@@ -436,7 +446,19 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Reiter-Symbole (Wunsch der Person): jeder Reiter hat ein Symbol, am Handy nur das Symbol, am PC Symbol und Name.
     Ohne Einrichtung zeigt die Reiterleiste nur öffentliche Reiter.
   - Datenschutz: Nur Laden, Sterne, Begründung und Datum. Keine Namen, keine Geräte-Kennung.
-- **Etappe 2 „Bestehendes umziehen“ (0.2.x)**, genauer Plan in `docs/PLAN-ETAPPE-2.md`
+- **Etappe 2 „Bestehendes umziehen“ (0.2.x) – fertig bis auf den Umstieg (3.2).** So ist es gebaut (Schritte 2.0 bis 2.5, Pull Requests #14 bis #21):
+  - Daten bleiben in den bestehenden Sheets, kein Export oder Import. Je Sheet kam nur ein Blatt `Einstellungen` dazu.
+    Skript-Änderungen gehen nur in die Thetadex-Bereitstellung, die alten Apps laufen mit ihrer alten Bereitstellung weiter.
+    Die Werte der alten Apps lagen als Tabellen zum Einfügen in den Projektdateien (`etappe-2/`), nie im Repo.
+  - Tracking: Blatt `Einstellungen` (`feld, gruppe, art, vorgabe, optionen, schritt, farben`); `einrichten` füllt `feld` aus der Kopfzeile.
+    Arten `haken`, `zahl`, `auswahl` (`wert=Text; …`, Hochkomma vor `-1=…`). Formular je Gruppe als Karte, „Speichern“ in der Tracking-Farbe.
+    Die Felder holt die App beim Start im Hintergrund und hält sie nur im Arbeitsspeicher (10 Minuten).
+    Übersicht: Jahr und Monat wählen, je Monat eine Tabelle mit allen Tagen, Zellen farbig ohne Zahlen. Farbregeln in Spalte `farben`:
+    `1=grün`, `7-10=grün`, `<7=rot`, `>10=gelb`, `<=`, `>=`, `sonst=rot`, `skala 1-10`; Farben grün, hellgrün, dunkelgrün, rot, dunkelrot, gelb, blau, rosa, grau.
+  - Finanzen: Blatt `Einstellungen` (`liste, name, kategorie, betrag, zweck`; Listen `zweck`, `kategorie`, `rueckzahlung`, `eigenanteil`).
+    Umschalter „Buchen / Auswertung“. Buchen wie bisher mit Auswahlfeld für Zweck und Kategorie, Doppelbuchungs-Sperre, Fenster „Gespeichert“.
+    Auswertung mit Chart.js (lokal): Monat oder Jahr, Ringe, Säulen mit Budget, Budget-Balken, Netto-Kacheln mit Haken, Jahrestabelle, Bafög.
+    Die Kategorien kommen allgemein aus `Analyse Monate` (Spalten `-Out`, `-In`, `Netto-`).
   - Ziel: Tracking und Finanzen funktionieren in Thetadex „wie bisher“.
   - Schritte: Blatt `Einstellungen` je Sheet (Tracking-Felder; Zwecke, Kategorien, Personen für Rückzahlungen) und Aktion `einstellungen`;
     Reiter Tracking (Eingabe wie bisher); Reiter Finanzen (Übersicht, Buchen, Auswertung mit Chart.js aus `vendor/`).
@@ -509,6 +531,8 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.2.6** Nachbesserung 2.3: Tracking mit 📊, Übersicht mit allen Tagen, je Monat eine Tabelle, Filter nach Monat.
 - **0.2.7** Schritt 2.4: Finanzen → Auswertung mit Chart.js (lokal), Kategorien allgemein aus dem Skript, Haken für Rückzahlungen.
 - **0.2.8** Schritt 2.5: Überschrift „Tracking Leben“, Tracking-Felder werden beim Start im Hintergrund geholt (nur Arbeitsspeicher, 10 Minuten), Bafög-Kacheln schmal.
+- **0.2.9** Etappe 2 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-2.md` gelöscht. Dazu: Logo groß auf der Startseite,
+  Icon füllt am Android-Startbildschirm die Form, Tracking-„Speichern“ in der Tracking-Farbe, Bafög drei gleich breite Kacheln.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

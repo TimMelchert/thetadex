@@ -64,6 +64,8 @@ function zeigeAnsicht() {
     const bereich = sichtbar.find((b) => b.id === route) || null;
 
     leeren(container);
+    // Auf der Startseite steht das Logo groß in der Mitte, oben links braucht es dann nicht
+    document.body.setAttribute('data-seite', route || 'start');
     if (bereich) container.setAttribute('data-bereich', bereich.id);
     else container.removeAttribute('data-bereich');
 
