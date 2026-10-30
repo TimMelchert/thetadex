@@ -4,11 +4,12 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.2.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.3.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
-- Nächster Schritt: **Etappe 3 „Besitz“**, zuerst `docs/PLAN-ETAPPE-3.md` schreiben (Abschnitt 7.2).
+- Etappe 3 „Besitz“ läuft, Plan in `docs/PLAN-ETAPPE-3.md`.
+- Nächster Schritt: **3.1 Einstellungen statt Einrichtung, Aussehen hell / dunkel / Gerät**.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -246,7 +247,7 @@ unter „Info“ die Version prüfen.
   `id, erstellt_am, geaendert_am, geloescht`. Die genauen Spalten legt der Plan der jeweiligen Etappe fest. Geplante Blätter:
   | Sheet | Blätter |
   | --- | --- |
-  | Leben | `besitz`, `orte` |
+  | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026) |
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, `semester`, `stundenplan`, `termine`, `module` |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
@@ -282,8 +283,8 @@ unter „Info“ die Version prüfen.
   3. Alte Repos `Tracking-Leben` und `App-Finazen-Tabelle` löschen: GitHub → Repo → Settings → ganz unten „Delete this repository“
      (die ZIP-Sicherung aus Schritt 0.0 bleibt).
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
-- **Arbeitsschritt für später (Wunsch der Person, 30.10.2026):** „Einrichtung“ oben rechts wird „Einstellungen“. Dort zusätzlich ein Schalter
-  für das Aussehen: hell, dunkel oder wie das Gerät. Die Wahl liegt nur im Gerät. Passt als eigener Schritt vor oder in Etappe 3.
+- **Wunsch der Person (30.10.2026):** „Einrichtung“ oben rechts wird „Einstellungen“, mit Schalter hell, dunkel oder wie das Gerät.
+  Geplant als Schritt 3.1 (`docs/PLAN-ETAPPE-3.md`).
 - Ein Beispiel-Charakterbogen zum Verständnis (kommt nicht ins Repo).
 
 ---
@@ -464,10 +465,10 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     Reiter Tracking (Eingabe wie bisher); Reiter Finanzen (Übersicht, Buchen, Auswertung mit Chart.js aus `vendor/`).
   - Datenschutz: Finanz- und Tracking-Daten nur nach Passwort, nichts im Gerät außer den letzten Kontoständen (5).
   - **Tor:** Die Person ist mit der neuen App zufrieden (Richtwert 2 Wochen). Dann alte Bereitstellungen archivieren und alte Repos löschen.
-- **Etappe 3 „Besitz“ (0.3.x)**
+- **Etappe 3 „Besitz“ (0.3.x)** – läuft, Plan mit Schritten 3.0 bis 3.4 in `docs/PLAN-ETAPPE-3.md`.
   - Ziel: neues Sheet „Leben“ mit Skript `leben` (nur die Person).
-  - Besitz: Tabelle aller Sachen mit Ort und Anzahl, bei neuen Sachen Kaufpreis und Kaufdatum. Hinzufügen, ändern, weich löschen.
-    Suche und Filter nach Ort. Am PC als Tabelle, am Handy als Karten (1.5).
+  - Besitz: Tabelle aller Sachen mit Kategorie, Ort und Anzahl, bei neuen Sachen Kaufpreis und Kaufdatum. Hinzufügen, ändern, weich löschen.
+    Suche und Filter nach Ort und Kategorie. Am PC als Tabelle, am Handy als Karten (1.5).
   - Datenschutz: nur mit Passwort; nichts davon im Gerät speichern.
 - **Etappe 4 „Einkauf und Essen“ (0.4.x)**
   - Ziel: neues Sheet „Gemeinsam“ mit Skript `gemeinsam`, Partner-Zugang (`PARTNER_PIN`).
@@ -533,6 +534,8 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.2.8** Schritt 2.5: Überschrift „Tracking Leben“, Tracking-Felder werden beim Start im Hintergrund geholt (nur Arbeitsspeicher, 10 Minuten), Bafög-Kacheln schmal.
 - **0.2.9** Etappe 2 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-2.md` gelöscht. Dazu: Logo groß auf der Startseite,
   Icon füllt am Android-Startbildschirm die Form, Tracking-„Speichern“ in der Tracking-Farbe, Bafög drei gleich breite Kacheln.
+- **Etappe 3** Besitz. **0.3.0** Schritt 3.0: Plan `docs/PLAN-ETAPPE-3.md` (Einstellungen mit hell/dunkel, Sheet „Leben“, Reiter Besitz).
+- **0.3.1** Antworten zum Plan: Orte ohne eigenes Blatt, Spalte `kategorie`, keine Summe der Kaufpreise.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
