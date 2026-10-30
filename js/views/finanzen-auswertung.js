@@ -68,7 +68,7 @@ export function auswertung(box, einstellungen) {
     const kacheln = el('div', { class: 'finanz-netto' });
     const jahrWahl = el('select', { attrs: { id: 'finanz-tabellenjahr', 'aria-label': 'Jahr der Tabelle' }, on: { change: () => { tabellenJahr = Number(jahrWahl.value); zeigeTabelle(); } } });
     const tabelle = el('tbody');
-    const bafoeg = el('dl', { class: 'finanz-konten' });
+    const bafoeg = el('dl', { class: 'finanz-konten finanz-bafoeg' });
 
     leeren(box);
     box.append(

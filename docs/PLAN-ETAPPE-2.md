@@ -110,6 +110,8 @@ Wünsche der Person (29.10.2026), eingeschoben vor die Finanz-Auswertung:
 
 ## Schritt 2.5 Nachbesserungen und Umstieg (0.2.8 …)
 
+- 0.2.8: Überschrift „Tracking Leben“, Tracking-Felder beim Start im Hintergrund holen (nur Arbeitsspeicher), Bafög-Kacheln so breit wie ihr Inhalt.
+
 - Anmerkungen der Person aus dem Testen, gesammelt in einem oder mehreren Schritten.
 - **Tor:** Die Person nutzt etwa zwei Wochen nur Thetadex und ist zufrieden. Dann (von Hand, der Agent ändert die alten Repos nicht):
   1. Im Apps-Script-Editor je Sheet: Bereitstellen → Bereitstellungen verwalten → alte Bereitstellung → Archivieren.

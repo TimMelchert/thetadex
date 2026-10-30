@@ -626,3 +626,7 @@ input[type="date"] { cursor: pointer; }
     .finanz-ringe { grid-template-columns: 1fr 1fr; }
     .finanz-netto { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* Bafög: Kacheln so breit wie ihr Inhalt */
+.finanz-konten.finanz-bafoeg { display: flex; flex-wrap: wrap; gap: 8px; }
+.finanz-bafoeg div { flex: 0 0 auto; padding: 8px 14px; }
