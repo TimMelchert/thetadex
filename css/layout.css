@@ -40,6 +40,13 @@
     color: var(--schrift-leise);
 }
 
+.kopf-links a { gap: 6px; }
+
+/* Am Handy nur das Zahnrad, der Name bleibt für Bildschirmleser (aria-label) */
+@media (max-width: 479px) {
+    .kopf-text { display: none; }
+}
+
 .kopf-links a[aria-current="page"] {
     color: var(--schrift);
     background: var(--kachel);

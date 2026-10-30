@@ -121,7 +121,7 @@ export function render(container, ctx) {
     if (!kennung) {
         container.append(el('div', { class: 'karte' }, [
             el('p', { text: 'Für diesen Reiter brauchst du den Link von der Person, die ihn mit dir teilt.' }),
-            el('p', { class: 'leise', text: 'Wenn das deine Bewertung ist: Trage die Script-Adresse „Döner“ unter Einrichtung ein.' })
+            el('p', { class: 'leise', text: 'Wenn das deine Bewertung ist: Trage die Script-Adresse „Döner“ unter Einstellungen ein.' })
         ]));
         return;
     }

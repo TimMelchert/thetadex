@@ -104,6 +104,7 @@
 [data-symbol="besitz"]   { --symbol: url("../icons/reiter/besitz.svg"); }
 [data-symbol="uni"]      { --symbol: url("../icons/reiter/uni.svg"); }
 [data-symbol="doener"]   { --symbol: url("../icons/reiter/doener.svg"); }
+[data-symbol="einstellungen"] { --symbol: url("../icons/einstellungen.svg"); }
 
 /* Kacheln auf der Startseite */
 .kacheln {
@@ -289,6 +290,8 @@
 }
 
 .doener-ansicht[aria-pressed="true"], .ansicht[aria-pressed="true"] { background: var(--bereich); color: var(--schrift-auf-farbe); font-weight: 700; }
+/* Aussehen in den Einstellungen: ohne Bereichsfarbe, schwarz-weiß */
+.aussehen-wahl .ansicht[aria-pressed="true"] { background: var(--knopf-grund); color: var(--knopf-schrift); }
 
 /* Vergleich aller Kriterien */
 .vergleich-gruppe {

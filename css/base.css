@@ -49,8 +49,35 @@
     --abstand: 16px;
 }
 
+/* Aussehen (Einstellungen, js/ui/aussehen.js): data-aussehen="hell" oder "dunkel" am <html>, ohne Merkmal wie das Gerät.
+   Die dunklen Werte stehen darum zweimal. Beide Blöcke immer gleich halten. */
+:root[data-aussehen="hell"] { color-scheme: light; }
+:root[data-aussehen="dunkel"] { color-scheme: dark; }
+
+:root[data-aussehen="dunkel"] {
+    --hintergrund: #1C1B19;
+    --kachel: #2A2826;
+    --schrift: #F4F2EE;
+    --schrift-leise: #B3AEA6;
+    --linie: #3A3734;
+    --knopf-grund: #F4F2EE;
+    --knopf-schrift: #1C1B19;
+    --fokus: #F4F2EE;
+    --zelle-gruen: #4E9A55;
+    --zelle-hellgruen: #8CC48A;
+    --zelle-dunkelgruen: #2C6B33;
+    --zelle-rot: #B9554F;
+    --zelle-dunkelrot: #7E2A26;
+    --zelle-gelb: #C9A93E;
+    --zelle-blau: #5A80B0;
+    --zelle-rosa: #C47FA0;
+    --zelle-grau: #6E6A64;
+    --plus-schrift: #81C784;
+    --minus-schrift: #F28B82;
+}
+
 @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-aussehen="hell"]) {
         --hintergrund: #1C1B19;
         --kachel: #2A2826;
         --schrift: #F4F2EE;
