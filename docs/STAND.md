@@ -4,12 +4,13 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.3.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.4.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
-- Etappe 3 „Besitz“ läuft, Plan in `docs/PLAN-ETAPPE-3.md`.
-- Nächster Schritt: weitere Anmerkungen der Person nach dem Testen von 3.6 (falls nötig), dann Etappe 3 abschließen.
+- Etappe 3 „Besitz“ wird abgeschlossen (Version 0.3.9, eigener Pull Request).
+- Etappe 4 „Einkauf und Essen“ läuft, Plan in `docs/PLAN-ETAPPE-4.md`.
+- Nächster Schritt: Antworten der Person auf die Rückfragen zum Plan, dann Schritt 4.1 (Sheet „Gemeinsam“, Skript `gemeinsam`, Lebensmittel und Einkaufsliste).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -392,7 +393,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile.
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-4.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`).
 
@@ -480,7 +481,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Besitz: Tabelle aller Sachen mit Kategorie, Ort und Anzahl, bei neuen Sachen Kaufpreis und Kaufdatum. Hinzufügen, ändern, weich löschen.
     Suche und Filter nach Ort und Kategorie. Am PC als Tabelle, am Handy als Karten (1.5).
   - Datenschutz: nur mit Passwort; nichts davon im Gerät speichern.
-- **Etappe 4 „Einkauf und Essen“ (0.4.x)**
+- **Etappe 4 „Einkauf und Essen“ (0.4.x)** – läuft, Plan mit Schritten 4.0 bis 4.6 in `docs/PLAN-ETAPPE-4.md`.
   - Ziel: neues Sheet „Gemeinsam“ mit Skript `gemeinsam`, Partner-Zugang (`PARTNER_PIN`).
   - Lebensmittel-Liste mit Suchleiste: suchen, antippen, Anzahl wählen → steht auf der Einkaufsliste.
   - Gerichte eintragen (mit Zutaten und Mengen). Ein Gericht wählen → seine Zutaten werden vorgeschlagen und angehakt.
@@ -553,6 +554,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.3.6** Schritt 3.5: Bild je Sache aus Google Drive (hochladen oder Link), Spalte `bild`.
 - **0.3.7** Schritt 3.6: 📦 im Titel, Ansicht vor dem Bearbeiten, Anzahl 0 ausgeblendet, „Ausgeliehen an“ mit Filter, Übersicht, Strich je Sache am PC.
 - **0.3.8** Schritt 3.7: Besitz-Übersicht mit Farbstrich oben an den Zahlen, Haken „Anzahl 0 zeigen“ immer sichtbar.
+- **Etappe 4** Einkauf und Essen. **0.4.0** Schritt 4.0: Plan `docs/PLAN-ETAPPE-4.md` (Sheet „Gemeinsam“, Skript `gemeinsam` mit `PARTNER_PIN`, Lebensmittel, Einkaufsliste offline, Gerichte, Vorrat).
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
