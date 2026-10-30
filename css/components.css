@@ -751,7 +751,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 
 /* Besitz 3.6: Übersicht */
 .besitz-zahlen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: var(--abstand); }
-.besitz-zahl-kachel { display: flex; flex-direction: column; align-items: center; padding: 12px 6px; background: var(--kachel); border-radius: var(--rund); border-left: 6px solid var(--bereich); }
+.besitz-zahl-kachel { display: flex; flex-direction: column; align-items: center; padding: 12px 6px; background: var(--kachel); border-radius: var(--rund); border-top: 6px solid var(--bereich); }
 .besitz-zahl-wert { font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .besitz-zahl-kachel .leise { font-size: 0.85rem; }
 .besitz-zaehlung { width: 100%; border-collapse: collapse; font-size: 0.9rem; }

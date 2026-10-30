@@ -116,7 +116,8 @@ Wunsch der Person (30.10.2026): Zu einer Sache gehören andere Sachen (zum Beisp
 
 ## Schritt 3.7 Abschluss (0.3.7 …)
 
-- Falls nötig weitere Anmerkungen der Person aus dem Testen.
+- Anmerkungen der Person (30.10.2026): Zahlen der Übersicht mit Farbstrich oben statt links; der Haken
+  „Auch Sachen mit Anzahl 0 zeigen“ steht immer da (vorher nur, wenn es solche Sachen gab); Satz zum Balken in der Übersicht. Version 0.3.8.
 - Danach Etappe 3 abschließen: Plan in STAND.md einarbeiten, diese Datei löschen.
 
 ## Datenschutz und Sicherheit (für die ganze Etappe)

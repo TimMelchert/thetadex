@@ -422,7 +422,6 @@ export function render(container, ctx) {
         fuelleFilter(leihFilter, 'Alle', [['ja', 'Nur ausgeliehene'], ['nein', 'Nicht ausgeliehen'], ...alleLeiher.map((n) => ['an:' + n, 'an ' + n])]);
         const ohne = sachen.filter((s) => !vorhanden(s)).length;
         nullText.textContent = 'Auch Sachen mit Anzahl 0 zeigen (' + ohne + ')';
-        nullBox.hidden = !ohne && !nullZeigen.checked;
         suchBox.hidden = !sachen.length;
         trefferText.textContent = '';
         if (!sachen.length) {
@@ -574,7 +573,7 @@ export function render(container, ctx) {
             zaehlung('Je Ort', da, (s) => s.ort, (w) => { ortFilter.value = w; })
         );
         if (leihen.length) uebersichtBox.append(zaehlung('Ausgeliehen an', leihen, verliehen, (w) => { leihFilter.value = 'an:' + w; }));
-        uebersichtBox.append(el('p', { class: 'leise besitz-hinweis', text: 'Gezählt sind alle Sachen mit Anzahl über 0, Zubehör eingeschlossen. Tipp auf eine Zeile zeigt diese Sachen in der Liste.' }));
+        uebersichtBox.append(el('p', { class: 'leise besitz-hinweis', text: 'Gezählt sind alle Sachen mit Anzahl über 0, Zubehör eingeschlossen. Der Balken zeigt, wie viele Sachen es im Vergleich zur größten Gruppe sind. Tipp auf eine Zeile zeigt diese Sachen in der Liste.' }));
     }
 
     // Eine Tabelle: Gruppe, Sachen, Stück und ein Balken. Tipp auf eine Zeile öffnet die Liste mit diesem Filter.
