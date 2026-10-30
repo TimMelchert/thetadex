@@ -4,13 +4,13 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.4.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.4.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ läuft, Plan in `docs/PLAN-ETAPPE-4.md`.
-- Nächster Schritt: Schritt 4.3 (Gerichte, Einkaufsliste nach Gericht).
+- Nächster Schritt: Schritt 4.4 (Vorrat).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -294,6 +294,9 @@ unter „Info“ die Version prüfen.
   Nachbesserung 0.4.5 (Wunsch der Person): Start im Unterreiter „Lebensmittel“; Lebensmittel ankreuzen (bleibt bei Suche), oben „Auf die Einkaufsliste“
   öffnet ein Fenster mit allen angekreuzten und je einer Menge; Tipp auf den Namen ändert das Lebensmittel. Auf der Liste steht die Menge rechts in der Zeile.
   Abgehakte bleiben grau und durchgestrichen (wieder lösbar, im Gerät `thetadex_einkauf_haken`), bis „Einkauf fertig“ sie sendet.
+  Gerichte (4.3): Unterreiter „Gerichte“ mit Suche; Gericht mit Name, Notiz, Rezept-Link (nur https) und Zutaten (Suche, neue Lebensmittel gleich anlegen).
+  Gericht antippen → Zutaten angehakt, Menge änderbar → „Auf die Liste“ (mit `gericht_id`). Einkaufsliste „Nach Abteilung“ oder „Nach Gericht“
+  (Gruppe „Einzeln“ für alles ohne Gericht, „Gericht von der Liste nehmen“).
 
 ### 3.2 Offen
 
@@ -585,6 +588,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.4.3** Schritt 4.1: Sheet „Gemeinsam“, Skript `gemeinsam` (alle Aktionen der Etappe), Reiter Einkauf mit Einkaufsliste und Lebensmitteln.
 - **0.4.4** Schritt 4.2: Einkaufsliste ohne Netz, Haken werden später gesendet.
 - **0.4.5** Nachbesserung 4.2: Lebensmittel ankreuzen und zusammen auf die Liste, Menge rechts, Abgehakte bleiben bis „Einkauf fertig“, Start bei Lebensmittel.
+- **0.4.6** Schritt 4.3: Gerichte mit Zutaten, Einkaufsliste nach Gericht.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

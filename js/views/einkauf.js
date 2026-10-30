@@ -1,4 +1,6 @@
 // Reiter Einkauf: Einkaufsliste nach Abteilung und Lebensmittel mit Suche (Schritt 4.1).
+// Gerichte (4.3): mit Zutaten und Mengen; ein Gericht wählen → Zutaten angehakt vorgeschlagen → auf die Liste.
+// Die Einkaufsliste gibt es auch nach Gericht (Wunsch der Person, 30.10.2026).
 // Lebensmittel ankreuzen → „Auf die Einkaufsliste“ → Mengen eintragen. Die Auswahl bleibt bei Suche erhalten.
 // Abgehakte Einträge bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird (Wunsch der Person, 30.10.2026).
 // Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“). Person und Partner*in, beide nur mit Passwort.
@@ -6,7 +8,7 @@
 // Abhaken geht immer; die Haken warten im Gerät (thetadex_einkauf_offen), bis das Skript sie bestätigt.
 // Alles andere (Lebensmittel, Gerichte) hält die App nur im Arbeitsspeicher.
 
-import { el, leeren } from '../ui/dom.js';
+import { el, leeren, sichereUrl } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { lesen, schreiben } from '../store.js';
@@ -44,6 +46,8 @@ function setzeListe(liste) {
 const uhrzeit = (ms) => new Date(ms).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 // Einkaufsliste oder Lebensmittel. Bleibt, solange die Seite offen ist.
 let teil = 'lebensmittel';
+// Einkaufsliste nach Abteilung oder nach Gericht. Bleibt, solange die Seite offen ist.
+let listeAnsicht = 'abteilung';
 // Neu laden beim Zurückkehren in die App (nur, wenn der Reiter offen ist)
 let neuLadenBeiRueckkehr = null;
 document.addEventListener('visibilitychange', () => {
@@ -87,6 +91,7 @@ export function render(container, ctx) {
     const ladeStatus = el('p', { class: 'meldung besitz-lade', attrs: { role: 'status', 'aria-live': 'polite' } });
     const listeBox = el('div', { class: 'einkauf-teil', attrs: { id: 'einkauf-teil-liste', hidden: true } });
     const lmBox = el('div', { class: 'einkauf-teil', attrs: { id: 'einkauf-teil-lebensmittel', hidden: true } });
+    const gerichteBox = el('div', { class: 'einkauf-teil', attrs: { id: 'einkauf-teil-gerichte', hidden: true } });
     const dialog = el('dialog', { class: 'besitz-dialog', attrs: { 'aria-labelledby': 'einkauf-dialog-titel' } });
     dialog.addEventListener('click', (ev) => { if (ev.target === dialog) dialog.close(); });
     let sendet = false; // gegen doppeltes Senden durch mehrfaches Tippen
@@ -264,6 +269,16 @@ export function render(container, ctx) {
                 attrs: { type: 'button' }, on: { click: () => einkaufFertig() }
             }));
         }
+        const ansichten = [['abteilung', 'Nach Abteilung'], ['gericht', 'Nach Gericht']].map(([id, text]) => el('button', {
+            class: 'ansicht', text,
+            attrs: { type: 'button', 'aria-pressed': listeAnsicht === id ? 'true' : 'false' },
+            on: { click: () => { listeAnsicht = id; zeigeListe(); } }
+        }));
+        listeBox.append(el('div', { class: 'ansichten einkauf-ansichten', attrs: { role: 'group', 'aria-label': 'Einkaufsliste ordnen' } }, ansichten));
+        if (listeAnsicht === 'gericht') {
+            zeigeNachGericht();
+            return;
+        }
         const jeLm = new Map();
         daten.liste.forEach((e) => {
             if (!jeLm.has(e.lebensmittel_id)) jeLm.set(e.lebensmittel_id, []);
@@ -291,10 +306,55 @@ export function render(container, ctx) {
         });
     }
 
+    // Je Gericht eine Gruppe mit seinen Zutaten, dazu „Einzeln“ für alles ohne (oder mit gelöschtem) Gericht.
+    // Abhaken hier hakt nur die Zutat dieses Gerichts ab.
+    function zeigeNachGericht() {
+        const gruppen = new Map();
+        daten.liste.forEach((e) => {
+            const g = gerichtVon(e.gericht_id);
+            const k = g ? g.id : '';
+            if (!gruppen.has(k)) gruppen.set(k, { g, eintraege: [] });
+            gruppen.get(k).eintraege.push(e);
+        });
+        const reihe = [...gruppen.values()].sort((a, b) => (!a.g) - (!b.g) || vergleiche(a.g ? a.g.name : '', b.g ? b.g.name : ''));
+        reihe.forEach(({ g, eintraege }) => {
+            const posten = eintraege.map((e) => ({ lm: lmVon(e.lebensmittel_id), eintraege: [e] }))
+                .filter((x) => x.lm).sort((a, b) => vergleiche(a.lm.name, b.lm.name));
+            if (!posten.length) return;
+            const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
+            const weg = g ? el('button', {
+                class: 'knopf knopf-zweit einkauf-gericht-weg', text: 'Gericht von der Liste nehmen',
+                attrs: { type: 'button' }, on: { click: () => gerichtVonListe(g, eintraege, weg, status) }
+            }) : null;
+            listeBox.append(el('section', { class: 'besitz-gruppe' }, [
+                el('h2', { class: 'besitz-ort' }, [
+                    el('span', { text: g ? g.name : 'Einzeln' }),
+                    el('span', { class: 'besitz-zahl', text: String(posten.length) })
+                ]),
+                el('ul', { class: 'einkauf-liste' }, posten.map((x) => listenZeile(x, true))),
+                weg,
+                g ? status : null
+            ]));
+        });
+    }
+
+    // Nimmt alle noch offenen Zutaten eines Gerichts von der Liste (eine Anfrage je Eintrag)
+    async function gerichtVonListe(g, eintraege, knopf, status) {
+        if (!confirm('Alle Zutaten für „' + g.name + '“ von der Einkaufsliste nehmen?')) return;
+        for (const e of eintraege) {
+            const antwort = await senden(status, [knopf], 'liste_aendern', { id: e.id, entfernen: true });
+            if (!antwort) return;
+            setzeListe(antwort.liste);
+        }
+        zeigeGespeichert('Entfernt', g.name);
+        zeigeAlles();
+    }
+
     // Abhaken geht auch ohne Netz: nur im Gerät, nochmal tippen löst den Haken wieder
-    function listenZeile({ lm, eintraege }) {
+    // ohneFuer = in der Ansicht nach Gericht steht das Gericht schon als Überschrift
+    function listenZeile({ lm, eintraege }, ohneFuer = false) {
         const summe = eintraege.reduce((n, e) => n + e.anzahl, 0);
-        const fuer = eintraege.map((e) => gerichtVon(e.gericht_id)).filter(Boolean).map((g) => g.name);
+        const fuer = ohneFuer ? [] : eintraege.map((e) => gerichtVon(e.gericht_id)).filter(Boolean).map((g) => g.name);
         const notizen = eintraege.map((e) => e.notiz).filter(Boolean);
         const ids = eintraege.map((e) => e.id);
         const an = ids.every((id) => haken().includes(id));
@@ -440,8 +500,247 @@ export function render(container, ctx) {
         }
     }
 
+    // --- Gerichte (4.3) ---
+    const gerichtSuche = el('input', {
+        attrs: { id: 'einkauf-gericht-suche', type: 'search', autocomplete: 'off', placeholder: 'Gericht suchen' },
+        on: { input: () => zeigeGerichte() }
+    });
+    const gerichtTreffer = el('div');
+    gerichteBox.append(
+        el('div', { class: 'einkauf-auswahl-leiste' }, [
+            el('button', { class: 'knopf knopf-bereich', text: '+ Neues Gericht', attrs: { type: 'button' }, on: { click: () => zeigeGerichtForm(null) } })
+        ]),
+        el('div', { class: 'formular besitz-suche' }, [el('label', { text: 'Suchen', attrs: { for: 'einkauf-gericht-suche' } }), gerichtSuche]),
+        gerichtTreffer
+    );
+
+    function zeigeGerichte() {
+        leeren(gerichtTreffer);
+        if (!daten) return;
+        const wort = gerichtSuche.value.trim();
+        const liste = daten.gerichte
+            .filter((g) => !wort || [g.name, g.notiz].some((t) => findet(t, wort))
+                || g.zutaten.some((z) => { const l = lmVon(z.lebensmittel_id); return l && findet(l.name, wort); }))
+            .sort((a, b) => vergleiche(a.name, b.name));
+        if (!daten.gerichte.length) {
+            gerichtTreffer.append(el('p', { class: 'leise', text: 'Noch keine Gerichte. Tippe auf „+ Neues Gericht“.' }));
+            return;
+        }
+        if (!liste.length) {
+            gerichtTreffer.append(el('p', { class: 'leise', text: 'Nichts gefunden.' }));
+            return;
+        }
+        gerichtTreffer.append(el('ul', { class: 'einkauf-liste' }, liste.map((g) => {
+            const zahl = g.zutaten.filter((z) => lmVon(z.lebensmittel_id)).length;
+            return el('li', { class: 'einkauf-zeile einkauf-lm' }, [
+                el('button', {
+                    class: 'einkauf-lm-wahl', attrs: { type: 'button', 'aria-label': g.name + ' ansehen' },
+                    on: { click: () => zeigeGericht(g) }
+                }, [
+                    el('span', { class: 'einkauf-lm-name', text: g.name }),
+                    el('span', { class: 'leise einkauf-klein', text: zahl === 1 ? '1 Zutat' : zahl + ' Zutaten' })
+                ])
+            ]);
+        })));
+    }
+
+    // Ein Gericht ansehen: alle Zutaten angehakt vorgeschlagen, Menge änderbar → „Auf die Liste“ (für dieses Gericht)
+    function zeigeGericht(g) {
+        const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
+        const zeilen = g.zutaten.map((z) => ({ z, lm: lmVon(z.lebensmittel_id) })).filter((x) => x.lm)
+            .sort((a, b) => vergleiche(a.lm.name, b.lm.name))
+            .map(({ z, lm }, i) => {
+                let an = true;
+                const anzahl = anzahlFeld('einkauf-g-' + i, z.menge);
+                const knopf = el('button', {
+                    class: 'einkauf-haken ist-an', text: '',
+                    attrs: { type: 'button', 'aria-pressed': 'true', 'aria-label': lm.name + ' mitnehmen' },
+                    on: {
+                        click: () => {
+                            an = !an;
+                            knopf.classList.toggle('ist-an', an);
+                            knopf.setAttribute('aria-pressed', an ? 'true' : 'false');
+                        }
+                    }
+                });
+                const schon = aufListe(lm.id);
+                return {
+                    lm, anzahl, an: () => an,
+                    zeile: el('li', { class: 'einkauf-zutat' }, [
+                        knopf,
+                        el('div', { class: 'einkauf-text' }, [
+                            el('label', { class: 'einkauf-lm-name', text: lm.name + (lm.einheit ? ' (' + lm.einheit + ')' : ''), attrs: { for: 'einkauf-g-' + i } }),
+                            schon ? el('span', { class: 'leise einkauf-klein', text: 'auf der Liste: ' + mitEinheit(schon, lm) }) : null,
+                            anzahl.box
+                        ])
+                    ])
+                };
+            });
+        const ok = el('button', { class: 'knopf knopf-bereich', text: 'Auf die Liste', attrs: { type: 'submit' } });
+        const bearbeiten = el('button', { class: 'knopf knopf-zweit', text: 'Bearbeiten', attrs: { type: 'button' }, on: { click: () => zeigeGerichtForm(g) } });
+        async function absenden(ev) {
+            ev.preventDefault();
+            const eintraege = [];
+            for (const x of zeilen) {
+                if (!x.an()) continue;
+                const n = leseZahl(x.anzahl.feld.value);
+                if (!gueltigeAnzahl(n)) {
+                    status.textContent = x.lm.name + ': Menge bitte von 0,5 bis 9999 (halbe erlaubt).';
+                    x.anzahl.feld.focus();
+                    return;
+                }
+                eintraege.push({ lebensmittel_id: x.lm.id, anzahl: n, gericht_id: g.id });
+            }
+            if (!eintraege.length) {
+                status.textContent = 'Keine Zutat angehakt.';
+                return;
+            }
+            const antwort = await senden(status, [ok, bearbeiten], 'auf_liste', { eintraege });
+            if (!antwort) return;
+            setzeListe(antwort.liste);
+            dialog.close();
+            zeigeGespeichert('Auf der Liste', g.name);
+            zeigeAlles();
+        }
+        const link = sichereUrl(g.link);
+        oeffneDialog(g.name, [
+            g.notiz ? el('p', { class: 'einkauf-notiz', text: g.notiz }) : null,
+            link ? el('p', {}, [el('a', { text: 'Rezept öffnen', attrs: { href: link, target: '_blank', rel: 'noopener noreferrer' } })]) : null,
+            el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: absenden } }, [
+                zeilen.length ? el('ul', { class: 'einkauf-liste' }, zeilen.map((x) => x.zeile))
+                    : el('p', { class: 'leise', text: 'Noch keine Zutaten. Tippe auf „Bearbeiten“.' }),
+                el('div', { class: 'besitz-form-knoepfe' }, [zeilen.length ? ok : null, bearbeiten].filter(Boolean)),
+                status
+            ])
+        ]);
+    }
+
+    // Gericht anlegen oder ändern: Name, Notiz, Link und Zutaten (Suche in den Lebensmitteln, neue gleich anlegen)
+    function zeigeGerichtForm(g) {
+        const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
+        const name = el('input', { attrs: { id: 'einkauf-gf-name', type: 'text', maxlength: 60, autocomplete: 'off', value: g ? g.name : '' } });
+        const notiz = el('textarea', { attrs: { id: 'einkauf-gf-notiz', maxlength: 300, rows: 2, placeholder: 'freiwillig, zum Beispiel kurze Anleitung' } });
+        notiz.value = g ? g.notiz : '';
+        const link = el('input', { attrs: { id: 'einkauf-gf-link', type: 'url', inputmode: 'url', maxlength: 300, autocomplete: 'off', placeholder: 'freiwillig, https://…', value: g ? g.link : '' } });
+        // Zutaten: lebensmittel_id → Feld für die Menge
+        const zutaten = new Map();
+        const zutatenListe = el('ul', { class: 'einkauf-liste' });
+        let nr = 0;
+        function zutatDazu(lm, menge = 1) {
+            if (zutaten.has(lm.id)) return;
+            const id = 'einkauf-gf-z' + (nr++);
+            const anzahl = anzahlFeld(id, menge);
+            const zeile = el('li', { class: 'einkauf-zutat' }, [
+                el('div', { class: 'einkauf-text' }, [
+                    el('label', { class: 'einkauf-lm-name', text: lm.name + (lm.einheit ? ' (' + lm.einheit + ')' : ''), attrs: { for: id } }),
+                    anzahl.box
+                ]),
+                el('button', {
+                    class: 'form-zu', text: '×', attrs: { type: 'button', 'aria-label': lm.name + ' entfernen' },
+                    on: { click: () => { zutaten.delete(lm.id); zeile.remove(); } }
+                })
+            ]);
+            zutaten.set(lm.id, anzahl);
+            zutatenListe.append(zeile);
+        }
+        if (g) g.zutaten.forEach((z) => { const l = lmVon(z.lebensmittel_id); if (l) zutatDazu(l, z.menge); });
+
+        const zSuche = el('input', { attrs: { id: 'einkauf-gf-suche', type: 'search', autocomplete: 'off', placeholder: 'Lebensmittel suchen' }, on: { input: () => zeigeVorschlaege() } });
+        const vorschlaege = el('div', { class: 'einkauf-vorschlaege' });
+        function zeigeVorschlaege() {
+            leeren(vorschlaege);
+            const wort = zSuche.value.trim();
+            if (!wort) return;
+            daten.lebensmittel.filter((l) => !zutaten.has(l.id) && findet(l.name, wort))
+                .sort((a, b) => vergleiche(a.name, b.name)).slice(0, 8)
+                .forEach((l) => vorschlaege.append(el('button', {
+                    class: 'knopf knopf-zweit', text: '+ ' + l.name, attrs: { type: 'button' },
+                    on: { click: () => { zutatDazu(l); zSuche.value = ''; zeigeVorschlaege(); zSuche.focus(); } }
+                })));
+            if (!daten.lebensmittel.some((l) => norm(l.name) === norm(wort))) {
+                vorschlaege.append(el('button', {
+                    class: 'knopf knopf-zweit', text: '„' + wort.slice(0, 60) + '“ neu anlegen', attrs: { type: 'button' },
+                    on: { click: () => neuesLebensmittel(wort.slice(0, 60)) }
+                }));
+            }
+        }
+        // Neues Lebensmittel nur mit Namen; Abteilung und Einheit später unter „Lebensmittel“
+        async function neuesLebensmittel(text) {
+            const antwort = await senden(status, knoepfe, 'lebensmittel_speichern', { name: text, abteilung: '', einheit: '', notiz: '' });
+            if (!antwort) return;
+            daten.lebensmittel.push(antwort.lebensmittel);
+            zutatDazu(antwort.lebensmittel);
+            zSuche.value = '';
+            zeigeVorschlaege();
+            zeigeLebensmittel();
+        }
+
+        const ok = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
+        const loeschen = g ? el('button', { class: 'knopf knopf-zweit', text: 'Löschen', attrs: { type: 'button' }, on: { click: () => entfernen() } }) : null;
+        const knoepfe = [ok, loeschen].filter(Boolean);
+
+        async function absenden(ev) {
+            ev.preventDefault();
+            const werte = { name: name.value.trim(), notiz: notiz.value.trim(), link: link.value.trim(), zutaten: [] };
+            if (!werte.name) {
+                status.textContent = 'Bitte einen Namen eingeben.';
+                name.focus();
+                return;
+            }
+            if (werte.link && !/^https:\/\//i.test(werte.link)) {
+                status.textContent = 'Der Link muss mit https:// beginnen.';
+                link.focus();
+                return;
+            }
+            for (const [id, anzahl] of zutaten) {
+                const n = leseZahl(anzahl.feld.value);
+                if (!gueltigeAnzahl(n)) {
+                    status.textContent = 'Menge bitte von 0,5 bis 9999 (halbe erlaubt).';
+                    anzahl.feld.focus();
+                    return;
+                }
+                werte.zutaten.push({ lebensmittel_id: id, menge: n });
+            }
+            const antwort = await senden(status, knoepfe, 'gericht_speichern', g ? { ...werte, id: g.id, geaendert_am: g.geaendert_am } : werte);
+            if (!antwort) return;
+            const neu = antwort.gericht;
+            const i = daten.gerichte.findIndex((x) => x.id === neu.id);
+            if (i >= 0) daten.gerichte[i] = neu; else daten.gerichte.push(neu);
+            zeigeAlles();
+            zeigeGericht(neu);
+            zeigeGespeichert(g ? 'Geändert' : 'Gespeichert', neu.name);
+        }
+
+        // Löschen ist weich. Lebensmittel bleiben; Einträge auf der Liste stehen danach unter „Einzeln“.
+        async function entfernen() {
+            if (!confirm('„' + g.name + '“ löschen? Die Lebensmittel bleiben erhalten.')) return;
+            const antwort = await senden(status, knoepfe, 'gericht_loeschen', { id: g.id, geaendert_am: g.geaendert_am });
+            if (!antwort) return;
+            daten.gerichte = daten.gerichte.filter((x) => x.id !== g.id);
+            merkeListe();
+            dialog.close();
+            zeigeGespeichert('Gelöscht', g.name);
+            zeigeAlles();
+        }
+
+        oeffneDialog(g ? 'Gericht ändern' : 'Neues Gericht', [
+            el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: absenden } }, [
+                el('label', { text: 'Name', attrs: { for: 'einkauf-gf-name' } }), name,
+                el('label', { text: 'Notiz', attrs: { for: 'einkauf-gf-notiz' } }), notiz,
+                el('label', { text: 'Link zum Rezept', attrs: { for: 'einkauf-gf-link' } }), link,
+                el('h3', { text: 'Zutaten' }),
+                zutatenListe,
+                el('label', { text: 'Zutat hinzufügen', attrs: { for: 'einkauf-gf-suche' } }), zSuche,
+                vorschlaege,
+                el('div', { class: 'besitz-form-knoepfe' }, knoepfe),
+                status
+            ])
+        ]);
+        name.focus();
+    }
+
     // --- Unterreiter ---
-    const teile = [['liste', 'Einkaufsliste', listeBox], ['lebensmittel', 'Lebensmittel', lmBox]].map(([id, text, box]) => [
+    const teile = [['liste', 'Einkaufsliste', listeBox], ['lebensmittel', 'Lebensmittel', lmBox], ['gerichte', 'Gerichte', gerichteBox]].map(([id, text, box]) => [
         id,
         el('button', { class: 'ansicht', text, attrs: { type: 'button', 'aria-controls': box.id }, on: { click: () => zeigeTeil(id) } }),
         box
@@ -459,6 +758,7 @@ export function render(container, ctx) {
     function zeigeAlles() {
         zeigeListe();
         zeigeLebensmittel();
+        zeigeGerichte();
     }
 
     // --- Wartende Haken senden (4.2) ---
@@ -543,6 +843,7 @@ export function render(container, ctx) {
         hakenStatus,
         listeBox,
         lmBox,
+        gerichteBox,
         neuLaden,
         dialog
     );
