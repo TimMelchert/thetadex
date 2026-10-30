@@ -5,12 +5,13 @@
 // Bild (ab 3.5): Spalte „bild“ mit der Kennung einer Datei im Google Drive der Person. Hochgeladene Bilder
 // liegen im privaten Drive-Ordner „Thetadex Besitz“. Bilder gibt das Skript nur mit Passwort heraus.
 // Ausgeliehen (ab 3.6): Spalte „ausgeliehen_an“, freier Text (an wen), leer = nicht ausgeliehen.
+// Ausgeliehene Anzahl (ab 0.4.2): Spalte „ausgeliehen_anzahl“, wie viele Stück davon ausgeliehen sind; leer = alle.
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN).
 // Siehe docs/PLAN-ETAPPE-3.md, Schritte 3.2 bis 3.6.
 // =====================================================
 
 var BLATT_BESITZ_ = "besitz";
-var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht", "gehoert_zu", "bild", "ausgeliehen_an"];
+var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht", "gehoert_zu", "bild", "ausgeliehen_an", "ausgeliehen_anzahl"];
 var TEXT_SPALTEN_ = ["id", "name", "kategorie", "ort", "notiz", "gehoert_zu", "bild", "ausgeliehen_an"];   // bleiben im Sheet reiner Text (kein Datum, keine Zahl)
 var MAX_ = { name: 80, kategorie: 40, ort: 60, notiz: 300, ausgeliehen_an: 60 };       // Höchstlängen
 var MAX_ANZAHL_ = 9999;
@@ -163,6 +164,7 @@ function sacheAus_(z, sp) {
     gehoert_zu: String(zelle_(z, sp, "gehoert_zu")).trim(),
     bild: String(zelle_(z, sp, "bild")).trim(),
     ausgeliehen_an: ohneSchutz_(zelle_(z, sp, "ausgeliehen_an")),
+    ausgeliehen_anzahl: Number(zelle_(z, sp, "ausgeliehen_anzahl")) || null,
     geaendert_am: stempel_(zelle_(z, sp, "geaendert_am"))
   };
 }
@@ -250,6 +252,16 @@ function pruefeSache_(data) {
     return { fehler: "Anzahl bitte als ganze Zahl von 0 bis " + MAX_ANZAHL_ + "." };
   }
   w.anzahl = anzahl;
+
+  // Ausgeliehene Anzahl: nur mit „Ausgeliehen an“, ganze Zahl von 1 bis zur Anzahl; leer = alle
+  w.ausgeliehen_anzahl = "";
+  if (w.ausgeliehen_an && data.ausgeliehen_anzahl != null && String(data.ausgeliehen_anzahl).trim() !== "") {
+    var leih = Number(data.ausgeliehen_anzahl);
+    if (!isFinite(leih) || Math.floor(leih) !== leih || leih < 1 || leih > anzahl) {
+      return { fehler: "Ausgeliehene Anzahl bitte als ganze Zahl von 1 bis " + anzahl + " (oder leer = alle)." };
+    }
+    w.ausgeliehen_anzahl = leih;
+  }
 
   w.kaufpreis = "";
   if (data.kaufpreis != null && String(data.kaufpreis).trim() !== "") {

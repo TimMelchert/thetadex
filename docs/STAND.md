@@ -4,12 +4,13 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.3.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.4.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
-- Nächster Schritt: **Etappe 4 „Einkauf und Essen“**, zuerst der Plan `docs/PLAN-ETAPPE-4.md` (Schritt 4.0).
+- Etappe 4 „Einkauf und Essen“ läuft, Plan in `docs/PLAN-ETAPPE-4.md`.
+- Nächster Schritt: Schritt 4.1 (Sheet „Gemeinsam“, Skript `gemeinsam`, Lebensmittel und Einkaufsliste).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -281,6 +282,7 @@ unter „Info“ die Version prüfen.
   Bild (3.5): Spalte `bild` (Drive-Datei-Kennung), Aktion `bild` (nur Bilder, die bei einer Sache stehen), Ordner „Thetadex Besitz“.
   Nachbesserungen (3.6): Tipp auf eine Sache zeigt erst ihre Daten mit Bild, „Bearbeiten“ öffnet das Formular; Formular schließt nach dem Speichern.
   Anzahl 0 ist ausgeblendet (außer mit Zubehör, Haken „Auch Sachen mit Anzahl 0 zeigen“). Spalte `ausgeliehen_an` mit Filter.
+  Ab 0.4.2: Spalte `ausgeliehen_anzahl` (wie viele Stück ausgeliehen sind, leer = alle); die Übersicht zeigt keine Balken mehr.
   Unterreiter „Liste“ und „Übersicht“ (Sachen, Stück, ausgeliehen; je Kategorie, je Ort, an wen). Auswahlfelder öffnen die Liste beim Tipp ins Feld.
 
 ### 3.2 Offen
@@ -335,8 +337,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Besitz: keine Daten öffentlich** (Wunsch der Person). Wie bei Finanzen: keine Gegenstände, Orte oder Preise im Repo.
   Auch die Namen bei „Ausgeliehen an“ stehen nur im Sheet „Leben“, nie im Repo, in Beispielen oder Pull-Request-Texten.
 - **Besitz, Blatt `besitz` im Sheet „Leben“** (Etappe 3): Spalten `id, name, kategorie, ort, anzahl, kaufpreis, kaufdatum, notiz,
-  erstellt_am, geaendert_am, geloescht, gehoert_zu, bild, ausgeliehen_an`. Pflicht: Name (80), Kategorie (40), Ort (60), Anzahl (0 bis 9999).
-  Freiwillig: Kaufpreis (bis 1.000.000 €), Kaufdatum (nicht in der Zukunft), Notiz (300), Ausgeliehen an (60). `einrichten` ergänzt fehlende Spalten am Ende.
+  erstellt_am, geaendert_am, geloescht, gehoert_zu, bild, ausgeliehen_an, ausgeliehen_anzahl`. Pflicht: Name (80), Kategorie (40), Ort (60), Anzahl (0 bis 9999).
+  Freiwillig: Kaufpreis (bis 1.000.000 €), Kaufdatum (nicht in der Zukunft), Notiz (300), Ausgeliehen an (60), davon ausgeliehen (ganze Zahl 1 bis Anzahl, leer = alle, nur mit „Ausgeliehen an“). `einrichten` ergänzt fehlende Spalten am Ende.
   Orte und Kategorien haben kein eigenes Blatt: Die Auswahl entsteht aus der Liste, Umbenennen im Sheet mit „Suchen und ersetzen“.
   Keine Summe der Kaufpreise (Wunsch der Person). Ändern schickt `geaendert_am` mit; ist die Zeile inzwischen anders, speichert das Skript nicht.
   Löschen ist weich (`geloescht = TRUE`, im Sheet zurückholbar); Zubehör einer gelöschten Hauptsache bleibt als eigene Sache.
@@ -402,7 +404,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile.
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-4.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`).
 
@@ -490,7 +492,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Reiter Besitz mit Unterreitern „Liste“ und „Übersicht“: Liste je Ort (PC Tabelle mit Strich je Sache, Handy Karten), Suche,
     Filter nach Ort, Kategorie und ausgeliehen, Sortieren am PC, Zubehör aufklappbar, Bild je Sache aus Google Drive.
   - Datenschutz: nur mit Passwort; die Liste nur im Arbeitsspeicher, nichts davon im Gerät. Bilder bleiben privat im Drive der Person.
-- **Etappe 4 „Einkauf und Essen“ (0.4.x)**
+- **Etappe 4 „Einkauf und Essen“ (0.4.x)** – läuft, Plan mit Schritten 4.0 bis 4.6 in `docs/PLAN-ETAPPE-4.md`.
   - Ziel: neues Sheet „Gemeinsam“ mit Skript `gemeinsam`, Partner-Zugang (`PARTNER_PIN`).
   - Lebensmittel-Liste mit Suchleiste: suchen, antippen, Anzahl wählen → steht auf der Einkaufsliste.
   - Gerichte eintragen (mit Zutaten und Mengen). Ein Gericht wählen → seine Zutaten werden vorgeschlagen und angehakt.
@@ -498,7 +500,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     Auf der Einkaufsliste und bei Gerichten steht dann dabei „zuhause: 2, Kühlschrank“. Wird die Liste nicht gepflegt, fehlt der Hinweis einfach.
   - Einkaufsliste: abhaken, auch ohne Netz (Ausnahme in 4); abgehakte Einträge verschwinden.
   - Gemeinsam nutzen: Die Partnerin oder der Partner richtet Thetadex auf dem eigenen Handy mit dem Skript `gemeinsam` und `PARTNER_PIN` ein.
-    Die Liste lädt beim Öffnen und beim Ziehen nach unten neu (kein Live-Abgleich).
+    Die Liste lädt beim Öffnen, beim Zurückkehren in die App und mit „Neu laden“ neu (kein Live-Abgleich, kein „Ziehen nach unten“, Entscheidung 30.10.2026).
 - **Etappe 5 „Uni“ (0.5.x)**, im Sheet „Gemeinsam“
   - Semester auswählen, je Semester ein Stundenplan (Tag, von, bis, Veranstaltung, Ort, Art).
   - Zusätzlich eintragen: Arbeitszeiten (Stunden je Woche und Monat werden berechnet) und Zugfahrten.
@@ -564,6 +566,9 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.3.7** Schritt 3.6: 📦 im Titel, Ansicht vor dem Bearbeiten, Anzahl 0 ausgeblendet, „Ausgeliehen an“ mit Filter, Übersicht, Strich je Sache am PC.
 - **0.3.8** Schritt 3.7: Besitz-Übersicht mit Farbstrich oben an den Zahlen, Haken „Anzahl 0 zeigen“ immer sichtbar.
 - **0.3.9** Etappe 3 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-3.md` gelöscht. Dazu: Startseite mit Logo neben dem Namen, beides größer.
+- **Etappe 4** Einkauf und Essen. **0.4.0** Schritt 4.0: Plan `docs/PLAN-ETAPPE-4.md` (Sheet „Gemeinsam“, Skript `gemeinsam` mit `PARTNER_PIN`, Lebensmittel, Einkaufsliste offline, Gerichte, Vorrat).
+- **0.4.1** Antworten zum Plan: Vorrat als eigenes Blatt mit mehreren Orten, Abhaken erhöht den Vorrat, Einkaufsliste auch nach Gericht, Reiter nach Script-Adressen.
+- **0.4.2** Wunsch der Person zu Besitz: ausgeliehene Anzahl (Spalte `ausgeliehen_anzahl`), Balken in der Übersicht entfernt.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
