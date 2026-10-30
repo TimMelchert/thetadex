@@ -674,3 +674,23 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
     .besitz-tabelle td:empty { display: none; }
     .besitz-tabelle td::before { content: attr(data-label); color: var(--schrift-leise); }
 }
+
+/* Besitz: Suche, Filter, Sortieren, Ändern */
+.besitz-suche { margin-top: 8px; }
+.besitz-suche label { margin-top: 4px; }
+.besitz-filter { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.besitz-filter > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.besitz-filter select { width: 100%; }
+.besitz-treffer { margin: 8px 0 0; }
+.besitz-form-knoepfe { display: flex; flex-wrap: wrap; gap: 10px; margin-top: var(--abstand); }
+.formular .besitz-form-knoepfe .knopf { margin-top: 0; }
+.besitz-sortieren { padding: 0; min-height: 32px; border: none; background: none; color: inherit; font: inherit; font-weight: 600; cursor: pointer; text-align: inherit; width: 100%; }
+.besitz-zeile { cursor: pointer; }
+.besitz-oeffnen { padding: 0; border: none; background: none; color: inherit; font: inherit; font-weight: 600; text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+@media (hover: hover) {
+    .besitz-zeile:hover { background: var(--kachel); }
+    .besitz-oeffnen:hover { text-decoration: underline; }
+}
+@media (max-width: 767px) {
+    .besitz-oeffnen { min-height: 32px; }
+}
