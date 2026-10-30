@@ -33,7 +33,7 @@ Die Besitz-Liste hält die App nur im Arbeitsspeicher, solange die Seite offen i
 - Texte und STAND.md: überall „Einstellungen“ statt „Einrichtung“, auch in den Prüflisten.
 - Sheet und Skript bleiben unverändert.
 
-## Schritt 3.2 Sheet „Leben“, Skript `leben` und Reiter Besitz: anzeigen und hinzufügen (0.3.2 → 0.3.3)
+## Schritt 3.2 Sheet „Leben“, Skript `leben` und Reiter Besitz: anzeigen und hinzufügen (0.3.2 → 0.3.3) – erledigt
 
 - **Sheet „Leben“** (neu, von der Person angelegt, mit niemandem geteilt). Blatt `besitz`, Kopfzeile in Zeile 1:
   `id, name, kategorie, ort, anzahl, kaufpreis, kaufdatum, notiz, erstellt_am, geaendert_am, geloescht`
@@ -57,6 +57,7 @@ Die Besitz-Liste hält die App nur im Arbeitsspeicher, solange die Seite offen i
   - Funktion `einrichten` legt das Blatt `besitz` mit Kopfzeile an und ergänzt fehlende Spalten am Ende. Vorhandenes bleibt.
   - Jede Aktion nur mit Passwort (`pruefePin_` mit Sperre nach 5 Fehlversuchen). `doGet` nennt nur den Namen der Schnittstelle.
   - Aktionen: `ping` (prüfen), `liste` (alle Sachen ohne `geloescht`), `speichern` (neu, wenn keine `id` kommt).
+  - Gebaut: Das Skript kann schon ändern und löschen (3.3), damit die Person `Code.gs` nur einmal einfügen muss. Die App nutzt das ab 3.3.
   - Jede Eingabe wird geprüft (Art, Länge, erlaubte Werte) und mit `bereinigeText_` geschützt. Schreiben mit `LockService`.
 - `js/config.js`: `SKRIPTE` bekommt `leben` (Titel „Besitz“, Test `liste`). Die Adresse trägt die Person unter Einstellungen ein.
 - **Reiter Besitz** `js/views/besitz.js` (ersetzt den Platzhalter):
@@ -64,7 +65,7 @@ Die Besitz-Liste hält die App nur im Arbeitsspeicher, solange die Seite offen i
   - Formular: Name, Kategorie und Ort (je Auswahl mit Freitext), Anzahl, darunter freiwillig Kaufpreis, Kaufdatum (Vorgabe leer), Notiz.
     „Speichern“ in der Besitz-Farbe, gesperrt während des Sendens. Erfolg nur nach Antwort des Skripts (Fenster „Gespeichert“).
     Bei Fehler bleibt alles stehen. Nach Erfolg bleibt der Ort stehen (praktisch beim Einräumen eines Schranks), der Rest leert sich (auch die Kategorie).
-  - Liste nach Ort gruppiert, je Ort eine Überschrift mit der Zahl der Sachen. Am Handy Karten (Name groß, Kategorie, Anzahl),
+  - Liste nach Ort gruppiert, je Ort eine Überschrift mit der Zahl der Sachen (der Ort steht darum nicht als Spalte in der Tabelle). Am Handy Karten (Name groß, Kategorie, Anzahl),
     am PC eine Tabelle (Name, Kategorie, Ort, Anzahl, Kaufpreis, Kaufdatum).
   - Knopf „Neu laden“. Ohne Verbindung eine klare Meldung in der App.
 

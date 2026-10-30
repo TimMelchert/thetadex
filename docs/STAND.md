@@ -4,12 +4,12 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.3.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.3.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ läuft, Plan in `docs/PLAN-ETAPPE-3.md`.
-- Nächster Schritt: **3.2 Sheet „Leben“, Skript `leben` und Reiter Besitz: anzeigen und hinzufügen**.
+- Nächster Schritt: **3.3 Besitz: ändern, löschen, suchen, filtern**.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -274,6 +274,9 @@ unter „Info“ die Version prüfen.
   Döner-Skript: Aktionen `liste`, `bewerten`, `ping`, ohne Passwort. Schnell (drei Werte) oder ausführlich nach Kriterien (1.3).
 - Etappe 2: Reiter Tracking (Eingabe und Übersicht je Jahr und Monat mit farbigen Zellen) und Finanzen (Kontostände, Buchen,
   Auswertung mit Chart.js). Felder, Zwecke, Kategorien, Rückzahlungen und Farbregeln stehen im Blatt `Einstellungen` des jeweiligen Sheets.
+- Etappe 3 (läuft): Einstellungen mit Aussehen (3.1). Sheet „Leben“ mit Skript `leben` (3.2): Blatt `besitz`, Aktionen `ping`, `liste`,
+  `speichern` (neu ohne `id`, ändern mit `id` und `geaendert_am` als Schutz vor Überschreiben), `loeschen` (weich). Funktion `einrichten`.
+  Reiter Besitz: Liste je Ort (PC Tabelle, Handy Karten), Hinzufügen.
 
 ### 3.2 Offen
 
@@ -378,11 +381,11 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
-- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie). `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät.
+- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie). `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile.
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
-  `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`).
+  `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`).
 
 ---
 
@@ -535,6 +538,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **Etappe 3** Besitz. **0.3.0** Schritt 3.0: Plan `docs/PLAN-ETAPPE-3.md` (Einstellungen mit hell/dunkel, Sheet „Leben“, Reiter Besitz).
 - **0.3.1** Antworten zum Plan: Orte ohne eigenes Blatt, Spalte `kategorie`, keine Summe der Kaufpreise.
 - **0.3.2** Schritt 3.1: „Einrichtung“ heißt „Einstellungen“ (Zahnrad), Aussehen Hell, Dunkel oder Wie Gerät.
+- **0.3.3** Schritt 3.2: Sheet „Leben“, Skript `leben`, Reiter Besitz mit Liste je Ort und Hinzufügen.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

@@ -258,10 +258,10 @@
 
 .doener-aktionen { display: flex; justify-content: flex-end; }
 
-.doener-form-kopf { display: flex; align-items: center; justify-content: space-between; }
-.doener-form-kopf h2 { margin: 0; font-size: 1.1rem; }
+.doener-form-kopf, .form-kopf { display: flex; align-items: center; justify-content: space-between; }
+.doener-form-kopf h2, .form-kopf h2 { margin: 0; font-size: 1.1rem; }
 
-.doener-zu {
+.doener-zu, .form-zu {
     width: 44px;
     height: 44px;
     border: none;
@@ -640,3 +640,37 @@ input[type="date"] { cursor: pointer; }
 .start-logo { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 12px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: 2rem; }
 .start-version { text-align: center; }
 body[data-seite="start"] .kopf-marke { visibility: hidden; }
+
+/* Besitz: je Ort eine Tabelle, am Handy Karten */
+.besitz-kopf { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.besitz-kopf h1 { margin: 0; }
+.besitz-form-box .formular { margin-top: 0; }
+.besitz-ort { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-bottom: 4px; border-bottom: 3px solid var(--bereich); }
+.besitz-zahl { font-size: 0.85rem; font-weight: 400; color: var(--schrift-leise); white-space: nowrap; }
+.besitz-tabelle { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+/* Gleiche Spaltenbreiten in allen Orten (PC): Name, Kategorie, Anzahl, Kaufpreis, Kaufdatum */
+@media (min-width: 768px) {
+    .besitz-tabelle thead th:nth-child(1) { width: 34%; }
+    .besitz-tabelle thead th:nth-child(2) { width: 24%; }
+    .besitz-tabelle thead th:nth-child(3) { width: 10%; }
+    .besitz-tabelle thead th:nth-child(4) { width: 16%; }
+    .besitz-tabelle thead th:nth-child(5) { width: 16%; }
+}
+.besitz-tabelle td { overflow-wrap: anywhere; }
+.besitz-tabelle th, .besitz-tabelle td { padding: 8px 6px; border-bottom: 1px solid var(--linie); text-align: left; vertical-align: top; }
+.besitz-tabelle thead th { font-size: 0.8rem; color: var(--schrift-leise); font-weight: 600; }
+.besitz-tabelle .zahl { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.besitz-name { font-weight: 600; overflow-wrap: anywhere; }
+.besitz-notiz { display: block; font-weight: 400; font-size: 0.85rem; }
+.besitz-neu { margin-top: var(--abstand); }
+
+@media (max-width: 767px) {
+    .besitz-tabelle thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .besitz-tabelle, .besitz-tabelle tbody, .besitz-tabelle tr, .besitz-tabelle th, .besitz-tabelle td { display: block; }
+    .besitz-tabelle tr { margin: 10px 0; padding: 12px var(--abstand); background: var(--kachel); border-radius: var(--rund); border-left: 6px solid var(--bereich); }
+    .besitz-tabelle th, .besitz-tabelle td { padding: 2px 0; border: none; }
+    .besitz-tabelle .besitz-name { font-size: 1.05rem; margin-bottom: 4px; }
+    .besitz-tabelle td { display: flex; justify-content: space-between; gap: 10px; }
+    .besitz-tabelle td:empty { display: none; }
+    .besitz-tabelle td::before { content: attr(data-label); color: var(--schrift-leise); }
+}
