@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '0.3.2';
+export const VERSION = '0.3.3';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {
@@ -33,5 +33,6 @@ export const BEREICHE = [
 export const SKRIPTE = [
     { id: 'tracking', titel: 'Tracking', test: 'einstellungen' },
     { id: 'finanzen', titel: 'Finanzen', test: 'einstellungen' },
-    { id: 'doener',   titel: 'Döner',    test: 'liste' }
+    { id: 'doener',   titel: 'Döner',    test: 'liste' },
+    { id: 'leben',    titel: 'Besitz',   test: 'liste' }
 ];

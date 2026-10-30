@@ -12,6 +12,7 @@ import * as nichtgefunden from './views/nichtgefunden.js';
 import * as doener from './views/doener.js';
 import * as tracking from './views/tracking.js';
 import * as finanzen from './views/finanzen.js';
+import * as besitz from './views/besitz.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
@@ -30,6 +31,7 @@ aktiv.forEach((b) => { ANSICHTEN[b.id] = platzhalter; });
 ANSICHTEN.doener = doener;
 ANSICHTEN.tracking = tracking;
 ANSICHTEN.finanzen = finanzen;
+ANSICHTEN.besitz = besitz;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';
