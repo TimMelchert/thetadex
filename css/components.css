@@ -807,3 +807,13 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .formular .einkauf-vorschlaege .knopf { margin-top: 0; }
 .einkauf-notiz { white-space: pre-wrap; overflow-wrap: anywhere; }
 .formular h3 { margin: 14px 0 0; font-size: 1rem; }
+
+/* Einkauf 0.4.9: Suche mit Haken „Vorrat“ rechts in einer Zeile, Knöpfe darunter, neues Lebensmittel im Gericht */
+.einkauf-suchzeile { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: stretch; }
+.einkauf-suchzeile > div { display: flex; flex-direction: column; min-width: 0; }
+.einkauf-vorrat-haken { align-items: center; justify-content: space-between; }
+.einkauf-vorrat-haken input { min-height: 0; width: 28px; height: 28px; margin: 0 0 9px; accent-color: var(--bereich); cursor: pointer; }
+.einkauf-knoepfe { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0 6px; }
+.einkauf-knoepfe .knopf { margin-top: 0; }
+.einkauf-neu-lm { display: flex; flex-direction: column; margin-top: 10px; padding: 0 12px 12px; border-left: 4px solid var(--bereich); }
+.einkauf-neu-lm[hidden] { display: none; }

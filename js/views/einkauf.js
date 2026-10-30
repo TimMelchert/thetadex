@@ -531,15 +531,21 @@ export function render(container, ctx) {
     const neuLm = el('button', { class: 'knopf knopf-zweit', text: '+ Neues Lebensmittel', attrs: { type: 'button' }, on: { click: () => zeigeLebensmittelForm(null) } });
     const aufListeKnopf = el('button', { class: 'knopf knopf-bereich', attrs: { type: 'button' }, on: { click: () => zeigeAuswahlFenster() } });
     const aufheben = el('button', { class: 'knopf knopf-zweit', text: 'Auswahl aufheben', attrs: { type: 'button' }, on: { click: () => { auswahl.clear(); zeigeLebensmittel(); } } });
-    const nurZuhause = el('input', { attrs: { id: 'einkauf-nur-zuhause', type: 'checkbox' }, on: { change: () => zeigeLebensmittel() } });
+    const nurZuhause = el('input', {
+        attrs: { id: 'einkauf-nur-zuhause', type: 'checkbox', title: 'Nur was zuhause ist, nach Ort' },
+        on: { change: () => zeigeLebensmittel() }
+    });
+    // Knöpfe oben unter der Suche, damit sie bei vielen Lebensmitteln nicht weit unten stehen (Wunsch der Person, 30.10.2026).
+    // „Neu laden“ zieht beim Unterreiter Lebensmittel hierher um (siehe zeigeTeil).
+    const lmKnoepfe = el('div', { class: 'einkauf-knoepfe' }, [neuLm]);
     lmBox.append(
         el('div', { class: 'einkauf-auswahl-leiste' }, [aufListeKnopf, aufheben]),
-        el('div', { class: 'formular besitz-suche' }, [
-            el('label', { text: 'Suchen', attrs: { for: 'einkauf-suche' } }), suche,
-            el('label', { class: 'besitz-null' }, [nurZuhause, el('span', { text: 'Nur was zuhause ist (nach Ort)' })])
+        el('div', { class: 'formular besitz-suche einkauf-suchzeile' }, [
+            el('div', {}, [el('label', { text: 'Suchen', attrs: { for: 'einkauf-suche' } }), suche]),
+            el('div', { class: 'einkauf-vorrat-haken' }, [el('label', { text: 'Vorrat', attrs: { for: 'einkauf-nur-zuhause' } }), nurZuhause])
         ]),
-        lmTreffer,
-        neuLm
+        lmKnoepfe,
+        lmTreffer
     );
 
     function zeigeLebensmittel() {
@@ -558,7 +564,7 @@ export function render(container, ctx) {
         if (!daten.lebensmittel.length && !wort) {
             lmTreffer.append(el('p', { class: 'leise', text: 'Noch keine Lebensmittel. Tippe oben einen Namen ein oder auf „+ Neues Lebensmittel“.' }));
         } else if (!wort) {
-            lmTreffer.append(el('p', { class: 'leise besitz-hinweis einkauf-tipp', text: 'Ankreuzen, dann oben „Auf die Einkaufsliste“. Tipp auf den Namen zum Ändern.' }));
+            lmTreffer.append(el('p', { class: 'leise besitz-hinweis einkauf-tipp', text: 'Ankreuzen, dann oben „Auf die Einkaufsliste“. Tipp auf den Namen zum Ändern. Haken bei „Vorrat“: nur was zuhause ist, nach Ort.' }));
         }
         if (treffer.length && nurZuhause.checked) {
             // Nach Ort gruppiert: so dient die Liste auch als Vorrat-Übersicht
@@ -770,19 +776,61 @@ export function render(container, ctx) {
             if (!daten.lebensmittel.some((l) => norm(l.name) === norm(wort))) {
                 vorschlaege.append(el('button', {
                     class: 'knopf knopf-zweit', text: '„' + wort.slice(0, 60) + '“ neu anlegen', attrs: { type: 'button' },
-                    on: { click: () => neuesLebensmittel(wort.slice(0, 60)) }
+                    on: { click: () => zeigeNeuBox(wort.slice(0, 60)) }
                 }));
             }
         }
-        // Neues Lebensmittel nur mit Namen; Abteilung und Einheit später unter „Lebensmittel“
-        async function neuesLebensmittel(text) {
-            const antwort = await senden(status, knoepfe, 'lebensmittel_speichern', { name: text, abteilung: '', einheit: '', notiz: '' });
-            if (!antwort) return;
-            daten.lebensmittel.push(antwort.lebensmittel);
-            zutatDazu(antwort.lebensmittel);
+
+        // Neues Lebensmittel direkt im Gericht anlegen, mit Abteilung und Einheit (Wunsch der Person, 30.10.2026).
+        // Eigener kleiner Bereich im Formular: Enter legt hier an, statt das Gericht zu speichern.
+        const nName = el('input', { attrs: { id: 'einkauf-gf-neu-name', type: 'text', maxlength: 60, autocomplete: 'off' } });
+        const nAbteilung = auswahlFeld({ id: 'einkauf-gf-neu-abteilung', maxlength: 40, placeholder: 'freiwillig, wählen oder eintippen' });
+        const nEinheit = auswahlFeld({ id: 'einkauf-gf-neu-einheit', maxlength: 20, placeholder: 'freiwillig, zum Beispiel Packung' });
+        nAbteilung.setzeEintraege(daten.lebensmittel.map((l) => l.abteilung).filter(Boolean));
+        nEinheit.setzeEintraege(['Stück', 'Packung', ...daten.lebensmittel.map((l) => l.einheit).filter(Boolean)]);
+        const nAnlegen = el('button', { class: 'knopf knopf-bereich', text: 'Anlegen und dazu', attrs: { type: 'button' }, on: { click: () => neuesLebensmittel() } });
+        const nZu = el('button', { class: 'knopf knopf-zweit', text: 'Abbrechen', attrs: { type: 'button' }, on: { click: () => { neuBox.hidden = true; neuKnopf.hidden = false; } } });
+        const neuBox = el('div', { class: 'einkauf-neu-lm', attrs: { hidden: true } }, [
+            el('label', { text: 'Name des neuen Lebensmittels', attrs: { for: 'einkauf-gf-neu-name' } }), nName,
+            el('label', { text: 'Abteilung im Laden', attrs: { for: 'einkauf-gf-neu-abteilung' } }), nAbteilung.box,
+            el('label', { text: 'Einheit', attrs: { for: 'einkauf-gf-neu-einheit' } }), nEinheit.box,
+            el('div', { class: 'besitz-form-knoepfe' }, [nAnlegen, nZu])
+        ]);
+        neuBox.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' && ev.target.tagName === 'INPUT') { ev.preventDefault(); neuesLebensmittel(); }
+        });
+        const neuKnopf = el('button', { class: 'knopf knopf-zweit', text: '+ Neues Lebensmittel', attrs: { type: 'button' }, on: { click: () => zeigeNeuBox(zSuche.value.trim().slice(0, 60)) } });
+        function zeigeNeuBox(text) {
+            nName.value = text;
+            nAbteilung.feld.value = '';
+            nEinheit.feld.value = '';
+            neuBox.hidden = false;
+            neuKnopf.hidden = true;
+            nName.focus();
+        }
+        async function neuesLebensmittel() {
+            const werte = { name: nName.value.trim(), abteilung: nAbteilung.feld.value.trim(), einheit: nEinheit.feld.value.trim(), notiz: '' };
+            if (!werte.name) {
+                status.textContent = 'Bitte einen Namen für das neue Lebensmittel eingeben.';
+                nName.focus();
+                return;
+            }
+            const doppelt = daten.lebensmittel.find((l) => norm(l.name) === norm(werte.name));
+            if (doppelt) {
+                // Gibt es schon: einfach als Zutat nehmen
+                zutatDazu(doppelt);
+            } else {
+                const antwort = await senden(status, [...knoepfe, nAnlegen], 'lebensmittel_speichern', werte);
+                if (!antwort) return;
+                daten.lebensmittel.push(antwort.lebensmittel);
+                zutatDazu(antwort.lebensmittel);
+                zeigeLebensmittel();
+            }
+            neuBox.hidden = true;
+            neuKnopf.hidden = false;
             zSuche.value = '';
             zeigeVorschlaege();
-            zeigeLebensmittel();
+            zSuche.focus();
         }
 
         const ok = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
@@ -842,6 +890,8 @@ export function render(container, ctx) {
                 zutatenListe,
                 el('label', { text: 'Zutat hinzufügen', attrs: { for: 'einkauf-gf-suche' } }), zSuche,
                 vorschlaege,
+                neuKnopf,
+                neuBox,
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe),
                 status
             ])
@@ -862,6 +912,8 @@ export function render(container, ctx) {
             knopf.setAttribute('aria-pressed', k === id ? 'true' : 'false');
             box.hidden = k !== id;
         });
+        if (id === 'lebensmittel') lmKnoepfe.append(neuLaden);
+        else container.insertBefore(neuLaden, dialog);
         zeigeAlles();
     }
 

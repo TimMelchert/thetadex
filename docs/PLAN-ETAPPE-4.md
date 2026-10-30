@@ -147,7 +147,7 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
   Einstellungen → Passwort = `PARTNER_PIN`, nur die Adresse `gemeinsam` eintragen. Weitergeben am besten persönlich, nicht im Chat.
 - Passwort ändern: neues `PARTNER_PIN` in den Skripteigenschaften eintragen. Das alte gilt sofort nicht mehr (ohne neue Bereitstellung).
 
-## Schritt 4.6 Abschluss (0.4.8 …)
+## Schritt 4.6 Abschluss (0.4.9 …)
 
 - Anmerkungen der Person nach dem Testen, dann Etappe 4 abschließen: Plan in STAND.md einarbeiten, diese Datei löschen.
 
