@@ -9,6 +9,9 @@ const TEILE = [['doener', 'Döner'], ['yufka', 'Yufka'], ['pommes', 'Pommes']];
 // Für die ausführliche Bewertung; „laden“ (Service, Gemütlichkeit …) zählt nicht zu „Insgesamt“
 const ALLE_TEILE = [...TEILE, ['laden', 'Laden']];
 const NEU = '__neu__';
+// Bei Fleisch heißt das Kriterium „Seitan“ „Fleisch“ (das Skript speichert es auch so)
+const TAUSCH_FLEISCH = { Seitan: 'Fleisch' };
+const kritName = (name, fleisch) => (fleisch && TAUSCH_FLEISCH[name]) || name;
 const KENNUNG = /^[A-Za-z0-9_-]{20,120}$/;
 const ADRESSE = /^https:\/\/script\.google\.com\/macros\/s\/([A-Za-z0-9_-]+)\/exec$/;
 
@@ -171,7 +174,8 @@ export function render(container, ctx) {
         const gruppen = [['gesamt', 'Gesamt', [['', 'Insgesamt'], ...ALLE_TEILE]]];
         for (const [t, titel] of ALLE_TEILE) {
             const namen = Array.isArray(kriterien[t]) ? kriterien[t] : [];
-            if (namen.length) gruppen.push([t, titel, namen.map((n) => [n, n])]);
+            const fleisch = sorte === 'fleisch';
+            if (namen.length) gruppen.push([t, titel, namen.map((n) => [kritName(n, fleisch), kritName(n, fleisch)])]);
         }
         gruppen.forEach(([gruppe, titel, zeilen], gi) => {
             const wert = (l, schl) => {
@@ -329,10 +333,9 @@ export function render(container, ctx) {
                 nr += 1;
                 const wahl = sterneWahl('doener-k' + nr, name);
                 const begr = el('input', { attrs: { type: 'text', maxlength: 200, placeholder: 'Begründung (freiwillig)', 'aria-label': 'Begründung ' + name } });
-                kriterienFelder.push({ teil: t, kriterium: name, wahl, begr });
-                return el('div', { class: 'doener-krit-zeile' }, [
-                    el('span', { class: 'doener-wahl-titel', text: name, attrs: { id: 'doener-k' + nr } }), wahl.box, begr
-                ]);
+                const titelEl = el('span', { class: 'doener-wahl-titel', text: kritName(name, fleischSchalter.checked), attrs: { id: 'doener-k' + nr } });
+                kriterienFelder.push({ teil: t, kriterium: name, wahl, begr, titelEl });
+                return el('div', { class: 'doener-krit-zeile' }, [titelEl, wahl.box, begr]);
             });
             ausfuehrlichBox.append(el('details', { class: 'doener-krit-gruppe' }, [
                 el('summary', { text: titel + ' (' + namen.length + (namen.length === 1 ? ' Kriterium)' : ' Kriterien)') }),
@@ -341,6 +344,12 @@ export function render(container, ctx) {
         }
         ausfuehrlichSchalter.disabled = !kriterienFelder.length;
     }
+
+    // Fleisch-Häkchen benennt die getauschten Kriterien im Formular um
+    function kriterienBenennen() {
+        kriterienFelder.forEach((k) => { k.titelEl.textContent = kritName(k.kriterium, fleischSchalter.checked); });
+    }
+    fleischSchalter.addEventListener('change', kriterienBenennen);
 
     ausfuehrlichSchalter.addEventListener('change', () => {
         schnellBox.hidden = ausfuehrlichSchalter.checked;
@@ -354,6 +363,7 @@ export function render(container, ctx) {
 
     function formularLeeren() {
         formular.reset();
+        kriterienBenennen();
         ladenNeu.hidden = true;
         schnellWahl.forEach((s) => s.wahl.leeren());
         kriterienFelder.forEach((k) => k.wahl.leeren());

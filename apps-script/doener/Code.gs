@@ -15,6 +15,8 @@ var KOPF_DETAILS_ = ["bewertung_id", "teil", "kriterium", "wert", "begruendung"]
 var TEILE_ = ["doener", "yufka", "pommes"];       // zählen für „Insgesamt“
 var ALLE_TEILE_ = ["doener", "yufka", "pommes", "laden"];  // „laden“ = Service, Gemütlichkeit …
 var SPALTE_JE_TEIL_ = { doener: "doener", yufka: "yufka", pommes: "pommes", laden: "ladennote" };
+// Bei Fleisch-Bewertungen heißt ein Kriterium anders (gespeichert wird der neue Name)
+var TAUSCH_FLEISCH_ = { "Seitan": "Fleisch" };
 var MAX_LADEN_ = 60;          // Höchstlänge Name des Ladens
 var MAX_BEGRUENDUNG_ = 300;   // Höchstlänge Begründung
 var MAX_KRIT_BEGR_ = 200;     // Höchstlänge Begründung je Kriterium
@@ -280,7 +282,8 @@ function bewerten_(data) {
       if (!sternGueltig_(d.wert)) return { error: "eingabe", message: "Sterne bitte von 1 bis 10." };
       var kb = String(d.begruendung == null ? "" : d.begruendung);
       if (kb.length > MAX_KRIT_BEGR_) return { error: "eingabe", message: "Eine Begründung ist zu lang (höchstens " + MAX_KRIT_BEGR_ + " Zeichen)." };
-      details.push({ teil: teil, kriterium: name, wert: Number(d.wert), begruendung: bereinigeText_(kb, MAX_KRIT_BEGR_) });
+      var gespeichert = data.fleisch === true && TAUSCH_FLEISCH_[name] ? TAUSCH_FLEISCH_[name] : name;
+      details.push({ teil: teil, kriterium: gespeichert, wert: Number(d.wert), begruendung: bereinigeText_(kb, MAX_KRIT_BEGR_) });
     }
     ALLE_TEILE_.forEach(function (t) {
       var w = details.filter(function (x) { return x.teil === t; }).map(function (x) { return x.wert; });
