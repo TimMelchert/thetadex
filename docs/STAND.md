@@ -4,12 +4,12 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.3.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.3.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ läuft, Plan in `docs/PLAN-ETAPPE-3.md`.
-- Nächster Schritt: **3.4 Nachbesserungen** nach den Anmerkungen der Person, danach Etappe 3 abschließen.
+- Nächster Schritt: **3.5 Bilder aus Google Drive** (Entscheidung der Person offen), dann 3.6 Nachbesserungen und Abschluss.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -277,6 +277,7 @@ unter „Info“ die Version prüfen.
 - Etappe 3 (läuft): Einstellungen mit Aussehen (3.1). Sheet „Leben“ mit Skript `leben` (3.2): Blatt `besitz`, Aktionen `ping`, `liste`,
   `speichern` (neu ohne `id`, ändern mit `id` und `geaendert_am` als Schutz vor Überschreiben), `loeschen` (weich). Funktion `einrichten`.
   Reiter Besitz: Liste je Ort (PC Tabelle, Handy Karten), Hinzufügen; Ändern und Löschen per Tipp auf eine Sache, Suche, Filter nach Ort und Kategorie, Sortieren am PC (3.3).
+  Zubehör (3.4): Spalte `gehoert_zu`, eine Ebene, eingerückt und aufklappbar unter der Hauptsache.
 
 ### 3.2 Offen
 
@@ -540,6 +541,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.3.2** Schritt 3.1: „Einrichtung“ heißt „Einstellungen“ (Zahnrad), Aussehen Hell, Dunkel oder Wie Gerät.
 - **0.3.3** Schritt 3.2: Sheet „Leben“, Skript `leben`, Reiter Besitz mit Liste je Ort und Hinzufügen.
 - **0.3.4** Schritt 3.3: Besitz ändern, weich löschen, suchen, filtern nach Ort und Kategorie, sortieren.
+- **0.3.5** Schritt 3.4: Zubehör unter einer Hauptsache (Spalte `gehoert_zu`), eingerückt und aufklappbar.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
