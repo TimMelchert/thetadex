@@ -69,7 +69,7 @@ Die Besitz-Liste hält die App nur im Arbeitsspeicher, solange die Seite offen i
     am PC eine Tabelle (Name, Kategorie, Ort, Anzahl, Kaufpreis, Kaufdatum).
   - Knopf „Neu laden“. Ohne Verbindung eine klare Meldung in der App.
 
-## Schritt 3.3 Besitz: ändern, löschen, suchen, filtern (0.3.3 → 0.3.4)
+## Schritt 3.3 Besitz: ändern, löschen, suchen, filtern (0.3.3 → 0.3.4) – erledigt
 
 - Skript: Aktion `speichern` ändert eine vorhandene Zeile, wenn eine `id` kommt. Neue Aktion `loeschen` setzt nur `geloescht = TRUE` (weich, im Sheet zurückholbar).
 - **Schutz vor Überschreiben:** Die App schickt beim Ändern das `geaendert_am`, das sie kennt. Hat sich die Zeile inzwischen
@@ -77,7 +77,8 @@ Die Besitz-Liste hält die App nur im Arbeitsspeicher, solange die Seite offen i
 - App: Antippen einer Sache öffnet sie im Formular zum Ändern; dort auch „Löschen“ mit Rückfrage.
 - Suchleiste oben: sucht in Name, Kategorie, Ort und Notiz, schon beim Tippen, ohne Groß- und Kleinschreibung.
 - Filter nach Ort („Alle Orte“ oder ein Ort) und nach Kategorie („Alle Kategorien“ oder eine). Suche und Filter rechnen nur im Gerät, ohne neue Anfrage.
-- Sortieren am PC durch Tippen auf den Spaltenkopf (Name, Kategorie, Ort, Anzahl, Kaufdatum). Am Handy nach Name.
+- Sortieren am PC durch Tippen auf den Spaltenkopf (Name, Kategorie, Anzahl, Kaufpreis, Kaufdatum; zweiter Tipp umgekehrt). Gilt für alle Orte. Am Handy nach Name.
+- Gebaut: Die Skript-Seite (Ändern, Löschen, Schutz vor Überschreiben) kam schon mit 3.2. Sheet und Skript bleiben in 3.3 unverändert.
 
 ## Schritt 3.4 Nachbesserungen und Abschluss (0.3.5 …)
 
