@@ -8,13 +8,15 @@ var BLATT_BEW_ = "bewertungen";
 var BLATT_LAEDEN_ = "laeden";
 var BLATT_KRIT_ = "kriterien";
 var BLATT_DETAILS_ = "details";
-var KOPF_BEW_ = ["id", "erstellt_am", "laden", "doener", "yufka", "pommes", "ladennote", "begruendung", "geloescht"];
+var KOPF_BEW_ = ["id", "erstellt_am", "laden", "doener", "yufka", "pommes", "ladennote", "begruendung", "geloescht", "fleisch"];
 var KOPF_LAEDEN_ = ["name"];
 var KOPF_KRIT_ = ["teil", "name"];
 var KOPF_DETAILS_ = ["bewertung_id", "teil", "kriterium", "wert", "begruendung"];
 var TEILE_ = ["doener", "yufka", "pommes"];       // zählen für „Insgesamt“
 var ALLE_TEILE_ = ["doener", "yufka", "pommes", "laden"];  // „laden“ = Service, Gemütlichkeit …
 var SPALTE_JE_TEIL_ = { doener: "doener", yufka: "yufka", pommes: "pommes", laden: "ladennote" };
+// Bei Fleisch-Bewertungen heißt ein Kriterium anders (gespeichert wird der neue Name)
+var TAUSCH_FLEISCH_ = { "Seitan": "Fleisch" };
 var MAX_LADEN_ = 60;          // Höchstlänge Name des Ladens
 var MAX_BEGRUENDUNG_ = 300;   // Höchstlänge Begründung
 var MAX_KRIT_BEGR_ = 200;     // Höchstlänge Begründung je Kriterium
@@ -196,6 +198,7 @@ function liste_() {
     var b = { laden: laden, begruendung: String(zelle_(z, sp, "begruendung")), datum: "" };
     TEILE_.forEach(function (t) { b[t] = sternAusSheet_(zelle_(z, sp, t)); });
     b.laden_note = sternAusSheet_(zelle_(z, sp, "ladennote"));
+    b.fleisch = istWahr_(zelle_(z, sp, "fleisch"));   // leer = vegan
     if (b.doener == null && b.yufka == null && b.pommes == null && b.laden_note == null) return;
     var d = zelle_(z, sp, "erstellt_am");
     if (d instanceof Date && !isNaN(d)) b.datum = Utilities.formatDate(d, zone, "yyyy-MM-dd");
@@ -279,7 +282,8 @@ function bewerten_(data) {
       if (!sternGueltig_(d.wert)) return { error: "eingabe", message: "Sterne bitte von 1 bis 10." };
       var kb = String(d.begruendung == null ? "" : d.begruendung);
       if (kb.length > MAX_KRIT_BEGR_) return { error: "eingabe", message: "Eine Begründung ist zu lang (höchstens " + MAX_KRIT_BEGR_ + " Zeichen)." };
-      details.push({ teil: teil, kriterium: name, wert: Number(d.wert), begruendung: bereinigeText_(kb, MAX_KRIT_BEGR_) });
+      var gespeichert = data.fleisch === true && TAUSCH_FLEISCH_[name] ? TAUSCH_FLEISCH_[name] : name;
+      details.push({ teil: teil, kriterium: gespeichert, wert: Number(d.wert), begruendung: bereinigeText_(kb, MAX_KRIT_BEGR_) });
     }
     ALLE_TEILE_.forEach(function (t) {
       var w = details.filter(function (x) { return x.teil === t; }).map(function (x) { return x.wert; });
@@ -296,6 +300,14 @@ function bewerten_(data) {
     return { error: "eingabe", message: "Die Begründung ist zu lang (höchstens " + MAX_BEGRUENDUNG_ + " Zeichen)." };
   }
 
+  // Fleisch: Häkchen gesetzt = true, sonst bleibt die Zelle leer (= vegan)
+  var bew = blatt_(BLATT_BEW_);
+  var sp = spalten_(bew);
+  var fleisch = data.fleisch === true;
+  if (fleisch && sp.fleisch == null) {
+    return { error: "einrichten", message: "Spalte 'fleisch' fehlt. Bitte im Editor einmal 'einrichten' ausführen." };
+  }
+
   // Laden: gleicher Name (ohne Groß- und Kleinschreibung) = derselbe Laden
   var laeden = laedenNamen_();
   var gleich = laeden.filter(function (n) { return n.toLowerCase() === ladenText.toLowerCase(); })[0];
@@ -308,8 +320,6 @@ function bewerten_(data) {
     ls.appendRow(lzeile);
   }
 
-  var bew = blatt_(BLATT_BEW_);
-  var sp = spalten_(bew);
   var id = Utilities.getUuid();
   var zeilenWerte = {
     id: id,
@@ -320,7 +330,8 @@ function bewerten_(data) {
     pommes: werte.pommes,
     ladennote: werte.laden,
     begruendung: bereinigeText_(begruendung, MAX_BEGRUENDUNG_),
-    geloescht: false
+    geloescht: false,
+    fleisch: fleisch ? true : ""
   };
   var zeile = new Array(bew.getLastColumn()).fill("");
   Object.keys(zeilenWerte).forEach(function (k) { if (sp[k] != null) zeile[sp[k]] = zeilenWerte[k]; });
