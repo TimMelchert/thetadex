@@ -45,6 +45,16 @@
     --knopf-rot: #B3261E;
     --knopf-gruen: #2E7D32;
 
+    /* Farben der Arten im Uni-Kalender (Ausnahme, Wunsch der Person, siehe STAND.md 4). Schrift darauf: --schrift-auf-farbe. */
+    --art-vorlesung: #C9784A;
+    --art-pruefung: #E0736B;
+    --art-arbeit: #7FA7A0;
+    --art-zug: #B5838D;
+    --art-urlaub: #8DB580;
+    --art-frei: #C9C5BE;
+    --art-sonstiges: #A8A39B;
+    --art-ferien: #F1E6D0;
+
     --rund: 10px;
     --abstand: 16px;
 }
@@ -74,6 +84,9 @@
     --zelle-grau: #6E6A64;
     --plus-schrift: #81C784;
     --minus-schrift: #F28B82;
+    --art-frei: #8A857E;
+    --art-sonstiges: #77726B;
+    --art-ferien: #3D3629;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -97,6 +110,9 @@
         --zelle-grau: #6E6A64;
         --plus-schrift: #81C784;
         --minus-schrift: #F28B82;
+        --art-frei: #8A857E;
+        --art-sonstiges: #77726B;
+        --art-ferien: #3D3629;
     }
 }
 

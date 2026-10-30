@@ -837,7 +837,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .uni-zeitraum { font-size: 0.85rem; }
 .uni-neu { margin-top: var(--abstand); }
 .uni-tag h2 { margin: 24px 0 0; font-size: 1.1rem; }
-.uni-eintrag { display: flex; align-items: flex-start; gap: 14px; width: 100%; min-height: 52px; margin: 8px 0; padding: 10px 12px; border: none; border-left: 6px solid var(--bereich); border-radius: var(--rund); background: var(--kachel); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.uni-eintrag { display: flex; align-items: flex-start; gap: 14px; width: 100%; min-height: 52px; margin: 8px 0; padding: 10px 12px; border: none; border-left: 6px solid var(--art, var(--bereich)); border-radius: var(--rund); background: var(--kachel); color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .uni-zeit { flex: 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .uni-was { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .uni-titel { font-weight: 600; overflow-wrap: anywhere; }
@@ -845,4 +845,85 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .formular .uni-zeiten > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 @media (hover: hover) {
     .uni-eintrag:hover { background-image: linear-gradient(rgba(128, 128, 128, 0.14), rgba(128, 128, 128, 0.14)); }
+}
+
+/* Uni (5.2): Farbe je Art in --art (Werte in css/base.css) */
+[data-art="vorlesung"] { --art: var(--art-vorlesung); }
+[data-art="pruefung"]  { --art: var(--art-pruefung); }
+[data-art="arbeit"]    { --art: var(--art-arbeit); }
+[data-art="zug"]       { --art: var(--art-zug); }
+[data-art="urlaub"]    { --art: var(--art-urlaub); }
+[data-art="frei"]      { --art: var(--art-frei); }
+[data-art="sonstiges"] { --art: var(--art-sonstiges); }
+[data-art="ferien"]    { --art: var(--art-ferien); }
+
+/* Uni (5.2): Kalender */
+.uni-kal-kopf { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: var(--abstand); }
+.uni-kal-kopf .ansichten { margin-top: 0; }
+.uni-blaettern { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.uni-blaettern .knopf { min-width: 44px; padding: 0 12px; }
+.uni-kal-titel { flex: 1; margin: 0; font-size: 1.05rem; text-align: center; }
+.uni-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.uni-filter-knopf { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid var(--linie); border-radius: 999px; background: none; color: var(--schrift); font: inherit; font-size: 0.85rem; cursor: pointer; }
+.uni-filter-knopf[aria-pressed="false"] { color: var(--schrift-leise); text-decoration: line-through; }
+.uni-filter-knopf[aria-pressed="false"] .uni-punkt { opacity: 0.3; }
+.uni-punkt { width: 12px; height: 12px; border-radius: 50%; background: var(--art); border: 1px solid var(--linie); }
+.uni-marke { align-self: flex-start; margin-top: 2px; padding: 0 6px; border: 1px solid var(--schrift-leise); border-radius: var(--rund); font-size: 0.8rem; }
+.uni-ausfall .uni-titel, .uni-ausfall .uni-zeit { text-decoration: line-through; color: var(--schrift-leise); }
+.uni-eintrag.uni-ausfall { border-left-style: dashed; }
+.uni-tag h3 { margin: 20px 0 0; font-size: 1rem; }
+.uni-tag.uni-heute h3 { border-bottom-width: 5px; }
+.uni-tag.uni-ferien h3 { border-bottom-color: var(--art-ferien); }
+.uni-leer { margin: 6px 0 0; }
+
+/* Woche: am Handy im Hochformat die Liste, sonst das Raster */
+.uni-woche-raster { display: none; }
+@media (min-width: 768px), (orientation: landscape) {
+    .uni-woche-liste { display: none; }
+    .uni-woche-raster {
+        display: grid; grid-template-columns: 44px repeat(7, minmax(0, 1fr)); margin-top: var(--abstand);
+        border: 1px solid var(--linie); border-radius: var(--rund); overflow: hidden;
+    }
+}
+.uni-raster-ecke { border-bottom: 1px solid var(--linie); }
+.uni-raster-kopf { padding: 6px 4px; border-left: 1px solid var(--linie); border-bottom: 1px solid var(--linie); font-size: 0.85rem; font-weight: 600; text-align: center; }
+.uni-raster-kopf.uni-heute { background: var(--bereich); color: var(--schrift-auf-farbe); }
+.uni-raster-ganztags { display: flex; flex-direction: column; gap: 2px; min-height: 26px; padding: 2px; border-left: 1px solid var(--linie); border-bottom: 1px solid var(--linie); }
+.uni-ferien-text { font-size: 0.75rem; color: var(--schrift-leise); text-align: center; }
+.uni-raster-zeiten { display: flex; flex-direction: column; }
+.uni-raster-zeiten span { height: 48px; padding: 2px 4px 0 0; font-size: 0.7rem; color: var(--schrift-leise); text-align: right; font-variant-numeric: tabular-nums; }
+.uni-raster-tag {
+    position: relative; border-left: 1px solid var(--linie);
+    background-image: repeating-linear-gradient(to bottom, var(--linie) 0, var(--linie) 1px, transparent 1px, transparent 48px);
+}
+.uni-ferien { background-color: var(--art-ferien); }
+.uni-raster-tag.uni-heute { box-shadow: inset 0 0 0 2px var(--bereich); }
+.uni-block {
+    position: absolute; display: flex; flex-direction: column; gap: 1px; overflow: hidden; margin: 0 1px; padding: 2px 4px;
+    border: none; border-radius: 6px; background: var(--art); color: var(--schrift-auf-farbe); font: inherit; font-size: 0.75rem; line-height: 1.2; text-align: left; cursor: pointer;
+}
+.uni-block-ganz { position: static; display: block; margin: 0; white-space: nowrap; text-overflow: ellipsis; }
+.uni-block-zeit { font-variant-numeric: tabular-nums; }
+.uni-block-titel { font-weight: 700; overflow-wrap: anywhere; }
+.uni-block.uni-ausfall { background: none; border: 2px dashed var(--art); color: var(--schrift-leise); text-decoration: line-through; }
+
+/* Monat */
+.uni-monat { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; margin-top: var(--abstand); }
+.uni-monat-kopf { padding: 4px 0; font-size: 0.8rem; font-weight: 600; color: var(--schrift-leise); text-align: center; }
+.uni-monat-tag {
+    display: flex; flex-direction: column; align-items: stretch; gap: 2px; min-width: 0; min-height: 64px; padding: 4px 2px;
+    border: none; border-radius: 6px; background: var(--kachel); color: var(--schrift); font: inherit; text-align: left; cursor: pointer;
+}
+.uni-monat-tag.uni-ferien { background: var(--art-ferien); }
+.uni-monat-tag.uni-anderer { opacity: 0.45; }
+.uni-monat-tag.uni-heute { box-shadow: inset 0 0 0 2px var(--bereich); }
+.uni-monat-zahl { font-size: 0.85rem; font-weight: 600; text-align: center; }
+.uni-monat-eintrag { display: block; height: 6px; overflow: hidden; border-radius: 3px; background: var(--art); color: transparent; font-size: 0; }
+.uni-monat-eintrag.uni-ausfall { background: none; border: 1px dashed var(--art); }
+.uni-monat-mehr { font-size: 0.7rem; color: var(--schrift-leise); text-align: center; }
+@media (min-width: 768px) {
+    .uni-monat-tag { min-height: 96px; padding: 4px; }
+    .uni-monat-zahl { text-align: left; }
+    .uni-monat-eintrag { height: auto; padding: 1px 4px; color: var(--schrift-auf-farbe); font-size: 0.72rem; white-space: nowrap; text-overflow: ellipsis; }
+    .uni-monat-eintrag.uni-weiter { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 }
