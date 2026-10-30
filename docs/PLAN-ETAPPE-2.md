@@ -88,6 +88,10 @@ Wünsche der Person (29.10.2026), eingeschoben vor die Finanz-Auswertung:
 
 ## Schritt 2.4 Finanzen: Auswertung (0.2.6 → 0.2.7)
 
+- Gebaut wie unten beschrieben. Abweichung: Die Jahrestabelle bleibt auch am Handy eine Tabelle (vier schmale Spalten passen),
+  Tipp auf eine Zeile wählt den Monat. Haken für Rückzahlungen gibt es bei jeder Netto-Kategorie, für die im Blatt
+  `Einstellungen` Zeilen `rueckzahlung` stehen.
+
 - Skript: `analyse` liefert die Kategorien zusätzlich allgemein: alle Spalten aus `Analyse Monate` Zeile 7 mit Endung `-Out`, `-In`
   und Anfang `Netto-` als Liste `{name, wert}` je Monat. So braucht die App keine Kategorie-Namen im Code, und neue Kategorien
   im Sheet erscheinen von selbst. Die bisherigen Felder bleiben (die alte App kann weiter mit der alten Bereitstellung laufen).

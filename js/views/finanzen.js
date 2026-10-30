@@ -7,6 +7,7 @@ import { auswahlFeld } from '../ui/auswahl.js';
 import { lesen, schreiben } from '../store.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
+import { auswertung } from './finanzen-auswertung.js';
 
 // Konten wie im Finanz-Skript (KONTEN_). [Wert fürs Skript, Name in der Auswahl, Schlüssel in den Ständen, kurzer Name]
 const KONTEN = [
@@ -24,6 +25,8 @@ const norm = (t) => String(t == null ? '' : t).trim().toLowerCase();
 export function render(container, ctx) {
     const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
     let zwecke = [];
+    let einstellungen = null;
+    let auswertungAktuell = false; // nach einer Buchung beim nächsten Öffnen neu laden
 
     // --- Kontostände ---
     const gesamt = el('span', { class: 'finanz-gesamt-wert', text: '…' });
@@ -120,6 +123,7 @@ export function render(container, ctx) {
             const art = mode === 'aus' ? 'Ausgabe' : mode === 'ein' ? 'Einnahme' : 'Umbuchung';
             status.textContent = '';
             zeigeGespeichert('Gespeichert', art + ' ' + euro(wert));
+            auswertungAktuell = false;
         } catch (e) {
             status.textContent = 'NICHT gespeichert: ' + e.message;
         } finally {
@@ -148,10 +152,35 @@ export function render(container, ctx) {
     const neuLaden = el('button', { class: 'knopf knopf-zweit', text: 'Erneut laden', attrs: { type: 'button' }, on: { click: () => laden() } });
     neuLaden.hidden = true;
 
+    // Umschalter Buchen / Auswertung (wie bei Tracking und Döner)
+    const buchenBox = el('div', { attrs: { id: 'finanz-buchen' } }, [staende, formular, neuLaden]);
+    const auswertungBox = el('div', { attrs: { id: 'finanz-auswertung', hidden: true } });
+    let auswertungTeil = null;
+    const ansichtKnoepfe = [['Buchen', buchenBox], ['Auswertung', auswertungBox]].map(([text, box], i) => {
+        const b = el('button', {
+            class: 'ansicht', text,
+            attrs: { type: 'button', 'aria-pressed': i === 0 ? 'true' : 'false', 'aria-controls': box.id },
+            on: {
+                click: () => {
+                    ansichtKnoepfe.forEach(([k, kb]) => {
+                        const an = k === b;
+                        k.setAttribute('aria-pressed', an ? 'true' : 'false');
+                        kb.hidden = !an;
+                    });
+                    if (box !== auswertungBox || auswertungAktuell) return;
+                    auswertungAktuell = true;
+                    if (auswertungTeil) auswertungTeil.neuLaden();
+                    else auswertungTeil = auswertung(auswertungBox, () => einstellungen);
+                }
+            }
+        });
+        return [b, box];
+    });
+
     container.append(el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
         el('span', { class: 'titel-emoji', text: '💶', attrs: { 'aria-hidden': 'true' } }),
         el('span', { text: ctx.bereich.titel })
-    ]), staende, formular, neuLaden);
+    ]), el('div', { class: 'ansichten' }, ansichtKnoepfe.map(([b]) => b)), buchenBox, auswertungBox);
 
     // Zuletzt bekannte Stände sofort zeigen, dann frisch laden
     zeigeStaende(lesen('kontostaende'));
@@ -161,6 +190,7 @@ export function render(container, ctx) {
             const [s, e] = await Promise.all([api('finanzen', 'stats'), api('finanzen', 'einstellungen')]);
             zeigeStaende(s);
             schreiben('kontostaende', s);
+            einstellungen = e;
             zwecke = Array.isArray(e.zwecke) ? e.zwecke : [];
             zweck.setzeEintraege(zwecke.map((z) => z.name));
             kategorie.setzeEintraege(Array.isArray(e.kategorien) ? e.kategorien : []);
