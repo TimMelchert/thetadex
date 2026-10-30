@@ -277,6 +277,7 @@
 .doener-form-knoepfe .knopf { margin-top: 0; }
 
 /* Umschalter Rangliste / Vergleich */
+.doener-umschalter { display: flex; flex-wrap: wrap; gap: 0 10px; }
 .doener-ansichten, .ansichten { display: flex; gap: 0; margin-top: var(--abstand); border: 1px solid var(--linie); border-radius: var(--rund); overflow: hidden; width: fit-content; }
 
 .doener-ansicht, .ansicht {

@@ -113,9 +113,11 @@ export function render(container, ctx) {
     const kennung = kennungFinden(ctx.teile || []);
     const eigeneAdresse = Boolean(ADRESSE.exec((lesen('skripte', {}) || {}).doener || ''));
 
+    const TITEL = { vegan: 'Veganes Döner-Rating Landau', fleisch: 'Fleisch-Döner-Rating Landau' };
+    const titelText = el('span', { text: TITEL.vegan });
     container.append(el('h1', { class: 'bereich-titel doener-titel' }, [
         el('span', { class: 'doener-emoji', text: '🥙', attrs: { 'aria-hidden': 'true' } }),
-        el('span', { text: 'Veganes Döner-Rating Landau' })
+        titelText
     ]));
 
     if (!kennung) {
@@ -131,6 +133,8 @@ export function render(container, ctx) {
     const listeBox = el('div', { class: 'doener-liste' });
     let laedenNamen = [];
     let kriterien = {};
+    let alleBewertungen = [];
+    let sorte = 'vegan';   // Ranglisten getrennt: 'vegan' oder 'fleisch'
 
     async function laden() {
         try {
@@ -139,15 +143,22 @@ export function render(container, ctx) {
             kriterien = d.kriterien && typeof d.kriterien === 'object' ? d.kriterien : {};
             baueLadenAuswahl();
             baueAusfuehrlich();
-            const laeden = rangliste(Array.isArray(d.bewertungen) ? d.bewertungen : []);
-            zeigeListe(laeden);
-            zeigeVergleich(laeden);
+            alleBewertungen = Array.isArray(d.bewertungen) ? d.bewertungen : [];
+            zeige();
             if (status.textContent === 'Lädt …') status.textContent = '';
         } catch (e) {
             status.textContent = e.message;
             leeren(listeBox);
             listeBox.append(el('button', { class: 'knopf knopf-zweit', text: 'Erneut versuchen', attrs: { type: 'button' }, on: { click: laden } }));
         }
+    }
+
+    // Zeigt Rangliste und Vergleich nur für die gewählte Sorte (ohne Häkchen „Fleisch“ = vegan)
+    function zeige() {
+        const laeden = rangliste(alleBewertungen.filter((b) => (b.fleisch === true) === (sorte === 'fleisch')));
+        titelText.textContent = TITEL[sorte];
+        zeigeListe(laeden);
+        zeigeVergleich(laeden);
     }
 
     // Vergleich: je Teil und je Kriterium alle Läden nebeneinander, Gewinner mit 🏆
@@ -295,6 +306,7 @@ export function render(container, ctx) {
     }
     baueLadenAuswahl();
 
+    const fleischSchalter = el('input', { attrs: { id: 'doener-fleisch', type: 'checkbox' } });
     const schnellWahl = TEILE.map(([t, titel]) => ({ t, titel, wahl: sterneWahl('doener-titel-' + t, titel) }));
 
     // Ausführlich: je Kriterium ein Wert (halbe erlaubt) und eine Begründung
@@ -353,7 +365,7 @@ export function render(container, ctx) {
     async function senden(ev) {
         ev.preventDefault();
         const ladenName = ladenWahl.value === NEU ? ladenNeu.value.trim() : ladenWahl.value;
-        const daten = { laden: ladenName, begruendung: begruendungFeld.value.trim(), web: lockFeld.value };
+        const daten = { laden: ladenName, fleisch: fleischSchalter.checked, begruendung: begruendungFeld.value.trim(), web: lockFeld.value };
         const ausfuehrlich = ausfuehrlichSchalter.checked;
         if (ausfuehrlich) {
             daten.details = kriterienFelder.filter((k) => k.wahl.wert() != null).map((k) => ({
@@ -379,6 +391,7 @@ export function render(container, ctx) {
         formMeldung.textContent = 'Wird gesendet …';
         try {
             await apiOeffentlich(adresse, 'bewerten', daten);
+            waehleSorte(daten.fleisch ? 'fleisch' : 'vegan');
             formularLeeren();
             zeigeFormular(false);
             const danke = 'Danke! Deine Bewertung ist gespeichert.';
@@ -397,6 +410,10 @@ export function render(container, ctx) {
         el('label', { text: 'Laden', attrs: { for: 'doener-laden' } }),
         ladenWahl,
         ladenNeu,
+        el('div', { class: 'doener-schalter' }, [
+            fleischSchalter,
+            el('label', { text: 'Fleisch (leer lassen = vegan)', attrs: { for: 'doener-fleisch' } })
+        ]),
         el('div', { class: 'doener-schalter' }, [
             ausfuehrlichSchalter,
             el('label', { text: 'Ausführlich bewerten (alle Kriterien)', attrs: { for: 'doener-ausfuehrlich' } })
@@ -460,12 +477,27 @@ export function render(container, ctx) {
         return [b, box];
     });
 
+    // Umschalter Vegan / Fleisch
+    const sorteKnoepfe = [['vegan', 'Vegan'], ['fleisch', 'Fleisch']].map(([wert, text]) => el('button', {
+        class: 'doener-ansicht', text,
+        attrs: { type: 'button', 'aria-pressed': wert === sorte ? 'true' : 'false', 'data-sorte': wert },
+        on: { click: () => waehleSorte(wert) }
+    }));
+    function waehleSorte(neu) {
+        sorte = neu;
+        sorteKnoepfe.forEach((k) => k.setAttribute('aria-pressed', k.dataset.sorte === sorte ? 'true' : 'false'));
+        zeige();
+    }
+
     status.textContent = 'Lädt …';
     container.append(
         el('div', { class: 'doener-aktionen' }, [bewertenKnopf]),
         formBox,
         status,
-        el('div', { class: 'doener-ansichten' }, ansichtKnoepfe.map(([b]) => b)),
+        el('div', { class: 'doener-umschalter' }, [
+            el('div', { class: 'doener-ansichten', attrs: { role: 'group', 'aria-label': 'Sorte' } }, sorteKnoepfe),
+            el('div', { class: 'doener-ansichten', attrs: { role: 'group', 'aria-label': 'Ansicht' } }, ansichtKnoepfe.map(([b]) => b))
+        ]),
         listeBox,
         vergleichBox
     );

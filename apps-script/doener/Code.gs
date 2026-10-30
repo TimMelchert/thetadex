@@ -8,7 +8,7 @@ var BLATT_BEW_ = "bewertungen";
 var BLATT_LAEDEN_ = "laeden";
 var BLATT_KRIT_ = "kriterien";
 var BLATT_DETAILS_ = "details";
-var KOPF_BEW_ = ["id", "erstellt_am", "laden", "doener", "yufka", "pommes", "ladennote", "begruendung", "geloescht"];
+var KOPF_BEW_ = ["id", "erstellt_am", "laden", "doener", "yufka", "pommes", "ladennote", "begruendung", "geloescht", "fleisch"];
 var KOPF_LAEDEN_ = ["name"];
 var KOPF_KRIT_ = ["teil", "name"];
 var KOPF_DETAILS_ = ["bewertung_id", "teil", "kriterium", "wert", "begruendung"];
@@ -196,6 +196,7 @@ function liste_() {
     var b = { laden: laden, begruendung: String(zelle_(z, sp, "begruendung")), datum: "" };
     TEILE_.forEach(function (t) { b[t] = sternAusSheet_(zelle_(z, sp, t)); });
     b.laden_note = sternAusSheet_(zelle_(z, sp, "ladennote"));
+    b.fleisch = istWahr_(zelle_(z, sp, "fleisch"));   // leer = vegan
     if (b.doener == null && b.yufka == null && b.pommes == null && b.laden_note == null) return;
     var d = zelle_(z, sp, "erstellt_am");
     if (d instanceof Date && !isNaN(d)) b.datum = Utilities.formatDate(d, zone, "yyyy-MM-dd");
@@ -296,6 +297,14 @@ function bewerten_(data) {
     return { error: "eingabe", message: "Die Begründung ist zu lang (höchstens " + MAX_BEGRUENDUNG_ + " Zeichen)." };
   }
 
+  // Fleisch: Häkchen gesetzt = true, sonst bleibt die Zelle leer (= vegan)
+  var bew = blatt_(BLATT_BEW_);
+  var sp = spalten_(bew);
+  var fleisch = data.fleisch === true;
+  if (fleisch && sp.fleisch == null) {
+    return { error: "einrichten", message: "Spalte 'fleisch' fehlt. Bitte im Editor einmal 'einrichten' ausführen." };
+  }
+
   // Laden: gleicher Name (ohne Groß- und Kleinschreibung) = derselbe Laden
   var laeden = laedenNamen_();
   var gleich = laeden.filter(function (n) { return n.toLowerCase() === ladenText.toLowerCase(); })[0];
@@ -308,8 +317,6 @@ function bewerten_(data) {
     ls.appendRow(lzeile);
   }
 
-  var bew = blatt_(BLATT_BEW_);
-  var sp = spalten_(bew);
   var id = Utilities.getUuid();
   var zeilenWerte = {
     id: id,
@@ -320,7 +327,8 @@ function bewerten_(data) {
     pommes: werte.pommes,
     ladennote: werte.laden,
     begruendung: bereinigeText_(begruendung, MAX_BEGRUENDUNG_),
-    geloescht: false
+    geloescht: false,
+    fleisch: fleisch ? true : ""
   };
   var zeile = new Array(bew.getLastColumn()).fill("");
   Object.keys(zeilenWerte).forEach(function (k) { if (sp[k] != null) zeile[sp[k]] = zeilenWerte[k]; });
