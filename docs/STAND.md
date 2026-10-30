@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.2.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.2.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Laufende Etappe: **Etappe 2 „Bestehendes umziehen“**, Plan in `docs/PLAN-ETAPPE-2.md`.
@@ -303,7 +303,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - Ausnahme (Wunsch der Person, 29.10.2026): Nach dem Speichern erscheint kurz ein Fenster mit grünem Haken (`--erfolg`).
     Die Tracking-Übersicht färbt Zellen mit eigenen Zellfarben (`--zelle-…` in `css/base.css`, hell und dunkel) nach Regeln
     aus dem Blatt `Einstellungen`, Spalte `farben`. Zahlen zeigt die Übersicht nicht.
-  - Ausnahme (Wunsch der Person, 29.10.2026): Finanzen zeigt 💶 vor der Überschrift, das Vermögen grün (positiv) oder rot (negativ),
+  - Ausnahme (Wunsch der Person, 29.10.2026): Tracking zeigt 📊 vor der Überschrift. Finanzen zeigt 💶 vor der Überschrift, das Vermögen grün (positiv) oder rot (negativ),
     den Knopf „Ausgabe“ rot und „Einnahme“ grün (`--plus-schrift`, `--minus-schrift`, `--knopf-rot`, `--knopf-gruen`).
   - Ausnahme (Wunsch der Person, 29.10.2026): Der Reiter Döner zeigt das Emoji 🥙 vor der Überschrift und bewertet mit 10 kleinen 🥙
     statt einer Auswahlliste. Seine Knöpfe sind in der Döner-Farbe mit dunkler Schrift (`--schrift-auf-farbe`).
@@ -505,6 +505,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.2.3** Schritt 2.2: Reiter Finanzen mit Kontoständen und Buchen, Zwecke und Kategorien aus dem Blatt `Einstellungen`.
 - **0.2.4** Schritt 2.3: Tracking-Übersicht (Tabelle mit farbigen Zellen je Jahr), Fenster „Gespeichert“ mit grünem Haken, Döner-Haken gelb.
 - **0.2.5** Nachbesserung 2.3: Finanzen mit 💶, Vermögen grün/rot, Knöpfe rot/grün, Kalender öffnet bei Klick ins Datumsfeld.
+- **0.2.6** Nachbesserung 2.3: Tracking mit 📊, Übersicht mit allen Tagen, je Monat eine Tabelle, Filter nach Monat.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

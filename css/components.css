@@ -528,7 +528,7 @@
 .tracking-jahr-zeile { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px; }
 .formular.tracking-jahr-zeile label { margin-top: 0; }
 .formular.tracking-jahr-zeile .knopf { margin-top: 0; }
-.tracking-tabelle-box { width: fit-content; max-width: 100%; overflow: auto; max-height: 70vh; margin-top: 8px; border: 1px solid var(--linie); border-radius: var(--rund); }
+.tracking-tabelle-box { width: fit-content; max-width: 100%; overflow-x: auto; margin-top: 8px; border: 1px solid var(--linie); border-radius: var(--rund); }
 .tracking-tabelle { border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }
 .tracking-tabelle th, .tracking-tabelle td { border-right: 1px solid var(--linie); border-bottom: 1px solid var(--linie); }
 .tracking-tabelle td { min-width: 22px; height: 22px; padding: 0; }
@@ -584,3 +584,5 @@
 .knopf.knopf-aus { background: var(--knopf-rot); color: #FFFFFF; }
 .knopf.knopf-ein { background: var(--knopf-gruen); color: #FFFFFF; }
 input[type="date"] { cursor: pointer; }
+
+.tracking-monat-titel { margin: 20px 0 4px; font-size: 1.05rem; }
