@@ -1,5 +1,5 @@
 // Auswahlfeld mit Freitext: Textfeld, Pfeil-Knopf und Liste zum Antippen.
-// Tippen filtert die Liste. Eigene Eingaben sind erlaubt. Texte nur über textContent.
+// Tipp ins Feld oder auf den Pfeil öffnet die Liste. Tippen filtert die Liste. Eigene Eingaben sind erlaubt. Texte nur über textContent.
 
 import { el, leeren } from './dom.js';
 
@@ -41,6 +41,8 @@ export function auswahlFeld({ id, maxlength = 100, placeholder = '', eintraege =
     }
 
     feld.addEventListener('input', () => oeffne(feld.value));
+    // Tipp irgendwo ins Feld öffnet die ganze Liste (nicht nur der kleine Pfeil). Eintippen bleibt möglich.
+    feld.addEventListener('click', () => (auswahl.hidden ? oeffne('') : schliesse()));
     feld.addEventListener('keydown', (ev) => {
         if (ev.key === 'Escape') schliesse();
         if (ev.key === 'ArrowDown') {

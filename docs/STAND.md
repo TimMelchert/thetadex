@@ -4,12 +4,12 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.3.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.3.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ läuft, Plan in `docs/PLAN-ETAPPE-3.md`.
-- Nächster Schritt: **3.6 Nachbesserungen** (Anmerkungen der Person zum Aussehen), dann Etappe 3 abschließen.
+- Nächster Schritt: weitere Anmerkungen der Person nach dem Testen von 3.6 (falls nötig), dann Etappe 3 abschließen.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -279,6 +279,9 @@ unter „Info“ die Version prüfen.
   Reiter Besitz: Liste je Ort (PC Tabelle, Handy Karten), Hinzufügen; Ändern und Löschen per Tipp auf eine Sache, Suche, Filter nach Ort und Kategorie, Sortieren am PC (3.3).
   Zubehör (3.4): Spalte `gehoert_zu`, eine Ebene, eingerückt und aufklappbar unter der Hauptsache.
   Bild (3.5): Spalte `bild` (Drive-Datei-Kennung), Aktion `bild` (nur Bilder, die bei einer Sache stehen), Ordner „Thetadex Besitz“.
+  Nachbesserungen (3.6): Tipp auf eine Sache zeigt erst ihre Daten mit Bild, „Bearbeiten“ öffnet das Formular; Formular schließt nach dem Speichern.
+  Anzahl 0 ist ausgeblendet (außer mit Zubehör, Haken „Auch Sachen mit Anzahl 0 zeigen“). Spalte `ausgeliehen_an` mit Filter.
+  Unterreiter „Liste“ und „Übersicht“ (Sachen, Stück, ausgeliehen; je Kategorie, je Ort, an wen). Auswahlfelder öffnen die Liste beim Tipp ins Feld.
 
 ### 3.2 Offen
 
@@ -387,7 +390,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
-- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie). `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern.
+- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile.
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
@@ -472,7 +475,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     Reiter Tracking (Eingabe wie bisher); Reiter Finanzen (Übersicht, Buchen, Auswertung mit Chart.js aus `vendor/`).
   - Datenschutz: Finanz- und Tracking-Daten nur nach Passwort, nichts im Gerät außer den letzten Kontoständen (5).
   - **Tor:** Die Person ist mit der neuen App zufrieden (Richtwert 2 Wochen). Dann alte Bereitstellungen archivieren und alte Repos löschen.
-- **Etappe 3 „Besitz“ (0.3.x)** – läuft, Plan mit Schritten 3.0 bis 3.4 in `docs/PLAN-ETAPPE-3.md`.
+- **Etappe 3 „Besitz“ (0.3.x)** – läuft, Plan mit Schritten 3.0 bis 3.7 in `docs/PLAN-ETAPPE-3.md`.
   - Ziel: neues Sheet „Leben“ mit Skript `leben` (nur die Person).
   - Besitz: Tabelle aller Sachen mit Kategorie, Ort und Anzahl, bei neuen Sachen Kaufpreis und Kaufdatum. Hinzufügen, ändern, weich löschen.
     Suche und Filter nach Ort und Kategorie. Am PC als Tabelle, am Handy als Karten (1.5).
@@ -548,6 +551,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.3.4** Schritt 3.3: Besitz ändern, weich löschen, suchen, filtern nach Ort und Kategorie, sortieren.
 - **0.3.5** Schritt 3.4: Zubehör unter einer Hauptsache (Spalte `gehoert_zu`), eingerückt und aufklappbar.
 - **0.3.6** Schritt 3.5: Bild je Sache aus Google Drive (hochladen oder Link), Spalte `bild`.
+- **0.3.7** Schritt 3.6: 📦 im Titel, Ansicht vor dem Bearbeiten, Anzahl 0 ausgeblendet, „Ausgeliehen an“ mit Filter, Übersicht, Strich je Sache am PC.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
