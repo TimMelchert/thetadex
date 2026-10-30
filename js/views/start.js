@@ -25,7 +25,7 @@ export function render(container, ctx) {
         container.append(el('div', { class: 'karte' }, [
             el('h2', { text: 'Noch nicht eingerichtet' }),
             el('p', { text: 'Trage einmal dein Passwort und die Adressen deiner Skripte ein. Sie bleiben nur auf diesem Gerät.' }),
-            el('a', { class: 'knopf', text: 'Zur Einrichtung', attrs: { href: '#/einrichtung' } })
+            el('a', { class: 'knopf', text: 'Zu den Einstellungen', attrs: { href: '#/einstellungen' } })
         ]));
     }
 }

@@ -5,7 +5,8 @@ import { el, leeren } from './ui/dom.js';
 import { istEingerichtet } from './store.js';
 import * as start from './views/start.js';
 import * as platzhalter from './views/platzhalter.js';
-import * as einrichtung from './views/einrichtung.js';
+import * as einstellungen from './views/einstellungen.js';
+import { wendeAussehenAn } from './ui/aussehen.js';
 import * as info from './views/info.js';
 import * as nichtgefunden from './views/nichtgefunden.js';
 import * as doener from './views/doener.js';
@@ -22,7 +23,7 @@ function sichtbareBereiche() {
 // Adresse → Ansicht. Reiter ohne eigene Ansicht zeigen vorerst den Platzhalter.
 const ANSICHTEN = {
     '': start,
-    einrichtung,
+    einstellungen,
     info
 };
 aktiv.forEach((b) => { ANSICHTEN[b.id] = platzhalter; });
@@ -57,6 +58,8 @@ function zeigeAnsicht() {
     const sichtbar = sichtbareBereiche();
     baueReiter(sichtbar);
     let route = aktuelleRoute();
+    // Alte Adresse (bis 0.3.1) führt zu den Einstellungen
+    if (route === 'einrichtung') { location.replace('#/einstellungen'); return; }
     // Private Reiter ohne Einrichtung: zur Startseite
     if (aktiv.some((b) => b.id === route) && !sichtbar.some((b) => b.id === route)) route = '';
     const ansicht = ANSICHTEN[route] || nichtgefunden;
@@ -115,6 +118,7 @@ function beobachteUpdates(reg) {
     });
 }
 
+wendeAussehenAn();
 window.addEventListener('hashchange', zeigeAnsicht);
 zeigeAnsicht();
 // Tracking-Felder schon im Hintergrund holen, damit das Formular schneller da ist (nur im Arbeitsspeicher)

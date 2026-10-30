@@ -1,9 +1,10 @@
-// Ersteinrichtung: Passwort und Script-Adressen, gespeichert nur im Gerät.
+// Einstellungen: Aussehen, Passwort und Script-Adressen, gespeichert nur im Gerät.
 
 import { el, leeren } from '../ui/dom.js';
 import { lesen, schreiben, abmelden } from '../store.js';
 import { SKRIPTE } from '../config.js';
 import { api } from '../api.js';
+import { AUSSEHEN, aktuellesAussehen, setzeAussehen, wendeAussehenAn } from '../ui/aussehen.js';
 
 // Eine gültige Adresse einer Apps-Script-Web-App
 const SKRIPT_MUSTER = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/;
@@ -75,6 +76,7 @@ export function render(container) {
     function allesLoeschen() {
         if (!confirm('Passwort und Script-Adressen von diesem Gerät löschen?')) return;
         abmelden();
+        wendeAussehenAn();
         location.hash = '#/';
     }
 
@@ -88,12 +90,27 @@ export function render(container) {
         el('button', { class: 'knopf', text: 'Speichern', attrs: { type: 'submit' } })
     ]);
 
+    // Aussehen: gilt sofort, ohne Speichern-Knopf
+    const aussehenKnoepfe = AUSSEHEN.map((a) => el('button', {
+        class: 'ansicht', text: a.titel,
+        attrs: { type: 'button', 'data-wert': a.id, 'aria-pressed': a.id === aktuellesAussehen() ? 'true' : 'false' },
+        on: {
+            click: () => {
+                setzeAussehen(a.id);
+                aussehenKnoepfe.forEach((k) => k.setAttribute('aria-pressed', k.getAttribute('data-wert') === a.id ? 'true' : 'false'));
+            }
+        }
+    }));
+
     const ergebnis = el('ul', { class: 'pruefliste', attrs: { 'aria-live': 'polite' } });
     const pruefKnopf = el('button', { class: 'knopf knopf-zweit', text: 'Verbindung prüfen', attrs: { type: 'button' }, on: { click: pruefen } });
 
     container.append(
-        el('h1', { text: 'Einrichtung' }),
+        el('h1', { text: 'Einstellungen' }),
         el('p', { class: 'leise', text: 'Alles hier bleibt nur auf diesem Gerät gespeichert. Nichts davon landet im Repo.' }),
+        el('h2', { text: 'Aussehen' }),
+        el('div', { class: 'ansichten aussehen-wahl', attrs: { role: 'group', 'aria-label': 'Aussehen' } }, aussehenKnoepfe),
+        el('h2', { text: 'Zugang' }),
         formular,
         meldung,
         el('h2', { text: 'Verbindung' }),
@@ -101,7 +118,7 @@ export function render(container) {
         pruefKnopf,
         ergebnis,
         el('h2', { text: 'Abmelden' }),
-        el('p', { text: 'Löscht Passwort und Adressen von diesem Gerät.' }),
+        el('p', { text: 'Löscht Passwort, Adressen und die Wahl beim Aussehen von diesem Gerät.' }),
         el('button', { class: 'knopf knopf-zweit', text: 'Abmelden', attrs: { type: 'button' }, on: { click: allesLoeschen } })
     );
 }

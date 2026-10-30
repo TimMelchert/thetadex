@@ -16,7 +16,7 @@ export async function api(skript, action, daten = {}) {
     const adresse = (lesen('skripte', {}) || {})[skript];
     const passwort = lesen('passwort');
     if (!adresse || !passwort) {
-        throw new ApiFehler('einrichtung', 'Bitte zuerst unter „Einrichtung“ Passwort und Script-Adresse eintragen.');
+        throw new ApiFehler('einrichtung', 'Bitte zuerst unter „Einstellungen“ Passwort und Script-Adresse eintragen.');
     }
     return senden(adresse, { ...daten, pin: passwort, action });
 }

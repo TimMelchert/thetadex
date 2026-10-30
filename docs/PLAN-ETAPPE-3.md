@@ -19,7 +19,7 @@ Die Besitz-Liste hält die App nur im Arbeitsspeicher, solange die Seite offen i
 - Dieser Plan. Sheet und Skript bleiben unverändert.
 - 0.3.1: Antworten der Person eingearbeitet (30.10.2026): Orte ohne eigenes Blatt, neue Spalte `kategorie`, keine Summe der Kaufpreise.
 
-## Schritt 3.1 Einstellungen statt Einrichtung, Aussehen hell / dunkel / Gerät (0.3.1 → 0.3.2)
+## Schritt 3.1 Einstellungen statt Einrichtung, Aussehen hell / dunkel / Gerät (0.3.1 → 0.3.2) – erledigt
 
 - Oben rechts heißt es „Einstellungen“ (Zahnrad-Symbol), Adresse `#/einstellungen`.
   Die alte Adresse `#/einrichtung` führt weiter dorthin, damit gespeicherte Lesezeichen nicht ins Leere gehen.
