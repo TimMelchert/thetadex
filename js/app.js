@@ -14,6 +14,7 @@ import * as tracking from './views/tracking.js';
 import * as finanzen from './views/finanzen.js';
 import * as besitz from './views/besitz.js';
 import * as einkauf from './views/einkauf.js';
+import * as uni from './views/uni.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
@@ -36,6 +37,7 @@ ANSICHTEN.tracking = tracking;
 ANSICHTEN.finanzen = finanzen;
 ANSICHTEN.besitz = besitz;
 ANSICHTEN.einkauf = einkauf;
+ANSICHTEN.uni = uni;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';

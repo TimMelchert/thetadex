@@ -829,3 +829,20 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
     width: auto; max-width: 100%; min-height: 44px; padding: 8px 12px;
     border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit;
 }
+
+/* Uni (5.1): Semester-Auswahl und Stundenplan je Wochentag */
+.uni-leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: var(--abstand); }
+.uni-leiste:empty { display: none; }
+.uni-leiste select { min-height: 44px; padding: 8px 12px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; font-weight: 600; }
+.uni-zeitraum { font-size: 0.85rem; }
+.uni-neu { margin-top: var(--abstand); }
+.uni-tag h2 { margin: 24px 0 0; font-size: 1.1rem; }
+.uni-eintrag { display: flex; align-items: flex-start; gap: 14px; width: 100%; min-height: 52px; margin: 8px 0; padding: 10px 12px; border: none; border-left: 6px solid var(--bereich); border-radius: var(--rund); background: var(--kachel); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.uni-zeit { flex: 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.uni-was { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.uni-titel { font-weight: 600; overflow-wrap: anywhere; }
+.formular .uni-zeiten { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.formular .uni-zeiten > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+@media (hover: hover) {
+    .uni-eintrag:hover { background-image: linear-gradient(rgba(128, 128, 128, 0.14), rgba(128, 128, 128, 0.14)); }
+}
