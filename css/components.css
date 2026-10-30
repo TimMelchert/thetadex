@@ -627,6 +627,13 @@ input[type="date"] { cursor: pointer; }
     .finanz-netto { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-/* Bafög: Kacheln so breit wie ihr Inhalt */
-.finanz-konten.finanz-bafoeg { display: flex; flex-wrap: wrap; gap: 8px; }
-.finanz-bafoeg div { flex: 0 0 auto; padding: 8px 14px; }
+/* Bafög: drei gleich breite Kacheln über die ganze Breite */
+.finanz-konten.finanz-bafoeg { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* Knopf in der Bereichsfarbe (Tracking „Speichern“) */
+.knopf.knopf-bereich { background: var(--bereich); color: var(--schrift-auf-farbe); }
+
+/* Startseite: Logo groß in der Mitte, oben links ausgeblendet */
+.start-logo { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 12px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: 2rem; }
+.start-version { text-align: center; }
+body[data-seite="start"] .kopf-marke { visibility: hidden; }

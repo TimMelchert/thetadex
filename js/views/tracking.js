@@ -255,7 +255,7 @@ export function render(container, ctx) {
             gruppe.felder.push(g);
         }
 
-        const knopf = el('button', { class: 'knopf', text: 'Speichern', attrs: { type: 'submit' } });
+        const knopf = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
         let sendet = false;
 
         async function speichern(ev) {
