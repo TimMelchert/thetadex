@@ -1,21 +1,49 @@
 // Reiter Einkauf: Einkaufsliste nach Abteilung und Lebensmittel mit Suche (Schritt 4.1).
 // Lebensmittel antippen → Anzahl wählen → steht auf der Einkaufsliste. Abhaken lässt Einträge verschwinden.
 // Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“). Person und Partner*in, beide nur mit Passwort.
-// Die Daten liegen in diesem Schritt nur im Arbeitsspeicher, solange die Seite offen ist (docs/PLAN-ETAPPE-4.md).
+// Ohne Netz (4.2, Ausnahme in docs/STAND.md 4): Die offene Einkaufsliste liegt zusätzlich im Gerät (thetadex_einkaufsliste).
+// Abhaken geht immer; die Haken warten im Gerät (thetadex_einkauf_offen), bis das Skript sie bestätigt.
+// Alles andere (Lebensmittel, Gerichte) hält die App nur im Arbeitsspeicher.
 
 import { el, leeren } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
+import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 
-// Zuletzt geladene Daten { lebensmittel, liste, gerichte, vorrat }, nur im Arbeitsspeicher
+// Zuletzt geladene Daten { lebensmittel, liste, gerichte, vorrat }, im Arbeitsspeicher
 let daten = null;
+// Abgehakte Einträge (ids), die das Skript noch nicht bestätigt hat. Liegen auch im Gerät.
+const offeneHaken = () => lesen('einkauf_offen', []) || [];
+// Die Einkaufsliste im Gerät: offene Einträge mit den Namen, die sie zum Anzeigen braucht
+function merkeListe() {
+    if (!daten) return;
+    const lmIds = new Set(daten.liste.map((e) => e.lebensmittel_id));
+    const gIds = new Set(daten.liste.map((e) => e.gericht_id).filter(Boolean));
+    schreiben('einkaufsliste', {
+        stand: Date.now(),
+        liste: daten.liste,
+        lebensmittel: daten.lebensmittel.filter((l) => lmIds.has(l.id)).map(({ id, name, abteilung, einheit }) => ({ id, name, abteilung, einheit })),
+        gerichte: daten.gerichte.filter((g) => gIds.has(g.id)).map(({ id, name }) => ({ id, name }))
+    });
+}
+// Neue Liste vom Skript: Einträge mit noch nicht gesendetem Haken bleiben ausgeblendet
+function setzeListe(liste) {
+    const warten = new Set(offeneHaken());
+    daten.liste = (Array.isArray(liste) ? liste : []).filter((e) => !warten.has(e.id));
+    merkeListe();
+}
+const uhrzeit = (ms) => new Date(ms).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 // Einkaufsliste oder Lebensmittel. Bleibt, solange die Seite offen ist.
 let teil = 'liste';
 // Neu laden beim Zurückkehren in die App (nur, wenn der Reiter offen ist)
 let neuLadenBeiRueckkehr = null;
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && neuLadenBeiRueckkehr && /^#\/einkauf/.test(location.hash)) neuLadenBeiRueckkehr();
+});
+// Wieder Netz: wartende Haken senden und neu laden
+window.addEventListener('online', () => {
+    if (neuLadenBeiRueckkehr && /^#\/einkauf/.test(location.hash)) neuLadenBeiRueckkehr();
 });
 
 const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
@@ -109,7 +137,7 @@ export function render(container, ctx) {
             }
             const antwort = await senden(status, [ok, abbrechen], 'auf_liste', { eintraege: [{ lebensmittel_id: lm.id, anzahl: n, notiz: notiz.value.trim() }] });
             if (!antwort) return;
-            daten.liste = antwort.liste;
+            setzeListe(antwort.liste);
             dialog.close();
             zeigeGespeichert('Auf der Liste', mitEinheit(n, lm) + ' ' + lm.name);
             zeigeAlles();
@@ -182,6 +210,7 @@ export function render(container, ctx) {
             if (!antwort) return;
             daten.lebensmittel = daten.lebensmittel.filter((l) => l.id !== lm.id);
             daten.liste = daten.liste.filter((e) => e.lebensmittel_id !== lm.id);
+            merkeListe();
             dialog.close();
             zeigeGespeichert('Gelöscht', lm.name);
             zeigeAlles();
@@ -240,24 +269,20 @@ export function render(container, ctx) {
         const summe = eintraege.reduce((n, e) => n + e.anzahl, 0);
         const fuer = eintraege.map((e) => gerichtVon(e.gericht_id)).filter(Boolean).map((g) => g.name);
         const notizen = eintraege.map((e) => e.notiz).filter(Boolean);
-        const status = el('span', { class: 'einkauf-zeilen-status', attrs: { role: 'status', 'aria-live': 'polite' } });
         const haken = el('button', {
             class: 'einkauf-haken', text: '',
             attrs: { type: 'button', 'aria-label': lm.name + ' abhaken' },
             on: { click: () => abhaken() }
         });
-        async function abhaken() {
-            if (sendet) return;
+        // Abhaken geht auch ohne Netz: erst ins Gerät, Eintrag verschwindet sofort, dann senden
+        function abhaken() {
             haken.classList.add('ist-an');
-            const antwort = await senden(status, [haken], 'abhaken', { ids: eintraege.map((e) => e.id) });
-            if (!antwort) {
-                haken.classList.remove('ist-an');
-                status.textContent = 'NICHT abgehakt: ' + status.textContent.replace(/^NICHT gespeichert: /, '');
-                return;
-            }
-            daten.liste = antwort.liste;
-            if (Array.isArray(antwort.vorrat)) daten.vorrat = antwort.vorrat;
-            zeigeAlles();
+            const ids = eintraege.map((e) => e.id);
+            schreiben('einkauf_offen', [...new Set([...offeneHaken(), ...ids])]);
+            daten.liste = daten.liste.filter((e) => !ids.includes(e.id));
+            merkeListe();
+            setTimeout(zeigeAlles, 250); // kurz den Haken zeigen
+            sendeHaken();
         }
         return el('li', { class: 'einkauf-zeile' }, [
             haken,
@@ -269,8 +294,7 @@ export function render(container, ctx) {
                 }),
                 el('span', { class: 'einkauf-menge', text: mitEinheit(summe, lm) }),
                 notizen.length ? el('span', { class: 'leise einkauf-klein', text: notizen.join(' · ') }) : null,
-                fuer.length ? el('span', { class: 'leise einkauf-klein', text: 'für ' + fuer.join(', ') }) : null,
-                status
+                fuer.length ? el('span', { class: 'leise einkauf-klein', text: 'für ' + fuer.join(', ') }) : null
             ])
         ]);
     }
@@ -293,7 +317,7 @@ export function render(container, ctx) {
                 const antwort = await senden(status, [ok, weg], 'liste_aendern',
                     entfernen ? { id: e.id, entfernen: true } : { id: e.id, anzahl: n, notiz: notiz.value.trim() });
                 if (!antwort) return;
-                daten.liste = antwort.liste;
+                setzeListe(antwort.liste);
                 dialog.close();
                 zeigeGespeichert(entfernen ? 'Entfernt' : 'Geändert', lm.name);
                 zeigeAlles();
@@ -386,7 +410,41 @@ export function render(container, ctx) {
         zeigeLebensmittel();
     }
 
-    // --- Laden: beim Öffnen, mit „Neu laden“ und beim Zurückkehren in die App ---
+    // --- Wartende Haken senden (4.2) ---
+    const hakenStatus = el('p', { class: 'meldung einkauf-warten', attrs: { role: 'status', 'aria-live': 'polite' } });
+    let sendetHaken = false;
+    function zeigeHakenStatus(fehler = '') {
+        const n = offeneHaken().length;
+        hakenStatus.textContent = n ? (n === 1 ? '1 Haken' : n + ' Haken') + ' noch nicht gesendet.' + (fehler ? ' ' + fehler : '') : '';
+    }
+    // Sendet, bis nichts mehr wartet. Ohne Netz bleiben die Haken im Gerät.
+    async function sendeHaken() {
+        zeigeHakenStatus();
+        if (sendetHaken) return;
+        sendetHaken = true;
+        try {
+            let ids = offeneHaken();
+            while (ids.length) {
+                // Höchstens 100 auf einmal (Grenze im Skript). Doppelt senden schadet nicht.
+                const teil = ids.slice(0, 100);
+                const antwort = await api('gemeinsam', 'abhaken', { ids: teil });
+                schreiben('einkauf_offen', offeneHaken().filter((id) => !teil.includes(id)));
+                if (daten) {
+                    setzeListe(antwort.liste);
+                    if (Array.isArray(antwort.vorrat)) daten.vorrat = antwort.vorrat;
+                    zeigeAlles();
+                }
+                ids = offeneHaken();
+            }
+            zeigeHakenStatus();
+        } catch (e) {
+            zeigeHakenStatus(e.code === 'netz' ? 'Wird gesendet, sobald wieder Netz da ist.' : e.message);
+        } finally {
+            sendetHaken = false;
+        }
+    }
+
+    // --- Laden: beim Öffnen, mit „Neu laden“, beim Zurückkehren in die App und wenn wieder Netz da ist ---
     const neuLaden = el('button', { class: 'knopf knopf-zweit besitz-neu', text: 'Neu laden', attrs: { type: 'button' }, on: { click: () => laden() } });
     let laedt = false;
     async function laden() {
@@ -395,17 +453,28 @@ export function render(container, ctx) {
         neuLaden.disabled = true;
         ladeStatus.textContent = daten ? 'Aktualisiere …' : 'Lädt …';
         try {
+            await sendeHaken();
             const d = await api('gemeinsam', 'alles');
             daten = {
                 lebensmittel: Array.isArray(d.lebensmittel) ? d.lebensmittel : [],
-                liste: Array.isArray(d.liste) ? d.liste : [],
+                liste: [],
                 gerichte: Array.isArray(d.gerichte) ? d.gerichte : [],
                 vorrat: Array.isArray(d.vorrat) ? d.vorrat : []
             };
+            setzeListe(d.liste);
             ladeStatus.textContent = '';
             zeigeAlles();
         } catch (e) {
-            ladeStatus.textContent = 'Laden fehlgeschlagen: ' + e.message;
+            // Ohne Netz: die Einkaufsliste aus dem Gerät zeigen
+            const im = lesen('einkaufsliste', null);
+            if (!daten && im && Array.isArray(im.liste)) {
+                daten = { lebensmittel: im.lebensmittel || [], liste: [], gerichte: im.gerichte || [], vorrat: [] };
+                const warten = new Set(offeneHaken());
+                daten.liste = im.liste.filter((x) => !warten.has(x.id));
+            }
+            ladeStatus.textContent = (e.code === 'netz' && im ? 'Ohne Verbindung: Einkaufsliste von ' + uhrzeit(im.stand) + ' Uhr. Abhaken geht, alles andere braucht Netz.'
+                : 'Laden fehlgeschlagen: ' + e.message);
+            zeigeAlles();
         } finally {
             laedt = false;
             neuLaden.disabled = false;
@@ -420,11 +489,13 @@ export function render(container, ctx) {
         ]),
         el('div', { class: 'ansichten' }, teile.map(([, knopf]) => knopf)),
         ladeStatus,
+        hakenStatus,
         listeBox,
         lmBox,
         neuLaden,
         dialog
     );
     zeigeTeil(teil);
+    zeigeHakenStatus();
     laden();
 }
