@@ -114,7 +114,7 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
 - Alles andere (Lebensmittel anlegen, auf die Liste setzen, Gerichte) braucht weiter Netz und sagt das klar.
 - „Abmelden“ löscht beides mit.
 
-## Schritt 4.3 Gerichte (0.4.4 → 0.4.5)
+## Schritt 4.3 Gerichte (0.4.5 → 0.4.6) – erledigt
 
 - Unterreiter Gerichte: Liste aller Gerichte mit Suche. „+ Gericht“ öffnet das Formular: Name, Notiz, Link, Zutaten.
   Eine Zutat fügt man mit derselben Suche wie bei Lebensmitteln hinzu (neue Lebensmittel lassen sich dort gleich anlegen), dazu die Menge.

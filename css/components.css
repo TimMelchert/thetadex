@@ -794,3 +794,16 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 @media (hover: hover) {
     .einkauf-lm-wahl:hover .einkauf-lm-name, .einkauf-text .besitz-oeffnen:hover { text-decoration: underline; }
 }
+
+/* Einkauf (4.3): Gerichte und Einkaufsliste nach Gericht */
+.einkauf-ansichten { margin-bottom: 4px; }
+.einkauf-ansichten .ansicht { min-height: 40px; padding: 0 14px; font-size: 0.9rem; }
+.einkauf-gericht-weg { margin-top: 4px; }
+.einkauf-zutat { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--linie); }
+.einkauf-zutat .einkauf-text { gap: 6px; }
+.einkauf-zutat .form-zu { flex: 0 0 auto; }
+.formular .einkauf-zutat label { margin-top: 0; }
+.einkauf-vorschlaege { display: flex; flex-wrap: wrap; gap: 8px; }
+.formular .einkauf-vorschlaege .knopf { margin-top: 0; }
+.einkauf-notiz { white-space: pre-wrap; overflow-wrap: anywhere; }
+.formular h3 { margin: 14px 0 0; font-size: 1rem; }
