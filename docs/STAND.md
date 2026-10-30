@@ -4,12 +4,12 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.3.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.3.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ läuft, Plan in `docs/PLAN-ETAPPE-3.md`.
-- Nächster Schritt: **3.5 Bilder aus Google Drive** (Entscheidung der Person offen), dann 3.6 Nachbesserungen und Abschluss.
+- Nächster Schritt: **3.6 Nachbesserungen** (Anmerkungen der Person zum Aussehen), dann Etappe 3 abschließen.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -278,6 +278,7 @@ unter „Info“ die Version prüfen.
   `speichern` (neu ohne `id`, ändern mit `id` und `geaendert_am` als Schutz vor Überschreiben), `loeschen` (weich). Funktion `einrichten`.
   Reiter Besitz: Liste je Ort (PC Tabelle, Handy Karten), Hinzufügen; Ändern und Löschen per Tipp auf eine Sache, Suche, Filter nach Ort und Kategorie, Sortieren am PC (3.3).
   Zubehör (3.4): Spalte `gehoert_zu`, eine Ebene, eingerückt und aufklappbar unter der Hauptsache.
+  Bild (3.5): Spalte `bild` (Drive-Datei-Kennung), Aktion `bild` (nur Bilder, die bei einer Sache stehen), Ordner „Thetadex Besitz“.
 
 ### 3.2 Offen
 
@@ -343,6 +344,10 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Datum setzt das Skript selbst, `bereinigeText_`, höchstens 30 neue Bewertungen pro Stunde für alle zusammen (`CacheService`),
   ein verstecktes Lockfeld gegen Bots, `LockService`. Die App zeigt alle Texte nur mit `textContent`.
   Ehrlich: Apps Script kennt keine IP-Adressen. Wer es darauf anlegt, kann im Rahmen der Grenze Unsinn eintragen. Die Person löscht das dann im Sheet.
+- **Bilder bei Besitz** (Entscheidung der Person, 30.10.2026): Bild hochladen (die App verkleinert auf höchstens 1600 px, JPEG) oder
+  Google-Drive-Link einfügen. Die Datei liegt im Drive der Person (hochgeladene im privaten Ordner „Thetadex Besitz“), im Sheet nur ihre Kennung.
+  Das Skript liest sie als die Person und gibt sie nur mit Passwort und nur für eingetragene Bilder als Text heraus (`data:`-Bild).
+  Nichts wird öffentlich geteilt, die Content-Security-Policy bleibt gleich. Das Skript `leben` braucht dafür einmal die Drive-Erlaubnis.
 - **Bilder** (DSA): Die App verkleinert ein Bild vor dem Senden (etwa 400 px, JPEG) und schickt es als Text.
   Es liegt im Blatt `bilder`. Keine fremden Bild-Server, die Content-Security-Policy bleibt gleich (`img-src 'self' data:`).
 - **Würfel** (W4, W6, W20) rechnen nur im Gerät mit `crypto.getRandomValues`. Nichts wird gespeichert.
@@ -359,12 +364,12 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 ## 5. Technik-Merkzettel
 
 - **Hilfsmodule** vor dem Neubauen suchen und wiederverwenden. Lies die Datei, bevor du sie benutzt. Rate keine Signaturen.
-  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`, `kalenderBeiKlick`), `js/ui/auswahl.js` (`auswahlFeld`), `js/ui/overlay.js` (`zeigeGespeichert`), `js/ui/farben.js` (`farbRegeln`), `js/ui/aussehen.js` (`wendeAussehenAn`, `setzeAussehen`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
+  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`, `kalenderBeiKlick`), `js/ui/auswahl.js` (`auswahlFeld`), `js/ui/overlay.js` (`zeigeGespeichert`), `js/ui/farben.js` (`farbRegeln`), `js/ui/aussehen.js` (`wendeAussehenAn`, `setzeAussehen`), `js/ui/bild.js` (`verkleinereBild`, `bildAdresse`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
   `js/api.js` (`api(skript, action, daten)`, `apiOeffentlich(adresse, action, daten)` ohne Passwort, `ApiFehler` mit `code`).
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
-- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`.
+- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `leben` legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
 - **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen, zuletzt bekannte Kontostände und die Wahl beim Aussehen (`thetadex_aussehen`).
   Schlüssel mit Vorsilbe `thetadex_`. Keine Tracking-Einträge im Gerät speichern. Abmelden löscht alles.
   Die Tracking-Felder hält die App nur im Arbeitsspeicher (10 Minuten), damit das Formular schnell da ist.
@@ -382,7 +387,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
-- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie). `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät.
+- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie). `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile.
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
@@ -542,6 +547,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.3.3** Schritt 3.2: Sheet „Leben“, Skript `leben`, Reiter Besitz mit Liste je Ort und Hinzufügen.
 - **0.3.4** Schritt 3.3: Besitz ändern, weich löschen, suchen, filtern nach Ort und Kategorie, sortieren.
 - **0.3.5** Schritt 3.4: Zubehör unter einer Hauptsache (Spalte `gehoert_zu`), eingerückt und aufklappbar.
+- **0.3.6** Schritt 3.5: Bild je Sache aus Google Drive (hochladen oder Link), Spalte `bild`.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

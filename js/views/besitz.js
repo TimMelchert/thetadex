@@ -1,5 +1,6 @@
 // Reiter Besitz: Liste aller Sachen nach Ort, Hinzufügen, Ändern, Löschen, Suche, Filter und Sortieren.
 // Zubehör (3.4): Eine Sache kann zu einer Hauptsache gehören (gehoert_zu). Es steht eingerückt und zugeklappt darunter.
+// Bild (3.5): freiwillig je Sache, hochgeladen (die App verkleinert es) oder als Google-Drive-Link. Es liegt im Drive der Person.
 // Daten aus dem Skript „leben“ (Sheet „Leben“, Blatt „besitz“). Nur mit Passwort.
 // Die Liste liegt nur im Arbeitsspeicher, solange die Seite offen ist, nie im Gerät (docs/PLAN-ETAPPE-3.md).
 
@@ -7,6 +8,7 @@ import { el, leeren, heute, kalenderBeiKlick } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
+import { verkleinereBild, bildAdresse } from '../ui/bild.js';
 
 // Zuletzt geladene Liste, nur im Arbeitsspeicher. Beim Öffnen sofort zeigen, dann frisch laden.
 let sachen = null;
@@ -14,6 +16,8 @@ let sachen = null;
 let sortierung = { spalte: 'name', ab: false };
 // Aufgeklappte Hauptsachen (ids). Bleibt, solange die Seite offen ist.
 const offen = new Set();
+// Schon geladene Bilder (Drive-Kennung → data:-Bild), nur im Arbeitsspeicher
+const bilder = new Map();
 
 // Spalten der Tabelle: [Schlüssel, Überschrift, rechtsbündig]
 const SPALTEN = [['name', 'Name'], ['kategorie', 'Kategorie'], ['anzahl', 'Anzahl', true], ['kaufpreis', 'Kaufpreis', true], ['kaufdatum', 'Kaufdatum']];
@@ -51,6 +55,62 @@ export function render(container, ctx) {
     // Gehört zu: Auswahl der Hauptsachen. Wer selbst Zubehör hat, kann nicht Zubehör werden (nur eine Ebene).
     const gehoert = el('select', { attrs: { id: 'besitz-gehoert' }, on: { change: () => hauptGewaehlt() } });
     const gehoertHinweis = el('p', { class: 'leise besitz-hinweis' });
+
+    // Bild: bildStand.id = gespeichertes Bild, bildStand.daten = neu gewähltes (verkleinert), bildLink = eingefügter Drive-Link
+    let bildStand = { id: '', daten: null };
+    const vorschau = el('img', { class: 'besitz-vorschau', attrs: { alt: 'Bild der Sache', hidden: true } });
+    const bildText = el('p', { class: 'leise besitz-hinweis' });
+    const bildEntfernen = el('button', { class: 'knopf knopf-zweit', text: 'Bild entfernen', attrs: { type: 'button', hidden: true }, on: { click: () => setzeBild({ id: '', daten: null }) } });
+    const bildDatei = el('input', { attrs: { id: 'besitz-bild', type: 'file', accept: 'image/*' }, on: { change: () => bildGewaehlt() } });
+    const bildLink = el('input', {
+        attrs: { id: 'besitz-bild-link', type: 'url', inputmode: 'url', autocomplete: 'off', spellcheck: 'false', placeholder: 'https://drive.google.com/…' },
+        on: { input: () => { if (bildLink.value.trim()) { bildStand = { id: bildStand.id, daten: null }; zeigeVorschau(null, 'Das Bild aus dem Link erscheint nach dem Speichern.'); } } }
+    });
+
+    function zeigeVorschau(adresse, text = '') {
+        vorschau.hidden = !adresse;
+        if (adresse) vorschau.src = adresse; else vorschau.removeAttribute('src');
+        bildText.textContent = text;
+        bildEntfernen.hidden = !(adresse || bildStand.id || bildLink.value.trim());
+    }
+
+    function setzeBild(stand) {
+        bildStand = stand;
+        bildDatei.value = '';
+        bildLink.value = '';
+        if (stand.daten) zeigeVorschau(stand.daten);
+        else if (stand.id) ladeVorschau(stand.id);
+        else zeigeVorschau(null);
+    }
+
+    async function bildGewaehlt() {
+        const datei = bildDatei.files && bildDatei.files[0];
+        if (!datei) return;
+        zeigeVorschau(null, 'Bild wird verkleinert …');
+        try {
+            const daten = await verkleinereBild(datei);
+            bildLink.value = '';
+            bildStand = { id: bildStand.id, daten };
+            zeigeVorschau(daten);
+        } catch (e) {
+            bildDatei.value = '';
+            zeigeVorschau(null, e.message);
+        }
+    }
+
+    // Lädt ein gespeichertes Bild vom Skript (nur mit Passwort) und zeigt es, wenn das Formular noch dieselbe Sache zeigt
+    async function ladeVorschau(id) {
+        if (bilder.has(id)) { zeigeVorschau(bilder.get(id)); return; }
+        zeigeVorschau(null, 'Bild lädt …');
+        try {
+            const adresse = bildAdresse(await api('leben', 'bild', { bild: id }));
+            if (!adresse) throw new Error('Unbekannte Bildart.');
+            bilder.set(id, adresse);
+            if (bildStand.id === id && !bildStand.daten && !bildLink.value.trim()) zeigeVorschau(adresse);
+        } catch (e) {
+            if (bildStand.id === id) zeigeVorschau(null, 'Bild nicht geladen: ' + e.message);
+        }
+    }
     const speichernKnopf = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
     const loeschenKnopf = el('button', { class: 'knopf knopf-zweit', text: 'Löschen', attrs: { type: 'button', hidden: true }, on: { click: () => loeschen() } });
 
@@ -68,6 +128,9 @@ export function render(container, ctx) {
             notiz: notiz.value.trim(),
             gehoert_zu: gehoert.value
         };
+        // Bild: neu gewählt geht als Text mit, sonst Link oder das bisherige Bild (leer = kein Bild)
+        if (bildStand.daten) werte.bild_daten = bildStand.daten.replace(/^data:image\/jpeg;base64,/, '');
+        else werte.bild = bildLink.value.trim() || bildStand.id;
         const fehlt = [[werte.name, name, 'einen Namen'], [werte.kategorie, kategorie.feld, 'eine Kategorie'], [werte.ort, ort.feld, 'einen Ort']]
             .find(([w]) => !w);
         if (fehlt) {
@@ -107,6 +170,8 @@ export function render(container, ctx) {
             zeigeGespeichert(alt ? 'Geändert' : 'Gespeichert', antwort.sache.name);
             // Neues Zubehör gleich sichtbar machen: Hauptsache aufklappen
             if (antwort.sache.gehoert_zu) offen.add(antwort.sache.gehoert_zu);
+            // Neu hochgeladenes Bild gleich merken, dann muss es nicht neu geladen werden
+            if (bildStand.daten && antwort.sache.bild) bilder.set(antwort.sache.bild, bildStand.daten);
             zeigeListe();
             if (alt) {
                 zeigeFormular(false);
@@ -138,6 +203,9 @@ export function render(container, ctx) {
         el('label', { text: 'Kaufdatum', attrs: { for: 'besitz-datum' } }), datum,
         el('label', { text: 'Notiz', attrs: { for: 'besitz-notiz' } }), notiz,
         el('label', { text: 'Gehört zu (Zubehör von)', attrs: { for: 'besitz-gehoert' } }), gehoert, gehoertHinweis,
+        el('label', { text: 'Bild (freiwillig): wählen oder aufnehmen', attrs: { for: 'besitz-bild' } }), bildDatei,
+        el('label', { text: 'oder Google-Drive-Link', attrs: { for: 'besitz-bild-link' } }), bildLink,
+        vorschau, bildText, bildEntfernen,
         el('div', { class: 'besitz-form-knoepfe' }, [speichernKnopf, loeschenKnopf]),
         status
     ]);
@@ -149,6 +217,7 @@ export function render(container, ctx) {
         preis.value = '';
         datum.value = '';
         notiz.value = '';
+        setzeBild({ id: '', daten: null });
     }
 
     // Hauptsachen = Sachen, die nicht selbst Zubehör einer vorhandenen Sache sind
@@ -233,6 +302,7 @@ export function render(container, ctx) {
             preis.value = sache.kaufpreis == null ? '' : String(sache.kaufpreis);
             datum.value = sache.kaufdatum || '';
             notiz.value = sache.notiz || '';
+            setzeBild({ id: sache.bild || '', daten: null });
         } else if (warBearbeiten) {
             // Vom Ändern zurück: keine Werte der geänderten Sache stehen lassen
             felderLeeren();
@@ -360,6 +430,7 @@ export function render(container, ctx) {
             el('th', { class: 'besitz-name', attrs: { scope: 'row' } }, [
                 haupt ? el('span', { class: 'besitz-kind-pfeil', text: '↳ ', attrs: { 'aria-hidden': 'true' } }) : null,
                 el('button', { class: 'besitz-oeffnen', text: s.name, attrs: { type: 'button', 'aria-label': s.name + ' ändern' }, on: { click: () => zeigeFormular(true, s) } }),
+                s.bild ? el('span', { class: 'besitz-hat-bild', text: ' 📷', attrs: { title: 'hat ein Bild', 'aria-label': 'hat ein Bild' } }) : null,
                 s.notiz ? el('span', { class: 'besitz-notiz leise', text: s.notiz }) : null,
                 eintrag && eintrag.kinder.length ? aufklapper(eintrag) : null
             ]),

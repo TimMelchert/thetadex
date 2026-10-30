@@ -708,3 +708,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
     .besitz-kind .besitz-name { padding-left: 0; }
     .besitz-kind-pfeil { margin-left: 0; }
 }
+
+/* Besitz: Bild im Formular */
+.formular input[type="file"] { padding: 8px; }
+.besitz-vorschau { display: block; max-width: 100%; max-height: 280px; margin-top: 10px; border-radius: var(--rund); border: 1px solid var(--linie); object-fit: contain; }

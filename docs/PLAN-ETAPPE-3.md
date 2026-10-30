@@ -91,10 +91,10 @@ Wunsch der Person (30.10.2026): Zu einer Sache gehören andere Sachen (zum Beisp
   Bei Suche oder Filter steht passendes Zubehör aufgeklappt unter seiner Hauptsache; passt nur das Zubehör, ist die Hauptsache grau.
 - Löschen einer Hauptsache: Ihr Zubehör bleibt als eigene Sache stehen (die Rückfrage sagt das).
 
-## Schritt 3.5 Bilder aus Google Drive (0.3.5 → 0.3.6) – Entscheidung der Person offen
+## Schritt 3.5 Bilder aus Google Drive (0.3.5 → 0.3.6) – erledigt
 
-- Wunsch der Person (30.10.2026): optional ein Bild je Sache aus Google Drive.
-- Vorschlag: neue Spalte `bild` mit der Drive-Datei-Kennung. Bild per Drive-Link einfügen oder vom Handy hochladen
+- Wunsch der Person (30.10.2026): optional ein Bild je Sache aus Google Drive. Entscheidung: beides, hochladen und Link.
+- Gebaut: neue Spalte `bild` mit der Drive-Datei-Kennung. Bild per Drive-Link einfügen oder vom Handy hochladen
   (die App verkleinert es, das Skript legt es in einen privaten Drive-Ordner). Das Skript liest die Datei als die Person
   und gibt sie nur mit Passwort als Text an die App (`data:`-Bild). Content-Security-Policy bleibt gleich, nichts wird öffentlich.
 
@@ -105,7 +105,7 @@ Wunsch der Person (30.10.2026): Zu einer Sache gehören andere Sachen (zum Beisp
 
 ## Datenschutz und Sicherheit (für die ganze Etappe)
 
-- Neue Daten: nur Sachen der Person mit Kategorie, Ort, Anzahl, Preis, Datum, Notiz und Zubehör-Zuordnung. Keine Daten über andere Personen.
+- Neue Daten: nur Sachen der Person mit Kategorie, Ort, Anzahl, Preis, Datum, Notiz, Zubehör-Zuordnung und Bild (im Drive der Person). Keine Daten über andere Personen.
 - Wer sieht sie: nur die Person mit Passwort. Eigenes Sheet und eigenes Skript, getrennt von allem, was geteilt wird (STAND.md 2.2).
   Das Skript kennt kein `PARTNER_PIN` und gibt ohne Passwort nichts heraus.
 - Im Gerät: nur `thetadex_aussehen` und die Script-Adresse. Die Liste nur im Arbeitsspeicher.
