@@ -1,13 +1,14 @@
 // =====================================================
 // LEBEN – Apps Script (nur die Person, mit Passwort)
 // Blatt „besitz“: Sachen mit Kategorie, Ort, Anzahl, Kaufpreis, Kaufdatum, Notiz.
+// Zubehör (ab 3.4): Spalte „gehoert_zu“ mit der id der Hauptsache. Nur eine Ebene.
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN).
-// Siehe docs/PLAN-ETAPPE-3.md, Schritte 3.2 und 3.3.
+// Siehe docs/PLAN-ETAPPE-3.md, Schritte 3.2 bis 3.4.
 // =====================================================
 
 var BLATT_BESITZ_ = "besitz";
-var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht"];
-var TEXT_SPALTEN_ = ["id", "name", "kategorie", "ort", "notiz"];   // bleiben im Sheet reiner Text (kein Datum, keine Zahl)
+var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht", "gehoert_zu"];
+var TEXT_SPALTEN_ = ["id", "name", "kategorie", "ort", "notiz", "gehoert_zu"];   // bleiben im Sheet reiner Text (kein Datum, keine Zahl)
 var MAX_ = { name: 80, kategorie: 40, ort: 60, notiz: 300 };       // Höchstlängen
 var MAX_ANZAHL_ = 9999;
 var MAX_PREIS_ = 1000000;
@@ -138,6 +139,7 @@ function sacheAus_(z, sp) {
     kaufpreis: String(preis).trim() !== "" && isFinite(n) ? n : null,
     kaufdatum: tag_(zelle_(z, sp, "kaufdatum")),
     notiz: ohneSchutz_(zelle_(z, sp, "notiz")),
+    gehoert_zu: String(zelle_(z, sp, "gehoert_zu")).trim(),
     geaendert_am: stempel_(zelle_(z, sp, "geaendert_am"))
   };
 }
@@ -257,6 +259,20 @@ function speichern_(data) {
   var breite = sheet.getLastColumn();
   var zeile, nr;
 
+  // Zubehör: Die Hauptsache muss es geben, sie darf selbst kein Zubehör sein, und eine Sache mit Zubehör
+  // kann nicht selbst Zubehör werden (nur eine Ebene, damit die Liste übersichtlich bleibt)
+  var haupt = String(data.gehoert_zu == null ? "" : data.gehoert_zu).trim();
+  if (haupt) {
+    if (haupt === String(data.id || "")) return { error: "eingabe", message: "Eine Sache kann nicht zu sich selbst gehören." };
+    var h = finde_(sheet, sp, haupt);
+    if (!h) return { error: "eingabe", message: "Die Hauptsache gibt es nicht mehr. Bitte neu laden." };
+    if (String(h.zeile[sp.gehoert_zu]).trim()) return { error: "eingabe", message: "Zubehör kann kein eigenes Zubehör haben." };
+    if (data.id && hatZubehoer_(sheet, sp, String(data.id))) {
+      return { error: "eingabe", message: "Diese Sache hat selbst Zubehör und kann darum nicht zu einer anderen gehören." };
+    }
+  }
+  p.werte.gehoert_zu = haupt;
+
   if (data.id == null || data.id === "") {
     zeile = new Array(breite).fill("");
     zeile[sp.id] = Utilities.getUuid();
@@ -293,6 +309,13 @@ function loeschen_(data) {
   sheet.getRange(gefunden.nr, sp.geloescht + 1).setValue(true);
   sheet.getRange(gefunden.nr, sp.geaendert_am + 1).setValue(jetzt_(gefunden.zeile[sp.geaendert_am]));
   return { ok: true };
+}
+
+// Hat eine Sache (nicht gelöschtes) Zubehör?
+function hatZubehoer_(sheet, sp, id) {
+  return zeilen_(sheet).some(function (z) {
+    return String(z[sp.gehoert_zu]).trim() === id && !istWahr_(z[sp.geloescht]);
+  });
 }
 
 // Sucht eine nicht gelöschte Zeile nach id. Liefert { nr, zeile } oder null.

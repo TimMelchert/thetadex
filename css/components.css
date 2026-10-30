@@ -694,3 +694,17 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 @media (max-width: 767px) {
     .besitz-oeffnen { min-height: 32px; }
 }
+
+/* Besitz: Zubehör eingerückt unter der Hauptsache, zum Aufklappen */
+.besitz-hinweis { margin: 0; font-size: 0.85rem; }
+.besitz-aufklappen { display: block; margin-top: 4px; padding: 0 8px; min-height: 32px; border: 1px solid var(--linie); border-radius: var(--rund); background: none; color: var(--schrift); font: inherit; font-size: 0.85rem; font-weight: 400; cursor: pointer; }
+.besitz-kind .besitz-name { padding-left: 28px; }
+.besitz-kind-pfeil { color: var(--schrift-leise); margin-left: -18px; }
+.besitz-kind th, .besitz-kind td { font-size: 0.85rem; }
+.besitz-nur-kontext .besitz-oeffnen, .besitz-nur-kontext td { color: var(--schrift-leise); }
+
+@media (max-width: 767px) {
+    .besitz-tabelle tr.besitz-kind { margin: -4px 0 10px 28px; padding: 8px 12px; border-left-width: 3px; }
+    .besitz-kind .besitz-name { padding-left: 0; }
+    .besitz-kind-pfeil { margin-left: 0; }
+}

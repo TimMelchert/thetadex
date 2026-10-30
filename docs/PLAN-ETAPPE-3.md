@@ -80,14 +80,32 @@ Die Besitz-Liste hält die App nur im Arbeitsspeicher, solange die Seite offen i
 - Sortieren am PC durch Tippen auf den Spaltenkopf (Name, Kategorie, Anzahl, Kaufpreis, Kaufdatum; zweiter Tipp umgekehrt). Gilt für alle Orte. Am Handy nach Name.
 - Gebaut: Die Skript-Seite (Ändern, Löschen, Schutz vor Überschreiben) kam schon mit 3.2. Sheet und Skript bleiben in 3.3 unverändert.
 
-## Schritt 3.4 Nachbesserungen und Abschluss (0.3.5 …)
+## Schritt 3.4 Zubehör unterordnen (0.3.4 → 0.3.5) – erledigt
+
+Wunsch der Person (30.10.2026): Zu einer Sache gehören andere Sachen (zum Beispiel Kopfhörer und Kabel).
+- Sheet „Leben“, Blatt `besitz`: neue Spalte `gehoert_zu` am Ende (id der Hauptsache, leer = eigene Sache). `einrichten` legt sie an.
+- Nur eine Ebene: Zubehör hat kein eigenes Zubehör, und eine Sache mit Zubehör wird nicht selbst Zubehör. Das prüft das Skript.
+- Formular: Auswahl „Gehört zu (Zubehör von)“ mit allen Hauptsachen. Wählt man eine, wird ihr Ort übernommen, wenn noch keiner dasteht.
+  Nach dem Speichern bleiben Ort und „Gehört zu“ stehen (für mehrere Zubehörteile nacheinander).
+- Liste: Zubehör steht eingerückt (↳) unter der Hauptsache, zugeklappt hinter „▸ 2 Zubehör“.
+  Bei Suche oder Filter steht passendes Zubehör aufgeklappt unter seiner Hauptsache; passt nur das Zubehör, ist die Hauptsache grau.
+- Löschen einer Hauptsache: Ihr Zubehör bleibt als eigene Sache stehen (die Rückfrage sagt das).
+
+## Schritt 3.5 Bilder aus Google Drive (0.3.5 → 0.3.6) – Entscheidung der Person offen
+
+- Wunsch der Person (30.10.2026): optional ein Bild je Sache aus Google Drive.
+- Vorschlag: neue Spalte `bild` mit der Drive-Datei-Kennung. Bild per Drive-Link einfügen oder vom Handy hochladen
+  (die App verkleinert es, das Skript legt es in einen privaten Drive-Ordner). Das Skript liest die Datei als die Person
+  und gibt sie nur mit Passwort als Text an die App (`data:`-Bild). Content-Security-Policy bleibt gleich, nichts wird öffentlich.
+
+## Schritt 3.6 Nachbesserungen und Abschluss (0.3.6 …)
 
 - Anmerkungen der Person aus dem Testen, gesammelt in einem oder mehreren Schritten.
 - Danach Etappe 3 abschließen: Plan in STAND.md einarbeiten, diese Datei löschen.
 
 ## Datenschutz und Sicherheit (für die ganze Etappe)
 
-- Neue Daten: nur Sachen der Person mit Kategorie, Ort, Anzahl, Preis, Datum, Notiz. Keine Daten über andere Personen.
+- Neue Daten: nur Sachen der Person mit Kategorie, Ort, Anzahl, Preis, Datum, Notiz und Zubehör-Zuordnung. Keine Daten über andere Personen.
 - Wer sieht sie: nur die Person mit Passwort. Eigenes Sheet und eigenes Skript, getrennt von allem, was geteilt wird (STAND.md 2.2).
   Das Skript kennt kein `PARTNER_PIN` und gibt ohne Passwort nichts heraus.
 - Im Gerät: nur `thetadex_aussehen` und die Script-Adresse. Die Liste nur im Arbeitsspeicher.

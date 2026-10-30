@@ -1,4 +1,5 @@
 // Reiter Besitz: Liste aller Sachen nach Ort, Hinzufügen, Ändern, Löschen, Suche, Filter und Sortieren.
+// Zubehör (3.4): Eine Sache kann zu einer Hauptsache gehören (gehoert_zu). Es steht eingerückt und zugeklappt darunter.
 // Daten aus dem Skript „leben“ (Sheet „Leben“, Blatt „besitz“). Nur mit Passwort.
 // Die Liste liegt nur im Arbeitsspeicher, solange die Seite offen ist, nie im Gerät (docs/PLAN-ETAPPE-3.md).
 
@@ -11,6 +12,8 @@ import { zeigeGespeichert } from '../ui/overlay.js';
 let sachen = null;
 // Sortierung (PC, Tipp auf den Spaltenkopf). Bleibt, solange die Seite offen ist.
 let sortierung = { spalte: 'name', ab: false };
+// Aufgeklappte Hauptsachen (ids). Bleibt, solange die Seite offen ist.
+const offen = new Set();
 
 // Spalten der Tabelle: [Schlüssel, Überschrift, rechtsbündig]
 const SPALTEN = [['name', 'Name'], ['kategorie', 'Kategorie'], ['anzahl', 'Anzahl', true], ['kaufpreis', 'Kaufpreis', true], ['kaufdatum', 'Kaufdatum']];
@@ -45,6 +48,9 @@ export function render(container, ctx) {
     const preis = el('input', { attrs: { id: 'besitz-preis', type: 'number', inputmode: 'decimal', min: '0', step: '0.01', placeholder: 'freiwillig' } });
     const datum = kalenderBeiKlick(el('input', { attrs: { id: 'besitz-datum', type: 'date', max: heute(), autocomplete: 'off' } }));
     const notiz = el('textarea', { attrs: { id: 'besitz-notiz', maxlength: 300, rows: 2, placeholder: 'freiwillig' } });
+    // Gehört zu: Auswahl der Hauptsachen. Wer selbst Zubehör hat, kann nicht Zubehör werden (nur eine Ebene).
+    const gehoert = el('select', { attrs: { id: 'besitz-gehoert' }, on: { change: () => hauptGewaehlt() } });
+    const gehoertHinweis = el('p', { class: 'leise besitz-hinweis' });
     const speichernKnopf = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
     const loeschenKnopf = el('button', { class: 'knopf knopf-zweit', text: 'Löschen', attrs: { type: 'button', hidden: true }, on: { click: () => loeschen() } });
 
@@ -59,7 +65,8 @@ export function render(container, ctx) {
             anzahl: anzahl.value.trim(),
             kaufpreis: preis.value.trim(),
             kaufdatum: datum.value,
-            notiz: notiz.value.trim()
+            notiz: notiz.value.trim(),
+            gehoert_zu: gehoert.value
         };
         const fehlt = [[werte.name, name, 'einen Namen'], [werte.kategorie, kategorie.feld, 'eine Kategorie'], [werte.ort, ort.feld, 'einen Ort']]
             .find(([w]) => !w);
@@ -98,12 +105,17 @@ export function render(container, ctx) {
             }
             status.textContent = '';
             zeigeGespeichert(alt ? 'Geändert' : 'Gespeichert', antwort.sache.name);
+            // Neues Zubehör gleich sichtbar machen: Hauptsache aufklappen
+            if (antwort.sache.gehoert_zu) offen.add(antwort.sache.gehoert_zu);
             zeigeListe();
             if (alt) {
                 zeigeFormular(false);
             } else {
-                // Ort bleibt stehen (praktisch beim Einräumen eines Schranks), der Rest leert sich
+                // Ort und „Gehört zu“ bleiben stehen (praktisch beim Einräumen oder für mehrere Zubehörteile), der Rest leert sich
+                const haupt = gehoert.value;
                 felderLeeren();
+                fuelleGehoert(null);
+                gehoert.value = haupt;
                 name.focus();
             }
         } catch (e) {
@@ -125,6 +137,7 @@ export function render(container, ctx) {
         el('label', { text: 'Kaufpreis (€)', attrs: { for: 'besitz-preis' } }), preis,
         el('label', { text: 'Kaufdatum', attrs: { for: 'besitz-datum' } }), datum,
         el('label', { text: 'Notiz', attrs: { for: 'besitz-notiz' } }), notiz,
+        el('label', { text: 'Gehört zu (Zubehör von)', attrs: { for: 'besitz-gehoert' } }), gehoert, gehoertHinweis,
         el('div', { class: 'besitz-form-knoepfe' }, [speichernKnopf, loeschenKnopf]),
         status
     ]);
@@ -138,11 +151,37 @@ export function render(container, ctx) {
         notiz.value = '';
     }
 
+    // Hauptsachen = Sachen, die nicht selbst Zubehör einer vorhandenen Sache sind
+    const istZubehoer = (s) => Boolean(s.gehoert_zu) && sachen.some((x) => x.id === s.gehoert_zu);
+    const zubehoerVon = (id) => (sachen || []).filter((x) => x.gehoert_zu === id);
+
+    // Füllt „Gehört zu“ für die Sache, die gerade im Formular steht (null = neu)
+    function fuelleGehoert(sache) {
+        leeren(gehoert);
+        gehoert.append(el('option', { text: '– keine, eigene Sache –', attrs: { value: '' } }));
+        const hatEigenes = sache ? zubehoerVon(sache.id).length > 0 : false;
+        (sachen || [])
+            .filter((x) => !istZubehoer(x) && (!sache || x.id !== sache.id))
+            .sort((a, b) => vergleiche(a.name, b.name))
+            .forEach((x) => gehoert.append(el('option', { text: x.name + ' (' + x.ort + ')', attrs: { value: x.id } })));
+        gehoert.value = sache && istZubehoer(sache) ? sache.gehoert_zu : '';
+        gehoert.disabled = hatEigenes;
+        gehoertHinweis.textContent = hatEigenes ? 'Diese Sache hat selbst Zubehör und bleibt darum eine eigene Sache.' : '';
+    }
+
+    // Hauptsache gewählt: Ort übernehmen, wenn noch keiner eingetragen ist
+    function hauptGewaehlt() {
+        const h = (sachen || []).find((x) => x.id === gehoert.value);
+        if (h && !ort.feld.value.trim()) ort.feld.value = h.ort;
+    }
+
     // Löschen ist weich: Im Sheet steht dann geloescht = TRUE, die Person kann es dort zurückholen.
     async function loeschen() {
         const s = bearbeite;
         if (!s || sendet) return;
-        if (!confirm('„' + s.name + '“ löschen?')) return;
+        const zahl = zubehoerVon(s.id).length;
+        const frage = '„' + s.name + '“ löschen?' + (zahl ? ' Das Zubehör (' + zahl + ') bleibt als eigene Sache erhalten.' : '');
+        if (!confirm(frage)) return;
         sendet = true;
         speichernKnopf.disabled = true;
         loeschenKnopf.disabled = true;
@@ -185,6 +224,7 @@ export function render(container, ctx) {
         neuKnopf.setAttribute('aria-expanded', auf ? 'true' : 'false');
         formTitel.textContent = sache ? 'Ändern' : 'Hinzufügen';
         loeschenKnopf.hidden = !sache;
+        if (auf) fuelleGehoert(sache);
         if (sache) {
             name.value = sache.name;
             kategorie.feld.value = sache.kategorie;
@@ -249,18 +289,27 @@ export function render(container, ctx) {
             return;
         }
         const wort = klein(suche.value.trim());
-        const gefiltert = sachen.filter((s) =>
+        const filterAn = Boolean(wort || ortFilter.value || katFilter.value);
+        const passt = (s) =>
             (!ortFilter.value || s.ort === ortFilter.value)
             && (!katFilter.value || s.kategorie === katFilter.value)
-            && (!wort || [s.name, s.kategorie, s.ort, s.notiz].some((t) => klein(t).includes(wort))));
-        if (gefiltert.length < sachen.length) {
-            trefferText.textContent = gefiltert.length ? gefiltert.length + ' von ' + sachen.length + ' Sachen' : 'Keine Treffer.';
+            && (!wort || [s.name, s.kategorie, s.ort, s.notiz].some((t) => klein(t).includes(wort)));
+        const treffer = sachen.filter(passt).length;
+        if (filterAn) {
+            trefferText.textContent = treffer ? treffer + ' von ' + sachen.length + ' Sachen' : 'Keine Treffer.';
         }
+        // Hauptsachen mit ihrem Zubehör. Eine Hauptsache steht da, wenn sie selbst oder ihr Zubehör passt.
+        // Bei Suche oder Filter wird passendes Zubehör aufgeklappt gezeigt, sonst alles Zubehör zugeklappt.
+        const eintraege = sachen.filter((s) => !istZubehoer(s)).map((s) => {
+            const alle = zubehoerVon(s.id).sort(nachSpalte);
+            const kinder = filterAn ? alle.filter(passt) : alle;
+            return { s, kinder, anzahlZubehoer: alle.length, selbst: passt(s), auf: offen.has(s.id) || (filterAn && kinder.length > 0) };
+        }).filter((e) => e.selbst || e.kinder.length);
         // Nach Ort gruppiert, Orte nach Name, Sachen nach der gewählten Spalte
         const orte = new Map();
-        [...gefiltert].sort(nachSpalte).forEach((s) => {
-            if (!orte.has(s.ort)) orte.set(s.ort, []);
-            orte.get(s.ort).push(s);
+        eintraege.sort((a, b) => nachSpalte(a.s, b.s)).forEach((e) => {
+            if (!orte.has(e.s.ort)) orte.set(e.s.ort, []);
+            orte.get(e.s.ort).push(e);
         });
         [...orte.keys()].sort(vergleiche).forEach((o) => listeBox.append(ortGruppe(o, orte.get(o))));
     }
@@ -274,7 +323,7 @@ export function render(container, ctx) {
             ]),
             el('table', { class: 'besitz-tabelle' }, [
                 el('thead', {}, [el('tr', {}, SPALTEN.map(spaltenKopf))]),
-                el('tbody', {}, liste.map(zeile))
+                el('tbody', {}, liste.flatMap((e) => [zeile(e.s, e), ...e.kinder.map((k) => zeile(k, null, e))]))
             ])
         ]);
     }
@@ -297,18 +346,48 @@ export function render(container, ctx) {
         })]);
     }
 
-    // Tipp auf eine Zeile (oder den Namen) öffnet die Sache zum Ändern
-    function zeile(s) {
-        return el('tr', { class: 'besitz-zeile', on: { click: (ev) => { if (!ev.target.closest('button')) zeigeFormular(true, s); } } }, [
+    // Tipp auf eine Zeile (oder den Namen) öffnet die Sache zum Ändern.
+    // eintrag = Hauptsache mit Zubehör (dann Knopf zum Aufklappen); haupt = Eintrag der Hauptsache, wenn s Zubehör ist.
+    function zeile(s, eintrag = null, haupt = null) {
+        let klasse = 'besitz-zeile';
+        if (haupt) klasse += ' besitz-kind';
+        if (eintrag && !eintrag.selbst) klasse += ' besitz-nur-kontext'; // passt nicht selbst, nur ihr Zubehör
+        return el('tr', {
+            class: klasse,
+            attrs: { hidden: haupt && !haupt.auf, 'data-haupt': haupt ? haupt.s.id : null },
+            on: { click: (ev) => { if (!ev.target.closest('button')) zeigeFormular(true, s); } }
+        }, [
             el('th', { class: 'besitz-name', attrs: { scope: 'row' } }, [
+                haupt ? el('span', { class: 'besitz-kind-pfeil', text: '↳ ', attrs: { 'aria-hidden': 'true' } }) : null,
                 el('button', { class: 'besitz-oeffnen', text: s.name, attrs: { type: 'button', 'aria-label': s.name + ' ändern' }, on: { click: () => zeigeFormular(true, s) } }),
-                s.notiz ? el('span', { class: 'besitz-notiz leise', text: s.notiz }) : null
+                s.notiz ? el('span', { class: 'besitz-notiz leise', text: s.notiz }) : null,
+                eintrag && eintrag.kinder.length ? aufklapper(eintrag) : null
             ]),
             el('td', { text: s.kategorie, attrs: { 'data-label': 'Kategorie' } }),
             el('td', { class: 'zahl', text: String(s.anzahl), attrs: { 'data-label': 'Anzahl' } }),
             el('td', { class: 'zahl', text: s.kaufpreis == null ? '' : euro(s.kaufpreis), attrs: { 'data-label': 'Kaufpreis' } }),
             el('td', { text: datumText(s.kaufdatum), attrs: { 'data-label': 'Kaufdatum' } })
         ]);
+    }
+
+    // Knopf „▸ 2 Zubehör“: klappt die Zeilen des Zubehörs auf und zu
+    function aufklapper(e) {
+        const zahl = e.kinder.length < e.anzahlZubehoer ? e.kinder.length + ' von ' + e.anzahlZubehoer : String(e.kinder.length);
+        const knopf = el('button', {
+            class: 'besitz-aufklappen',
+            attrs: { type: 'button', 'aria-expanded': e.auf ? 'true' : 'false' },
+            on: {
+                click: () => {
+                    e.auf = !e.auf;
+                    if (e.auf) offen.add(e.s.id); else offen.delete(e.s.id);
+                    knopf.setAttribute('aria-expanded', e.auf ? 'true' : 'false');
+                    knopf.textContent = (e.auf ? '▾ ' : '▸ ') + zahl + ' Zubehör';
+                    listeBox.querySelectorAll('tr[data-haupt="' + CSS.escape(e.s.id) + '"]').forEach((t) => { t.hidden = !e.auf; });
+                }
+            }
+        });
+        knopf.textContent = (e.auf ? '▾ ' : '▸ ') + zahl + ' Zubehör';
+        return knopf;
     }
 
     // --- Laden ---
