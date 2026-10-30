@@ -136,7 +136,7 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
 - **Zutaten mit genug Vorrat** (Entscheidung der Person, 30.10.2026): Bei einem Gericht ist eine Zutat, von der zuhause mindestens die Menge da ist, schon **nicht** angehakt.
 - Unterreiter Lebensmittel bekommt den Haken „Nur was zuhause ist“, dann nach Ort gruppiert. So dient die Liste auch als Vorrat-Übersicht.
 
-## Schritt 4.5 Gemeinsam nutzen (0.4.7 → 0.4.8)
+## Schritt 4.5 Gemeinsam nutzen (0.4.7 → 0.4.8) – erledigt
 
 - **Welche Reiter jemand sieht, folgt aus den eingetragenen Script-Adressen:** Tracking nur mit Adresse `tracking`, Finanzen mit `finanzen`,
   Besitz mit `leben`, Einkauf (und später Uni) mit `gemeinsam`. Döner ist immer da. So sieht die Partnerin oder der Partner nur Einkauf und Döner,
@@ -147,7 +147,7 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
   Einstellungen → Passwort = `PARTNER_PIN`, nur die Adresse `gemeinsam` eintragen. Weitergeben am besten persönlich, nicht im Chat.
 - Passwort ändern: neues `PARTNER_PIN` in den Skripteigenschaften eintragen. Das alte gilt sofort nicht mehr (ohne neue Bereitstellung).
 
-## Schritt 4.6 Abschluss (0.4.8 …)
+## Schritt 4.6 Abschluss (0.4.9 …)
 
 - Anmerkungen der Person nach dem Testen, dann Etappe 4 abschließen: Plan in STAND.md einarbeiten, diese Datei löschen.
 

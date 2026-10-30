@@ -4,13 +4,13 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.4.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.4.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ läuft, Plan in `docs/PLAN-ETAPPE-4.md`.
-- Nächster Schritt: Schritt 4.5 (Gemeinsam nutzen).
+- Nächster Schritt: Schritt 4.6 (Abschluss der Etappe 4).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -198,8 +198,10 @@ unter „Info“ die Version prüfen.
   Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“)
   und `#/doener/<skript>` (öffentliche Döner-Bewertung, siehe 4 „Döner öffentlich“).
   Unbekannte Adressen zeigen „Seite nicht gefunden“.
-- Startseite: Kacheln aller Reiter. Eine Heute-Übersicht (Termine, Einkauf) kommt in Etappe 7.
-- Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter sichtbar sind, steht in `js/config.js` (`features`).
+- Startseite: Kacheln aller sichtbaren Reiter. Eine Heute-Übersicht (Termine, Einkauf) kommt in Etappe 7.
+- Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter es gibt, steht in `js/config.js` (`features`).
+  Sichtbar ist ein Reiter nur, wenn die Adresse seines Skripts eingetragen ist (`BEREICHE[].skript`, ab 0.4.8): Tracking `tracking`, Finanzen `finanzen`,
+  DSA `dsa` (gibt es erst ab Etappe 6), Einkauf und Uni `gemeinsam`, Besitz `leben`. Döner ist immer da.
 - PC und Handy: Reiterleiste unten am Handy, Seitenleiste links am PC (ab 768 px). Einstellungen (Zahnrad, am Handy ohne Text) und Info in der Kopfzeile.
 - Name, Icon und Farben: Thetadex, siehe Abschnitt 4 „Erscheinungsbild“. Die Kopfzeile zeigt immer das vollständige Icon (Karte mit Reitern).
 - **Einstellungen** (`#/einstellungen`, bis 0.3.1 „Einrichtung“): Aussehen (Hell, Dunkel, Wie Gerät), Passwort und die Script-Adressen je Bereich. Gespeichert nur im Gerät.
@@ -300,6 +302,9 @@ unter „Info“ die Version prüfen.
   Vorrat (4.4, freiwillig): im Formular des Lebensmittels „Zuhause“ mit je Ort einer Zeile (Ort, Menge ab 0, ×, „+ Ort“).
   Hinweis „zuhause: 2 Keller, 1 Kühlschrank“ auf der Einkaufsliste, bei Lebensmitteln und bei Zutaten. Zutaten mit genug Vorrat sind nicht angehakt.
   Haken „Nur was zuhause ist (nach Ort)“ bei Lebensmitteln. Abhaken erhöht gepflegten Vorrat (macht das Skript).
+  Nachbesserung 0.4.9 (Wunsch der Person): bei Lebensmitteln Haken „Vorrat“ rechts neben der Suche, „+ Neues Lebensmittel“ und „Neu laden“
+  gleich unter der Suche; im Gericht-Formular „+ Neues Lebensmittel“ mit Name, Abteilung und Einheit, kommt gleich als Zutat dazu.
+  Gemeinsam nutzen (4.5): Reiter erscheinen nach eingetragenen Script-Adressen. „Verbindung prüfen“ zeigt bei `gemeinsam`, ob als Hauptperson oder Partner*in angemeldet.
 
 ### 3.2 Offen
 
@@ -593,6 +598,8 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.4.5** Nachbesserung 4.2: Lebensmittel ankreuzen und zusammen auf die Liste, Menge rechts, Abgehakte bleiben bis „Einkauf fertig“, Start bei Lebensmittel.
 - **0.4.6** Schritt 4.3: Gerichte mit Zutaten, Einkaufsliste nach Gericht.
 - **0.4.7** Schritt 4.4: Vorrat je Ort am Lebensmittel, Hinweis „zuhause“, Zutaten mit genug Vorrat nicht angehakt, Filter „Nur was zuhause ist“.
+- **0.4.8** Schritt 4.5: Reiter nach eingetragenen Script-Adressen (DSA-Platzhalter verschwindet), Rolle bei „Verbindung prüfen“.
+- **0.4.9** Nachbesserung: Haken „Vorrat“ neben der Suche, Knöpfe unter der Suche, neues Lebensmittel im Gericht mit Abteilung und Einheit.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

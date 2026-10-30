@@ -48,6 +48,8 @@ export function render(container) {
         passwortFeld.value = '';
         meldung.textContent = ok ? 'Gespeichert.' : 'Konnte nicht speichern. Ist der private Modus des Browsers an?';
         if (ok) passwortFeld.setAttribute('placeholder', 'gespeichert – nur zum Ändern ausfüllen');
+        // Welche Reiter sichtbar sind, hängt an den Adressen (Schritt 4.5)
+        if (ok) window.dispatchEvent(new Event('thetadex-skripte'));
     }
 
     // Fragt jedes eingetragene Skript mit einer Aktion, die nur liest.
@@ -64,8 +66,11 @@ export function render(container) {
             const zeile = el('li', { text: s.titel + ': wird geprüft …' });
             ergebnis.append(zeile);
             try {
-                await api(s.id, s.test);
-                zeile.textContent = s.titel + ': Verbindung klappt.';
+                const antwort = await api(s.id, s.test);
+                // Skripte mit zwei Passwörtern sagen, als wer man angemeldet ist
+                const rolle = antwort && antwort.rolle === 'partner' ? ' Angemeldet als Partner*in.'
+                    : antwort && antwort.rolle === 'person' ? ' Angemeldet als Hauptperson.' : '';
+                zeile.textContent = s.titel + ': Verbindung klappt.' + rolle;
             } catch (e) {
                 zeile.textContent = s.titel + ': ' + e.message;
             }
@@ -83,6 +88,7 @@ export function render(container) {
     const formular = el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: speichern } }, [
         el('label', { text: 'Passwort', attrs: { for: 'feld-passwort' } }),
         passwortFeld,
+        el('p', { class: 'leise', text: 'Nur Skripte mit eingetragener Adresse erscheinen als Reiter. Leere Felder bleiben einfach leer.' }),
         ...adressFelder.flatMap((a) => [
             el('label', { text: 'Script-Adresse ' + a.titel, attrs: { for: 'feld-skript-' + a.id } }),
             a.feld
