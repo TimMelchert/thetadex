@@ -537,7 +537,24 @@ export function render(container, ctx) {
     });
     // Knöpfe oben unter der Suche, damit sie bei vielen Lebensmitteln nicht weit unten stehen (Wunsch der Person, 30.10.2026).
     // „Neu laden“ zieht beim Unterreiter Lebensmittel hierher um (siehe zeigeTeil).
-    const lmKnoepfe = el('div', { class: 'einkauf-knoepfe' }, [neuLm]);
+    // Filter nach Abteilung links von „+ Neues Lebensmittel“ (Wunsch der Person, 30.10.2026). Einträge aus den vorhandenen Abteilungen.
+    const OHNE_ABTEILUNG = '\u0000ohne';
+    const abteilungFilter = el('select', {
+        class: 'einkauf-filter', attrs: { id: 'einkauf-abteilung', 'aria-label': 'Nach Abteilung filtern' },
+        on: { change: () => zeigeLebensmittel() }
+    });
+    function fuelleAbteilungen() {
+        const alt = abteilungFilter.value;
+        const alle = [...new Set(daten.lebensmittel.map((l) => l.abteilung).filter(Boolean))].sort(vergleiche);
+        const werte = [['', 'Alle Abteilungen'], ...alle.map((a) => [a, a])];
+        if (daten.lebensmittel.some((l) => !l.abteilung)) werte.push([OHNE_ABTEILUNG, 'Ohne Abteilung']);
+        leeren(abteilungFilter);
+        werte.forEach(([wert, text]) => abteilungFilter.append(el('option', { text, attrs: { value: wert } })));
+        abteilungFilter.value = werte.some(([w]) => w === alt) ? alt : '';
+    }
+    const passtAbteilung = (l) => !abteilungFilter.value
+        || (abteilungFilter.value === OHNE_ABTEILUNG ? !l.abteilung : l.abteilung === abteilungFilter.value);
+    const lmKnoepfe = el('div', { class: 'einkauf-knoepfe' }, [abteilungFilter, neuLm]);
     lmBox.append(
         el('div', { class: 'einkauf-auswahl-leiste' }, [aufListeKnopf, aufheben]),
         el('div', { class: 'formular besitz-suche einkauf-suchzeile' }, [
@@ -556,9 +573,11 @@ export function render(container, ctx) {
         aufListeKnopf.disabled = !auswahl.size;
         aufheben.hidden = !auswahl.size;
         if (!daten) return;
+        fuelleAbteilungen();
         const wort = suche.value.trim();
         const treffer = daten.lebensmittel
             .filter((l) => !wort || [l.name, l.abteilung, l.notiz].some((t) => findet(t, wort)))
+            .filter(passtAbteilung)
             .filter((l) => !nurZuhause.checked || zuhause(l.id) > 0)
             .sort((a, b) => vergleiche(a.name, b.name));
         if (!daten.lebensmittel.length && !wort) {
@@ -579,6 +598,8 @@ export function render(container, ctx) {
             ])));
         } else if (treffer.length) {
             lmTreffer.append(el('ul', { class: 'einkauf-liste' }, treffer.map(lmZeile)));
+        } else if (abteilungFilter.value && !wort) {
+            lmTreffer.append(el('p', { class: 'leise', text: nurZuhause.checked ? 'Aus dieser Abteilung ist zuhause nichts eingetragen.' : 'In dieser Abteilung ist nichts.' }));
         } else if (nurZuhause.checked && !wort) {
             lmTreffer.append(el('p', { class: 'leise', text: 'Zuhause ist nichts eingetragen. Den Vorrat trägst du beim Lebensmittel ein (Tipp auf den Namen).' }));
         }

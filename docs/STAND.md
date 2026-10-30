@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.4.10** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.4.11** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
@@ -302,6 +302,7 @@ unter „Info“ die Version prüfen.
   Vorrat (4.4, freiwillig): im Formular des Lebensmittels „Zuhause“ mit je Ort einer Zeile (Ort, Menge ab 0, ×, „+ Ort“).
   Hinweis „zuhause: 2 Keller, 1 Kühlschrank“ auf der Einkaufsliste, bei Lebensmitteln und bei Zutaten. Zutaten mit genug Vorrat sind nicht angehakt.
   Haken „Vorrat“ bei Lebensmitteln: nur was zuhause ist, nach Ort. Abhaken erhöht gepflegten Vorrat (macht das Skript).
+  Ab 0.4.11 (Wunsch der Person): Auswahl „Alle Abteilungen“ links von „+ Neues Lebensmittel“ filtert nach Abteilung (aus den vorhandenen, dazu „Ohne Abteilung“).
   Nachbesserung 0.4.9 (Wunsch der Person): bei Lebensmitteln Haken „Vorrat“ rechts neben der Suche, „+ Neues Lebensmittel“ und „Neu laden“
   gleich unter der Suche; im Gericht-Formular „+ Neues Lebensmittel“ mit Name, Abteilung und Einheit, kommt gleich als Zutat dazu.
   Gemeinsam nutzen (4.5): Reiter erscheinen nach eingetragenen Script-Adressen. „Verbindung prüfen“ zeigt bei `gemeinsam`, ob als Hauptperson oder Partner*in angemeldet.
@@ -623,6 +624,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.4.8** Schritt 4.5: Reiter nach eingetragenen Script-Adressen (DSA-Platzhalter verschwindet), Rolle bei „Verbindung prüfen“.
 - **0.4.9** Nachbesserung: Haken „Vorrat“ neben der Suche, Knöpfe unter der Suche, neues Lebensmittel im Gericht mit Abteilung und Einheit.
 - **0.4.10** Etappe 4 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-4.md` gelöscht.
+- **0.4.11** Nachbesserung: Lebensmittel nach Abteilung filtern.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
