@@ -315,6 +315,8 @@ unter „Info“ die Version prüfen.
      (die ZIP-Sicherung aus Schritt 0.0 bleibt).
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
 - Ein Beispiel-Charakterbogen zum Verständnis (kommt nicht ins Repo).
+- Später als eigener Schritt (Entscheidung der Person, 30.10.2026): Kommentare in den Skripten, die auf gelöschte Plan-Dateien zeigen, aufräumen
+  (`apps-script/leben`, `gemeinsam`, `finanzen`, `tracking`). Dann müssen die Skripte neu eingefügt werden.
 
 ---
 
