@@ -154,7 +154,25 @@ function getAnalyseData() {
   const roh = (v, i) => (i === null ? "" : v[i]);
 
   // Macht aus einer Sheet-Zeile ein Objekt mit allen Werten (gleich für Zeile 2 und alle Monatszeilen)
+  // Alle Kategorien allgemein (ab Thetadex 2.4): Spalten mit Endung "-Out" oder "-In" und mit Anfang "Netto-".
+  // So braucht die App keine Kategorie-Namen, und neue Spalten im Sheet erscheinen von selbst.
+  const katSpalten = { aus: [], ein: [], netto: [] };
+  headerRow.forEach((h, i) => {
+    if (/-Out$/.test(h)) katSpalten.aus.push([h.slice(0, -4), i]);
+    else if (/-In$/.test(h)) katSpalten.ein.push([h.slice(0, -3), i]);
+    else if (/^Netto-/.test(h)) katSpalten.netto.push([h.slice(6), i]);
+  });
+  const kategorienAus = (v) => {
+    const out = {};
+    Object.keys(katSpalten).forEach(art => {
+      out[art] = {};
+      katSpalten[art].forEach(([name, i]) => { out[art][name] = Number(v[i]) || 0; });
+    });
+    return out;
+  };
+
   const baueWerte = (v) => ({
+    kategorien: kategorienAus(v),
     jahr: roh(v, cols.jahr),
     monat: roh(v, cols.monat),
 

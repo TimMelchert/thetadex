@@ -586,3 +586,43 @@
 input[type="date"] { cursor: pointer; }
 
 .tracking-monat-titel { margin: 20px 0 4px; font-size: 1.05rem; }
+
+/* Finanzen → Auswertung */
+.finanz-monat-zeile { display: flex; justify-content: center; }
+.finanz-monat-zeile select { min-height: 44px; padding: 8px 12px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; }
+.finanz-ringe { display: grid; grid-template-columns: 1fr; gap: 0 12px; }
+.finanz-ring { margin: var(--abstand) 0 0; }
+.finanz-ring figcaption { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--schrift-leise); margin-bottom: 6px; }
+.finanz-diagramm { position: relative; height: 280px; }
+.finanz-diagramm-breit { height: 260px; }
+.finanz-budget-kopf { display: flex; justify-content: space-between; font-weight: 600; margin: 0 0 6px; }
+.finanz-budget { height: 14px; border-radius: 7px; background: var(--hintergrund); overflow: hidden; }
+.finanz-budget-fuell { height: 100%; width: 0; background: var(--knopf-gruen); }
+.finanz-budget-fuell.warnung { background: var(--knopf-rot); }
+.finanz-netto { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: var(--abstand); }
+.finanz-kachel { padding: 10px; border-radius: var(--rund); background: var(--kachel); border-top: 4px solid var(--linie); }
+.finanz-kachel.erledigt { border-top-color: var(--knopf-gruen); }
+.finanz-kachel-name { margin: 0; font-size: 0.8rem; color: var(--schrift-leise); }
+.finanz-kachel-wert { margin: 0; font-weight: 700; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+.finanz-haken { list-style: none; padding: 0; margin: 6px 0 0; font-size: 0.85rem; }
+.finanz-haken li { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.finanz-haken-box { flex: 0 0 18px; height: 18px; border: 1px solid var(--schrift-leise); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+.finanz-haken li.ok .finanz-haken-box { background: var(--knopf-gruen); border-color: var(--knopf-gruen); color: #FFFFFF; }
+.finanz-haken-betrag { margin-left: auto; font-variant-numeric: tabular-nums; }
+.finanz-tabelle-kopf { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.finanz-tabelle-kopf select { min-height: 44px; padding: 8px 12px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; }
+.finanz-tabelle-box { overflow-x: auto; }
+.finanz-tabelle { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.finanz-tabelle th, .finanz-tabelle td { padding: 8px 6px; border-bottom: 1px solid var(--linie); text-align: right; white-space: nowrap; }
+.finanz-tabelle th:first-child { text-align: left; }
+.finanz-tabelle tbody th { font-weight: 600; }
+.finanz-tabelle tr.klickbar { cursor: pointer; }
+.finanz-tabelle tr.gewaehlt { background: var(--kachel); }
+.finanz-tabelle .finanz-plus { color: var(--plus-schrift); }
+.finanz-tabelle .finanz-minus { color: var(--minus-schrift); }
+.finanz-neu { margin-top: var(--abstand); }
+
+@media (min-width: 768px) {
+    .finanz-ringe { grid-template-columns: 1fr 1fr; }
+    .finanz-netto { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
