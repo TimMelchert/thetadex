@@ -4,14 +4,14 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.5.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.5.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
-- Etappe 5 „Uni“ läuft: Plan `docs/PLAN-ETAPPE-5.md`. Gebaut: 5.1 (Blätter, Skript, Semester und Stundenplan), 5.2 (Termine, Kalender und ohne Netz).
-- Nächster Schritt: 5.3 (Arbeitsstunden).
+- Etappe 5 „Uni“ läuft: Plan `docs/PLAN-ETAPPE-5.md`. Gebaut: 5.1 (Blätter, Skript, Semester und Stundenplan), 5.2 (Termine, Kalender und ohne Netz), 5.3 (Arbeitsstunden).
+- Nächster Schritt: 5.4 (Module und Master-Übersicht).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -311,6 +311,7 @@ unter „Info“ die Version prüfen.
   Aktionen `uni` (beide Rollen), `uni_speichern` und `uni_loeschen` (nur `person`, mit `blatt`). Reiter Uni: Semester wählen, anlegen, ändern; Stundenplan je Wochentag.
   Kalender (5.2): Woche (PC und Querformat Raster, Hochformat Liste je Tag), Monat, Liste; Filter nach Art; Termine; „Nur an diesem Tag ändern“,
   „Fällt an diesem Tag aus“, „Wieder wie immer“ (Termin mit `stunde_id`). Ohne Netz die zuletzt geladenen Uni-Daten aus dem Gerät, ohne Knöpfe.
+  Arbeitsstunden (5.3): im Kalender für die gezeigte Woche, den Monat oder die vier Wochen der Liste; im Stundenplan „Arbeit: … je Woche“. Nur gerechnet, nichts gespeichert.
 
 ### 3.2 Offen
 
@@ -436,7 +437,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 ## 5. Technik-Merkzettel
 
 - **Hilfsmodule** vor dem Neubauen suchen und wiederverwenden. Lies die Datei, bevor du sie benutzt. Rate keine Signaturen.
-  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`, `kalenderBeiKlick`), `js/ui/kalender.js` (`plusTage`, `wochenStart`, `monatsRaster`, `eintraegeAm`, `spuren` …), `js/ui/auswahl.js` (`auswahlFeld`), `js/ui/overlay.js` (`zeigeGespeichert`), `js/ui/farben.js` (`farbRegeln`), `js/ui/aussehen.js` (`wendeAussehenAn`, `setzeAussehen`), `js/ui/bild.js` (`verkleinereBild`, `bildAdresse`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
+  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`, `kalenderBeiKlick`), `js/ui/kalender.js` (`plusTage`, `wochenStart`, `monatsRaster`, `eintraegeAm`, `spuren`, `arbeitsMinuten`, `stundenText` …), `js/ui/auswahl.js` (`auswahlFeld`), `js/ui/overlay.js` (`zeigeGespeichert`), `js/ui/farben.js` (`farbRegeln`), `js/ui/aussehen.js` (`wendeAussehenAn`, `setzeAussehen`), `js/ui/bild.js` (`verkleinereBild`, `bildAdresse`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
   `js/api.js` (`api(skript, action, daten)`, `apiOeffentlich(adresse, action, daten)` ohne Passwort, `ApiFehler` mit `code`).
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
@@ -647,6 +648,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.5.1** Antworten zum Plan: keine Noten, Ziel 120 ECTS, Arbeitszeiten „einmal anders“, Uni auch ohne Netz, Partner*in sieht auch Module, Raum im Kalender.
 - **0.5.2** Schritt 5.1: Uni-Blätter und -Aktionen im Skript `gemeinsam`, Reiter Uni mit Semestern und Stundenplan.
 - **0.5.3** Schritt 5.2: Kalender (Woche, Monat, Liste, Filter, Farben je Art), Termine, „einmal anders“, Uni-Daten ohne Netz.
+- **0.5.4** Schritt 5.3: Arbeitsstunden je Woche, Monat und im Stundenplan.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

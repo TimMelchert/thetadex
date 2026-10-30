@@ -118,3 +118,21 @@ export function spuren(eintraege) {
     if (gruppe.length) schliessen();
     return ergebnis;
 }
+
+// Arbeitsminuten von Tag a bis Tag b (beide eingeschlossen): alle Einträge der Art „arbeit“ mit Uhrzeit,
+// wöchentlich mit „einmal anders“, ohne ausfallende und ohne Urlaubs- und freie Tage (Schritt 5.3).
+export function arbeitsMinuten(a, b, daten) {
+    let summe = 0;
+    for (let t = a; t <= b; t = plusTage(t, 1)) {
+        eintraegeAm(t, daten).eintraege
+            .filter((e) => e.art === 'arbeit' && !e.ganztags && !e.ausfall)
+            .forEach((e) => { summe += minuten(e.bis) - minuten(e.von); });
+    }
+    return summe;
+}
+
+// 750 → „12 h 30 min“, 720 → „12 h“
+export function stundenText(min) {
+    const h = Math.floor(min / 60), m = min % 60;
+    return h + ' h' + (m ? ' ' + m + ' min' : '');
+}
