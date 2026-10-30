@@ -1,6 +1,7 @@
 // Reiter Einkauf: Einkaufsliste nach Abteilung und Lebensmittel mit Suche (Schritt 4.1).
 // Gerichte (4.3): mit Zutaten und Mengen; ein Gericht wählen → Zutaten angehakt vorgeschlagen → auf die Liste.
 // Die Einkaufsliste gibt es auch nach Gericht (Wunsch der Person, 30.10.2026).
+// Vorrat (4.4, freiwillig): je Lebensmittel Mengen an Orten zuhause. Wo gepflegt, steht „zuhause: …“ dabei.
 // Lebensmittel ankreuzen → „Auf die Einkaufsliste“ → Mengen eintragen. Die Auswahl bleibt bei Suche erhalten.
 // Abgehakte Einträge bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird (Wunsch der Person, 30.10.2026).
 // Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“). Person und Partner*in, beide nur mit Passwort.
@@ -71,12 +72,12 @@ const mitEinheit = (n, lm) => zahlText(n) + (lm && lm.einheit ? ' ' + lm.einheit
 const gueltigeAnzahl = (n) => Number.isFinite(n) && n >= 0.5 && n <= 9999 && Math.round(n * 2) === n * 2;
 const leseZahl = (t) => Number(String(t).trim().replace(',', '.'));
 
-// Feld für eine Anzahl mit − und +
-function anzahlFeld(id, wert = 1) {
+// Feld für eine Anzahl mit − und + (min = kleinster Wert beim Tippen auf −)
+function anzahlFeld(id, wert = 1, min = 0.5) {
     const feld = el('input', { attrs: { id, type: 'text', inputmode: 'decimal', autocomplete: 'off', value: zahlText(wert) } });
     const schritt = (d) => {
         const n = leseZahl(feld.value);
-        const neu = Number.isFinite(n) ? Math.max(0.5, Math.round((n + d) * 2) / 2) : 1;
+        const neu = Number.isFinite(n) ? Math.max(min, Math.round((n + d) * 2) / 2) : 1;
         feld.value = zahlText(neu);
     };
     const box = el('div', { class: 'einkauf-anzahl' }, [
@@ -99,6 +100,13 @@ export function render(container, ctx) {
     const lmVon = (id) => (daten ? daten.lebensmittel.find((l) => l.id === id) : null);
     const gerichtVon = (id) => (daten && id ? daten.gerichte.find((g) => g.id === id) : null);
     const aufListe = (id) => (daten ? daten.liste.filter((e) => e.lebensmittel_id === id).reduce((n, e) => n + e.anzahl, 0) : 0);
+    // Vorrat eines Lebensmittels (leer = nicht gepflegt), größte Menge zuerst
+    const vorratVon = (id) => (daten ? daten.vorrat.filter((v) => v.lebensmittel_id === id).sort((a, b) => b.menge - a.menge || vergleiche(a.ort, b.ort)) : []);
+    const zuhause = (id) => vorratVon(id).reduce((n, v) => n + v.menge, 0);
+    const zuhauseText = (id) => {
+        const v = vorratVon(id);
+        return v.length ? 'zuhause: ' + v.map((x) => zahlText(x.menge) + ' ' + x.ort).join(', ') : '';
+    };
 
     // Ein Fenster mit Titel, Inhalt und Knöpfen
     function oeffneDialog(titel, inhalt) {
@@ -193,30 +201,104 @@ export function render(container, ctx) {
             einheit.feld.value = lm.einheit;
             notiz.value = lm.notiz;
         }
+        // Vorrat: je Ort eine Zeile mit Menge (0 = gerade nichts da) und Ort. Keine Zeile = wird nicht gepflegt.
+        const alleOrte = [...new Set((daten ? daten.vorrat : []).map((v) => v.ort))];
+        const vorratZeilen = [];
+        const vorratListe = el('ul', { class: 'einkauf-liste' });
+        let vnr = 0;
+        function vorratDazu(v = null) {
+            const id = 'einkauf-v-' + (vnr++);
+            const menge = anzahlFeld(id + '-menge', v ? v.menge : 1, 0);
+            const ort = auswahlFeld({ id: id + '-ort', maxlength: 40, placeholder: 'Schrank, Kühlschrank …' });
+            ort.setzeEintraege(alleOrte);
+            if (v) ort.feld.value = v.ort;
+            const z = { v, menge, ort, weg: false };
+            const zeile = el('li', { class: 'einkauf-zutat' }, [
+                el('div', { class: 'einkauf-text' }, [
+                    el('label', { text: 'Wo', attrs: { for: id + '-ort' } }), ort.box,
+                    el('label', { text: 'Menge' + (einheit.feld.value.trim() ? ' (' + einheit.feld.value.trim() + ')' : ''), attrs: { for: id + '-menge' } }), menge.box
+                ]),
+                el('button', {
+                    class: 'form-zu', text: '×', attrs: { type: 'button', 'aria-label': 'Ort entfernen' },
+                    on: { click: () => { z.weg = true; zeile.remove(); } }
+                })
+            ]);
+            vorratZeilen.push(z);
+            vorratListe.append(zeile);
+            if (!v) ort.feld.focus();
+        }
+        if (lm) vorratVon(lm.id).forEach((v) => vorratDazu(v));
+
+        // Schickt geänderte, neue und entfernte Orte (eine Anfrage je Änderung). Liefert false bei Fehler.
+        async function vorratSenden(lmId) {
+            for (const z of vorratZeilen) {
+                if (z.weg) {
+                    if (!z.v) continue;
+                    const a = await senden(status, knoepfe, 'vorrat_loeschen', { id: z.v.id });
+                    if (!a) return false;
+                    daten.vorrat = a.vorrat;
+                    z.v = null;
+                    continue;
+                }
+                const ort = z.ort.feld.value.trim();
+                const menge = leseZahl(z.menge.feld.value);
+                if (z.v && z.v.ort === ort && z.v.menge === menge) continue;
+                const a = await senden(status, knoepfe, 'vorrat_speichern', { id: z.v ? z.v.id : '', lebensmittel_id: lmId, ort, menge });
+                if (!a) return false;
+                daten.vorrat = a.vorrat;
+                // Merken, was jetzt gespeichert ist: ein zweiter Versuch schickt dann nur den Rest
+                z.v = a.vorrat.find((x) => x.lebensmittel_id === lmId && norm(x.ort) === norm(ort)) || z.v;
+            }
+            return true;
+        }
+
         const ok = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
         const loeschen = lm ? el('button', { class: 'knopf knopf-zweit', text: 'Löschen', attrs: { type: 'button' }, on: { click: () => entfernen() } }) : null;
         const knoepfe = [ok, loeschen].filter(Boolean);
 
+        // akt: der gespeicherte Stand. Nach einem Fehler beim Vorrat ändert ein zweiter Versuch dieses Lebensmittel, statt es doppelt anzulegen.
+        let akt = lm;
         async function absenden(ev) {
             ev.preventDefault();
             const werte = { name: nameFeld.value.trim(), abteilung: abteilung.feld.value.trim(), einheit: einheit.feld.value.trim(), notiz: notiz.value.trim() };
+            for (const z of vorratZeilen) {
+                if (z.weg) continue;
+                const menge = leseZahl(z.menge.feld.value);
+                if (!z.ort.feld.value.trim()) {
+                    status.textContent = 'Bitte beim Vorrat einen Ort eintragen (oder den Ort mit × entfernen).';
+                    z.ort.feld.focus();
+                    return;
+                }
+                if (!(Number.isFinite(menge) && menge >= 0 && menge <= 9999 && Math.round(menge * 2) === menge * 2)) {
+                    status.textContent = 'Menge zuhause bitte von 0 bis 9999 (halbe erlaubt).';
+                    z.menge.feld.focus();
+                    return;
+                }
+            }
             if (!werte.name) {
                 status.textContent = 'Bitte einen Namen eingeben.';
                 nameFeld.focus();
                 return;
             }
-            const doppelt = alle.find((l) => (!lm || l.id !== lm.id) && norm(l.name) === norm(werte.name));
+            const doppelt = alle.find((l) => (!akt || l.id !== akt.id) && norm(l.name) === norm(werte.name));
             if (doppelt) {
                 status.textContent = '„' + doppelt.name + '“ gibt es schon.';
                 nameFeld.focus();
                 return;
             }
-            const antwort = await senden(status, knoepfe, 'lebensmittel_speichern', lm ? { ...werte, id: lm.id, geaendert_am: lm.geaendert_am } : werte);
+            const antwort = await senden(status, knoepfe, 'lebensmittel_speichern', akt ? { ...werte, id: akt.id, geaendert_am: akt.geaendert_am } : werte);
             if (!antwort) return;
             const neu = antwort.lebensmittel;
+            akt = neu;
             const i = daten.lebensmittel.findIndex((l) => l.id === neu.id);
             if (i >= 0) daten.lebensmittel[i] = neu; else daten.lebensmittel.push(neu);
+            const vorratOk = await vorratSenden(neu.id);
             zeigeAlles();
+            if (!vorratOk) {
+                // Lebensmittel ist gespeichert, der Vorrat nicht ganz: Fenster bleibt offen mit Meldung
+                status.textContent = 'Lebensmittel gespeichert, Vorrat NICHT ganz: ' + status.textContent.replace(/^NICHT gespeichert: /, '');
+                return;
+            }
             // Neu angelegt: gleich angekreuzt, damit es mit „Auf die Einkaufsliste“ mitkommt
             if (!lm) auswahl.add(neu.id);
             zeigeAlles();
@@ -232,6 +314,7 @@ export function render(container, ctx) {
             daten.lebensmittel = daten.lebensmittel.filter((l) => l.id !== lm.id);
             auswahl.delete(lm.id);
             daten.liste = daten.liste.filter((e) => e.lebensmittel_id !== lm.id);
+            daten.vorrat = daten.vorrat.filter((v) => v.lebensmittel_id !== lm.id);
             merkeListe();
             dialog.close();
             zeigeGespeichert('Gelöscht', lm.name);
@@ -244,6 +327,10 @@ export function render(container, ctx) {
                 el('label', { text: 'Abteilung im Laden', attrs: { for: 'einkauf-lm-abteilung' } }), abteilung.box,
                 el('label', { text: 'Einheit', attrs: { for: 'einkauf-lm-einheit' } }), einheit.box,
                 el('label', { text: 'Notiz', attrs: { for: 'einkauf-lm-notiz' } }), notiz,
+                el('h3', { text: 'Zuhause (freiwillig)' }),
+                el('p', { class: 'leise besitz-hinweis', text: 'Wie viel davon zuhause ist und wo. Ohne Ort wird der Vorrat nicht gepflegt.' }),
+                vorratListe,
+                el('button', { class: 'knopf knopf-zweit', text: '+ Ort', attrs: { type: 'button' }, on: { click: () => vorratDazu() } }),
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe),
                 status
             ])
@@ -381,7 +468,8 @@ export function render(container, ctx) {
                     el('span', { class: 'einkauf-menge', text: mitEinheit(summe, lm) })
                 ]),
                 notizen.length ? el('span', { class: 'leise einkauf-klein', text: notizen.join(' · ') }) : null,
-                fuer.length ? el('span', { class: 'leise einkauf-klein', text: 'für ' + fuer.join(', ') }) : null
+                fuer.length ? el('span', { class: 'leise einkauf-klein', text: 'für ' + fuer.join(', ') }) : null,
+                zuhauseText(lm.id) ? el('span', { class: 'leise einkauf-klein', text: zuhauseText(lm.id) }) : null
             ])
         ]);
     }
@@ -443,9 +531,13 @@ export function render(container, ctx) {
     const neuLm = el('button', { class: 'knopf knopf-zweit', text: '+ Neues Lebensmittel', attrs: { type: 'button' }, on: { click: () => zeigeLebensmittelForm(null) } });
     const aufListeKnopf = el('button', { class: 'knopf knopf-bereich', attrs: { type: 'button' }, on: { click: () => zeigeAuswahlFenster() } });
     const aufheben = el('button', { class: 'knopf knopf-zweit', text: 'Auswahl aufheben', attrs: { type: 'button' }, on: { click: () => { auswahl.clear(); zeigeLebensmittel(); } } });
+    const nurZuhause = el('input', { attrs: { id: 'einkauf-nur-zuhause', type: 'checkbox' }, on: { change: () => zeigeLebensmittel() } });
     lmBox.append(
         el('div', { class: 'einkauf-auswahl-leiste' }, [aufListeKnopf, aufheben]),
-        el('div', { class: 'formular besitz-suche' }, [el('label', { text: 'Suchen', attrs: { for: 'einkauf-suche' } }), suche]),
+        el('div', { class: 'formular besitz-suche' }, [
+            el('label', { text: 'Suchen', attrs: { for: 'einkauf-suche' } }), suche,
+            el('label', { class: 'besitz-null' }, [nurZuhause, el('span', { text: 'Nur was zuhause ist (nach Ort)' })])
+        ]),
         lmTreffer,
         neuLm
     );
@@ -461,33 +553,28 @@ export function render(container, ctx) {
         const wort = suche.value.trim();
         const treffer = daten.lebensmittel
             .filter((l) => !wort || [l.name, l.abteilung, l.notiz].some((t) => findet(t, wort)))
+            .filter((l) => !nurZuhause.checked || zuhause(l.id) > 0)
             .sort((a, b) => vergleiche(a.name, b.name));
         if (!daten.lebensmittel.length && !wort) {
             lmTreffer.append(el('p', { class: 'leise', text: 'Noch keine Lebensmittel. Tippe oben einen Namen ein oder auf „+ Neues Lebensmittel“.' }));
         } else if (!wort) {
             lmTreffer.append(el('p', { class: 'leise besitz-hinweis einkauf-tipp', text: 'Ankreuzen, dann oben „Auf die Einkaufsliste“. Tipp auf den Namen zum Ändern.' }));
         }
-        if (treffer.length) {
-            lmTreffer.append(el('ul', { class: 'einkauf-liste' }, treffer.map((l) => {
-                const zahl = aufListe(l.id);
-                const zusatz = [l.abteilung, zahl ? 'auf der Liste: ' + mitEinheit(zahl, l) : ''].filter(Boolean).join(' · ');
-                const an = auswahl.has(l.id);
-                return el('li', { class: 'einkauf-zeile einkauf-lm' }, [
-                    el('button', {
-                        class: 'einkauf-haken' + (an ? ' ist-an' : ''), text: '',
-                        attrs: { type: 'button', 'aria-pressed': an ? 'true' : 'false', 'aria-label': l.name + ' auswählen' },
-                        on: { click: () => { if (an) auswahl.delete(l.id); else auswahl.add(l.id); zeigeLebensmittel(); } }
-                    }),
-                    el('button', {
-                        class: 'einkauf-lm-wahl',
-                        attrs: { type: 'button', 'aria-label': l.name + ' ändern' },
-                        on: { click: () => zeigeLebensmittelForm(l) }
-                    }, [
-                        el('span', { class: 'einkauf-lm-name', text: l.name }),
-                        zusatz ? el('span', { class: 'leise einkauf-klein', text: zusatz }) : null
-                    ])
-                ]);
-            })));
+        if (treffer.length && nurZuhause.checked) {
+            // Nach Ort gruppiert: so dient die Liste auch als Vorrat-Übersicht
+            const orte = new Map();
+            treffer.forEach((l) => vorratVon(l.id).filter((v) => v.menge > 0).forEach((v) => {
+                if (!orte.has(v.ort)) orte.set(v.ort, []);
+                orte.get(v.ort).push(l);
+            }));
+            [...orte.keys()].sort(vergleiche).forEach((o) => lmTreffer.append(el('section', { class: 'besitz-gruppe' }, [
+                el('h2', { class: 'besitz-ort' }, [el('span', { text: o }), el('span', { class: 'besitz-zahl', text: String(orte.get(o).length) })]),
+                el('ul', { class: 'einkauf-liste' }, orte.get(o).map(lmZeile))
+            ])));
+        } else if (treffer.length) {
+            lmTreffer.append(el('ul', { class: 'einkauf-liste' }, treffer.map(lmZeile)));
+        } else if (nurZuhause.checked && !wort) {
+            lmTreffer.append(el('p', { class: 'leise', text: 'Zuhause ist nichts eingetragen. Den Vorrat trägst du beim Lebensmittel ein (Tipp auf den Namen).' }));
         }
         // Nichts genau so gefunden: neu anlegen mit dem Suchtext als Name
         const text = suche.value.trim();
@@ -498,6 +585,27 @@ export function render(container, ctx) {
                 attrs: { type: 'button' }, on: { click: () => zeigeLebensmittelForm(null, text.slice(0, 60)) }
             }));
         }
+    }
+
+    function lmZeile(l) {
+        const zahl = aufListe(l.id);
+        const zusatz = [l.abteilung, zahl ? 'auf der Liste: ' + mitEinheit(zahl, l) : '', zuhauseText(l.id)].filter(Boolean).join(' · ');
+        const an = auswahl.has(l.id);
+        return el('li', { class: 'einkauf-zeile einkauf-lm' }, [
+            el('button', {
+                class: 'einkauf-haken' + (an ? ' ist-an' : ''), text: '',
+                attrs: { type: 'button', 'aria-pressed': an ? 'true' : 'false', 'aria-label': l.name + ' auswählen' },
+                on: { click: () => { if (an) auswahl.delete(l.id); else auswahl.add(l.id); zeigeLebensmittel(); } }
+            }),
+            el('button', {
+                class: 'einkauf-lm-wahl',
+                attrs: { type: 'button', 'aria-label': l.name + ' ändern' },
+                on: { click: () => zeigeLebensmittelForm(l) }
+            }, [
+                el('span', { class: 'einkauf-lm-name', text: l.name }),
+                zusatz ? el('span', { class: 'leise einkauf-klein', text: zusatz }) : null
+            ])
+        ]);
     }
 
     // --- Gerichte (4.3) ---
@@ -550,11 +658,12 @@ export function render(container, ctx) {
         const zeilen = g.zutaten.map((z) => ({ z, lm: lmVon(z.lebensmittel_id) })).filter((x) => x.lm)
             .sort((a, b) => vergleiche(a.lm.name, b.lm.name))
             .map(({ z, lm }, i) => {
-                let an = true;
+                // Zuhause genug da (nur wenn der Vorrat gepflegt ist): nicht angehakt vorgeschlagen
+                let an = !(vorratVon(lm.id).length && zuhause(lm.id) >= z.menge);
                 const anzahl = anzahlFeld('einkauf-g-' + i, z.menge);
                 const knopf = el('button', {
-                    class: 'einkauf-haken ist-an', text: '',
-                    attrs: { type: 'button', 'aria-pressed': 'true', 'aria-label': lm.name + ' mitnehmen' },
+                    class: 'einkauf-haken' + (an ? ' ist-an' : ''), text: '',
+                    attrs: { type: 'button', 'aria-pressed': an ? 'true' : 'false', 'aria-label': lm.name + ' mitnehmen' },
                     on: {
                         click: () => {
                             an = !an;
@@ -571,6 +680,7 @@ export function render(container, ctx) {
                         el('div', { class: 'einkauf-text' }, [
                             el('label', { class: 'einkauf-lm-name', text: lm.name + (lm.einheit ? ' (' + lm.einheit + ')' : ''), attrs: { for: 'einkauf-g-' + i } }),
                             schon ? el('span', { class: 'leise einkauf-klein', text: 'auf der Liste: ' + mitEinheit(schon, lm) }) : null,
+                            zuhauseText(lm.id) ? el('span', { class: 'leise einkauf-klein', text: zuhauseText(lm.id) }) : null,
                             anzahl.box
                         ])
                     ])
