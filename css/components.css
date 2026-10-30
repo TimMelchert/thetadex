@@ -761,3 +761,31 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .besitz-zaehlung .besitz-oeffnen { min-height: 32px; }
 .besitz-uebersicht .besitz-hinweis { margin-top: var(--abstand); }
 .besitz-lade:empty { display: none; }
+
+/* Einkauf (4.1): Einkaufsliste und Lebensmittel als Zeilen mit großem Haken */
+.einkauf-liste { list-style: none; margin: 0; padding: 0; }
+.einkauf-zeile { display: flex; align-items: flex-start; gap: 12px; margin: 8px 0; padding: 10px 12px; background: var(--kachel); border-radius: var(--rund); border-left: 6px solid var(--bereich); }
+.einkauf-haken { flex: 0 0 auto; width: 44px; height: 44px; border: 2px solid var(--schrift-leise); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift-auf-farbe); font: inherit; font-size: 1.4rem; font-weight: 700; cursor: pointer; }
+.einkauf-haken.ist-an { background: var(--bereich); border-color: var(--bereich); }
+.einkauf-haken.ist-an::after { content: "✓"; }
+.einkauf-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; padding-top: 2px; }
+.einkauf-text .besitz-oeffnen { min-height: 32px; font-size: 1.05rem; }
+.einkauf-menge { font-variant-numeric: tabular-nums; }
+.einkauf-klein { font-size: 0.85rem; overflow-wrap: anywhere; }
+.einkauf-zeilen-status:empty { display: none; }
+.einkauf-zeilen-status { font-size: 0.85rem; font-weight: 600; }
+.einkauf-lm { align-items: center; padding: 0 0 0 12px; }
+.einkauf-lm-wahl { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: 1; min-width: 0; min-height: 52px; padding: 8px 0; border: none; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.einkauf-lm-name { font-weight: 600; overflow-wrap: anywhere; }
+.einkauf-stift { flex: 0 0 auto; width: 52px; min-height: 52px; border: none; border-left: 1px solid var(--linie); background: none; color: var(--schrift); font: inherit; font-size: 1.2rem; cursor: pointer; }
+.einkauf-neu-aus-suche { margin-top: 8px; }
+.einkauf-anzahl { display: flex; gap: 8px; align-items: stretch; }
+.einkauf-anzahl input { width: 6em; text-align: center; }
+.einkauf-anzahl .knopf { min-width: 44px; padding: 0 12px; font-size: 1.2rem; }
+.formular .einkauf-anzahl .knopf { margin-top: 0; }
+.einkauf-block + .einkauf-block { border-top: 1px solid var(--linie); padding-top: 8px; }
+.einkauf-block h3 { margin: 8px 0 0; font-size: 1rem; }
+.einkauf-leer { margin-top: var(--abstand); }
+@media (hover: hover) {
+    .einkauf-lm-wahl:hover .einkauf-lm-name, .einkauf-text .besitz-oeffnen:hover { text-decoration: underline; }
+}

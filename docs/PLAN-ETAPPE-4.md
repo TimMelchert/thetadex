@@ -81,11 +81,11 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
 - 0.4.2: Wunsch der Person für Besitz, im selben Pull Request (30.10.2026): ausgeliehene Anzahl (neue Spalte `ausgeliehen_anzahl` im Sheet „Leben“),
   Balken in der Besitz-Übersicht entfernt. Das ist die einzige Änderung an Sheet und Skript in Schritt 4.0.
 
-## Schritt 4.1 Sheet „Gemeinsam“, Skript `gemeinsam`, Lebensmittel und Einkaufsliste (0.4.2 → 0.4.3)
+## Schritt 4.1 Sheet „Gemeinsam“, Skript `gemeinsam`, Lebensmittel und Einkaufsliste (0.4.2 → 0.4.3) – erledigt
 
 - Skript wie oben. `js/config.js`: `SKRIPTE` bekommt `gemeinsam` (Titel „Einkauf und Uni“, Test `ping`).
 - Neue Ansicht `js/views/einkauf.js` statt Platzhalter.
-- **Lebensmittel:** Suchleiste oben, sucht schon beim Tippen (ohne Groß- und Kleinschreibung, ä = ae).
+- **Lebensmittel:** Suchleiste oben, sucht schon beim Tippen (ohne Groß- und Kleinschreibung; „apf“ und „aepf“ finden beide „Äpfel“).
   Tipp auf ein Lebensmittel → kleines Fenster mit Anzahl (− 1 +, Vorgabe 1) und Notiz → „Auf die Liste“.
   So kommt jedes Lebensmittel auch **einzeln** auf die Liste, ohne Gericht.
   Findet die Suche nichts: Knopf „„…“ neu anlegen“ übernimmt den Suchtext als Name (Abteilung und Einheit freiwillig, Auswahl mit Freitext wie Ort bei Besitz).
@@ -98,6 +98,8 @@ Die Blätter für Uni (`semester`, `stundenplan`, `termine`, `module`) kommen er
 - Eine feste Laden-Reihenfolge der Abteilungen kann später dazukommen (dann eine kleine Liste im Sheet).
   In diesem Schritt geht Abhaken nur mit Netz (wie alles andere).
 - Neu laden: beim Öffnen, mit Knopf „Neu laden“ und von selbst, wenn man in die App zurückkehrt (kein „Ziehen nach unten“, Entscheidung der Person 30.10.2026).
+- Gebaut: Das Skript kann schon alles für die ganze Etappe (Gerichte, Vorrat, Abhaken mit Vorrat). Die App nutzt Gerichte ab 4.3 und Vorrat ab 4.4.
+  Ein Lebensmittel löschen nimmt es auch von der offenen Einkaufsliste, aus Gerichten und aus dem Vorrat (weich, im Sheet zurückholbar).
 
 ## Schritt 4.2 Einkaufsliste ohne Netz (0.4.3 → 0.4.4)
 
