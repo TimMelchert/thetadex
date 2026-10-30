@@ -2,7 +2,7 @@
 // Eingabe: Die Felder kommen aus dem Blatt „Einstellungen“ des Tracking-Sheets
 // und werden bei jedem Öffnen neu geladen, nie im Gerät gespeichert (sie verraten, was getrackt wird).
 
-import { el, leeren, heute } from '../ui/dom.js';
+import { el, leeren, heute, kalenderBeiKlick } from '../ui/dom.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { farbRegeln } from '../ui/farben.js';
@@ -11,6 +11,9 @@ function datumText(iso) {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
     return m ? m[3] + '.' + m[2] + '.' + m[1] : iso;
 }
+
+const MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 
 const istJa = (text) => /^(wahr|true|ja|x|1)$/i.test(String(text).trim());
 const alsZahl = (text) => String(text).trim().replace(',', '.');
@@ -81,7 +84,10 @@ export function render(container, ctx) {
     });
 
     container.append(
-        el('h1', { class: 'bereich-titel', text: ctx.bereich.titel }),
+        el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
+            el('span', { class: 'titel-emoji', text: '📊', attrs: { 'aria-hidden': 'true' } }),
+            el('span', { text: ctx.bereich.titel })
+        ]),
         el('div', { class: 'ansichten' }, ansichtKnoepfe.map(([b]) => b)),
         inhalt, status, uebersicht
     );
@@ -114,25 +120,41 @@ export function render(container, ctx) {
             jahre.map((j) => el('option', { text: String(j), attrs: { value: String(j) } })));
         wahl.value = String(d.jahr);
         const neu = el('button', { class: 'knopf knopf-zweit', text: 'Neu laden', attrs: { type: 'button' }, on: { click: () => ladeTabelle(Number(wahl.value)) } });
-        uebersicht.append(el('div', { class: 'formular tracking-jahr-zeile' }, [
-            el('label', { text: 'Jahr', attrs: { for: 'tracking-jahr' } }), wahl, neu
-        ]));
+        const auswahlZeile = el('div', { class: 'formular tracking-jahr-zeile' }, [
+            el('label', { text: 'Jahr', attrs: { for: 'tracking-jahr' } }), wahl
+        ]);
+        uebersicht.append(auswahlZeile);
 
-        if (!zeilen.length || !felder.length) {
-            uebersicht.append(el('p', { text: 'Keine Einträge in ' + d.jahr + '.' }));
+        if (!felder.length) {
+            uebersicht.append(el('p', { text: 'Im Blatt „Einstellungen“ stehen noch keine Felder.' }));
             return;
         }
 
+        // Alle Tage des Jahres (im laufenden Jahr bis heute). Tage ohne Eintrag bleiben farblos.
+        const jeTag = new Map();
+        for (const z of zeilen) {
+            if (!jeTag.has(z.datum)) jeTag.set(z.datum, []);
+            jeTag.get(z.datum).push(z);
+        }
+        const bis = String(d.jahr) === heute().slice(0, 4) ? heute() : d.jahr + '-12-31';
+        const monate = [];
+        for (let t = new Date(d.jahr, 0, 1, 12); ; t.setDate(t.getDate() + 1)) {
+            const iso = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+            if (t.getFullYear() !== d.jahr || iso > bis) break;
+            if (!monate[t.getMonth()]) monate[t.getMonth()] = [];
+            for (const z of jeTag.get(iso) || [{ datum: iso, werte: [] }]) monate[t.getMonth()].push({ ...z, tag: t.getDay() });
+        }
+
         const regeln = felder.map((f) => farbRegeln(f.farben, f.optionen));
-        const kopf = el('tr', {}, [
-            el('th', { class: 'tracking-tab-datum', text: 'Datum', attrs: { scope: 'col' } }),
+        const kopf = () => el('tr', {}, [
+            el('th', { class: 'tracking-tab-datum', text: 'Tag', attrs: { scope: 'col' } }),
             ...felder.map((f) => el('th', { class: 'tracking-tab-feld', attrs: { scope: 'col' } }, [el('span', { text: f.feld })]))
         ]);
         // Zahlen werden nicht gezeigt, nur Farben. Für Bildschirmleser und beim Drüberfahren steht der Wert im Titel.
-        const koerper = zeilen.map((z) => el('tr', {}, [
-            el('th', { class: 'tracking-tab-datum', text: datumText(z.datum).slice(0, 6), attrs: { scope: 'row' } }),
+        const zeile = (z) => el('tr', {}, [
+            el('th', { class: 'tracking-tab-datum', text: z.datum.slice(8) + '. ' + WOCHENTAGE[z.tag], attrs: { scope: 'row' } }),
             ...felder.map((f, i) => {
-                const roh = Array.isArray(z.werte) ? z.werte[i] : null;
+                const roh = Array.isArray(z.werte) && z.werte[i] != null ? z.werte[i] : null;
                 const farbe = regeln[i](roh);
                 const zelle = el('td', {
                     class: farbe && farbe.klasse ? 'zelle-' + farbe.klasse : '',
@@ -141,13 +163,34 @@ export function render(container, ctx) {
                 if (farbe && farbe.farbe) zelle.style.backgroundColor = farbe.farbe;
                 return zelle;
             })
-        ]));
+        ]);
 
+        // Je Monat eine eigene Tabelle untereinander; der Filter zeigt nur einen Monat
+        const abschnitte = [];
+        monate.forEach((tage, m) => {
+            if (!tage) return;
+            abschnitte.push([m, el('section', { class: 'tracking-monat' }, [
+                el('h2', { class: 'tracking-monat-titel', text: MONATE[m] + ' ' + d.jahr }),
+                el('div', { class: 'tracking-tabelle-box', attrs: { tabindex: '0', role: 'region', 'aria-label': MONATE[m] + ' ' + d.jahr } }, [
+                    el('table', { class: 'tracking-tabelle' }, [el('thead', {}, [kopf()]), el('tbody', {}, tage.map(zeile))])
+                ])
+            ])]);
+        });
+        if (!abschnitte.length) {
+            uebersicht.append(el('p', { text: 'Keine Tage in ' + d.jahr + '.' }));
+            return;
+        }
+
+        const filter = el('select', {
+            attrs: { id: 'tracking-monat' },
+            on: { change: () => abschnitte.forEach(([m, a]) => { a.hidden = filter.value !== '' && Number(filter.value) !== m; }) }
+        }, [el('option', { text: 'Alle Monate', attrs: { value: '' } }), ...abschnitte.map(([m]) => el('option', { text: MONATE[m], attrs: { value: String(m) } }))]);
+        auswahlZeile.append(el('label', { text: 'Monat', attrs: { for: 'tracking-monat' } }), filter);
+
+        auswahlZeile.append(neu);
         uebersicht.append(
             el('p', { class: 'leise klein', text: zeilen.length + ' Einträge. Die Farben stehen im Blatt „Einstellungen“, Spalte „farben“.' }),
-            el('div', { class: 'tracking-tabelle-box', attrs: { tabindex: '0', role: 'region', 'aria-label': 'Übersicht ' + d.jahr } }, [
-                el('table', { class: 'tracking-tabelle' }, [el('thead', {}, [kopf]), el('tbody', {}, koerper)])
-            ])
+            ...abschnitte.map(([, a]) => a)
         );
     }
 
@@ -175,10 +218,10 @@ export function render(container, ctx) {
 
         // Datum: heute, nach Mitternacht wieder heute, solange es nicht von Hand geändert wurde
         let datumManuell = false;
-        const datum = el('input', {
-            attrs: { id: 'tracking-datum', type: 'date', value: heute(), required: true },
+        const datum = kalenderBeiKlick(el('input', {
+            attrs: { id: 'tracking-datum', type: 'date', value: heute(), required: true, autocomplete: 'off' },
             on: { change: () => { datumManuell = true; } }
-        });
+        }));
         const wiederDa = () => {
             if (!datum.isConnected) { document.removeEventListener('visibilitychange', wiederDa); return; }
             if (!document.hidden && !datumManuell) datum.value = heute();

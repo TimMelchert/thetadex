@@ -2,7 +2,7 @@
 // Zwecke und Kategorien kommen aus dem Blatt „Einstellungen“ des Finanz-Sheets und werden nicht im Gerät gespeichert.
 // Im Gerät liegen nur die zuletzt bekannten Kontostände (docs/STAND.md, Abschnitt 5).
 
-import { el, heute } from '../ui/dom.js';
+import { el, heute, kalenderBeiKlick } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
 import { lesen, schreiben } from '../store.js';
 import { api } from '../api.js';
@@ -39,6 +39,9 @@ export function render(container, ctx) {
     function zeigeStaende(s) {
         if (!s || typeof s !== 'object') return;
         gesamt.textContent = euro(s.gesamt);
+        // Grün, wenn das Vermögen positiv ist, rot, wenn negativ (Wunsch der Person)
+        gesamt.classList.toggle('finanz-plus', Number(s.gesamt) > 0);
+        gesamt.classList.toggle('finanz-minus', Number(s.gesamt) < 0);
         for (const [, , schl] of KONTEN) werte[schl].textContent = euro(s[schl]);
     }
 
@@ -47,7 +50,7 @@ export function render(container, ctx) {
     const ziel = el('select', { attrs: { id: 'finanz-ziel' } }, KONTEN.map(([wert, name]) => el('option', { text: name, attrs: { value: wert } })));
 
     let datumManuell = false;
-    const datum = el('input', { attrs: { id: 'finanz-datum', type: 'date', value: heute() }, on: { change: () => { datumManuell = true; } } });
+    const datum = kalenderBeiKlick(el('input', { attrs: { id: 'finanz-datum', type: 'date', value: heute(), autocomplete: 'off' }, on: { change: () => { datumManuell = true; } } }));
     const wiederDa = () => {
         if (!datum.isConnected) { document.removeEventListener('visibilitychange', wiederDa); return; }
         if (!document.hidden && !datumManuell) datum.value = heute();
@@ -68,8 +71,8 @@ export function render(container, ctx) {
     const zweck = auswahlFeld({ id: 'finanz-zweck', maxlength: 100, placeholder: 'wählen oder eintippen', beiWahl: (t) => zweckAnwenden(t, true) });
     zweck.feld.addEventListener('change', () => zweckAnwenden(zweck.feld.value, false));
 
-    const knopfAus = el('button', { class: 'knopf', text: 'Ausgabe', attrs: { type: 'button' }, on: { click: () => senden('aus') } });
-    const knopfEin = el('button', { class: 'knopf', text: 'Einnahme', attrs: { type: 'button' }, on: { click: () => senden('ein') } });
+    const knopfAus = el('button', { class: 'knopf knopf-aus', text: 'Ausgabe', attrs: { type: 'button' }, on: { click: () => senden('aus') } });
+    const knopfEin = el('button', { class: 'knopf knopf-ein', text: 'Einnahme', attrs: { type: 'button' }, on: { click: () => senden('ein') } });
     const knopfUmb = el('button', { class: 'knopf knopf-zweit', text: 'Umbuchung bestätigen', attrs: { type: 'button' }, on: { click: () => senden('umbuchung') } });
     const knoepfe = [knopfAus, knopfEin, knopfUmb];
 
@@ -115,7 +118,7 @@ export function render(container, ctx) {
             betrag.value = '';
             split.checked = false;
             const art = mode === 'aus' ? 'Ausgabe' : mode === 'ein' ? 'Einnahme' : 'Umbuchung';
-            status.textContent = art + ' über ' + euro(wert) + ' gespeichert.';
+            status.textContent = '';
             zeigeGespeichert('Gespeichert', art + ' ' + euro(wert));
         } catch (e) {
             status.textContent = 'NICHT gespeichert: ' + e.message;
@@ -145,7 +148,10 @@ export function render(container, ctx) {
     const neuLaden = el('button', { class: 'knopf knopf-zweit', text: 'Erneut laden', attrs: { type: 'button' }, on: { click: () => laden() } });
     neuLaden.hidden = true;
 
-    container.append(el('h1', { class: 'bereich-titel', text: ctx.bereich.titel }), staende, formular, neuLaden);
+    container.append(el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
+        el('span', { class: 'titel-emoji', text: '💶', attrs: { 'aria-hidden': 'true' } }),
+        el('span', { text: ctx.bereich.titel })
+    ]), staende, formular, neuLaden);
 
     // Zuletzt bekannte Stände sofort zeigen, dann frisch laden
     zeigeStaende(lesen('kontostaende'));

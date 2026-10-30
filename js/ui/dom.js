@@ -35,6 +35,15 @@ export function sichereUrl(text) {
     }
 }
 
+// Datumsfeld: Ein Klick irgendwo ins Feld öffnet den Kalender (nicht nur das kleine Symbol,
+// das Erweiterungen wie KeePass verdecken können). Ältere Browser ohne showPicker behalten ihr normales Verhalten.
+export function kalenderBeiKlick(feld) {
+    feld.addEventListener('click', () => {
+        try { if (feld.showPicker) feld.showPicker(); } catch (e) { /* z. B. schon offen */ }
+    });
+    return feld;
+}
+
 // Heutiges Datum in Ortszeit (nicht UTC) als JJJJ-MM-TT, also auch nachts richtig.
 export function heute() {
     const d = new Date();
