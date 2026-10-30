@@ -2,16 +2,21 @@
 // LEBEN – Apps Script (nur die Person, mit Passwort)
 // Blatt „besitz“: Sachen mit Kategorie, Ort, Anzahl, Kaufpreis, Kaufdatum, Notiz.
 // Zubehör (ab 3.4): Spalte „gehoert_zu“ mit der id der Hauptsache. Nur eine Ebene.
+// Bild (ab 3.5): Spalte „bild“ mit der Kennung einer Datei im Google Drive der Person. Hochgeladene Bilder
+// liegen im privaten Drive-Ordner „Thetadex Besitz“. Bilder gibt das Skript nur mit Passwort heraus.
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN).
-// Siehe docs/PLAN-ETAPPE-3.md, Schritte 3.2 bis 3.4.
+// Siehe docs/PLAN-ETAPPE-3.md, Schritte 3.2 bis 3.5.
 // =====================================================
 
 var BLATT_BESITZ_ = "besitz";
-var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht", "gehoert_zu"];
-var TEXT_SPALTEN_ = ["id", "name", "kategorie", "ort", "notiz", "gehoert_zu"];   // bleiben im Sheet reiner Text (kein Datum, keine Zahl)
+var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht", "gehoert_zu", "bild"];
+var TEXT_SPALTEN_ = ["id", "name", "kategorie", "ort", "notiz", "gehoert_zu", "bild"];   // bleiben im Sheet reiner Text (kein Datum, keine Zahl)
 var MAX_ = { name: 80, kategorie: 40, ort: 60, notiz: 300 };       // Höchstlängen
 var MAX_ANZAHL_ = 9999;
 var MAX_PREIS_ = 1000000;
+var BILD_ORDNER_NAME_ = "Thetadex Besitz";      // privater Ordner im Drive für hochgeladene Bilder
+var MAX_BILD_TEXT_ = 4000000;                   // Höchstlänge eines hochgeladenen Bildes als Text (etwa 3 MB)
+var MAX_BILD_SENDEN_ = 1500000;                 // größere Bilder schickt das Skript als Vorschau (Bytes)
 
 // --- 1. EINRICHTEN (im Editor ausführen, auch nach einem Update) ---
 
@@ -38,7 +43,22 @@ function einrichten() {
   TEXT_SPALTEN_.forEach(function (k) {
     sheet.getRange(2, karte[k] + 1, sheet.getMaxRows() - 1, 1).setNumberFormat("@");
   });
+  // Drive-Ordner für Bilder anlegen (beim ersten Mal fragt Google nach der Erlaubnis für Drive)
+  var ordner = bildOrdner_();
+  Logger.log("Ordner für Bilder: '" + ordner.getName() + "'.");
   Logger.log("Fertig.");
+}
+
+// Der private Ordner für hochgeladene Bilder. Seine Kennung steht in den Skripteigenschaften (BILD_ORDNER).
+function bildOrdner_() {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty("BILD_ORDNER");
+  if (id) {
+    try { return DriveApp.getFolderById(id); } catch (e) { /* gelöscht: neu anlegen */ }
+  }
+  var ordner = DriveApp.createFolder(BILD_ORDNER_NAME_);
+  props.setProperty("BILD_ORDNER", ordner.getId());
+  return ordner;
 }
 
 // --- 2. HILFSFUNKTIONEN ---
@@ -140,6 +160,7 @@ function sacheAus_(z, sp) {
     kaufdatum: tag_(zelle_(z, sp, "kaufdatum")),
     notiz: ohneSchutz_(zelle_(z, sp, "notiz")),
     gehoert_zu: String(zelle_(z, sp, "gehoert_zu")).trim(),
+    bild: String(zelle_(z, sp, "bild")).trim(),
     geaendert_am: stempel_(zelle_(z, sp, "geaendert_am"))
   };
 }
@@ -171,6 +192,7 @@ function doPost(e) {
   try {
     if (data.action === "ping") return jsonOut_({ ok: true });
     if (data.action === "liste") return jsonOut_(liste_());
+    if (data.action === "bild") return jsonOut_(bildLesen_(data));
 
     if (data.action === "speichern" || data.action === "loeschen") {
       // Sperre: Es kann immer nur ein Schreibzugriff gleichzeitig laufen
@@ -273,6 +295,11 @@ function speichern_(data) {
   }
   p.werte.gehoert_zu = haupt;
 
+  // Bild: neu hochgeladen (bild_daten), als Drive-Link oder Kennung (bild), oder leer = kein Bild
+  var b = bildAus_(data);
+  if (b.fehler) return { error: "eingabe", message: b.fehler };
+  p.werte.bild = b.id;
+
   if (data.id == null || data.id === "") {
     zeile = new Array(breite).fill("");
     zeile[sp.id] = Utilities.getUuid();
@@ -326,4 +353,64 @@ function finde_(sheet, sp, id) {
     if (String(alle[i][sp.id]) === id && !istWahr_(alle[i][sp.geloescht])) return { nr: i + 2, zeile: alle[i] };
   }
   return null;
+}
+
+// --- 6. BILDER ---
+
+// Kennung einer Drive-Datei aus einem Link („…/file/d/<id>/…“, „…?id=<id>“) oder die Kennung selbst
+function driveKennung_(text) {
+  var t = String(text == null ? "" : text).trim();
+  var m = /\/d\/([A-Za-z0-9_-]{20,})/.exec(t) || /[?&]id=([A-Za-z0-9_-]{20,})/.exec(t) || /^([A-Za-z0-9_-]{20,})$/.exec(t);
+  return m ? m[1] : "";
+}
+
+// Prüft das Bild einer Sache und liefert { id } (leer = kein Bild) oder { fehler }
+function bildAus_(data) {
+  if (data.bild_daten) {
+    var text = String(data.bild_daten);
+    if (text.length > MAX_BILD_TEXT_) return { fehler: "Das Bild ist zu groß." };
+    var bytes;
+    try { bytes = Utilities.base64Decode(text); } catch (e) { return { fehler: "Das Bild ist beschädigt." }; }
+    // Nur JPEG oder PNG (an den ersten Bytes erkannt, nicht am Namen)
+    var jpeg = bytes.length > 3 && (bytes[0] & 255) === 0xFF && (bytes[1] & 255) === 0xD8;
+    var png = bytes.length > 4 && (bytes[0] & 255) === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
+    if (!jpeg && !png) return { fehler: "Bitte ein Bild (JPEG oder PNG) wählen." };
+    var name = bereinigeText_(data.name, 60) || "Bild";
+    var datei = bildOrdner_().createFile(Utilities.newBlob(bytes, jpeg ? "image/jpeg" : "image/png", name + (jpeg ? ".jpg" : ".png")));
+    return { id: datei.getId() };
+  }
+  var roh = String(data.bild == null ? "" : data.bild).trim();
+  if (!roh) return { id: "" };
+  var id = driveKennung_(roh);
+  if (!id) return { fehler: "Der Drive-Link sieht nicht richtig aus. Bitte in Drive „Link kopieren“ nutzen." };
+  try {
+    var f = DriveApp.getFileById(id);
+    if (!/^image\//.test(f.getMimeType())) return { fehler: "Der Drive-Link zeigt nicht auf ein Bild." };
+  } catch (e) {
+    return { fehler: "Das Bild im Drive wurde nicht gefunden." };
+  }
+  return { id: id };
+}
+
+// Liefert ein Bild als Text. Nur Bilder, die bei einer (nicht gelöschten) Sache eingetragen sind,
+// damit niemand über das Skript beliebige Dateien aus dem Drive lesen kann.
+function bildLesen_(data) {
+  var id = driveKennung_(data.bild);
+  if (!id) return { error: "eingabe", message: "Unbekanntes Bild." };
+  var sheet = blatt_(BLATT_BESITZ_);
+  var sp = spalten_(sheet);
+  var bekannt = zeilen_(sheet).some(function (z) {
+    return String(zelle_(z, sp, "bild")).trim() === id && !istWahr_(zelle_(z, sp, "geloescht"));
+  });
+  if (!bekannt) return { error: "eingabe", message: "Unbekanntes Bild." };
+  var blob;
+  try {
+    var f = DriveApp.getFileById(id);
+    if (!/^image\//.test(f.getMimeType())) return { error: "eingabe", message: "Die Datei ist kein Bild." };
+    blob = f.getSize() > MAX_BILD_SENDEN_ ? f.getThumbnail() : f.getBlob();
+  } catch (e) {
+    return { error: "fehlt", message: "Das Bild ist nicht mehr im Drive." };
+  }
+  if (!blob) return { error: "gross", message: "Das Bild ist zu groß für eine Vorschau. Bitte kleiner hochladen." };
+  return { typ: blob.getContentType(), daten: Utilities.base64Encode(blob.getBytes()) };
 }
