@@ -927,3 +927,6 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
     .uni-monat-eintrag { height: auto; padding: 1px 4px; color: var(--schrift-auf-farbe); font-size: 0.72rem; white-space: nowrap; text-overflow: ellipsis; }
     .uni-monat-eintrag.uni-weiter { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 }
+
+/* Uni (5.3): Arbeitsstunden */
+.uni-stunden { margin: 12px 0 0; font-weight: 600; }

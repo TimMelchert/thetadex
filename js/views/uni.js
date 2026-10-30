@@ -12,7 +12,7 @@ import { api } from '../api.js';
 import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { zeichneKalender, eintragKnopf, ART_NAME, langDatum, zeitText } from './uni-kalender.js';
-import { eintraegeAm } from '../ui/kalender.js';
+import { eintraegeAm, minuten, stundenText } from '../ui/kalender.js';
 
 // Zuletzt geladene Daten { semester, stundenplan, termine, module, ects_ziel, rolle }, im Arbeitsspeicher
 let daten = null;
@@ -301,6 +301,9 @@ export function render(container, ctx) {
             planBox.append(el('p', { class: 'leise', text: 'Noch keine Einträge in diesem Semester.' }));
             return;
         }
+        // Arbeit je Woche laut Stundenplan (ohne „einmal anders“ und Urlaub; das zeigt der Kalender)
+        const arbeit = eintraege.filter((x) => x.art === 'arbeit').reduce((n, x) => n + minuten(x.bis) - minuten(x.von), 0);
+        if (arbeit) planBox.append(el('p', { class: 'uni-stunden', text: 'Arbeit: ' + stundenText(arbeit) + ' je Woche' }));
         TAGE.forEach((name, i) => {
             const amTag = eintraege.filter((x) => x.tag === i + 1).sort((a, b) => a.von.localeCompare(b.von) || vergleiche(a.titel, b.titel));
             if (!amTag.length) return;

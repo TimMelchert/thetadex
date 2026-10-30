@@ -3,7 +3,7 @@
 // Zeichnet nur; Fenster und Formulare stehen in uni.js (beiEintrag, beiTag).
 
 import { el, heute } from '../ui/dom.js';
-import { alsDate, alsText, plusTage, wochenStart, kalenderwoche, monatsRaster, minuten, eintraegeAm, spuren } from '../ui/kalender.js';
+import { alsDate, alsText, plusTage, wochenStart, kalenderwoche, monatsRaster, minuten, eintraegeAm, spuren, arbeitsMinuten, stundenText } from '../ui/kalender.js';
 
 // Alle Arten mit Namen. Die Farben stehen in css/base.css (--art-…).
 export const ARTEN = [
@@ -80,7 +80,14 @@ export function zeichneKalender(box, { daten, zustand, beiEintrag, beiTag, neuZe
             on: { click: () => { if (z.aus.has(k)) z.aus.delete(k); else z.aus.add(k); neuZeichnen(); } }
         }, [el('span', { class: 'uni-punkt', attrs: { 'aria-hidden': 'true' } }), el('span', { text: t })])));
 
-    box.append(el('div', { class: 'uni-kal-kopf' }, [ansichten, ...knoepfe]), blaettern, filter);
+    // Arbeitsstunden im gezeigten Zeitraum (5.3). Nur gerechnet, nichts gespeichert. Unabhängig vom Filter.
+    let von, bis, wo;
+    if (z.ansicht === 'woche') { von = wochenStart(z.datum); bis = plusTage(von, 6); wo = 'in dieser Woche'; }
+    else if (z.ansicht === 'monat') { const d = alsDate(z.datum); von = alsText(new Date(d.getFullYear(), d.getMonth(), 1, 12)); bis = alsText(new Date(d.getFullYear(), d.getMonth() + 1, 0, 12)); wo = 'im ' + MONATE[d.getMonth()]; }
+    else { von = z.datum; bis = plusTage(z.datum, LISTE_TAGE - 1); wo = 'in diesen vier Wochen'; }
+    const arbeit = el('p', { class: 'uni-stunden', text: 'Arbeit ' + wo + ': ' + stundenText(arbeitsMinuten(von, bis, daten)) });
+
+    box.append(el('div', { class: 'uni-kal-kopf' }, [ansichten, ...knoepfe]), blaettern, arbeit, filter);
     if (z.ansicht === 'woche') zeichneWoche(box, daten, z, beiEintrag, h);
     else if (z.ansicht === 'monat') zeichneMonat(box, daten, z, beiTag, h);
     else zeichneListe(box, daten, z, beiEintrag, h);
