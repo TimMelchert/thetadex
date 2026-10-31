@@ -853,7 +853,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 [data-art="arbeit"]    { --art: var(--art-arbeit); }
 [data-art="zug"]       { --art: var(--art-zug); }
 [data-art="urlaub"]    { --art: var(--art-urlaub); }
-[data-art="hobby"]     { --art: var(--art-hobby); }
+[data-art="hobby"]     { --art: var(--art-hobby); --art-schrift: var(--art-hobby-schrift); }
 [data-art="frei"]      { --art: var(--art-frei); }
 [data-art="sonstiges"] { --art: var(--art-sonstiges); }
 [data-art="ferien"]    { --art: var(--art-ferien); }
@@ -890,8 +890,9 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
     .uni-raster-kopf { display: flex; flex-direction: column; padding: 4px 0; font-size: 0.7rem; line-height: 1.2; }
     .uni-raster-zeiten span { padding-right: 2px; font-size: 0.6rem; }
     .uni-block { margin: 0; padding: 1px 2px; border-radius: 3px; font-size: 0.6rem; line-height: 1.1; }
-    .uni-block-zeit, .uni-block-ort { display: none; }
-    .uni-block-titel { font-weight: 600; overflow-wrap: normal; word-break: normal; }
+    .uni-block > .uni-block-zeit, .uni-block > .uni-block-ort { display: none; }
+    /* Schmale Spalte: Titel Wort für Wort umbrechen, was nicht passt, wird abgeschnitten (ein Tipp zeigt alles) */
+    .uni-block > .uni-block-titel { font-weight: 600; white-space: normal; text-overflow: clip; overflow-wrap: normal; }
     .uni-raster-ganztags { padding: 1px; }
     .uni-ferien-text { font-size: 0.6rem; }
 }
@@ -910,11 +911,19 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .uni-raster-tag.uni-heute { box-shadow: inset 0 0 0 2px var(--bereich); }
 .uni-block {
     position: absolute; display: flex; flex-direction: column; gap: 1px; overflow: hidden; margin: 0 1px; padding: 2px 4px;
-    border: none; border-radius: 6px; background: var(--art); color: var(--schrift-auf-farbe); font: inherit; font-size: 0.75rem; line-height: 1.2; text-align: left; cursor: pointer;
+    border: none; border-radius: 6px; background: var(--art); color: var(--art-schrift, var(--schrift-auf-farbe)); font: inherit; font-size: 0.75rem; line-height: 1.2; text-align: left; cursor: pointer;
 }
 .uni-block-ganz { position: static; display: block; margin: 0; white-space: nowrap; text-overflow: ellipsis; }
+/* Jede Zeile im Block einzeilig, zu Langes endet mit „…“ (ein Tipp zeigt alles) */
+.uni-block > span { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .uni-block-zeit { font-variant-numeric: tabular-nums; }
-.uni-block-titel { font-weight: 700; overflow-wrap: anywhere; }
+.uni-block-titel { font-weight: 700; }
+.uni-block-kurz .uni-block-zeit, .uni-block-kurz .uni-block-ort { display: none; }
+.uni-block-mittel .uni-block-ort { display: none; }
+/* Linie „jetzt“ in der Spalte von heute */
+.uni-jetzt { position: absolute; left: -1px; right: 0; z-index: 2; height: 2px; background: var(--uni-jetzt); pointer-events: none; }
+.uni-jetzt::before { content: ""; position: absolute; left: -4px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--uni-jetzt); }
+.uni-jetzt[hidden] { display: none; }
 .uni-block.uni-ausfall { background: none; border: 2px dashed var(--art); color: var(--schrift-leise); text-decoration: line-through; }
 
 /* Monat */
@@ -934,7 +943,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 @media (min-width: 768px) {
     .uni-monat-tag { min-height: 96px; padding: 4px; }
     .uni-monat-zahl { text-align: left; }
-    .uni-monat-eintrag { height: auto; padding: 1px 4px; color: var(--schrift-auf-farbe); font-size: 0.72rem; white-space: nowrap; text-overflow: ellipsis; }
+    .uni-monat-eintrag { height: auto; padding: 1px 4px; color: var(--art-schrift, var(--schrift-auf-farbe)); font-size: 0.72rem; white-space: nowrap; text-overflow: ellipsis; }
     .uni-monat-eintrag.uni-weiter { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 }
 
