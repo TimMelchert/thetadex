@@ -1,15 +1,45 @@
-// Reiter Pen & Paper (DSA und DnD), Schritt 6.1: Bogen wählen und anlegen, Kopf, Eigenschaften und Zähler ansehen und ändern.
+// Reiter Pen & Paper (DSA und DnD). 6.1: Bogen wählen und anlegen, Kopf, Eigenschaften und Zähler ansehen und ändern.
+// 6.2: Listen (Vor- und Nachteile, Sonderfertigkeiten und Gaben, Talente nach Gruppe, Besitz nach Ort) anlegen, ändern, löschen.
 // Daten aus dem Skript „dsa“ (eigenes Sheet „DSA“). Nur mit Passwort.
 // Die Bögen liegen nur im Arbeitsspeicher, solange die Seite offen ist. Im Gerät steht nur, welcher Bogen gewählt war
 // (thetadex_dsa_bogen). Siehe docs/PLAN-ETAPPE-6.md.
 
 import { el, leeren } from '../ui/dom.js';
+import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 
 // Zuletzt geladene Daten, nur im Arbeitsspeicher
 let daten = null;
+// Aufgeklappte Abschnitte. Bleibt, solange die Seite offen ist.
+const offen = new Set(['kopf']);
+
+// Listen-Abschnitte (6.2). arten: [Schlüssel im Sheet, Überschrift, Name eines Eintrags].
+// art: 'chips' = kurze Namen nebeneinander, 'gruppen' = Zeilen je Gruppe, 'orte' = Zeilen je Ort (Feld „ort“).
+const LISTEN = [
+    { key: 'vorteile', titel: 'Vor- und Nachteile', art: 'chips', wert: 'Stufe oder Wert (freiwillig)',
+        arten: [['vorteil', 'Vorteile', 'Vorteil'], ['nachteil', 'Nachteile', 'Nachteil']] },
+    { key: 'sf', titel: 'Sonderfertigkeiten und Gaben', art: 'chips', wert: 'Wert (freiwillig)',
+        arten: [['sonderfertigkeit', 'Sonderfertigkeiten', 'Sonderfertigkeit'], ['gabe', 'Gaben', 'Gabe']] },
+    { key: 'talente', titel: 'Talente', art: 'gruppen', wert: 'TaW', probe: true,
+        arten: [['talent', 'Talente', 'Talent']], felder: [['be', 'BE (zum Beispiel BEx2)'], ['spez', 'Spezialisierung']] },
+    { key: 'besitz', titel: 'Besitz', art: 'orte', wert: 'Anzahl (freiwillig)',
+        arten: [['besitz', 'Besitz', 'Gegenstand']], felder: [['ort', 'Ort (zum Beispiel am Körper, Rucksack)'], ['gewicht', 'Gewicht']] }
+];
+// Feste Reihenfolge der Talent-Gruppen (aus dem Plan), eigene Gruppen danach nach dem Alphabet
+const TALENT_GRUPPEN = ['Kampftechniken', 'Körperliche Talente', 'Gesellschaftliche Talente', 'Natur-Talente',
+    'Wissenstalente', 'Handwerkliche Talente', 'Sprachen und Schriften'];
+
+const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
+// Erst nach „Reihenfolge“ (falls gesetzt), dann nach Name
+const rang = (e) => (e.reihenfolge > 0 ? e.reihenfolge : 10000);
+const sortiere = (liste) => [...liste].sort((a, b) => rang(a) - rang(b) || vergleiche(a.name, b.name));
+// Gruppen in fester Reihenfolge, dann eigene nach dem Alphabet, leere Gruppe zuletzt
+function gruppenFolge(namen, fest = []) {
+    const da = [...new Set(namen)];
+    return [...fest.filter((g) => da.includes(g)), ...da.filter((g) => g && !fest.includes(g)).sort(vergleiche), ...(da.includes('') ? [''] : [])];
+}
 
 // Felder des Kopfs: [Schlüssel, Anzeige]
 const KOPF = [
@@ -109,7 +139,7 @@ export function render(container) {
             return;
         }
         zeigeOben(bogen);
-        abschnitte.append(kopfKarte(bogen), eigenschaftenKarte(bogen));
+        abschnitte.append(kopfKarte(bogen), eigenschaftenKarte(bogen), ...LISTEN.map((def) => listenKarte(bogen, def)));
     }
 
     // Zähler (Geld, LeP, AsP, AP) und Eigenschaften-Leiste, kleben beim Scrollen oben
@@ -137,12 +167,57 @@ export function render(container) {
         }
     }
 
-    // Eine aufklappbare Karte mit Titel, Knopf ✎ und Inhalt
-    function karte(titel, offen, bearbeiten, inhalt) {
-        const stift = el('button', { class: 'dsa-stift', text: '✎', attrs: { type: 'button', 'aria-label': titel + ' bearbeiten' }, on: { click: (ev) => { ev.preventDefault(); bearbeiten(); } } });
-        return el('details', { class: 'dsa-abschnitt', attrs: { open: offen } }, [
-            el('summary', {}, [el('span', { class: 'dsa-abschnitt-titel', text: titel }), stift]),
+    // Eine aufklappbare Karte mit Titel, Zahl, Knopf (✎ oder +) und Inhalt. Auf- und Zuklappen bleibt beim Neuzeichnen.
+    function karte(key, titel, knopf, inhalt, anzahl = '') {
+        const k = el('button', {
+            class: 'dsa-stift', text: knopf.zeichen,
+            attrs: { type: 'button', 'aria-label': knopf.label }, on: { click: (ev) => { ev.preventDefault(); knopf.tun(); } }
+        });
+        const box = el('details', { class: 'dsa-abschnitt', attrs: { open: offen.has(key) } }, [
+            el('summary', {}, [el('span', { class: 'dsa-abschnitt-titel', text: titel }), anzahl !== '' ? el('span', { class: 'leise dsa-anzahl', text: String(anzahl) }) : null, k]),
             el('div', { class: 'dsa-abschnitt-inhalt' }, inhalt)
+        ]);
+        box.addEventListener('toggle', () => { if (box.open) offen.add(key); else offen.delete(key); });
+        return box;
+    }
+
+    // --- Listen (6.2): Vor- und Nachteile, Sonderfertigkeiten und Gaben, Talente, Besitz ---
+    function listenKarte(bogen, def) {
+        const alle = daten.eintraege.filter((e) => e.bogen_id === bogen.id && def.arten.some(([a]) => a === e.abschnitt));
+        const inhalt = [];
+        if (def.art === 'chips') {
+            def.arten.forEach(([a, ueber]) => {
+                const teil = sortiere(alle.filter((e) => e.abschnitt === a));
+                if (!teil.length) return;
+                inhalt.push(el('h3', { class: 'dsa-gruppe', text: ueber }), el('div', { class: 'dsa-chips' }, teil.map((e) => el('button', {
+                    class: 'dsa-chip', text: e.name + (e.wert ? ' ' + e.wert : '') + (e.text ? ' …' : ''),
+                    attrs: { type: 'button', 'aria-label': e.name + ' bearbeiten' }, on: { click: () => zeigeEintragForm(bogen, def, e) }
+                }))));
+            });
+        } else {
+            const gruppeVon = (e) => (def.art === 'orte' ? String((e.felder && e.felder.ort) || '') : e.gruppe);
+            const leer = def.art === 'orte' ? 'Ohne Ort' : 'Ohne Gruppe';
+            gruppenFolge(alle.map(gruppeVon), def.art === 'gruppen' ? TALENT_GRUPPEN : []).forEach((g) => {
+                inhalt.push(el('h3', { class: 'dsa-gruppe', text: g || leer }));
+                sortiere(alle.filter((e) => gruppeVon(e) === g)).forEach((e) => inhalt.push(eintragZeile(bogen, def, e)));
+            });
+        }
+        if (!alle.length) inhalt.push(el('p', { class: 'leise', text: 'Noch leer. Tippe auf +.' }));
+        return karte(def.key, def.titel, { zeichen: '+', label: 'Neu bei ' + def.titel, tun: () => zeigeEintragForm(bogen, def, null) }, inhalt, alle.length || '');
+    }
+
+    // Eine Zeile (Talent oder Gegenstand). Tipp öffnet das Formular.
+    function eintragZeile(bogen, def, e) {
+        const f = e.felder || {};
+        const zusatz = def.key === 'talente' ? [e.probe, f.be].filter(Boolean).join(' · ') : (f.gewicht || '');
+        return el('button', { class: 'dsa-zeile dsa-zeile-knopf', attrs: { type: 'button', 'aria-label': e.name + ' bearbeiten' }, on: { click: () => zeigeEintragForm(bogen, def, e) } }, [
+            el('span', { class: 'dsa-zeile-name' }, [
+                el('span', { text: e.name }),
+                f.spez ? el('span', { class: 'leise', text: ' (' + f.spez + ')' }) : null
+            ]),
+            zusatz ? el('span', { class: 'leise', text: zusatz }) : null,
+            el('span', { class: 'dsa-zeile-wert', text: e.wert || '' }),
+            el('span', { class: 'dsa-zeile-stift', text: '✎', attrs: { 'aria-hidden': 'true' } })
         ]);
     }
 
@@ -155,7 +230,7 @@ export function render(container) {
             inhalt.push(el('p', { class: 'leise', text: 'Noch leer. Tippe auf ✎.' }));
         }
         if (bogen.notiz) inhalt.push(el('p', { class: 'dsa-notiz', text: bogen.notiz }));
-        return karte('Kopf', true, () => zeigeBogenForm(bogen), inhalt);
+        return karte('kopf', 'Kopf', { zeichen: '✎', label: 'Kopf bearbeiten', tun: () => zeigeBogenForm(bogen) }, inhalt);
     }
 
     function eigenschaftenKarte(bogen) {
@@ -177,7 +252,7 @@ export function render(container) {
             ])));
         }
         if (!inhalt.length) inhalt.push(el('p', { class: 'leise', text: 'Noch leer. Tippe auf ✎.' }));
-        return karte('Eigenschaften und Basiswerte', false, () => zeigeEigenschaftenForm(bogen), inhalt);
+        return karte('eigenschaften', 'Eigenschaften und Basiswerte', { zeichen: '✎', label: 'Eigenschaften bearbeiten', tun: () => zeigeEigenschaftenForm(bogen) }, inhalt);
     }
 
     // --- Fenster und Senden ---
@@ -214,10 +289,10 @@ export function render(container) {
         }
     }
 
-    function formKnoepfe(loeschen) {
+    function formKnoepfe(loeschen, loeschenText = 'Bogen löschen') {
         const ok = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
         const abbrechen = el('button', { class: 'knopf knopf-zweit', text: 'Abbrechen', attrs: { type: 'button' }, on: { click: () => dialog.close() } });
-        const weg = loeschen ? el('button', { class: 'knopf knopf-zweit', text: 'Bogen löschen', attrs: { type: 'button' }, on: { click: loeschen } }) : null;
+        const weg = loeschen ? el('button', { class: 'knopf knopf-zweit', text: loeschenText, attrs: { type: 'button' }, on: { click: loeschen } }) : null;
         return [ok, abbrechen, weg].filter(Boolean);
     }
 
@@ -344,6 +419,92 @@ export function render(container) {
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe)
             ])
         ]);
+    }
+
+    // --- Eintrag einer Liste anlegen (e = null) oder ändern ---
+    function zeigeEintragForm(bogen, def, e, vorgabe = {}) {
+        const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
+        const eigene = daten.eintraege.filter((x) => x.bogen_id === bogen.id);
+        const art = el('select', { attrs: { id: 'dsa-ein-art' } }, def.arten.map(([a, , einzel]) => el('option', { text: einzel, attrs: { value: a } })));
+        art.value = e ? e.abschnitt : (vorgabe.abschnitt || def.arten[0][0]);
+        const name = textFeld('dsa-ein-name', e && e.name, 80);
+        const wert = textFeld('dsa-ein-wert', e && e.wert, 20);
+        const probe = textFeld('dsa-ein-probe', e && e.probe, 30, { placeholder: 'zum Beispiel MU · GE · KK' });
+        let gruppe = null;
+        if (def.art === 'gruppen') {
+            gruppe = auswahlFeld({ id: 'dsa-ein-gruppe', maxlength: 40, placeholder: 'wählen oder eintippen' });
+            gruppe.setzeEintraege(gruppenFolge([...TALENT_GRUPPEN, ...eigene.filter((x) => x.abschnitt === 'talent').map((x) => x.gruppe)], TALENT_GRUPPEN).filter(Boolean));
+            gruppe.feld.value = e ? e.gruppe : (vorgabe.gruppe || '');
+        }
+        const zusatz = (def.felder || []).map(([k, t]) => {
+            if (k === 'ort') {
+                const a = auswahlFeld({ id: 'dsa-ein-ort', maxlength: 200, placeholder: 'wählen oder eintippen' });
+                a.setzeEintraege(gruppenFolge(eigene.filter((x) => x.abschnitt === 'besitz').map((x) => String((x.felder && x.felder.ort) || ''))).filter(Boolean));
+                a.feld.value = e ? ((e.felder && e.felder.ort) || '') : (vorgabe.ort || '');
+                return { k, t, box: a.box, feld: a.feld, bleibt: true };
+            }
+            const f = textFeld('dsa-ein-' + k, e && e.felder && e.felder[k], 200);
+            return { k, t, box: f, feld: f };
+        });
+        const text = el('textarea', { attrs: { id: 'dsa-ein-text', maxlength: 3000, rows: 3, placeholder: 'freiwillig' } });
+        text.value = e ? e.text : '';
+        const reihe = el('input', { attrs: { id: 'dsa-ein-reihe', type: 'number', inputmode: 'numeric', min: '1', max: '9999', step: '1', placeholder: 'leer = nach Name', value: e && e.reihenfolge ? e.reihenfolge : '' } });
+        const knoepfe = formKnoepfe(e ? () => eintragLoeschen(e, status, knoepfe) : null, 'Löschen');
+        // Beim Anlegen: speichern und gleich den nächsten eintragen (Gruppe, Ort und Art bleiben)
+        let weiter = false;
+        if (!e) knoepfe.splice(1, 0, el('button', { class: 'knopf knopf-zweit', text: 'Speichern und weiter', attrs: { type: 'submit' }, on: { click: () => { weiter = true; } } }));
+
+        async function absenden(ev) {
+            ev.preventDefault();
+            const mitWeiter = weiter;
+            weiter = false;
+            if (!name.value.trim()) { status.textContent = 'Bitte einen Namen angeben.'; name.focus(); return; }
+            const felder = {};
+            zusatz.forEach((z) => { if (z.feld.value.trim()) felder[z.k] = z.feld.value.trim(); });
+            if (e && e.felder) Object.keys(e.felder).forEach((k) => { if (!(def.felder || []).some(([x]) => x === k)) felder[k] = e.felder[k]; });
+            const eintrag = {
+                bogen_id: bogen.id, abschnitt: art.value, name: name.value.trim(), wert: wert.value.trim(),
+                probe: def.probe ? probe.value.trim() : (e ? e.probe : ''), gruppe: gruppe ? gruppe.feld.value.trim() : (e ? e.gruppe : ''),
+                felder, text: text.value.trim(), reihenfolge: reihe.value.trim() === '' ? 0 : Number(reihe.value)
+            };
+            if (e) Object.assign(eintrag, { id: e.id, geaendert_am: e.geaendert_am });
+            if (!await senden(status, knoepfe, 'eintrag_speichern', { eintrag })) return;
+            zeigeAlles();
+            if (mitWeiter) {
+                [name, wert, probe, text, reihe].forEach((f) => { f.value = ''; });
+                zusatz.forEach((z) => { if (!z.bleibt) z.feld.value = ''; });
+                status.textContent = 'Gespeichert: ' + eintrag.name + '. Jetzt den nächsten eintragen.';
+                name.focus();
+                return;
+            }
+            dialog.close();
+            zeigeGespeichert();
+        }
+
+        const einzel = (def.arten.find(([a]) => a === art.value) || def.arten[0])[2];
+        oeffneDialog(e ? einzel + ' bearbeiten' : 'Neu: ' + einzel, [
+            el('form', { class: 'formular', on: { submit: absenden } }, [
+                def.arten.length > 1 ? feld('dsa-ein-art', 'Art', art) : null,
+                ...feld('dsa-ein-name', 'Name', name),
+                ...(gruppe ? feld('dsa-ein-gruppe', 'Gruppe', gruppe.box) : []),
+                ...(def.probe ? feld('dsa-ein-probe', 'Probe', probe) : []),
+                ...feld('dsa-ein-wert', def.wert, wert),
+                ...zusatz.flatMap((z) => feld(z.feld.id, z.t, z.box)),
+                ...feld('dsa-ein-text', 'Beschreibung', text),
+                ...feld('dsa-ein-reihe', 'Reihenfolge (freiwillig)', reihe),
+                status,
+                el('div', { class: 'besitz-form-knoepfe' }, knoepfe)
+            ].flat().filter(Boolean))
+        ]);
+        name.focus();
+    }
+
+    async function eintragLoeschen(e, status, knoepfe) {
+        if (!confirm('„' + e.name + '“ löschen? (Im Sheet zurückholbar)')) return;
+        if (!await senden(status, knoepfe, 'eintrag_loeschen', { id: e.id, geaendert_am: e.geaendert_am })) return;
+        dialog.close();
+        zeigeAlles();
+        zeigeGespeichert('Gelöscht');
     }
 
     // --- Laden ---
