@@ -133,6 +133,11 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
 - **6.1 Sheet, Skript und Bogen anlegen** (→ 0.6.1)
   - Von Hand: neues Google Sheet „DSA“, `Code.gs` einfügen, `APP_PIN` eintragen, `einrichten` ausführen, **neue Bereitstellung**, Adresse in der App eintragen.
   - Neue Datei `icons/w20.svg` (in `HUELLE` in `sw.js`), Name „Pen & Paper“ in `js/config.js`.
+  - Dazu drei Wünsche der Person zum Aussehen (31.10.2026), gelten für die ganze App:
+    1. Heller Modus: Die Kopfzeile (Icon, Name, Einstellungen, Info) bleibt immer dunkelgrau wie im dunklen Modus.
+    2. Heller Modus: Hintergrund nicht reinweiß, sondern leicht beige-grau (Vorschlag `#F3F0EA`, Kacheln etwas dunkler); Kontrast nach WCAG AA prüfen.
+    3. Startseite: großes Icon ohne dunklen Hintergrund, nur die Karteikarte mit den farbigen Reitern (eigene Datei, zum Beispiel `icons/thetadex-karte.svg`).
+    Die Werte kommen in STAND.md 4 „Erscheinungsbild“.
   - Reiter Pen & Paper: Bogen wählen, „+ Bogen“ (Vorlage DSA oder DnD), Kopf und Eigenschaften anzeigen und ändern, Eigenschaften-Leiste oben.
 - **6.2 Listen** (→ 0.6.2): Vor- und Nachteile, Sonderfertigkeiten, Gaben, Talente nach Gruppe, Besitz. Anlegen, ändern, löschen, sortieren.
 - **6.3 Zauber und Waffen** (→ 0.6.3): Zauber mit allen Feldern und Modifikationen (lange Texte aufklappbar), Waffen als kleine Tabelle (am Handy Karten).
@@ -177,3 +182,5 @@ Zum Muster (31.10.2026):
 - W20 als Symbol statt des Würfel-Emojis.
 - Überschrift „Pen & Paper“ statt „DSA“ (auch in der Reiterleiste, siehe „Aufbau des Reiters“).
 - Größe und Gewicht als eigene Zeilen.
+- „Pen & Paper“ auch in der Reiterleiste: ja, wenn es vom Platz passt (am Handy steht dort nur das Symbol, am PC passt der Name in die Seitenleiste).
+- Für 6.1 dazu: Kopfzeile im hellen Modus dunkelgrau, Hintergrund leicht beige-grau, Startseite mit Karteikarte ohne Hintergrund.
