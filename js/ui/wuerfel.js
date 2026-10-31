@@ -46,13 +46,13 @@ export function wuerfelKnopf() {
         const summe = wuerfe.reduce((a, b) => a + b, 0);
         const name = (anzahl > 1 ? anzahl : '') + 'W' + seiten;
         leeren(ergebnis);
-        ergebnis.append(
+        ergebnis.append(...[
             el('p', { class: 'wuerfel-name', text: name }),
             el('div', { class: 'wuerfel-einzeln' }, wuerfe.map((w) => el('span', {
                 class: 'wuerfel-stein' + (w === seiten ? ' ist-hoch' : '') + (w === 1 ? ' ist-eins' : ''), text: String(w)
             }))),
             anzahl > 1 ? el('p', { class: 'wuerfel-summe', text: 'Summe ' + summe }) : null
-        );
+        ].filter(Boolean));
         letzte.unshift(name + ': ' + wuerfe.join(' · ') + (anzahl > 1 ? ' = ' + summe : ''));
         letzte.length = Math.min(letzte.length, 10);
         zeigeLetzte();
