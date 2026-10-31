@@ -1089,3 +1089,26 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
     .dsa-waffen td[data-titel]::before { content: attr(data-titel) " "; color: var(--schrift-leise); font-size: 0.8rem; }
     .dsa-waffen td.dsa-leer { display: none; }
 }
+
+/* Pen & Paper 6.4: Zähler antippen, Verlauf */
+button.dsa-zaehler-kachel { font: inherit; color: var(--schrift); text-align: left; border: none; border-top: 4px solid var(--bereich); cursor: pointer; }
+button.dsa-zaehler-kachel:hover { filter: brightness(0.96); }
+button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); outline-offset: 2px; }
+.dsa-z-stand { margin: 0; font-weight: 700; font-size: 1.1rem; }
+.dsa-richtungen { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.dsa-richtung { min-height: 44px; font: inherit; font-weight: 700; color: var(--schrift); background: var(--kachel); border: 2px solid var(--linie); border-radius: var(--rund); cursor: pointer; }
+.dsa-richtung[aria-pressed="true"] { border-color: var(--bereich); background: var(--bereich); color: var(--schrift-auf-farbe); }
+.dsa-richtung:focus-visible { outline: 3px solid var(--bereich); outline-offset: 2px; }
+.dsa-z-label { font-weight: 600; }
+.dsa-muenzen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.dsa-muenzen label { display: flex; align-items: center; gap: 4px; font-weight: 700; }
+.dsa-muenzen input { width: 100%; min-width: 0; box-sizing: border-box; }
+#dsa-verlauf-filter { min-height: 44px; max-width: 100%; margin-bottom: 8px; padding: 8px 12px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; }
+.dsa-verlauf-liste { list-style: none; margin: 0 0 8px; padding: 0; }
+.dsa-verlauf-zeile { display: grid; grid-template-columns: minmax(4.5em, auto) 1fr auto; gap: 2px 10px; padding: 8px 0; border-bottom: 1px solid var(--linie); align-items: baseline; }
+.dsa-verlauf-wer { font-weight: 600; white-space: nowrap; }
+.dsa-verlauf-wert { font-weight: 700; white-space: nowrap; color: var(--plus-schrift); }
+.dsa-verlauf-zeile.ist-minus .dsa-verlauf-wert { color: var(--minus-schrift); }
+.dsa-verlauf-wert small { font-weight: 400; }
+.dsa-verlauf-datum { font-size: 0.8rem; white-space: nowrap; }
+.dsa-verlauf-notiz { grid-column: 2 / -1; overflow-wrap: anywhere; }

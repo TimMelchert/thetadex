@@ -145,8 +145,9 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
   „Speichern und weiter“ beim Anlegen (Gruppe und Ort bleiben stehen). Sortiert nach „Reihenfolge“ (freiwillig), sonst nach Name.
 - **6.3 Zauber und Waffen** (→ 0.6.3) – gebaut: Zauber mit allen Feldern und Modifikationen (lange Texte aufklappbar), Waffen als kleine Tabelle (am Handy Karten).
   Modifikationen im Formular je Zeile eine; Haken „Hauszauber“ zeigt eine Marke. Waffen haben kein Feld „Wert“. Sheet und Skript bleiben gleich.
-- **6.4 Verlauf** (→ 0.6.4): Geld, Leben, AsP, AP oben mit Symbol; Tipp darauf → „+“ oder „−“, Betrag, Notiz. Liste der letzten Änderungen je Zähler.
+- **6.4 Verlauf** (→ 0.6.4) – gebaut: Geld, Leben, AsP, AP oben mit Symbol; Tipp darauf → „+“ oder „−“, Betrag, Notiz. Liste der letzten Änderungen je Zähler.
   Geld mit Feldern je Münze (D, S, H, K), die App rechnet um. Leben und AsP mit Knopf „Voll“ (setzt auf den Höchstwert).
+  „+“ speichert höchstens bis zum Höchstwert, Geld nicht unter 0. Karte „Verlauf“ mit Filter je Zähler. Sheet und Skript bleiben gleich.
 - **6.5 Würfel und Bild** (→ 0.6.5)
   - Würfel W4, W6, W8, W10, W12, W20 (W8 bis W12 Wunsch der Person für DnD), Anzahl wählbar (zum Beispiel 3W20), Ergebnis groß mit den Einzelwürfen.
     Rechnet nur im Gerät mit `crypto.getRandomValues`, nichts wird gespeichert (STAND.md 4 „Würfel“).
