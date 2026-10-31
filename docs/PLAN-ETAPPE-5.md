@@ -4,6 +4,8 @@ Ziel: Ein Reiter Uni mit Semestern, Stundenplan, Kalender (Vorlesungen, Prüfung
 berechneten Arbeitsstunden und einer Master-Übersicht der Module (Ziel 120 ECTS).
 Die Daten liegen im bestehenden Sheet „Gemeinsam“ mit dem Skript `gemeinsam` (fünf neue Blätter).
 Die Antworten der Person auf die Rückfragen (30.10.2026) sind eingearbeitet (0.5.1).
+**Umbau in Schritt 5.5 (31.10.2026, Anmerkungen der Person):** kein Stundenplan mehr, Module mit Kursen, Prüfungen mit „bestanden“,
+Termine jede Woche an bestimmten Tagen. Was davon abweicht, steht in Schritt 5.5; die älteren Abschnitte zeigen den Stand bis 0.5.5.
 Regeln: STAND.md 1.2, 2.2, 2.3, 4 („Wer sieht was“, „Stundenplan am Handy“) und 7.2.
 Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelöscht.
 
@@ -22,7 +24,8 @@ Stundenplan auch ohne Netz da sind. Ohne Netz steht oben „Stand von <Datum, Uh
 
 - Überschrift „Uni“ mit einem bunten Emoji davor (Vorschlag 🎓, wie 📦 bei Besitz und 🛒 bei Einkauf).
 - Oben eine Auswahl **Semester** (Vorgabe: das Semester, in dem heute liegt, sonst das neueste). Daneben „+ Semester“ und „Neu laden“.
-- Drei Unterreiter (Umschalter wie bei Besitz und Einkauf): **Kalender** (Vorgabe, Ansicht Woche mit der aktuellen Woche), **Stundenplan**, **Module**.
+- Zwei Unterreiter (Umschalter wie bei Besitz und Einkauf): **Kalender** (Vorgabe, Ansicht Woche mit der aktuellen Woche) und **Module**.
+  Den Unterreiter Stundenplan gibt es seit 5.5 nicht mehr (der Kalender deckt alles ab).
 - **Semesterzeiten** trägt die Person in der App ein: „+ Semester“ öffnet ein Formular mit Name, Semesterbeginn und -ende, Vorlesungsbeginn und -ende.
   Das landet im Blatt `semester`. Ändern über „Bearbeiten“ neben der Semester-Auswahl.
 - Knöpfe in der Uni-Farbe `#C9784A` mit dunkler Schrift (`--schrift-auf-farbe`, wie bei Döner und Einkauf).
@@ -43,7 +46,7 @@ Jede Farbe bekommt einen hellen und einen dunklen Wert als Variable in `css/base
 | `arbeit` | Arbeit | Stundenplan oder Termin | Graugrün `#7FA7A0` |
 | `zug` | Zug | Stundenplan oder Termin | Altrosa `#B5838D` |
 | `urlaub` | Urlaub | Termin (mehrtägig) | Grün `#8DB580` |
-| `frei` | Feiertag, vorlesungsfrei | Termin | Grau |
+| `frei` | Feiertag, vorlesungsfrei (seit 5.5 nicht mehr neu, gilt und erscheint als Urlaub) | Termin | Grau |
 | `ferien` | Semesterferien | berechnet aus dem Semester, nicht eingetragen | Sand `#D4B483`, nur als heller Streifen |
 | `sonstiges` | Sonstiges | Termin | Grau, dunkler |
 
@@ -187,7 +190,41 @@ Keine Noten (Entscheidung der Person).
   je Modul Status, ECTS, Semester und die nächste Prüfung (aus den Terminen mit diesem Modul, Datum und Uhrzeit). Filter nach Status.
 - Modul anlegen, ändern, löschen. Im Termin-Formular und im Stundenplan ist das Modul eine Auswahl.
 
-## Schritt 5.5 Abschluss (0.5.5 …)
+## Schritt 5.5 Kurse, Prüfungen und Termine jede Woche (0.5.5 → 0.5.6)
+
+Anmerkungen der Person (31.10.2026): Stundenplan unnötig, Filter „Frei“ weg (gleich wie Urlaub), Module mit Kursen, Prüfungen bestanden,
+alles mit einem Knopf bearbeiten, Fenster nur mit × oder Abbrechen schließen, Termine mit Zeitraum **und** Wochentagen.
+
+**Sheet und Skript**
+- Neues Blatt **`kurse`**: `modul_id` (Pflicht), `name` (80), `ects` (0 bis 60, halbe), `semester_id` (leer = wie das Modul), `tag` (1 bis 7),
+  `von`, `bis` (Tag, von und bis alle oder keins), `ort` (Raum, 60), `dozent` (60), `pruefungsleistung` (Text, 80, zum Beispiel „Klausur“), `notiz`.
+  Ein Kurs mit Tag und Uhrzeit steht jede Woche in der Vorlesungszeit seines Semesters im Kalender (Art Vorlesung). Höchstens 300 Kurse.
+- `module` + Spalte **`pflicht`**: `pflicht`, `wahlpflicht` oder `auflage` (Auflage vom Bachelor). Vorgabe `pflicht`.
+- `termine` + Spalten **`tage`** (Wochentage als Text, zum Beispiel `1,3` = Montag und Mittwoch), **`kurs_id`** und **`bestanden`** (wahr oder falsch, nur bei Prüfungen).
+  Mit `tage` gilt ein Termin jede Woche an diesen Tagen vom ersten bis zum letzten Tag (der letzte Tag ist dann Pflicht).
+  `stunde_id` („einmal anders“ oder „fällt aus“) zeigt jetzt auf einen Kurs oder einen Termin mit `tage`. Mit `kurs_id` bestimmt der Kurs das Modul.
+  Die Art `frei` wird nicht mehr angenommen; alte Einträge zeigt die App als Urlaub. Höchstens 3000 Termine.
+- **Umzug:** `einrichten` macht aus jedem Stundenplan-Eintrag einen Termin mit `tage` und **derselben id** (so zeigen „einmal anders“ und „fällt aus“ weiter darauf):
+  Vorlesungen gelten in der Vorlesungszeit, Arbeit und Zug im ganzen Semester. Danach ist die alte Zeile weich gelöscht, nichts geht verloren.
+  Einträge ohne gültiges Semester bleiben stehen, das Protokoll nennt ihre Zahl. Mehrmals ausführen schadet nicht.
+- `uni` liefert jetzt Semester, Module, Kurse, Termine und `ects_ziel`; `uni_speichern` und `uni_loeschen` gehen für `semester`, `module`, `kurse`, `termine`.
+- Löschen: Modul → seine Kurse (und deren „einmal anders“); Prüfungen und Termine bleiben, sie werden nur ausgetragen.
+  Kurs oder Termin mit `tage` → seine „einmal anders“. Semester → bei Modulen und Kursen nur ausgetragen.
+
+**App**
+- Kalender: wöchentliche Einträge kommen aus Kursen und Terminen mit `tage`; an Urlaubstagen fallen beide weg. Tipp: „Nur an diesem Tag ändern“,
+  „Fällt an diesem Tag aus“ und „Jede Woche ändern“ (öffnet Kurs oder Termin). Filter „Frei“ weg.
+- Termin-Formular: Art, „Gehört zu Modul oder Kurs“, Titel, „Bestanden“ (nur Prüfung), erster und letzter Tag, **„Jede Woche an“ Mo bis So**
+  mit Knöpfen „Vorlesungszeit“ und „Ganzes Semester“, Uhrzeit, Raum, Notiz.
+- Module: eine Karte je Modul mit Stand, Pflicht, ECTS, Semester, nächster Prüfung, darunter die Kurse (ECTS, Tag und Zeit, Raum, Dozent*in,
+  Prüfungsleistung) mit ihren Prüfungen. Je Modul, Kurs und Prüfung ein Knopf ✎; bei Prüfungen ein Knopf „bestanden?“ zum Umschalten.
+  „+ Kurs“, „+ Prüfung“ (für einen Kurs) und „+ Prüfung fürs Modul“.
+- **Fertig:** Ein Kurs ist fertig, wenn eine seiner Prüfungen bestanden ist (ein zweiter Versuch zählt). Ein Modul ist fertig, wenn jeder Kurs mit
+  Prüfungsleistung oder Prüfung fertig ist (und Prüfungen ohne Kurs bestanden sind), mindestens einer, oder wenn die Person den Stand „Fertig“ wählt.
+  Fertige Module zählen zu den ECTS. Ohne ECTS am Modul zählt die Summe seiner Kurse. Auflagen zählen nicht zu den 120 ECTS, sie stehen in einer eigenen Zeile.
+- Fenster im Reiter Uni schließen nur mit × oder Abbrechen (kein Tipp daneben, keine Escape-Taste).
+
+## Schritt 5.6 Abschluss (0.5.6 …)
 
 - Anmerkungen der Person nach dem Testen (auch am Handy der Partnerin oder des Partners: nur lesen, keine Knöpfe), dann Etappe 5 abschließen:
   Plan in STAND.md einarbeiten, diese Datei löschen.
@@ -196,7 +233,8 @@ Keine Noten (Entscheidung der Person).
 
 - Neue Daten: Semester, Stundenplan, Termine (mit Urlaub, Arbeit und Zug), Module (ohne Noten), das ECTS-Ziel. Zusammen zeigen sie, **wann die Person wo ist.**
   Das ist so gewollt (7.2: Partner*in sieht alle Zeiten), aber es ist ein Grund, keine Adressen zu speichern: Ort ist ein kurzer Text (Raum, Strecke), keine Anschrift.
-  Keine Preise oder Tickets bei Zugfahrten, kein Lohn bei der Arbeit, keine Namen anderer Personen (zum Beispiel Dozierende) nötig.
+  Keine Preise oder Tickets bei Zugfahrten, kein Lohn bei der Arbeit.
+  Seit 5.5 gibt es ein Feld Dozent*in (Wunsch der Person): Namen stehen nur im Sheet, nie im Repo; das Feld ist freiwillig.
 - Wer sieht sie: die Person (lesen und ändern) und Partner*in (nur lesen), beide nur mit Passwort. Das Skript prüft die Rolle bei jeder Aktion,
   die App blendet die Knöpfe nur zusätzlich aus. Partner*in sieht alles, auch die Module (Entscheidung der Person).
 - Im Gerät: die zuletzt geladenen Uni-Daten (`thetadex_uni`), auch auf dem Handy der Partnerin oder des Partners. Wer das Handy entsperrt hat, sieht also
@@ -225,4 +263,6 @@ Keine Noten (Entscheidung der Person).
 
 ## Rückfragen
 
-Keine offenen. Anmerkungen zur Anzeige sammelt die Person beim Testen.
+Keine offenen. Antworten zu 5.5 (31.10.2026):
+1. Auflagen vom Bachelor zählen **nicht** zu den 120 ECTS. Sie müssen nur bestanden sein; ECTS dafür sind freiwillig.
+2. Fenster in Einkauf und Besitz bleiben wie sie sind (Tipp daneben schließt weiter); nur im Reiter Uni gehen sie nur mit × oder Abbrechen zu.

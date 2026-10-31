@@ -1,4 +1,4 @@
-// Uni-Kalender (Schritt 5.2): Ansichten Woche, Monat und Liste, Filter nach Art.
+// Uni-Kalender (Schritt 5.2): Ansichten Woche, Monat und Liste, Filter nach Art (ohne „Frei“ seit 5.5, das ist Urlaub).
 // Woche: am PC und im Querformat ein Raster mit Uhrzeiten, im Hochformat am Handy eine Liste je Tag (STAND.md 4).
 // Zeichnet nur; Fenster und Formulare stehen in uni.js (beiEintrag, beiTag).
 
@@ -8,9 +8,10 @@ import { alsDate, alsText, plusTage, wochenStart, kalenderwoche, monatsRaster, m
 // Alle Arten mit Namen. Die Farben stehen in css/base.css (--art-…).
 export const ARTEN = [
     ['vorlesung', 'Vorlesung'], ['pruefung', 'Prüfung'], ['arbeit', 'Arbeit'], ['zug', 'Zug'],
-    ['urlaub', 'Urlaub'], ['frei', 'Frei'], ['sonstiges', 'Sonstiges'], ['ferien', 'Semesterferien']
+    ['urlaub', 'Urlaub'], ['sonstiges', 'Sonstiges'], ['ferien', 'Semesterferien']
 ];
-export const ART_NAME = Object.fromEntries(ARTEN);
+// „frei“ (bis 0.5.5) heißt jetzt Urlaub
+export const ART_NAME = { ...Object.fromEntries(ARTEN), frei: 'Urlaub' };
 
 const TAGE_KURZ = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const TAGE_LANG = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
@@ -37,7 +38,8 @@ export function eintragKnopf(e, beiKlick) {
             el('span', { class: 'uni-titel', text: e.titel }),
             el('span', { class: 'leise einkauf-klein', text: merkmale }),
             e.ausfall ? el('span', { class: 'uni-marke', text: 'fällt an diesem Tag aus' }) : null,
-            e.einmalig ? el('span', { class: 'uni-marke', text: 'einmalig geändert' }) : null
+            e.einmalig ? el('span', { class: 'uni-marke', text: 'einmalig geändert' }) : null,
+            e.termin && e.termin.bestanden ? el('span', { class: 'uni-marke', text: '✓ bestanden' }) : null
         ])
     ]);
 }

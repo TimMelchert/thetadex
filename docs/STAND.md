@@ -4,14 +4,14 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.5.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.5.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
-- Etappe 5 „Uni“ läuft: Plan `docs/PLAN-ETAPPE-5.md`. Gebaut: 5.1 (Blätter, Skript, Semester und Stundenplan), 5.2 (Termine, Kalender und ohne Netz), 5.3 (Arbeitsstunden), 5.4 (Module und Master-Übersicht).
-- Nächster Schritt: 5.5 (Anmerkungen der Person, dann Etappe 5 abschließen).
+- Etappe 5 „Uni“ läuft: Plan `docs/PLAN-ETAPPE-5.md`. Gebaut: 5.1 (Blätter, Skript, Semester und Stundenplan), 5.2 (Termine, Kalender und ohne Netz), 5.3 (Arbeitsstunden), 5.4 (Module und Master-Übersicht), 5.5 (Kurse, Prüfungen bestanden, Termine jede Woche, kein Stundenplan mehr).
+- Nächster Schritt: 5.6 (Anmerkungen der Person, dann Etappe 5 abschließen).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -24,7 +24,7 @@ Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegu
 
 Eine persönliche App (PWA) für eine Person, am Handy und am PC. Einkauf und Uni teilt sie mit ihrer Partnerin oder ihrem Partner, DSA-Bögen per Link. Sie führt zwei bestehende Apps zusammen
 (Tracking Leben, Finanzmanager) und bekommt neue Reiter: Döner-Bewertung (öffentlich), DSA-Charakterbögen, Einkaufsliste und Essensideen,
-Besitz-Inventar, Uni mit Stundenplan. Die Daten liegen in Google Sheets der Person, nicht im Repo.
+Besitz-Inventar, Uni mit Kalender und Modulen. Die Daten liegen in Google Sheets der Person, nicht im Repo.
 
 Die Person, die mit dir arbeitet, ist keine Programmiererin und kein Programmierer. Sie arbeitet im Browser
 (GitHub-Webseite, Google Sheet, Apps-Script-Editor). Die Browser-Konsole ist bei ihr gesperrt: Fehler müssen in der App selbst sichtbar sein.
@@ -252,7 +252,7 @@ unter „Info“ die Version prüfen.
   | Sheet | Blätter |
   | --- | --- |
   | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026) |
-  | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `stundenplan`, `termine`, `module`, `uni_einstellungen` |
+  | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt, seit 5.5 in `termine` umgezogen) |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
   | DSA | `boegen` (ein Bogen je Zeile, Abschnitte als JSON-Spalten), `verlauf` (Geld, AP, AsP, LeP), `gegenstaende`, `bilder` |
@@ -313,6 +313,11 @@ unter „Info“ die Version prüfen.
   „Fällt an diesem Tag aus“, „Wieder wie immer“ (Termin mit `stunde_id`). Ohne Netz die zuletzt geladenen Uni-Daten aus dem Gerät, ohne Knöpfe.
   Arbeitsstunden (5.3): im Kalender für die gezeigte Woche, den Monat oder die vier Wochen der Liste; im Stundenplan „Arbeit: … je Woche“. Nur gerechnet, nichts gespeichert.
   Module (5.4): „… von 120 ECTS bestanden“ mit Balken, Kacheln Bestanden, Läuft, Offen, „Noch ohne Modul“; Module nach Bereich mit nächster Prüfung; Filter nach Stand.
+  Umbau (5.5): kein Unterreiter Stundenplan mehr; `einrichten` zieht ihn in `termine` um (Spalte `tage`, gleiche id). Neues Blatt `kurse`
+  (Modul, ECTS, Semester, Tag, Zeit, Raum, Dozent*in, Prüfungsleistung), `module.pflicht` (Pflicht, Wahlpflicht, Auflage), `termine.tage`, `kurs_id`, `bestanden`.
+  Termine gelten auf Wunsch jede Woche an bestimmten Tagen; Kurse jede Woche in der Vorlesungszeit. Prüfungen „bestanden“; ein Modul ist fertig,
+  wenn alle seine Kurse mit Prüfung bestanden sind, dann zählen seine ECTS. Auflagen zählen nicht zum Ziel. Je Modul, Kurs und Prüfung ein Knopf ✎.
+  Art „frei“ weg (gilt als Urlaub). Fenster im Reiter Uni schließen nur mit × oder Abbrechen. Einzelheiten im Plan, Schritt 5.5.
 
 ### 3.2 Offen
 
@@ -401,11 +406,11 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     Das Sheet „Gemeinsam“ wird mit niemandem geteilt. Keine Lebensmittel, Gerichte oder Namen im Repo.
 - **Reiter nach Script-Adressen** (Entscheidung der Person, 30.10.2026): Ein Reiter erscheint nur mit der Adresse seines Skripts (siehe 2.1).
   Die App speichert keine Rolle; die Rechte prüft immer das Skript.
-- **Farben der Arten im Uni-Kalender** (Wunsch der Person, Plan 7.2 und Etappe 5): Vorlesung, Prüfung, Arbeit, Zug, Urlaub, frei, Sonstiges und Semesterferien
+- **Farben der Arten im Uni-Kalender** (Wunsch der Person, Plan 7.2 und Etappe 5): Vorlesung, Prüfung, Arbeit, Zug, Urlaub, Sonstiges und Semesterferien
   haben je eine Farbe (`--art-…` in `css/base.css`, hell und dunkel). Nur als Fläche, Streifen oder Punkt, Schrift darauf `--schrift-auf-farbe`.
 - **Uni-Daten im Gerät** (Wunsch der Person, 30.10.2026): Die zuletzt geladenen Uni-Daten liegen im Gerät (`thetadex_uni`, ohne Rolle),
-  damit Kalender und Stundenplan ohne Netz da sind. Dann steht „Stand von …“ da und es gibt keine Knöpfe zum Ändern. Abmelden löscht sie.
-  Folge: Wer das entsperrte Handy hat, sieht den Stundenplan ohne Passwort (auch bei Partner*in).
+  damit Kalender und Module ohne Netz da sind. Dann steht „Stand von …“ da und es gibt keine Knöpfe zum Ändern. Abmelden löscht sie.
+  Folge: Wer das entsperrte Handy hat, sieht den Uni-Kalender ohne Passwort (auch bei Partner*in).
 - **Ausnahme von „Keine Offline-Schreibzugriffe“ (1.5), nur Einkaufsliste:** Die Liste liegt zusätzlich im Gerät.
   Abhaken geht auch ohne Netz. Abgehakte Einträge werden gesendet, sobald wieder Netz da ist. Bis dahin zeigt die App „noch nicht gesendet“.
   Grund: Wunsch der Person, im Laden gibt es oft kein Netz. Abhaken ist harmlos: doppelt senden schadet nicht.
@@ -438,7 +443,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 ## 5. Technik-Merkzettel
 
 - **Hilfsmodule** vor dem Neubauen suchen und wiederverwenden. Lies die Datei, bevor du sie benutzt. Rate keine Signaturen.
-  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`, `kalenderBeiKlick`), `js/ui/kalender.js` (`plusTage`, `wochenStart`, `monatsRaster`, `eintraegeAm`, `spuren`, `arbeitsMinuten`, `stundenText` …), `js/ui/auswahl.js` (`auswahlFeld`), `js/ui/overlay.js` (`zeigeGespeichert`), `js/ui/farben.js` (`farbRegeln`), `js/ui/aussehen.js` (`wendeAussehenAn`, `setzeAussehen`), `js/ui/bild.js` (`verkleinereBild`, `bildAdresse`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
+  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`, `kalenderBeiKlick`), `js/ui/kalender.js` (`plusTage`, `wochenStart`, `monatsRaster`, `eintraegeAm`, `tageListe`, `kursSemester`, `istFrei`, `spuren`, `arbeitsMinuten`, `stundenText` …), `js/ui/auswahl.js` (`auswahlFeld`), `js/ui/overlay.js` (`zeigeGespeichert`), `js/ui/farben.js` (`farbRegeln`), `js/ui/aussehen.js` (`wendeAussehenAn`, `setzeAussehen`), `js/ui/bild.js` (`verkleinereBild`, `bildAdresse`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
   `js/api.js` (`api(skript, action, daten)`, `apiOeffentlich(adresse, action, daten)` ohne Passwort, `ApiFehler` mit `code`).
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
@@ -651,6 +656,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.5.3** Schritt 5.2: Kalender (Woche, Monat, Liste, Filter, Farben je Art), Termine, „einmal anders“, Uni-Daten ohne Netz.
 - **0.5.4** Schritt 5.3: Arbeitsstunden je Woche, Monat und im Stundenplan.
 - **0.5.5** Schritt 5.4: Module mit Master-Übersicht (Ziel aus `uni_einstellungen`), Prüfungen je Modul.
+- **0.5.6** Schritt 5.5: Kurse je Modul, Prüfungen „bestanden“, Termine jede Woche an bestimmten Tagen, Stundenplan in Termine umgezogen, Filter „Frei“ weg, Fenster nur mit × oder Abbrechen.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
