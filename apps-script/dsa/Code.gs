@@ -3,6 +3,7 @@
 // Eigenes Sheet „DSA“, getrennt von allen anderen Daten (docs/STAND.md 2.2).
 // Blätter: „boegen“ (ein Bogen je Zeile), „eintraege“ (eine Zeile je Vorteil, Talent, Zauber, Waffe, Gegenstand),
 // „verlauf“ (jede Änderung an Geld, LeP, AsP, AP).
+// Ab 0.6.8: „abenteuer“ (Abenteuer eines Charakters, Abenteuer als DM, Abenteuerideen) und „sessions“ (je Abenteuer eines Charakters).
 // Mit Passwort (APP_PIN) darf die Person alles. Ohne Passwort gibt es nur die Aktion „geteilt“:
 // genau ein Bogen mit seinem Freigabe-Schlüssel, nur lesen, ohne Verlauf.
 // Bilder liegen im privaten Drive-Ordner „Thetadex DSA“, im Sheet steht nur ihre Kennung.
@@ -14,14 +15,22 @@ var STANDARD_ = ["id", "erstellt_am", "geaendert_am", "geloescht"];
 var KOEPFE_ = {
   boegen: ["id", "name", "regelwerk", "kopf", "eigenschaften", "zaehler", "bild", "freigabe", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
   eintraege: ["id", "bogen_id", "abschnitt", "gruppe", "name", "wert", "probe", "felder", "text", "reihenfolge", "erstellt_am", "geaendert_am", "geloescht"],
-  verlauf: ["id", "bogen_id", "zaehler", "aenderung", "notiz", "datum", "erstellt_am", "geaendert_am", "geloescht"]
+  verlauf: ["id", "bogen_id", "zaehler", "aenderung", "notiz", "datum", "erstellt_am", "geaendert_am", "geloescht"],
+  abenteuer: ["id", "bogen_id", "art", "titel", "text", "abgeschlossen", "erstellt_am", "geaendert_am", "geloescht"],
+  sessions: ["id", "abenteuer_id", "datum", "text", "erstellt_am", "geaendert_am", "geloescht"]
 };
 // Diese Spalten bleiben im Sheet reiner Text (kein Datum, keine Zahl)
 var TEXT_SPALTEN_ = {
   boegen: ["id", "name", "regelwerk", "kopf", "eigenschaften", "zaehler", "bild", "freigabe", "notiz"],
   eintraege: ["id", "bogen_id", "abschnitt", "gruppe", "name", "wert", "probe", "felder", "text"],
-  verlauf: ["id", "bogen_id", "zaehler", "notiz", "datum"]
+  verlauf: ["id", "bogen_id", "zaehler", "notiz", "datum"],
+  abenteuer: ["id", "bogen_id", "art", "titel", "text"],
+  sessions: ["id", "abenteuer_id", "datum", "text"]
 };
+// Arten im Blatt „abenteuer“: spieler = Abenteuer eines Charakters (mit Sessions), dm = Abenteuer, das die Person leitet,
+// ideen = das eine Textfeld „Abenteuerideen“. dm und ideen gehen nie über den geteilten Link hinaus.
+var ABENTEUER_ARTEN_ = ["spieler", "dm", "ideen"];
+var MAX_ATEXT_ = 10000;
 
 var REGELWERKE_ = ["dsa", "dnd"];
 var KOPF_FELDER_ = ["rasse", "kultur", "profession", "geschlecht", "alter", "groesse", "gewicht", "haare", "augen",
@@ -41,7 +50,9 @@ var MAX_BOEGEN_ = 20;
 var MAX_EIGENSCHAFTEN_ = 40;
 var MAX_ZAEHLER_ = 6;
 var MAX_MODS_ = 20;
-var MAX_EINTRAEGE_ = 1000;            // je Bogen
+var MAX_EINTRAEGE_ = 1000;
+var MAX_ABENTEUER_ = 500;
+var MAX_SESSIONS_ = 300;              // je Abenteuer            // je Bogen
 var MAX_ZAHL_ = 1000000;              // Start, Höchstwert und Änderung eines Zählers
 var BILD_ORDNER_NAME_ = "Thetadex DSA";
 var MAX_BILD_TEXT_ = 4000000;
@@ -158,6 +169,15 @@ function blatt_(name) {
   return sheet;
 }
 
+// Blätter ab 0.6.8: fehlen sie noch (einrichten nicht ausgeführt), gibt es einfach nichts
+function lebendeOptional_(name) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+  if (!sheet || sheet.getLastRow() < 1) return { zeilen: [], sp: {} };
+  var sp = spalten_(sheet);
+  if (KOEPFE_[name].some(function (k) { return sp[k] == null; })) return { zeilen: [], sp: sp };
+  return { zeilen: lebende_(sheet, sp), sp: sp };
+}
+
 function zeilen_(sheet) {
   return sheet.getLastRow() > 1 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues() : [];
 }
@@ -232,6 +252,41 @@ function bogenAus_(z, sp) {
   };
 }
 
+function abenteuerAus_(z, sp) {
+  return {
+    id: String(zelle_(z, sp, "id")),
+    bogen_id: String(zelle_(z, sp, "bogen_id")),
+    art: String(zelle_(z, sp, "art")),
+    titel: ohneSchutz_(zelle_(z, sp, "titel")),
+    text: ohneSchutz_(zelle_(z, sp, "text")),
+    abgeschlossen: istWahr_(zelle_(z, sp, "abgeschlossen")),
+    geaendert_am: stempel_(zelle_(z, sp, "geaendert_am"))
+  };
+}
+
+function sessionAus_(z, sp) {
+  return {
+    id: String(zelle_(z, sp, "id")),
+    abenteuer_id: String(zelle_(z, sp, "abenteuer_id")),
+    datum: String(zelle_(z, sp, "datum")).trim(),
+    text: ohneSchutz_(zelle_(z, sp, "text")),
+    geaendert_am: stempel_(zelle_(z, sp, "geaendert_am"))
+  };
+}
+
+// Abenteuer und Sessions (ab 0.6.8). Abenteuer eines Charakters nur, wenn es den Bogen noch gibt.
+function abenteuerListe_(ids) {
+  var a = lebendeOptional_("abenteuer"), s = lebendeOptional_("sessions");
+  var abenteuer = a.zeilen.map(function (r) { return abenteuerAus_(r.zeile, a.sp); }).filter(function (x) {
+    if (ABENTEUER_ARTEN_.indexOf(x.art) < 0) return false;
+    return x.art === "spieler" ? Boolean(ids[x.bogen_id]) : true;
+  });
+  var aids = {};
+  abenteuer.forEach(function (x) { if (x.art === "spieler") aids[x.id] = true; });
+  var sessions = s.zeilen.map(function (r) { return sessionAus_(r.zeile, s.sp); }).filter(function (x) { return aids[x.abenteuer_id]; });
+  return { abenteuer: abenteuer, sessions: sessions };
+}
+
 function eintragAus_(z, sp) {
   return {
     id: String(zelle_(z, sp, "id")),
@@ -289,7 +344,9 @@ function doPost(e) {
   var schreibend = {
     bogen_speichern: bogenSpeichern_, bogen_loeschen: bogenLoeschen_,
     eintrag_speichern: eintragSpeichern_, eintrag_loeschen: eintragLoeschen_,
-    verlauf_neu: verlaufNeu_, freigabe: freigabe_
+    verlauf_neu: verlaufNeu_, freigabe: freigabe_,
+    abenteuer_speichern: abenteuerSpeichern_, abenteuer_loeschen: abenteuerLoeschen_,
+    session_speichern: sessionSpeichern_, session_loeschen: sessionLoeschen_
   };
   try {
     if (data.action === "ping") return jsonOut_({ ok: true });
@@ -329,14 +386,17 @@ function liste_() {
   var boegen = lebende_(b, bs).map(function (r) { return bogenAus_(r.zeile, bs); }).filter(function (x) { return x.name; });
   var ids = {};
   boegen.forEach(function (x) { ids[x.id] = true; });
+  var ab = abenteuerListe_(ids);
   return {
     boegen: boegen,
     eintraege: lebende_(e, es).map(function (r) { return eintragAus_(r.zeile, es); }).filter(function (x) { return ids[x.bogen_id] && x.name; }),
-    verlauf: lebende_(v, vs).map(function (r) { return verlaufAus_(r.zeile, vs); }).filter(function (x) { return ids[x.bogen_id]; })
+    verlauf: lebende_(v, vs).map(function (r) { return verlaufAus_(r.zeile, vs); }).filter(function (x) { return ids[x.bogen_id]; }),
+    abenteuer: ab.abenteuer,
+    sessions: ab.sessions
   };
 }
 
-// Ohne Passwort: genau ein Bogen mit seinem Schlüssel. Ohne Verlauf, ohne Notiz, ohne Schlüssel.
+// Ohne Passwort: genau ein Bogen mit seinem Schlüssel. Ohne Verlauf, ohne Notiz, ohne Schlüssel, ohne DM-Inhalte.
 // Aktuelle Werte der Zähler rechnet das Skript selbst. Falsche Schlüssel sperren nach 20 Versuchen
 // für 15 Minuten (eigener Zähler, damit Fremde nicht die Person aussperren können).
 function geteilt_(data) {
@@ -380,7 +440,17 @@ function geteilt_(data) {
     return { k: z.k, n: z.n, art: z.art, stand: stand, max: z.max };
   });
 
-  var antwort = { bogen: bogen, eintraege: eintraege };
+  // Abenteuer dieses Charakters mit Sessions (ab 0.6.8). Nie die Abenteuer als DM und nie die Ideen.
+  var ids = {};
+  ids[bogen.id] = true;
+  var ab = abenteuerListe_(ids);
+  var abenteuer = ab.abenteuer.filter(function (x) { return x.art === "spieler" && x.bogen_id === bogen.id; })
+    .map(function (x) { return { id: x.id, bogen_id: x.bogen_id, art: x.art, titel: x.titel, text: x.text }; });
+  var aids = {};
+  abenteuer.forEach(function (x) { aids[x.id] = true; });
+  var sessions = ab.sessions.filter(function (x) { return aids[x.abenteuer_id]; })
+    .map(function (x) { return { id: x.id, abenteuer_id: x.abenteuer_id, datum: x.datum, text: x.text }; });
+  var antwort = { bogen: bogen, eintraege: eintraege, abenteuer: abenteuer, sessions: sessions };
   if (bogen.bild) {
     var bild = bildDaten_(bogen.bild);
     if (bild.daten) antwort.bild = bild;
@@ -552,6 +622,17 @@ function bogenLoeschen_(data) {
         if (String(r.zeile[ss.bogen_id]) === String(data.id)) schreibeZeile_(s, ss, r, { geloescht: true });
       });
     });
+    // Abenteuer des Charakters mit ihren Sessions (wenn es die Blätter schon gibt)
+    var abs = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("abenteuer");
+    if (abs) {
+      var asp = spalten_(abs);
+      lebende_(abs, asp).forEach(function (r) {
+        if (String(r.zeile[asp.art]) === "spieler" && String(r.zeile[asp.bogen_id]) === String(data.id)) {
+          schreibeZeile_(abs, asp, r, { geloescht: true });
+          sessionsLoeschen_(String(r.zeile[asp.id]));
+        }
+      });
+    }
     return { ok: true };
   });
 }
@@ -595,6 +676,96 @@ function eintragLoeschen_(data) {
     schreibeZeile_(sheet, sp, z, { geloescht: true });
     return { ok: true };
   });
+}
+
+// --- Abenteuer und Sessions (ab 0.6.8) ---
+
+function abenteuerSpeichern_(data) {
+  return mitPruefung_(function () {
+    var x = data.abenteuer || {};
+    var art = String(x.art || "");
+    if (ABENTEUER_ARTEN_.indexOf(art) < 0) throw new Eingabe_("Unbekannte Art.");
+    var sheet = blatt_("abenteuer"), sp = spalten_(sheet);
+    var bogenId = "";
+    if (art === "spieler") {
+      bogenId = String(x.bogen_id || "");
+      if (!finde_(blatt_("boegen"), spalten_(blatt_("boegen")), bogenId)) throw new Eingabe_("Den Bogen gibt es nicht mehr. Bitte neu laden.");
+    }
+    var neu = x.id == null || x.id === "";
+    if (neu && art === "ideen" && lebende_(sheet, sp).some(function (r) { return String(r.zeile[sp.art]) === "ideen"; })) {
+      throw new Eingabe_("Die Abenteuerideen gibt es schon. Bitte neu laden.");
+    }
+    if (neu && lebende_(sheet, sp).length >= MAX_ABENTEUER_) throw new Eingabe_("Höchstens " + MAX_ABENTEUER_ + " Abenteuer.");
+    var werte = {
+      bogen_id: bogenId,
+      art: art,
+      titel: art === "ideen" ? "Abenteuerideen" : bereinigeText_(pflichtText_(x.titel, MAX_.name, "einen Titel"), MAX_.name),
+      text: bereinigeLang_(freiLang_(x.text, MAX_ATEXT_), MAX_ATEXT_),
+      abgeschlossen: art === "dm" && x.abgeschlossen === true
+    };
+    var z = zeileFuer_(sheet, sp, x);
+    if (!z.neu && String(z.zeile[sp.art]) !== art) throw new Eingabe_("Die Art lässt sich nicht ändern.");
+    if (!z.neu && art === "spieler" && String(z.zeile[sp.bogen_id]) !== bogenId) throw new Eingabe_("Das Abenteuer gehört zu einem anderen Charakter.");
+    schreibeZeile_(sheet, sp, z, werte);
+    return { id: String(z.zeile[sp.id]) };
+  });
+}
+
+function abenteuerLoeschen_(data) {
+  return mitPruefung_(function () {
+    var sheet = blatt_("abenteuer"), sp = spalten_(sheet);
+    var z = zeileFuer_(sheet, sp, { id: data.id, geaendert_am: data.geaendert_am });
+    if (z.neu) throw new Eingabe_("Welches Abenteuer?");
+    schreibeZeile_(sheet, sp, z, { geloescht: true });
+    sessionsLoeschen_(String(data.id));
+    return { ok: true };
+  });
+}
+
+function sessionsLoeschen_(abenteuerId) {
+  var s = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("sessions");
+  if (!s) return;
+  var ss = spalten_(s);
+  lebende_(s, ss).forEach(function (r) {
+    if (String(r.zeile[ss.abenteuer_id]) === abenteuerId) schreibeZeile_(s, ss, r, { geloescht: true });
+  });
+}
+
+function sessionSpeichern_(data) {
+  return mitPruefung_(function () {
+    var x = data.session || {};
+    var aid = String(x.abenteuer_id || "");
+    var a = finde_(blatt_("abenteuer"), spalten_(blatt_("abenteuer")), aid);
+    if (!a || String(a.zeile[spalten_(blatt_("abenteuer")).art]) !== "spieler") throw new Eingabe_("Das Abenteuer gibt es nicht mehr. Bitte neu laden.");
+    var datum = String(x.datum || "").trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(datum)) throw new Eingabe_("Bitte ein Datum angeben.");
+    var sheet = blatt_("sessions"), sp = spalten_(sheet);
+    if (x.id == null || x.id === "") {
+      var anzahl = lebende_(sheet, sp).filter(function (r) { return String(r.zeile[sp.abenteuer_id]) === aid; }).length;
+      if (anzahl >= MAX_SESSIONS_) throw new Eingabe_("Höchstens " + MAX_SESSIONS_ + " Sessions je Abenteuer.");
+    }
+    var z = zeileFuer_(sheet, sp, x);
+    if (!z.neu && String(z.zeile[sp.abenteuer_id]) !== aid) throw new Eingabe_("Die Session gehört zu einem anderen Abenteuer.");
+    schreibeZeile_(sheet, sp, z, { abenteuer_id: aid, datum: datum, text: bereinigeLang_(freiLang_(x.text, MAX_.text), MAX_.text) });
+    return { id: String(z.zeile[sp.id]) };
+  });
+}
+
+function sessionLoeschen_(data) {
+  return mitPruefung_(function () {
+    var sheet = blatt_("sessions"), sp = spalten_(sheet);
+    var z = zeileFuer_(sheet, sp, { id: data.id, geaendert_am: data.geaendert_am });
+    if (z.neu) throw new Eingabe_("Welche Session?");
+    schreibeZeile_(sheet, sp, z, { geloescht: true });
+    return { ok: true };
+  });
+}
+
+// Langer Text mit eigener Grenze (Zeilenumbrüche bleiben)
+function freiLang_(v, max) {
+  var t = String(v == null ? "" : v);
+  if (t.length > max) throw new Eingabe_("Der Text ist zu lang (höchstens " + max + " Zeichen).");
+  return t;
 }
 
 // Eine Änderung an einem Zähler. Wie ein Kassenbuch: Löschen nur im Sheet.
