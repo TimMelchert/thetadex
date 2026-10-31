@@ -147,6 +147,22 @@ function summe(bogen, z) {
     return daten.verlauf.reduce((s, v) => (v.bogen_id === bogen.id && v.zaehler === z.k ? s + v.aenderung : s), Number(z.start) || 0);
 }
 
+// Geld als Münzen untereinander (Gold, Silber, Bronze, Eisen), nur Münzen mit Anzahl (Wunsch der Person, 31.10.2026)
+function muenzen(kreuzer) {
+    let rest = Math.abs(kreuzer);
+    const zeilen = [];
+    MUENZEN.forEach(([wert, kurz, name], i) => {
+        const n = Math.floor(rest / wert);
+        rest -= n * wert;
+        if (n) zeilen.push(el('span', { class: 'dsa-muenze-zeile', attrs: { title: n + ' ' + name } }, [
+            el('span', { class: 'dsa-muenze dsa-muenze-' + ['gold', 'silber', 'bronze', 'eisen'][i], text: kurz, attrs: { 'aria-hidden': 'true' } }),
+            el('span', { text: (kreuzer < 0 ? '− ' : '') + n }),
+            el('span', { class: 'dsa-muenze-name', text: ' ' + name })
+        ]));
+    });
+    return el('span', { class: 'dsa-muenzen-stapel' }, zeilen.length ? zeilen : [el('span', { text: '0' })]);
+}
+
 // Aktueller Stand eines Zählers: Startwert plus Verlauf (AP: nur gesammelte), höchstens der Höchstwert
 function stand(bogen, z) {
     let s = Number(z.start) || 0;
@@ -171,9 +187,12 @@ export function render(container, ctx = {}) {
     const ladeStatus = el('p', { class: 'meldung besitz-lade', attrs: { role: 'status', 'aria-live': 'polite' } });
     const auswahl = el('select', { attrs: { id: 'dsa-bogen', 'aria-label': 'Bogen' }, on: { change: () => { schreiben('dsa_bogen', auswahl.value); zeigeAlles(); } } });
     const marke = el('span', { class: 'dsa-marke', attrs: { hidden: true } });
-    const bogenName = el('h2', { class: 'dsa-bogen-name', attrs: { hidden: true } });
+    // Name des Bogens als große Überschrift. Darüber liegt die (unsichtbare) Auswahl, Tipp öffnet sie (Wunsch der Person, 31.10.2026).
+    const bogenName = el('h2', { class: 'dsa-bogen-name' });
+    const namePfeil = el('span', { class: 'dsa-name-pfeil', attrs: { 'aria-hidden': 'true' } });
     const teilenKnopf = el('button', { class: 'knopf knopf-zweit dsa-teilen', text: '🔗 Teilen', attrs: { type: 'button', hidden: true }, on: { click: () => { const b = gewaehlt(); if (b) zeigeTeilen(b); } } });
-    const leiste = el('div', { class: 'dsa-leiste' }, [auswahl, bogenName, marke, teilenKnopf]);
+    const leiste = el('div', { class: 'dsa-leiste' }, [marke, teilenKnopf]);
+    const nameZeile = el('div', { class: 'dsa-name-zeile', attrs: { hidden: true } }, [bogenName, namePfeil, auswahl]);
     const oben = el('div', { class: 'dsa-oben', attrs: { hidden: true } });
     const abschnitte = el('div', { class: 'dsa-abschnitte' });
     const neuKnopf = el('button', { class: 'knopf knopf-bereich', text: '+ Bogen', attrs: { type: 'button', disabled: true }, on: { click: () => zeigeBogenForm(null) } });
@@ -200,8 +219,11 @@ export function render(container, ctx = {}) {
         neuKnopf.disabled = !daten;
 
         const bogen = gewaehlt();
-        bogenName.hidden = !(nurLesen && bogen);
-        bogenName.textContent = bogen && nurLesen ? bogen.name : '';
+        nameZeile.hidden = !bogen;
+        nameZeile.classList.toggle('ist-wahl', !nurLesen);
+        namePfeil.hidden = nurLesen;
+        bogenName.textContent = bogen ? bogen.name : '';
+        leiste.hidden = !bogen;
         teilenKnopf.hidden = nurLesen || !bogen;
         teilenKnopf.textContent = bogen && bogen.geteilt ? '🔗 Geteilt' : '🔗 Teilen';
         marke.hidden = !bogen;
@@ -226,7 +248,7 @@ export function render(container, ctx = {}) {
         if (zaehler.length) {
             oben.append(el('div', { class: 'dsa-zaehler' }, zaehler.map((z) => {
                 const s = stand(bogen, z);
-                const wert = z.art === 'geld' ? [el('span', { text: geldText(s) })]
+                const wert = z.art === 'geld' ? [muenzen(s)]
                     : [el('span', { text: String(s) }), Number(z.max) ? el('small', { text: ' / ' + z.max }) : null];
                 const kachel = nurLesen ? el('div', { class: 'dsa-zaehler-kachel' })
                     : el('button', { class: 'dsa-zaehler-kachel', attrs: { type: 'button', 'aria-label': (z.n || z.k) + ' ändern' }, on: { click: () => zeigeZaehlerForm(bogen, z) } });
@@ -350,12 +372,22 @@ export function render(container, ctx = {}) {
             : el('p', { class: 'leise', text: leerText || 'Noch leer. Tippe auf ✎.' });
         if (bogen.bild) {
             // Bild des Helden neben dem Kopf, lädt nach
+            // So hoch wie der Text: Das ganze Bild bleibt sichtbar, der Rest füllt sich mit einer unscharfen Kopie (Wunsch der Person, 31.10.2026)
             const bild = el('img', { class: 'dsa-bild', attrs: { alt: 'Bild: ' + bogen.name, hidden: true } });
+            const grund = el('img', { class: 'dsa-bild-grund', attrs: { alt: '', 'aria-hidden': 'true', hidden: true } });
             const bildText = el('p', { class: 'leise dsa-bild-text', text: 'Bild lädt …' });
             holeBild(bogen.bild)
-                .then((adresse) => { bild.src = adresse; bild.hidden = false; bildText.remove(); })
+                .then((adresse) => { bild.src = adresse; grund.src = adresse; bild.hidden = false; grund.hidden = false; bildText.remove(); })
                 .catch((e) => { bildText.textContent = 'Bild nicht geladen: ' + e.message; });
-            inhalt.push(el('div', { class: 'dsa-kopf-mit-bild' }, [liste, el('div', { class: 'dsa-bild-box' }, [bild, bildText])]));
+            // Tipp auf das Bild zeigt es groß (Wunsch der Person, 31.10.2026)
+            const gross = () => {
+                if (bild.hidden) return;
+                oeffneDialog(bogen.name, [
+                    el('img', { class: 'besitz-dialog-bild', attrs: { src: bild.src, alt: 'Bild: ' + bogen.name } }),
+                    el('div', { class: 'besitz-form-knoepfe' }, [el('button', { class: 'knopf knopf-zweit', text: 'Schließen', attrs: { type: 'button' }, on: { click: () => dialog.close() } })])
+                ]);
+            };
+            inhalt.push(el('div', { class: 'dsa-kopf-mit-bild' }, [liste, el('button', { class: 'dsa-bild-box', attrs: { type: 'button', 'aria-label': 'Bild groß zeigen' }, on: { click: gross } }, [grund, bild, bildText])]));
         } else {
             inhalt.push(liste);
         }
@@ -955,6 +987,7 @@ export function render(container, ctx = {}) {
         ]),
         nurLesen ? el('p', { class: 'leise dsa-geteilt-hinweis', text: 'Geteilter Bogen, nur zum Ansehen.' }) : null,
         leiste,
+        nameZeile,
         ladeStatus,
         oben,
         abschnitte,
