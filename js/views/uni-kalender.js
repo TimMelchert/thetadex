@@ -1,5 +1,5 @@
 // Uni-Kalender (Schritt 5.2): Ansichten Woche, Monat und Liste, Filter nach Art (ohne „Frei“ seit 5.5, das ist Urlaub).
-// Woche: am PC und im Querformat ein Raster mit Uhrzeiten, im Hochformat am Handy eine Liste je Tag (STAND.md 4).
+// Woche: überall ein Raster mit Uhrzeiten; im Hochformat am Handy schmal, darunter eine Liste je Tag (STAND.md 4, seit 5.6).
 // Zeichnet nur; Fenster und Formulare stehen in uni.js (beiEintrag, beiTag).
 
 import { el, heute } from '../ui/dom.js';
@@ -8,7 +8,7 @@ import { alsDate, alsText, plusTage, wochenStart, kalenderwoche, monatsRaster, m
 // Alle Arten mit Namen. Die Farben stehen in css/base.css (--art-…).
 export const ARTEN = [
     ['vorlesung', 'Vorlesung'], ['pruefung', 'Prüfung'], ['arbeit', 'Arbeit'], ['zug', 'Zug'],
-    ['urlaub', 'Urlaub'], ['sonstiges', 'Sonstiges'], ['ferien', 'Semesterferien']
+    ['urlaub', 'Urlaub'], ['hobby', 'Hobby'], ['sonstiges', 'Sonstiges'], ['ferien', 'Semesterferien']
 ];
 // „frei“ (bis 0.5.5) heißt jetzt Urlaub
 export const ART_NAME = { ...Object.fromEntries(ARTEN), frei: 'Urlaub' };
@@ -31,7 +31,8 @@ function tagInfo(t, daten, aus) {
 
 // Ein Eintrag als Knopf (Liste je Tag, Liste, Fenster eines Tages)
 export function eintragKnopf(e, beiKlick) {
-    const merkmale = [ART_NAME[e.art] || e.art, e.ort].filter(Boolean).join(' · ');
+    const leistung = e.termin && e.art === 'pruefung' ? e.termin.leistung : '';
+    const merkmale = [leistung || ART_NAME[e.art] || e.art, e.ort].filter(Boolean).join(' · ');
     return el('button', { class: 'uni-eintrag' + (e.ausfall ? ' uni-ausfall' : ''), attrs: { type: 'button', 'data-art': e.art }, on: { click: beiKlick } }, [
         el('span', { class: 'uni-zeit', text: zeitText(e) }),
         el('span', { class: 'uni-was' }, [
@@ -119,13 +120,7 @@ function zeichneWoche(box, daten, z, beiEintrag, h) {
     const tage = Array.from({ length: 7 }, (_, i) => plusTage(start, i));
     const infos = tage.map((t) => tagInfo(t, daten, z.aus));
 
-    // Hochformat am Handy: Liste je Tag
-    box.append(el('div', { class: 'uni-woche-liste' }, [
-        el('p', { class: 'leise besitz-hinweis uni-drehen', text: 'Für die Woche als Raster das Handy drehen.' }),
-        ...tagesListe(tage, daten, z, beiEintrag, h, true)
-    ]));
-
-    // PC und Querformat: Raster mit Uhrzeiten. Sichtbar sind mindestens 8 bis 18 Uhr, sonst so viel wie nötig.
+    // Raster mit Uhrzeiten (überall; im Hochformat am Handy schmal, darunter die Liste je Tag). Sichtbar sind mindestens 8 bis 18 Uhr, sonst so viel wie nötig.
     const mitZeit = infos.flatMap((i) => i.eintraege.filter((e) => !e.ganztags && !e.ausfall));
     let vonH = 8, bisH = 18;
     mitZeit.forEach((e) => { vonH = Math.min(vonH, Math.floor(minuten(e.von) / 60)); bisH = Math.max(bisH, Math.ceil(minuten(e.bis) / 60)); });
@@ -134,7 +129,7 @@ function zeichneWoche(box, daten, z, beiEintrag, h) {
     // Kopf: Wochentag und Datum, darunter ganztägige Einträge
     raster.append(el('div', { class: 'uni-raster-ecke' }));
     tage.forEach((t, i) => raster.append(el('div', { class: 'uni-raster-kopf' + (t === h ? ' uni-heute' : '') }, [
-        el('span', { text: TAGE_KURZ[i] + ' ' + kurzDatum(t) })
+        el('span', { text: TAGE_KURZ[i] }), el('span', { text: ' ' + kurzDatum(t) })
     ])));
     raster.append(el('div', { class: 'uni-raster-ecke' }));
     infos.forEach((info, i) => raster.append(el('div', { class: 'uni-raster-ganztags' + (info.ferien ? ' uni-ferien' : '') },
@@ -171,6 +166,9 @@ function zeichneWoche(box, daten, z, beiEintrag, h) {
     });
     raster.style.setProperty('--stunden', String(bisH - vonH));
     box.append(raster);
+
+    // Hochformat am Handy: unter dem Raster die Liste je Tag (mit Raum und allen Angaben)
+    box.append(el('div', { class: 'uni-woche-liste' }, tagesListe(tage, daten, z, beiEintrag, h, true)));
 }
 
 function zeichneMonat(box, daten, z, beiTag, h) {

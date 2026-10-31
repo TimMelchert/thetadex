@@ -853,6 +853,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 [data-art="arbeit"]    { --art: var(--art-arbeit); }
 [data-art="zug"]       { --art: var(--art-zug); }
 [data-art="urlaub"]    { --art: var(--art-urlaub); }
+[data-art="hobby"]     { --art: var(--art-hobby); }
 [data-art="frei"]      { --art: var(--art-frei); }
 [data-art="sonstiges"] { --art: var(--art-sonstiges); }
 [data-art="ferien"]    { --art: var(--art-ferien); }
@@ -876,14 +877,23 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .uni-tag.uni-ferien h3 { border-bottom-color: var(--art-ferien); }
 .uni-leer { margin: 6px 0 0; }
 
-/* Woche: am Handy im Hochformat die Liste, sonst das Raster */
-.uni-woche-raster { display: none; }
+/* Woche: überall das Raster; am Handy im Hochformat schmal (nur Titel), darunter die Liste je Tag */
+.uni-woche-raster {
+    display: grid; grid-template-columns: 44px repeat(7, minmax(0, 1fr)); margin-top: var(--abstand);
+    border: 1px solid var(--linie); border-radius: var(--rund); overflow: hidden;
+}
 @media (min-width: 768px), (orientation: landscape) {
     .uni-woche-liste { display: none; }
-    .uni-woche-raster {
-        display: grid; grid-template-columns: 44px repeat(7, minmax(0, 1fr)); margin-top: var(--abstand);
-        border: 1px solid var(--linie); border-radius: var(--rund); overflow: hidden;
-    }
+}
+@media (max-width: 767px) and (orientation: portrait) {
+    .uni-woche-raster { grid-template-columns: 30px repeat(7, minmax(0, 1fr)); }
+    .uni-raster-kopf { display: flex; flex-direction: column; padding: 4px 0; font-size: 0.7rem; line-height: 1.2; }
+    .uni-raster-zeiten span { padding-right: 2px; font-size: 0.6rem; }
+    .uni-block { margin: 0; padding: 1px 2px; border-radius: 3px; font-size: 0.6rem; line-height: 1.1; }
+    .uni-block-zeit, .uni-block-ort { display: none; }
+    .uni-block-titel { font-weight: 600; overflow-wrap: normal; word-break: normal; }
+    .uni-raster-ganztags { padding: 1px; }
+    .uni-ferien-text { font-size: 0.6rem; }
 }
 .uni-raster-ecke { border-bottom: 1px solid var(--linie); }
 .uni-raster-kopf { padding: 6px 4px; border-left: 1px solid var(--linie); border-bottom: 1px solid var(--linie); font-size: 0.85rem; font-weight: 600; text-align: center; }
@@ -972,4 +982,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .formular .uni-zeitraum-knoepfe .knopf { margin-top: 0; }
 .uni-schalter { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 10px; }
 .uni-schalter[hidden] { display: none; }
+.uni-pruefung-felder { display: flex; flex-direction: column; gap: 6px; }
+.uni-pruefung-felder[hidden] { display: none; }
+.formular.uni-ohne-rand { margin-top: 0; }
 .formular .uni-schalter label { margin-top: 0; font-size: 1rem; font-weight: 400; }
