@@ -263,4 +263,6 @@ alles mit einem Knopf bearbeiten, Fenster nur mit × oder Abbrechen schließen, 
 
 ## Rückfragen
 
-Zu 5.5: Zählen Auflagen vom Bachelor zu den 120 ECTS (jetzt: nein, eigene Zeile)? Sollen Fenster auch in Einkauf und Besitz nur mit × oder Abbrechen zugehen?
+Keine offenen. Antworten zu 5.5 (31.10.2026):
+1. Auflagen vom Bachelor zählen **nicht** zu den 120 ECTS. Sie müssen nur bestanden sein; ECTS dafür sind freiwillig.
+2. Fenster in Einkauf und Besitz bleiben wie sie sind (Tipp daneben schließt weiter); nur im Reiter Uni gehen sie nur mit × oder Abbrechen zu.
