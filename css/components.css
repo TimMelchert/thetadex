@@ -1168,3 +1168,7 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
 .dsa-kopf-mit-bild .dsa-felder dd { overflow-wrap: break-word; hyphens: auto; }
 .dsa-muenze-name { display: none; }
 @media (min-width: 768px) { .dsa-muenze-name { display: inline; } }
+/* Am Handy ist der Platz neben dem Kopf schmal und hoch: das Bild füllt ihn ganz (Gesicht oben im Blick), ganz zu sehen per Tipp */
+@media (max-width: 599px) {
+    .dsa-bild { object-fit: cover; object-position: 50% 20%; }
+}

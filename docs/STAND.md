@@ -325,7 +325,7 @@ unter „Info“ die Version prüfen.
   „Neuen Link erstellen“, „Nicht mehr teilen“. Den Schlüssel gibt das Skript nur beim Erstellen heraus; die App merkt ihn in `thetadex_dsa_links`.
   Aussehen (0.6.7, Wunsch der Person): Marke DSA/DnD und „🔗 Teilen“ in einer Zeile über dem Namen; der Name ist eine große fette Überschrift
   mit Pfeil, darüber liegt unsichtbar die Bogen-Auswahl. Geld als Münzen untereinander (Gold D, Silber S, Bronze H, Eisen K, nur mit Anzahl; am PC mit Namen).
-  Bild rechts so hoch wie der Kopf, ganzes Bild sichtbar, der Rand mit einer unscharfen Kopie gefüllt; Tipp zeigt es groß.
+  Bild rechts so hoch wie der Kopf: am PC ganz sichtbar, Rand mit unscharfer Kopie gefüllt; am Handy füllt es den Platz (Gesicht oben), Tipp zeigt es groß.
   Wurde der Link an einem anderen Gerät erstellt, hilft nur „Neuen Link erstellen“. Die Adresse `#/bogen/<skript>/<schluessel>` nutzt dieselbe Ansicht
   (`js/views/dsa.js`, Route `bogen` in `js/app.js`) im Modus „nur lesen“: ohne Passwort, ohne Verlauf, ohne Knöpfe zum Ändern, Tipp auf einen Eintrag zeigt ihn nur an.
   Semester (5.1), Kalender mit Woche, Monat, Liste, Filter nach Art, „einmal anders“ und ohne Netz (5.2), Arbeitsstunden (5.3),
