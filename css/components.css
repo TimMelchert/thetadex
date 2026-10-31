@@ -849,11 +849,11 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 
 /* Uni (5.2): Farbe je Art in --art (Werte in css/base.css) */
 [data-art="vorlesung"] { --art: var(--art-vorlesung); }
-[data-art="pruefung"]  { --art: var(--art-pruefung); }
+[data-art="pruefung"]  { --art: var(--art-pruefung); --art-schrift: var(--art-pruefung-schrift); }
 [data-art="arbeit"]    { --art: var(--art-arbeit); }
 [data-art="zug"]       { --art: var(--art-zug); }
 [data-art="urlaub"]    { --art: var(--art-urlaub); }
-[data-art="hobby"]     { --art: var(--art-hobby); }
+[data-art="hobby"]     { --art: var(--art-hobby); --art-schrift: var(--art-hobby-schrift); }
 [data-art="frei"]      { --art: var(--art-frei); }
 [data-art="sonstiges"] { --art: var(--art-sonstiges); }
 [data-art="ferien"]    { --art: var(--art-ferien); }
@@ -865,7 +865,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .uni-blaettern .knopf { min-width: 44px; padding: 0 12px; }
 .uni-kal-titel { flex: 1; margin: 0; font-size: 1.05rem; text-align: center; }
 .uni-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-.uni-filter-knopf { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid var(--linie); border-radius: 999px; background: none; color: var(--schrift); font: inherit; font-size: 0.85rem; cursor: pointer; }
+.uni-filter-knopf { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 1px solid var(--linie); border-radius: 999px; background: none; color: var(--schrift); font: inherit; font-size: 0.85rem; cursor: pointer; }
 .uni-filter-knopf[aria-pressed="false"] { color: var(--schrift-leise); text-decoration: line-through; }
 .uni-filter-knopf[aria-pressed="false"] .uni-punkt { opacity: 0.3; }
 .uni-punkt { width: 12px; height: 12px; border-radius: 50%; background: var(--art); border: 1px solid var(--linie); }
@@ -887,13 +887,14 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 }
 @media (max-width: 767px) and (orientation: portrait) {
     .uni-woche-raster { grid-template-columns: 30px repeat(7, minmax(0, 1fr)); }
-    .uni-raster-kopf { display: flex; flex-direction: column; padding: 4px 0; font-size: 0.7rem; line-height: 1.2; }
-    .uni-raster-zeiten span { padding-right: 2px; font-size: 0.6rem; }
-    .uni-block { margin: 0; padding: 1px 2px; border-radius: 3px; font-size: 0.6rem; line-height: 1.1; }
-    .uni-block-zeit, .uni-block-ort { display: none; }
-    .uni-block-titel { font-weight: 600; overflow-wrap: normal; word-break: normal; }
+    .uni-raster-kopf { display: flex; flex-direction: column; padding: 4px 0; font-size: 0.75rem; line-height: 1.2; }
+    .uni-raster-zeiten span { padding-right: 2px; font-size: 0.7rem; }
+    .uni-block { margin: 0; padding: 1px 2px; border-radius: 3px; font-size: 0.7rem; line-height: 1.15; }
+    .uni-block > .uni-block-zeit, .uni-block > .uni-block-ort { display: none; }
+    /* Schmale Spalte: Titel Wort für Wort umbrechen, was nicht passt, wird abgeschnitten (ein Tipp zeigt alles) */
+    .uni-block > .uni-block-titel { font-weight: 600; white-space: normal; text-overflow: clip; overflow-wrap: normal; }
     .uni-raster-ganztags { padding: 1px; }
-    .uni-ferien-text { font-size: 0.6rem; }
+    .uni-ferien-text { font-size: 0.7rem; }
 }
 .uni-raster-ecke { border-bottom: 1px solid var(--linie); }
 .uni-raster-kopf { padding: 6px 4px; border-left: 1px solid var(--linie); border-bottom: 1px solid var(--linie); font-size: 0.85rem; font-weight: 600; text-align: center; }
@@ -910,11 +911,20 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .uni-raster-tag.uni-heute { box-shadow: inset 0 0 0 2px var(--bereich); }
 .uni-block {
     position: absolute; display: flex; flex-direction: column; gap: 1px; overflow: hidden; margin: 0 1px; padding: 2px 4px;
-    border: none; border-radius: 6px; background: var(--art); color: var(--schrift-auf-farbe); font: inherit; font-size: 0.75rem; line-height: 1.2; text-align: left; cursor: pointer;
+    border: 1px solid var(--linie); border-radius: 6px; background: var(--art); color: var(--art-schrift, var(--schrift-auf-farbe)); font: inherit; font-size: 0.75rem; line-height: 1.2; text-align: left; cursor: pointer;
 }
 .uni-block-ganz { position: static; display: block; margin: 0; white-space: nowrap; text-overflow: ellipsis; }
+/* Jede Zeile im Block einzeilig, zu Langes endet mit „…“ (ein Tipp zeigt alles) */
+.uni-block > span { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .uni-block-zeit { font-variant-numeric: tabular-nums; }
-.uni-block-titel { font-weight: 700; overflow-wrap: anywhere; }
+.uni-block-titel { font-weight: 700; }
+.uni-block-kurz .uni-block-zeit, .uni-block-kurz .uni-block-ort { display: none; }
+.uni-block-mittel .uni-block-ort { display: none; }
+/* Linie „jetzt“ in der Spalte von heute */
+/* Schriftfarbe (hell: schwarz, dunkel: weiß) statt Rot, damit sie auch ohne Farbsehen auffällt; heller Rand trennt sie von farbigen Kästen */
+.uni-jetzt { position: absolute; left: -1px; right: 0; z-index: 2; height: 3px; background: var(--schrift); box-shadow: 0 0 0 1px var(--hintergrund); pointer-events: none; }
+.uni-jetzt::before { content: ""; position: absolute; left: -5px; top: -4px; width: 11px; height: 11px; border-radius: 50%; background: var(--schrift); box-shadow: 0 0 0 1px var(--hintergrund); }
+.uni-jetzt[hidden] { display: none; }
 .uni-block.uni-ausfall { background: none; border: 2px dashed var(--art); color: var(--schrift-leise); text-decoration: line-through; }
 
 /* Monat */
@@ -934,7 +944,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 @media (min-width: 768px) {
     .uni-monat-tag { min-height: 96px; padding: 4px; }
     .uni-monat-zahl { text-align: left; }
-    .uni-monat-eintrag { height: auto; padding: 1px 4px; color: var(--schrift-auf-farbe); font-size: 0.72rem; white-space: nowrap; text-overflow: ellipsis; }
+    .uni-monat-eintrag { height: auto; padding: 1px 4px; color: var(--art-schrift, var(--schrift-auf-farbe)); font-size: 0.72rem; white-space: nowrap; text-overflow: ellipsis; }
     .uni-monat-eintrag.uni-weiter { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 }
 
@@ -968,7 +978,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .uni-pruefung .meldung { flex-basis: 100%; margin: 0; }
 .uni-pruefung .meldung:empty { display: none; }
 .uni-ohne-kurs { padding-top: 6px; border-top: 1px solid var(--linie); }
-.knopf.uni-klein { min-height: 36px; padding: 0 10px; font-size: 0.85rem; }
+.knopf.uni-klein { min-height: 44px; padding: 0 12px; font-size: 0.85rem; }
 .uni-bestanden[aria-pressed="true"] { font-weight: 700; }
 .uni-modul-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 

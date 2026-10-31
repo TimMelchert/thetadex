@@ -156,12 +156,18 @@ function zeichneWoche(box, daten, z, beiEintrag, h) {
                 el('span', { class: 'uni-block-titel', text: e.titel }),
                 e.ort ? el('span', { class: 'uni-block-ort', text: e.ort }) : null
             ]);
+            // Kurze Einträge zeigen nur den Titel, mittlere Titel und Zeit, lange auch den Raum
+            const dauer = minuten(e.bis) - minuten(e.von);
+            if (dauer < 50) block.classList.add('uni-block-kurz');
+            else if (dauer < 80) block.classList.add('uni-block-mittel');
+            block.title = e.von + '–' + e.bis + ' ' + e.titel + (e.ort ? ', ' + e.ort : '');
             block.style.top = (minuten(e.von) - vonH * 60) * PX_JE_MINUTE + 'px';
             block.style.height = Math.max(22, (minuten(e.bis) - minuten(e.von)) * PX_JE_MINUTE - 2) + 'px';
             block.style.left = (spur / n * 100) + '%';
             block.style.width = 'calc(' + (100 / n) + '% - 2px)';
             spalte.append(block);
         });
+        if (tage[i] === h) spalte.append(jetztLinie(vonH, bisH));
         raster.append(spalte);
     });
     raster.style.setProperty('--stunden', String(bisH - vonH));
@@ -169,6 +175,20 @@ function zeichneWoche(box, daten, z, beiEintrag, h) {
 
     // Hochformat am Handy: unter dem Raster die Liste je Tag (mit Raum und allen Angaben)
     box.append(el('div', { class: 'uni-woche-liste' }, tagesListe(tage, daten, z, beiEintrag, h, true)));
+}
+
+// Rote Linie „jetzt“ in der Spalte von heute. Rückt jede Minute weiter, bis das Raster neu gezeichnet wird.
+function jetztLinie(vonH, bisH) {
+    const linie = el('div', { class: 'uni-jetzt', attrs: { 'aria-hidden': 'true' } });
+    const setze = () => {
+        const d = new Date();
+        const min = d.getHours() * 60 + d.getMinutes();
+        linie.hidden = min < vonH * 60 || min > bisH * 60;
+        linie.style.top = (min - vonH * 60) * PX_JE_MINUTE + 'px';
+    };
+    setze();
+    const uhr = setInterval(() => { if (linie.isConnected) setze(); else clearInterval(uhr); }, 60000);
+    return linie;
 }
 
 function zeichneMonat(box, daten, z, beiTag, h) {

@@ -4,14 +4,14 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.5.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.5.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
-- Etappe 5 „Uni“ läuft: Plan `docs/PLAN-ETAPPE-5.md`. Gebaut: 5.1 (Blätter, Skript, Semester und Stundenplan), 5.2 (Termine, Kalender und ohne Netz), 5.3 (Arbeitsstunden), 5.4 (Module und Master-Übersicht), 5.5 (Kurse, Prüfungen bestanden, Termine jede Woche, kein Stundenplan mehr), 5.6 (Art der Prüfung bei der Prüfung, Woche am Handy als Raster, Art Hobby).
-- Nächster Schritt: 5.7 (Anmerkungen der Person, dann Etappe 5 abschließen).
+- Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
+- Nächster Schritt: Etappe 6 „DSA und DnD“ (7.2), zuerst ein Plan `docs/PLAN-ETAPPE-6.md`.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -307,19 +307,11 @@ unter „Info“ die Version prüfen.
   Nachbesserung 0.4.9 (Wunsch der Person): bei Lebensmitteln Haken „Vorrat“ rechts neben der Suche, „+ Neues Lebensmittel“ und „Neu laden“
   gleich unter der Suche; im Gericht-Formular „+ Neues Lebensmittel“ mit Name, Abteilung und Einheit, kommt gleich als Zutat dazu.
   Gemeinsam nutzen (4.5): Reiter erscheinen nach eingetragenen Script-Adressen. „Verbindung prüfen“ zeigt bei `gemeinsam`, ob als Hauptperson oder Partner*in angemeldet.
-- Etappe 5 (läuft, Plan `docs/PLAN-ETAPPE-5.md`): Skript `gemeinsam` mit Blättern `semester`, `stundenplan`, `termine`, `module`, `uni_einstellungen` (5.1).
-  Aktionen `uni` (beide Rollen), `uni_speichern` und `uni_loeschen` (nur `person`, mit `blatt`). Reiter Uni: Semester wählen, anlegen, ändern; Stundenplan je Wochentag.
-  Kalender (5.2): Woche (PC und Querformat Raster, Hochformat Liste je Tag), Monat, Liste; Filter nach Art; Termine; „Nur an diesem Tag ändern“,
-  „Fällt an diesem Tag aus“, „Wieder wie immer“ (Termin mit `stunde_id`). Ohne Netz die zuletzt geladenen Uni-Daten aus dem Gerät, ohne Knöpfe.
-  Arbeitsstunden (5.3): im Kalender für die gezeigte Woche, den Monat oder die vier Wochen der Liste; im Stundenplan „Arbeit: … je Woche“. Nur gerechnet, nichts gespeichert.
-  Module (5.4): „… von 120 ECTS bestanden“ mit Balken, Kacheln Bestanden, Läuft, Offen, „Noch ohne Modul“; Module nach Bereich mit nächster Prüfung; Filter nach Stand.
-  Umbau (5.5): kein Unterreiter Stundenplan mehr; `einrichten` zieht ihn in `termine` um (Spalte `tage`, gleiche id). Neues Blatt `kurse`
-  (Modul, ECTS, Semester, Tag, Zeit, Raum, Dozent*in, Prüfungsleistung), `module.pflicht` (Pflicht, Wahlpflicht, Auflage), `termine.tage`, `kurs_id`, `bestanden`.
-  Termine gelten auf Wunsch jede Woche an bestimmten Tagen; Kurse jede Woche in der Vorlesungszeit. Prüfungen „bestanden“; ein Modul ist fertig,
-  wenn alle seine Kurse mit Prüfung bestanden sind, dann zählen seine ECTS. Auflagen zählen nicht zum Ziel. Je Modul, Kurs und Prüfung ein Knopf ✎.
-  Art „frei“ weg (gilt als Urlaub). Fenster im Reiter Uni schließen nur mit × oder Abbrechen. Einzelheiten im Plan, Schritt 5.5.
-  Schritt 5.6: Art der Prüfung (`termine.leistung`) im Prüfungs-Formular statt im Kurs; ein Knopf „+ Prüfung“ je Modul; beim Anlegen von Modul und Kurs
-  gleich eine Prüfung; Woche am Handy im Hochformat: schmales Raster mit 7 Spalten über der Liste; neue Art „Hobby“ (`--art-hobby`).
+- Etappe 5 (fertig): Reiter Uni im Sheet „Gemeinsam“ (Skript `gemeinsam`), Regeln in 4 „Uni, Sheet ‚Gemeinsam‘“.
+  Semester (5.1), Kalender mit Woche, Monat, Liste, Filter nach Art, „einmal anders“ und ohne Netz (5.2), Arbeitsstunden (5.3),
+  Module mit Master-Übersicht (5.4). Umbau nach Anmerkungen (5.5): kein Stundenplan mehr (in `termine` umgezogen), Kurse je Modul,
+  Termine jede Woche an bestimmten Tagen, Prüfungen „bestanden“, Auflagen getrennt. 5.6: Art der Prüfung bei der Prüfung, ein Knopf „+ Prüfung“,
+  Prüfung gleich beim Anlegen von Modul und Kurs, Woche am Handy als Raster, Art Hobby. 5.7: Hobby dunkelgrün, Text in den Kästen gekürzt, Linie „jetzt“.
 
 ### 3.2 Offen
 
@@ -331,7 +323,7 @@ unter „Info“ die Version prüfen.
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
 - Ein Beispiel-Charakterbogen zum Verständnis (kommt nicht ins Repo).
 - Später als eigener Schritt (Entscheidung der Person, 30.10.2026): Kommentare in den Skripten, die auf gelöschte Plan-Dateien zeigen, aufräumen
-  (`apps-script/leben`, `gemeinsam`, `finanzen`, `tracking`). Dann müssen die Skripte neu eingefügt werden.
+  (`apps-script/leben`, `gemeinsam` (zeigt noch auf `PLAN-ETAPPE-5.md`), `finanzen`, `tracking`). Dann müssen die Skripte neu eingefügt werden.
 
 ---
 
@@ -406,10 +398,42 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - Abgehakte bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird; erst dann gehen sie ans Skript (Wunsch der Person, 30.10.2026).
   - Datenschutz: keine Preise, Läden oder Gesundheitsdaten. Über die Partnerin oder den Partner wird nichts gespeichert, auch nicht, wer etwas eingetragen hat.
     Das Sheet „Gemeinsam“ wird mit niemandem geteilt. Keine Lebensmittel, Gerichte oder Namen im Repo.
+- **Uni, Sheet „Gemeinsam“** (Etappe 5, Plan eingearbeitet am 31.10.2026). Alle Daten-Blätter haben zusätzlich `id, erstellt_am, geaendert_am, geloescht`;
+  Löschen ist weich. Daten und Uhrzeiten stehen als Text (`JJJJ-MM-TT`, `HH:MM`, `TEXT_SPALTEN_`); hat das Sheet doch ein Datum daraus gemacht, wandelt das Skript es zurück.
+  - `semester`: `name` (40, nicht doppelt), `beginn`, `ende` (höchstens ein Jahr), `vorlesung_beginn`, `vorlesung_ende` (im Semester).
+    Semesterferien = Zeit im Semester außerhalb der Vorlesungszeit, berechnet, nicht eingetragen. Die Person trägt Semester in der App ein.
+  - `module`: `name` (80), `kuerzel` (20), `bereich` (40), `pflicht` (`pflicht`, `wahlpflicht`, `auflage`), `ects` (0 bis 60, halbe), `status` (`offen`, `laeuft`, `bestanden` = „Fertig“),
+    `semester_id` (belegt oder geplant), `notiz` (200). **Keine Noten** (stehen auf der Uni-Plattform).
+  - `kurse`: `modul_id` (Pflicht), `name` (80), `ects`, `semester_id` (leer = wie das Modul), `tag` (1 = Montag … 7), `von`, `bis` (alle drei oder keins),
+    `ort` (Raum, 60), `dozent` (60, freiwillig), `pruefungsleistung` (alt, nur noch zum Leeren sichtbar), `notiz`. Höchstens 300.
+  - `termine`: `titel` (80), `art` (`vorlesung`, `pruefung`, `arbeit`, `zug`, `urlaub`, `hobby`, `sonstiges`; alte `frei` gelten als Urlaub), `beginn`, `ende` (leer = eintägig,
+    höchstens 366 Tage), `von`, `bis` (beide oder keine = ganztägig), `tage` (Wochentage als Text, zum Beispiel `1,3`; dann ist `ende` Pflicht), `ort` (60),
+    `modul_id`, `kurs_id` (der Kurs bestimmt das Modul), `stunde_id`, `bestanden` und `leistung` (Art der Prüfung, 80; beide nur bei Prüfungen), `notiz`. Höchstens 3000.
+  - `uni_einstellungen` (`name`, `wert`): `ects_ziel`, `einrichten` legt 120 an; ändern im Sheet.
+  - `stundenplan`: alt (bis 0.5.5). `einrichten` zieht aktive Einträge in `termine` um (gleiche id, `tage` = Wochentag; Vorlesungen in der Vorlesungszeit,
+    sonst ganzes Semester) und löscht sie weich. Einträge ohne gültiges Semester bleiben stehen (Protokoll).
+  - Aktionen: `uni` (beide Rollen, alles in einer Antwort), `uni_speichern` (`blatt` = `semester`, `module`, `kurse`, `termine`; ändern mit `geaendert_am`)
+    und `uni_loeschen` (nur `person`). Modul löschen nimmt seine Kurse mit; Kurs oder wiederkehrender Termin seine Ausnahmen.
+    Prüfungen und andere Termine bleiben, sie werden nur ausgetragen. Semester löschen trägt es bei Modulen und Kursen aus.
+  - **Kalender:** Jede Woche gelten Kurse mit Tag und Zeit (in der Vorlesungszeit ihres Semesters, Art Vorlesung) und Termine mit `tage` (vom ersten bis zum letzten Tag).
+    An Urlaubstagen fallen sie weg. „Einmal anders“: ein Termin mit `stunde_id` (Kurs oder wiederkehrender Termin) ersetzt ihn an seinem Tag,
+    mit Uhrzeit = andere Zeit, ohne = fällt aus; „Wieder wie immer“ löscht ihn. Jeder Eintrag zeigt Zeit, Titel und Raum; im Raster wird zu Langes mit „…“ gekürzt
+    (kurze Einträge nur Titel), ein Tipp zeigt alles. Eine rote Linie zeigt in der Woche die aktuelle Uhrzeit (Spalte heute). Start: Woche mit heute.
+  - **Arbeitsstunden** rechnet die App aus allen Einträgen der Art Arbeit mit Uhrzeit (Woche, Monat, vier Wochen der Liste); nichts davon wird gespeichert.
+  - **Fertig:** Ein Kurs ist fertig, wenn eine seiner Prüfungen bestanden ist (ein zweiter Versuch zählt). Ein Modul ist fertig, wenn jeder Kurs mit Prüfung
+    fertig ist (und Prüfungen ohne Kurs bestanden sind), mindestens einer, oder wenn die Person „Fertig“ wählt. Fertige Module zählen zum Ziel;
+    ohne ECTS am Modul die Summe seiner Kurse. **Auflagen vom Bachelor** zählen nicht zum Ziel, sie müssen nur bestanden sein (eigene Zeile).
+  - Module als Karten mit Kursen und Prüfungen; je Modul, Kurs und Prüfung ein Knopf ✎, bei Prüfungen „bestanden?“. Ein Knopf „+ Prüfung“ je Modul
+    (Kurs im Formular wählen). Beim Anlegen von Modul und Kurs kann gleich eine Prüfung mit (ohne Datum keine).
+  - Fenster im Reiter Uni schließen nur mit × oder Abbrechen (kein Tipp daneben, keine Escape-Taste); in Einkauf und Besitz bleibt es wie es ist (Entscheidung der Person, 31.10.2026).
+  - Partner*in sieht alles, auch die Module, aber ohne Knöpfe; das Skript lässt sie nicht schreiben. Dozent*in-Namen stehen nur im Sheet, nie im Repo.
 - **Reiter nach Script-Adressen** (Entscheidung der Person, 30.10.2026): Ein Reiter erscheint nur mit der Adresse seines Skripts (siehe 2.1).
   Die App speichert keine Rolle; die Rechte prüft immer das Skript.
 - **Farben der Arten im Uni-Kalender** (Wunsch der Person, Plan 7.2 und Etappe 5): Vorlesung, Prüfung, Arbeit, Zug, Urlaub, Hobby, Sonstiges und Semesterferien
   haben je eine Farbe (`--art-…` in `css/base.css`, hell und dunkel). Nur als Fläche, Streifen oder Punkt, Schrift darauf `--schrift-auf-farbe`.
+  Die Farben sind nach Helligkeit gestaffelt, damit sie auch ohne Farbsehen unterscheidbar sind (Wunsch der Person, 31.10.2026; die Partnerin sieht keine Farben):
+  Prüfung (Dunkelrot) und Hobby (Dunkelgrün) dunkel mit heller Schrift (`--art-…-schrift`), dann Vorlesung, Zug, Arbeit, Sonstiges, Urlaub immer heller. Kästen haben einen feinen Rand.
+  Knöpfe im Reiter Uni mindestens 44 px hoch, Schrift im Raster am Handy mindestens 0,7 rem. Linie „jetzt“ in Schriftfarbe (hell schwarz, dunkel weiß), nicht rot: die Partnerin sieht keine Farben (Wunsch der Person, 31.10.2026).
 - **Uni-Daten im Gerät** (Wunsch der Person, 30.10.2026): Die zuletzt geladenen Uni-Daten liegen im Gerät (`thetadex_uni`, ohne Rolle),
   damit Kalender und Module ohne Netz da sind. Dann steht „Stand von …“ da und es gibt keine Knöpfe zum Ändern. Abmelden löscht sie.
   Folge: Wer das entsperrte Handy hat, sieht den Uni-Kalender ohne Passwort (auch bei Partner*in).
@@ -472,7 +496,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile.
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-5.md`).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`).
@@ -572,7 +596,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     „Lebensmittel“ (Suche, ankreuzen, zusammen auf die Liste, Vorrat je Ort) und „Gerichte“ (Zutaten mit Menge, Zutaten mit genug Vorrat nicht angehakt).
   - Reiter erscheinen nach eingetragenen Script-Adressen; so sieht die Partnerin oder der Partner nur Einkauf, Uni und Döner.
   - Datenschutz: nur mit Passwort; im Gerät nur die Einkaufsliste und die noch nicht gesendeten Haken. Über die Partnerin oder den Partner wird nichts gespeichert.
-- **Etappe 5 „Uni“ (0.5.x)**, im Sheet „Gemeinsam“
+- **Etappe 5 „Uni“ (0.5.x)**, im Sheet „Gemeinsam“ – fertig (31.10.2026), Festlegungen in 4. Ursprünglicher Plan:
   - Semester auswählen, je Semester ein Stundenplan (Tag, von, bis, Veranstaltung, Ort, Art).
   - Zusätzlich eintragen: Arbeitszeiten (Stunden je Woche und Monat werden berechnet) und Zugfahrten.
   - Kalender mit Vorlesungen, Prüfungen, Urlaub, Semesterferien, Arbeit und Zug. Jede Art hat ihre eigene Farbe.
@@ -660,6 +684,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.5.5** Schritt 5.4: Module mit Master-Übersicht (Ziel aus `uni_einstellungen`), Prüfungen je Modul.
 - **0.5.6** Schritt 5.5: Kurse je Modul, Prüfungen „bestanden“, Termine jede Woche an bestimmten Tagen, Stundenplan in Termine umgezogen, Filter „Frei“ weg, Fenster nur mit × oder Abbrechen.
 - **0.5.7** Schritt 5.6: Art der Prüfung bei der Prüfung, ein Knopf „+ Prüfung“, Prüfung beim Anlegen von Modul und Kurs, Woche am Handy als Raster, Art Hobby.
+- **0.5.8** Schritt 5.7: Hobby dunkelgrün, Text in den Kalender-Kästen gekürzt, Linie „jetzt“ in der Woche. Etappe 5 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-5.md` gelöscht.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

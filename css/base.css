@@ -45,15 +45,19 @@
     --knopf-rot: #B3261E;
     --knopf-gruen: #2E7D32;
 
-    /* Farben der Arten im Uni-Kalender (Ausnahme, Wunsch der Person, siehe STAND.md 4). Schrift darauf: --schrift-auf-farbe. */
+    /* Farben der Arten im Uni-Kalender (Ausnahme, Wunsch der Person, siehe STAND.md 4). Schrift darauf: --schrift-auf-farbe.
+       Nach Helligkeit gestaffelt (auch ohne Farbsehen unterscheidbar, Wunsch der Person, 31.10.2026), Helligkeit L* in Klammern:
+       Prüfung (27) und Hobby (40) dunkel mit heller Schrift, dann Vorlesung (58), Zug (68), Arbeit (77), Sonstiges (85), Urlaub (93). Gleich in hell und dunkel. */
+    --art-pruefung: #7A1C1C;
+    --art-pruefung-schrift: #FFFFFF;
+    --art-hobby: #2E6B45;
+    --art-hobby-schrift: #FFFFFF;
     --art-vorlesung: #C9784A;
-    --art-pruefung: #E0736B;
-    --art-arbeit: #7FA7A0;
-    --art-zug: #B5838D;
-    --art-urlaub: #8DB580;
-    --art-hobby: #A98BC4;
-    --art-frei: #C9C5BE;
-    --art-sonstiges: #A8A39B;
+    --art-zug: #CC98A4;
+    --art-arbeit: #9AC6BD;
+    --art-sonstiges: #D8D4CC;
+    --art-urlaub: #DDF0D3;
+    --art-frei: #DDF0D3;
     --art-ferien: #F1E6D0;
 
     --rund: 10px;
@@ -85,8 +89,6 @@
     --zelle-grau: #6E6A64;
     --plus-schrift: #81C784;
     --minus-schrift: #F28B82;
-    --art-frei: #8A857E;
-    --art-sonstiges: #77726B;
     --art-ferien: #3D3629;
 }
 
@@ -111,8 +113,6 @@
         --zelle-grau: #6E6A64;
         --plus-schrift: #81C784;
         --minus-schrift: #F28B82;
-        --art-frei: #8A857E;
-        --art-sonstiges: #77726B;
         --art-ferien: #3D3629;
     }
 }

@@ -1,4 +1,4 @@
-// Reiter Uni (Etappe 5, Plan docs/PLAN-ETAPPE-5.md).
+// Reiter Uni (Etappe 5, Regeln in docs/STAND.md 4 „Uni, Sheet ‚Gemeinsam‘“).
 // Schritt 5.1: Semester wählen, anlegen und ändern; Stundenplan je Wochentag (jede Woche gleich).
 // Schritt 5.2: Kalender (Woche, Monat, Liste, Filter nach Art), Termine, „einmal anders“ und „fällt aus“, Uni-Daten ohne Netz.
 // Schritt 5.3: Arbeitsstunden. Schritt 5.4: Module mit Master-Übersicht (… von 120 ECTS, Ziel aus dem Blatt uni_einstellungen).
