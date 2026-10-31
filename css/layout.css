@@ -8,8 +8,12 @@
     gap: var(--abstand);
     padding: 8px var(--abstand);
     padding-top: max(8px, env(safe-area-inset-top));
-    border-bottom: 1px solid var(--linie);
+    border-bottom: 1px solid var(--kopf-linie);
+    background: var(--kopf-grund);
+    color: var(--kopf-schrift);
 }
+
+.kopf :focus-visible { outline-color: var(--kopf-schrift); }
 
 .kopf-marke {
     display: flex;
@@ -37,7 +41,7 @@
     padding: 0 10px;
     border-radius: var(--rund);
     text-decoration: none;
-    color: var(--schrift-leise);
+    color: var(--kopf-leise);
 }
 
 .kopf-links a { gap: 6px; }
@@ -48,8 +52,8 @@
 }
 
 .kopf-links a[aria-current="page"] {
-    color: var(--schrift);
-    background: var(--kachel);
+    color: var(--kopf-schrift);
+    background: var(--kopf-aktiv);
 }
 
 .reiter {

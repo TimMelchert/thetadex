@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '0.6.0';
+export const VERSION = '0.6.1';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {
@@ -23,7 +23,7 @@ export const features = {
 export const BEREICHE = [
     { id: 'tracking', titel: 'Tracking', etappe: 2, oeffentlich: false, skript: 'tracking' },
     { id: 'finanzen', titel: 'Finanzen', etappe: 2, oeffentlich: false, skript: 'finanzen' },
-    { id: 'dsa',      titel: 'DSA',      etappe: 6, oeffentlich: false, skript: 'dsa' },
+    { id: 'dsa',      titel: 'Pen & Paper', etappe: 6, oeffentlich: false, skript: 'dsa' },
     { id: 'einkauf',  titel: 'Einkauf',  etappe: 4, oeffentlich: false, skript: 'gemeinsam' },
     { id: 'besitz',   titel: 'Besitz',   etappe: 3, oeffentlich: false, skript: 'leben' },
     { id: 'uni',      titel: 'Uni',      etappe: 5, oeffentlich: false, skript: 'gemeinsam' },
@@ -37,5 +37,6 @@ export const SKRIPTE = [
     { id: 'finanzen', titel: 'Finanzen', test: 'einstellungen' },
     { id: 'doener',   titel: 'Döner',    test: 'liste' },
     { id: 'leben',    titel: 'Besitz',   test: 'liste' },
-    { id: 'gemeinsam', titel: 'Einkauf und Uni', test: 'ping' }
+    { id: 'gemeinsam', titel: 'Einkauf und Uni', test: 'ping' },
+    { id: 'dsa',      titel: 'Pen & Paper', test: 'ping' }
 ];

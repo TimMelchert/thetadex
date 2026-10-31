@@ -4,15 +4,15 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.6.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.6.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
-- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`.
-- Nächster Schritt: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen).
+- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`. Gebaut: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen, Kopf und Eigenschaften; dazu Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte).
+- Nächster Schritt: 6.2 (Listen: Vor- und Nachteile, Sonderfertigkeiten, Talente, Besitz).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -200,10 +200,10 @@ unter „Info“ die Version prüfen.
   Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“)
   und `#/doener/<skript>` (öffentliche Döner-Bewertung, siehe 4 „Döner öffentlich“).
   Unbekannte Adressen zeigen „Seite nicht gefunden“.
-- Startseite: Kacheln aller sichtbaren Reiter. Eine Heute-Übersicht (Termine, Einkauf) kommt in Etappe 7.
+- Startseite: Karteikarte mit den farbigen Reitern (`icons/thetadex-karte.svg`, ohne dunklen Grund) und Kacheln aller sichtbaren Reiter. Eine Heute-Übersicht (Termine, Einkauf) kommt in Etappe 7.
 - Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter es gibt, steht in `js/config.js` (`features`).
   Sichtbar ist ein Reiter nur, wenn die Adresse seines Skripts eingetragen ist (`BEREICHE[].skript`, ab 0.4.8): Tracking `tracking`, Finanzen `finanzen`,
-  DSA `dsa` (gibt es erst ab Etappe 6), Einkauf und Uni `gemeinsam`, Besitz `leben`. Döner ist immer da.
+  Pen & Paper (Kennung `dsa`) `dsa` (ab 6.1), Einkauf und Uni `gemeinsam`, Besitz `leben`. Döner ist immer da.
 - PC und Handy: Reiterleiste unten am Handy, Seitenleiste links am PC (ab 768 px). Einstellungen (Zahnrad, am Handy ohne Text) und Info in der Kopfzeile.
 - Name, Icon und Farben: Thetadex, siehe Abschnitt 4 „Erscheinungsbild“. Die Kopfzeile zeigt immer das vollständige Icon (Karte mit Reitern).
 - **Einstellungen** (`#/einstellungen`, bis 0.3.1 „Einrichtung“): Aussehen (Hell, Dunkel, Wie Gerät), Passwort und die Script-Adressen je Bereich. Gespeichert nur im Gerät.
@@ -309,6 +309,9 @@ unter „Info“ die Version prüfen.
   gleich unter der Suche; im Gericht-Formular „+ Neues Lebensmittel“ mit Name, Abteilung und Einheit, kommt gleich als Zutat dazu.
   Gemeinsam nutzen (4.5): Reiter erscheinen nach eingetragenen Script-Adressen. „Verbindung prüfen“ zeigt bei `gemeinsam`, ob als Hauptperson oder Partner*in angemeldet.
 - Etappe 5 (fertig): Reiter Uni im Sheet „Gemeinsam“ (Skript `gemeinsam`), Regeln in 4 „Uni, Sheet ‚Gemeinsam‘“.
+- Etappe 6 (läuft, Plan `docs/PLAN-ETAPPE-6.md`): Sheet „DSA“ mit Skript `dsa` (6.1): Blätter `boegen`, `eintraege`, `verlauf`; alle Aktionen der Etappe
+  (`ping`, `liste`, `bogen_speichern`, `bogen_loeschen`, `eintrag_speichern`, `eintrag_loeschen`, `verlauf_neu`, `bild`, `freigabe`, ohne Passwort `geteilt`). Funktion `einrichten`.
+  Reiter Pen & Paper: Bogen wählen und anlegen (DSA oder DnD, gleiche Vorlage), Kopf, Eigenschaften, Basiswerte und Zähler ändern, Zähler und Eigenschaften kleben oben.
   Semester (5.1), Kalender mit Woche, Monat, Liste, Filter nach Art, „einmal anders“ und ohne Netz (5.2), Arbeitsstunden (5.3),
   Module mit Master-Übersicht (5.4). Umbau nach Anmerkungen (5.5): kein Stundenplan mehr (in `termine` umgezogen), Kurse je Modul,
   Termine jede Woche an bestimmten Tagen, Prüfungen „bestanden“, Auflagen getrennt. 5.6: Art der Prüfung bei der Prüfung, ein Knopf „+ Prüfung“,
@@ -345,7 +348,10 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - Icon: Karteikarte in Graphit mit weißem ϑ, sieben farbige Register-Reiter am rechten Rand, Hintergrund Kohle.
     Dateien `icons/thetadex-icon.svg` und `icons/thetadex-icon-512.png` (von der Person ins Repo kopiert).
   - Grundfarben: Kohle `#1C1B19` (Icon-Grund, Hintergrund dunkel), Graphit `#2A2826` (Kacheln dunkel), Karte im Icon `#3A3734`,
-    Hintergrund hell `#FAF9F7`, Kacheln hell `#EEECE8`, Schrift auf Karte `#F4F2EE`.
+    Hintergrund hell `#F3F0EA`, Kacheln hell `#ECE8E1`, Linien hell `#D8D3CA` (seit 0.6.1 leicht beige-grau statt fast weiß, Wunsch der Person), Schrift auf Karte `#F4F2EE`.
+  - Kopfzeile (Icon, Name, Einstellungen, Info) immer in Kohle `#1C1B19` mit heller Schrift, auch im hellen Modus (`--kopf-…` in `css/base.css`, Wunsch der Person, 31.10.2026).
+    Die Leiste am Handy (`theme-color`) ist darum immer Kohle.
+  - Pen & Paper zeigt einen W20 (`icons/w20.svg`, Flächen in Tönen der DSA-Farbe) vor der Überschrift (Wunsch der Person, wie 🥙 und 📦).
   - Bereichsfarben: Tracking `#E07A5F`, Finanzen `#8DB580`, DSA `#B5838D`, Einkauf/Essen `#D4B483`,
     Besitz `#7FA7A0`, Uni `#C9784A`, Döner `#E2A23B` (frühere Farbe von ToDos, der Reiter ist am 29.10.2026 entfallen). Kein Blau.
     Damit gibt es wieder sieben Reiter, passend zum Icon.
@@ -475,10 +481,10 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
-- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `leben` legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
+- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; in den Skripten `leben` und `dsa` legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
 - **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen, zuletzt bekannte Kontostände, die Wahl beim Aussehen (`thetadex_aussehen`),
   die offene Einkaufsliste (`thetadex_einkaufsliste`, nur Einträge mit Namen, Abteilung, Einheit), abgehakte Einträge vor „Einkauf fertig“ (`thetadex_einkauf_haken`)
-  und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3).
+  und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3), der gewählte Bogen bei Pen & Paper (`thetadex_dsa_bogen`, nur die Kennung, ab 0.6.1).
   Schlüssel mit Vorsilbe `thetadex_`. Keine Tracking-Einträge im Gerät speichern. Abmelden löscht alles.
   Die Tracking-Felder hält die App nur im Arbeitsspeicher (10 Minuten), damit das Formular schnell da ist.
 - **Neu laden** nach einem Update nur, wenn auf dieser Seite „Jetzt neu laden“ getippt wurde (`js/app.js`). Sonst lud die Seite
@@ -495,12 +501,12 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
-- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern.
-- `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile.
+- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern.
+- `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper.
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-6.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
-  `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`).
+  `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`).
 
 ---
 
@@ -687,6 +693,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.5.7** Schritt 5.6: Art der Prüfung bei der Prüfung, ein Knopf „+ Prüfung“, Prüfung beim Anlegen von Modul und Kurs, Woche am Handy als Raster, Art Hobby.
 - **0.5.8** Schritt 5.7: Hobby dunkelgrün, Text in den Kalender-Kästen gekürzt, Linie „jetzt“ in der Woche. Etappe 5 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-5.md` gelöscht.
 - **Etappe 6** Pen & Paper (DSA und DnD). **0.6.0** Schritt 6.0: Plan `docs/PLAN-ETAPPE-6.md` (Sheet „DSA“ mit drei Blättern, Skript `dsa`, Verlauf, Würfel, Teilen; Name „Pen & Paper“, W20 als Symbol).
+- **0.6.1** Schritt 6.1: Sheet „DSA“ und Skript `dsa`, Reiter Pen & Paper mit Bogen, Kopf, Eigenschaften und Zählern; Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

@@ -17,12 +17,12 @@
     /* Schrift auf Bereichsfarbe (hell und dunkel gleich, Kontrast über 7:1) */
     --schrift-auf-farbe: #1C1B19;
 
-    /* Hell */
-    --hintergrund: #FAF9F7;
-    --kachel: #EEECE8;
+    /* Hell (Hintergrund leicht beige-grau statt reinweiß, Wunsch der Person, 31.10.2026) */
+    --hintergrund: #F3F0EA;
+    --kachel: #ECE8E1;
     --schrift: #1C1B19;
     --schrift-leise: #5C5853;
-    --linie: #D9D6D0;
+    --linie: #D8D3CA;
     --knopf-grund: #1C1B19;
     --knopf-schrift: #F4F2EE;
     --fokus: #1C1B19;
@@ -59,6 +59,13 @@
     --art-urlaub: #DDF0D3;
     --art-frei: #DDF0D3;
     --art-ferien: #F1E6D0;
+
+    /* Kopfzeile: immer dunkel wie im dunklen Modus, auch im hellen (Wunsch der Person, 31.10.2026) */
+    --kopf-grund: #1C1B19;
+    --kopf-linie: #3A3734;
+    --kopf-schrift: #F4F2EE;
+    --kopf-leise: #B3AEA6;
+    --kopf-aktiv: #2A2826;
 
     --rund: 10px;
     --abstand: 16px;

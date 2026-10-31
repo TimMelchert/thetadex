@@ -996,3 +996,60 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .uni-pruefung-felder[hidden] { display: none; }
 .formular.uni-ohne-rand { margin-top: 0; }
 .formular .uni-schalter label { margin-top: 0; font-size: 1rem; font-weight: 400; }
+
+/* Pen & Paper (Etappe 6): Titelzeile mit W20 und „+ Bogen“, Zähler und Eigenschaften oben, Abschnitte zum Aufklappen */
+.dsa-titelzeile { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.dsa-titelzeile h1 { margin: 0; }
+.dsa-w20 { width: 44px; height: 44px; flex: 0 0 auto; }
+.dsa-leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: var(--abstand); }
+.dsa-leiste select { min-height: 44px; max-width: 100%; padding: 8px 12px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; font-weight: 600; }
+.dsa-marke { padding: 2px 10px; border-radius: 999px; background: var(--bereich); color: var(--schrift-auf-farbe); font-size: 0.8rem; font-weight: 700; }
+.dsa-marke[hidden] { display: none; }
+.dsa-oben { position: sticky; top: 0; z-index: 5; margin-top: var(--abstand); padding: 8px 0; background: var(--hintergrund); border-bottom: 1px solid var(--linie); }
+.dsa-oben[hidden] { display: none; }
+.dsa-zaehler { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 6px; }
+.dsa-zaehler-kachel { display: flex; flex-direction: column; min-height: 52px; padding: 6px 10px; border-top: 4px solid var(--bereich); border-radius: var(--rund); background: var(--kachel); }
+.dsa-zaehler-name { font-size: 0.75rem; color: var(--schrift-leise); white-space: nowrap; }
+.dsa-zaehler-wert { font-weight: 700; font-size: 1.05rem; overflow-wrap: anywhere; }
+.dsa-zaehler-wert small { font-weight: 400; color: var(--schrift-leise); font-size: 0.85rem; }
+.dsa-eig { display: grid; grid-template-columns: repeat(auto-fit, minmax(38px, 1fr)); gap: 4px; margin-top: 8px; }
+.dsa-eig div { display: flex; flex-direction: column; align-items: center; padding: 4px 0; border: 1px solid var(--linie); border-radius: var(--rund); }
+.dsa-eig b { font-size: 1.05rem; }
+.dsa-eig span { font-size: 0.7rem; color: var(--schrift-leise); }
+.dsa-abschnitt { margin: 10px 0; border-radius: var(--rund); background: var(--kachel); }
+.dsa-abschnitt > summary { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px 0 var(--abstand); font-weight: 700; cursor: pointer; list-style: none; }
+.dsa-abschnitt > summary::-webkit-details-marker { display: none; }
+.dsa-abschnitt > summary::after { content: "▸"; color: var(--schrift-leise); }
+.dsa-abschnitt[open] > summary::after { content: "▾"; }
+.dsa-abschnitt-titel { flex: 1; }
+.dsa-abschnitt-inhalt { padding: 0 var(--abstand) var(--abstand); }
+.dsa-stift { min-width: 44px; min-height: 44px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; cursor: pointer; }
+.dsa-felder { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 14px; margin: 0; }
+.dsa-felder dt { color: var(--schrift-leise); }
+.dsa-felder dd { margin: 0; overflow-wrap: anywhere; }
+.dsa-notiz { white-space: pre-line; margin: 10px 0 0; }
+.dsa-gruppe { margin: 14px 0 4px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--schrift-leise); }
+.dsa-zeile { display: flex; align-items: center; gap: 8px; min-height: 40px; border-bottom: 1px solid var(--linie); }
+.dsa-zeile:last-child { border-bottom: none; }
+.dsa-zeile-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.dsa-zeile .leise { font-size: 0.8rem; text-align: right; }
+.dsa-zeile-wert { min-width: 40px; text-align: right; font-weight: 700; }
+.dsa-neu-laden { margin-top: var(--abstand); }
+.dsa-zeilen-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.dsa-eig-zeile, .dsa-zaehler-zeile { display: grid; gap: 6px; align-items: center; }
+.dsa-eig-zeile > :nth-child(1), .dsa-zaehler-zeile > :nth-child(1) { grid-area: k; }
+.dsa-eig-zeile > :nth-child(2), .dsa-zaehler-zeile > :nth-child(2) { grid-area: n; }
+.dsa-eig-zeile > :nth-child(3) { grid-area: w; }
+.dsa-eig-zeile > :nth-child(4), .dsa-zaehler-zeile > :nth-child(6) { grid-area: x; }
+.dsa-zaehler-zeile > :nth-child(3) { grid-area: a; }
+.dsa-zaehler-zeile > :nth-child(4) { grid-area: s; }
+.dsa-zaehler-zeile > :nth-child(5) { grid-area: m; }
+.dsa-eig-zeile { grid-template-columns: 4.5em minmax(0, 1fr) 4.5em 44px; grid-template-areas: "k n w x"; }
+.dsa-zaehler-zeile { grid-template-columns: 4.5em minmax(0, 1fr) minmax(0, 1fr) 44px; grid-template-areas: "k n n x" "a a a ." "s s m ."; padding-bottom: 8px; border-bottom: 1px solid var(--linie); }
+.formular .dsa-eig-zeile input, .formular .dsa-eig-zeile select, .formular .dsa-zaehler-zeile input, .formular .dsa-zaehler-zeile select { width: 100%; min-width: 0; box-sizing: border-box; }
+.formular .dsa-gruppe { margin-top: var(--abstand); }
+.formular > .knopf-zweit { align-self: flex-start; }
+@media (min-width: 600px) {
+    .dsa-eig-zeile { grid-template-columns: 5em minmax(0, 1fr) 6em 44px; }
+    .dsa-zaehler-zeile { grid-template-columns: 5em minmax(0, 1fr) 12em 6em 6em 44px; grid-template-areas: "k n a s m x"; padding-bottom: 0; border-bottom: none; }
+}

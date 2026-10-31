@@ -9,8 +9,8 @@ export const AUSSEHEN = [
     { id: 'geraet', titel: 'Wie Gerät' }
 ];
 
-// Farbe der Leiste am Handy, gleich wie --hintergrund in css/base.css
-const LEISTE = { hell: '#FAF9F7', dunkel: '#1C1B19' };
+// Farbe der Leiste am Handy, gleich wie die Kopfzeile (--kopf-grund in css/base.css, seit 0.6.1 auch im hellen Modus dunkel)
+const LEISTE = { hell: '#1C1B19', dunkel: '#1C1B19' };
 
 export function aktuellesAussehen() {
     const wert = lesen('aussehen', 'geraet');

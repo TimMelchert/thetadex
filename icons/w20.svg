@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- W20: Ikosaeder von vorn, Flächen in drei Tönen der DSA-Farbe -->
+  <g stroke="#5E3F45" stroke-width="1.6" stroke-linejoin="round">
+    <polygon points="32,3 57,17.5 32,19" fill="#D3AAB2"/>
+    <polygon points="32,3 7,17.5 32,19" fill="#C99AA3"/>
+    <polygon points="7,17.5 7,46.5 18.5,43" fill="#93626C"/>
+    <polygon points="57,17.5 57,46.5 45.5,43" fill="#9D6C76"/>
+    <polygon points="7,17.5 32,19 18.5,43" fill="#B5838D"/>
+    <polygon points="57,17.5 32,19 45.5,43" fill="#A8767F"/>
+    <polygon points="7,46.5 18.5,43 32,61" fill="#7E535C"/>
+    <polygon points="57,46.5 45.5,43 32,61" fill="#8A5C66"/>
+    <polygon points="18.5,43 45.5,43 32,61" fill="#9B6A74"/>
+    <polygon points="32,19 45.5,43 18.5,43" fill="#C08F99"/>
+  </g>
+  <text x="32" y="39" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="15" fill="#FFFFFF">20</text>
+</svg>
