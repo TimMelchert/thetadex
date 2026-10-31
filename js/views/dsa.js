@@ -371,14 +371,11 @@ export function render(container, ctx = {}) {
             ? el('dl', { class: 'dsa-felder' }, felder.flatMap(([k, t]) => [el('dt', { text: t }), el('dd', { text: bogen.kopf[k] })]))
             : el('p', { class: 'leise', text: leerText || 'Noch leer. Tippe auf ✎.' });
         if (bogen.bild) {
-            // Bild des Helden neben dem Kopf, lädt nach
-            // So hoch wie der Text: Das ganze Bild bleibt sichtbar, der Rest füllt sich mit einer unscharfen Kopie (Wunsch der Person, 31.10.2026)
+            // Bild des Helden links neben dem Kopf, lädt nach (Wunsch der Person, 31.10.2026: links, ganz zu sehen, nichts unscharf)
+            // Der Kasten hat genau das Seitenverhältnis des Bildes: so hoch wie der Text, die Breite folgt daraus.
+            // Ist das zu breit (am Handy), wird der Kasten schmaler und damit niedriger. Das Bild wird nie beschnitten.
             const bild = el('img', { class: 'dsa-bild', attrs: { alt: 'Bild: ' + bogen.name, hidden: true } });
-            const grund = el('img', { class: 'dsa-bild-grund', attrs: { alt: '', 'aria-hidden': 'true', hidden: true } });
             const bildText = el('p', { class: 'leise dsa-bild-text', text: 'Bild lädt …' });
-            holeBild(bogen.bild)
-                .then((adresse) => { bild.src = adresse; grund.src = adresse; bild.hidden = false; grund.hidden = false; bildText.remove(); })
-                .catch((e) => { bildText.textContent = 'Bild nicht geladen: ' + e.message; });
             // Tipp auf das Bild zeigt es groß (Wunsch der Person, 31.10.2026)
             const gross = () => {
                 if (bild.hidden) return;
@@ -387,12 +384,35 @@ export function render(container, ctx = {}) {
                     el('div', { class: 'besitz-form-knoepfe' }, [el('button', { class: 'knopf knopf-zweit', text: 'Schließen', attrs: { type: 'button' }, on: { click: () => dialog.close() } })])
                 ]);
             };
-            inhalt.push(el('div', { class: 'dsa-kopf-mit-bild' }, [liste, el('button', { class: 'dsa-bild-box', attrs: { type: 'button', 'aria-label': 'Bild groß zeigen' }, on: { click: gross } }, [grund, bild, bildText])]));
+            const box = el('button', { class: 'dsa-bild-box', attrs: { type: 'button', 'aria-label': 'Bild groß zeigen' }, on: { click: gross } }, [bild, bildText]);
+            const reihe = el('div', { class: 'dsa-kopf-mit-bild' }, [box, liste]);
+            let breite = 0;
+            const passe = () => {
+                const r = bild.naturalWidth / bild.naturalHeight;
+                if (bild.hidden || !r || !reihe.clientWidth) return;
+                const hoch = Math.max(liste.offsetHeight, 120);
+                const w = Math.round(Math.min(hoch * r, reihe.clientWidth * (reihe.clientWidth < 500 ? 0.36 : 0.45)));
+                if (Math.abs(w - breite) < 2) return;
+                breite = w;
+                box.style.width = w + 'px';
+                box.style.height = Math.round(w / r) + 'px';
+            };
+            if ('ResizeObserver' in window) new ResizeObserver(() => requestAnimationFrame(passe)).observe(liste);
+            holeBild(bogen.bild)
+                .then((adresse) => { bild.addEventListener('load', passe, { once: true }); bild.src = adresse; bild.hidden = false; bildText.remove(); })
+                .catch((e) => { bildText.textContent = 'Bild nicht geladen: ' + e.message; });
+            inhalt.push(reihe);
         } else {
             inhalt.push(liste);
         }
-        if (bogen.notiz) inhalt.push(el('p', { class: 'dsa-notiz', text: bogen.notiz }));
-        return karte('kopf', 'Kopf', { zeichen: '✎', label: 'Kopf bearbeiten', tun: () => zeigeBogenForm(bogen) }, inhalt);
+        // Ohne Überschrift „Kopf“ (Wunsch der Person, 31.10.2026): immer offen, ✎ unten rechts
+        const stift = nurLesen ? null : el('button', { class: 'dsa-stift', text: '✎', attrs: { type: 'button', 'aria-label': 'Kopf bearbeiten' }, on: { click: () => zeigeBogenForm(bogen) } });
+        if (bogen.notiz || stift) {
+            inhalt.push(el('div', { class: 'dsa-kopf-fuss' }, [
+                bogen.notiz ? el('p', { class: 'dsa-notiz', text: bogen.notiz }) : el('span'), stift
+            ].filter(Boolean)));
+        }
+        return el('section', { class: 'dsa-abschnitt dsa-kopf-karte', attrs: { 'aria-label': 'Kopf' } }, inhalt);
     }
 
     function eigenschaftenKarte(bogen) {

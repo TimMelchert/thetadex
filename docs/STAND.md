@@ -320,12 +320,13 @@ unter „Info“ die Version prüfen.
   „+“ geht nie über den Höchstwert (die App speichert nur bis voll), Geld kann nicht unter 0. AP: „+ gesammelt“, „− ausgegeben“; oben nur gesammelte, im Fenster auch „frei“.
   Karte „Verlauf“: neueste Änderung oben, Filter je Zähler, erst 30, dann „Alle zeigen“. Änderungen löschen nur im Sheet (wie ein Kassenbuch).
   Würfel (6.5): schwebender Knopf „🎲 Würfeln“ unten rechts, Anzahl 1 bis 20, W4 bis W20, Einzelwürfe und Summe, letzte 10 Würfe nur im Arbeitsspeicher (`js/ui/wuerfel.js`).
-  Bild (6.5): im Kopf-Fenster hochladen (App verkleinert) oder Drive-Link, Ordner „Thetadex DSA“; steht rechts neben dem Kopf. Wird nur mitgeschickt, wenn es sich ändert.
+  Bild (6.5): im Kopf-Fenster hochladen (App verkleinert) oder Drive-Link, Ordner „Thetadex DSA“; steht links neben dem Kopf. Wird nur mitgeschickt, wenn es sich ändert.
   Teilen (6.6): Knopf „🔗 Teilen“ (heißt „🔗 Geteilt“, wenn ein Link gilt): „Link erstellen“, „Link kopieren“, „Senden …“ (wenn das Gerät es kann),
   „Neuen Link erstellen“, „Nicht mehr teilen“. Den Schlüssel gibt das Skript nur beim Erstellen heraus; die App merkt ihn in `thetadex_dsa_links`.
   Aussehen (0.6.7, Wunsch der Person): Marke DSA/DnD und „🔗 Teilen“ in einer Zeile über dem Namen; der Name ist eine große fette Überschrift
   mit Pfeil, darüber liegt unsichtbar die Bogen-Auswahl. Geld als Münzen untereinander (Gold D, Silber S, Bronze H, Eisen K, nur mit Anzahl; am PC mit Namen).
-  Bild rechts so hoch wie der Kopf: am PC ganz sichtbar, Rand mit unscharfer Kopie gefüllt; am Handy füllt es den Platz (Gesicht oben), Tipp zeigt es groß.
+  Bild links: der Kasten hat das Seitenverhältnis des Bildes, so hoch wie der Kopf-Text (am Handy höchstens gut ein Drittel breit, dann niedriger).
+  Nie beschnitten, nie unscharf; Tipp zeigt es groß. Die Karte Kopf hat keine Überschrift mehr, ✎ steht unten rechts.
   Wurde der Link an einem anderen Gerät erstellt, hilft nur „Neuen Link erstellen“. Die Adresse `#/bogen/<skript>/<schluessel>` nutzt dieselbe Ansicht
   (`js/views/dsa.js`, Route `bogen` in `js/app.js`) im Modus „nur lesen“: ohne Passwort, ohne Verlauf, ohne Knöpfe zum Ändern, Tipp auf einen Eintrag zeigt ihn nur an.
   Semester (5.1), Kalender mit Woche, Monat, Liste, Filter nach Art, „einmal anders“ und ohne Netz (5.2), Arbeitsstunden (5.3),
