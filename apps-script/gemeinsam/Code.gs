@@ -19,8 +19,8 @@ var BLAETTER_ = {
   // stundenplan: alt (bis 0.5.5). „einrichten“ zieht die Einträge in termine um, danach bleibt das Blatt nur zum Nachsehen.
   stundenplan: ["id", "semester_id", "tag", "von", "bis", "titel", "art", "ort", "modul_id", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
   // termine: einmalig, mehrtägig, jede Woche an „tage“ (zum Beispiel 1,3 = Mo und Mi) von beginn bis ende,
-  // oder „einmal anders“ (stunde_id = Kurs oder wiederkehrender Termin). Prüfungen mit kurs_id und bestanden.
-  termine: ["id", "titel", "art", "beginn", "ende", "von", "bis", "ort", "modul_id", "stunde_id", "notiz", "erstellt_am", "geaendert_am", "geloescht", "tage", "kurs_id", "bestanden"],
+  // oder „einmal anders“ (stunde_id = Kurs oder wiederkehrender Termin). Prüfungen mit kurs_id, bestanden und leistung (Art der Prüfung, seit 0.5.7).
+  termine: ["id", "titel", "art", "beginn", "ende", "von", "bis", "ort", "modul_id", "stunde_id", "notiz", "erstellt_am", "geaendert_am", "geloescht", "tage", "kurs_id", "bestanden", "leistung"],
   module: ["id", "name", "kuerzel", "bereich", "ects", "status", "semester_id", "notiz", "erstellt_am", "geaendert_am", "geloescht", "pflicht"],
   kurse: ["id", "modul_id", "name", "ects", "semester_id", "tag", "von", "bis", "ort", "dozent", "pruefungsleistung", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
   uni_einstellungen: ["name", "wert"]   // ohne Standardspalten, eine Zeile je Wert (ects_ziel)
@@ -29,7 +29,7 @@ var BLAETTER_ = {
 var TEXT_SPALTEN_ = ["id", "name", "abteilung", "einheit", "notiz", "lebensmittel_id", "gericht_id", "link", "ort",
   "semester_id", "modul_id", "stunde_id", "titel", "art", "kuerzel", "bereich", "status",
   "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "von", "bis",
-  "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht"];
+  "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht", "leistung"];
 var MAX_ = { name: 60, abteilung: 40, einheit: 20, notiz_lm: 200, notiz_liste: 100, notiz_gericht: 300, link: 300, ort: 40 };
 var MAX_ZAHL_ = 9999;
 var MAX_AUF_EINMAL_ = 100;     // höchstens so viele Einträge je Anfrage (auf_liste, abhaken)
@@ -38,7 +38,7 @@ var MIN_PIN_ = 12;             // ein kürzeres Passwort wird nicht angenommen
 // Uni (Etappe 5)
 var UNI_MAX_ = { semester: 40, titel: 80, ort: 60, notiz: 200, modul: 80, kuerzel: 20, bereich: 40, kurs: 80, dozent: 60, leistung: 80 };
 // „frei“ gibt es seit 0.5.6 nicht mehr neu (gleich wie Urlaub). Alte Einträge zeigt die App als Urlaub.
-var UNI_ARTEN_TERMIN_ = ["vorlesung", "pruefung", "arbeit", "zug", "urlaub", "sonstiges"];
+var UNI_ARTEN_TERMIN_ = ["vorlesung", "pruefung", "arbeit", "zug", "urlaub", "hobby", "sonstiges"];
 var UNI_STATUS_ = ["offen", "laeuft", "bestanden"];
 var UNI_PFLICHT_ = ["pflicht", "wahlpflicht", "auflage"];
 var UNI_MAX_KURSE_ = 300;      // höchstens so viele Kurse insgesamt
@@ -780,7 +780,7 @@ function stundenplanUmziehen_() {
         id: x.id, titel: x.titel, art: x.art || "sonstiges",
         beginn: vorlesung ? s.vorlesung_beginn : s.beginn, ende: vorlesung ? s.vorlesung_ende : s.ende,
         von: x.von, bis: x.bis, ort: x.ort, modul_id: x.modul_id, stunde_id: "", notiz: x.notiz,
-        tage: String(x.tag), kurs_id: "", bestanden: false
+        tage: String(x.tag), kurs_id: "", bestanden: false, leistung: ""
       });
     }
     weg_(sp, k);
@@ -805,6 +805,7 @@ function terminAus_(t, z) {
     kurs_id: String(zelle_(z, t.sp, "kurs_id")),
     stunde_id: String(zelle_(z, t.sp, "stunde_id")),
     bestanden: istWahr_(zelle_(z, t.sp, "bestanden")),
+    leistung: text_(z, t.sp, "leistung"),
     notiz: text_(z, t.sp, "notiz"),
     geaendert_am: stempel_(zelle_(z, t.sp, "geaendert_am"))
   };
@@ -942,10 +943,11 @@ function pruefeUni_(blatt, e, id) {
     p.stunde_id = sid && index_(kurse, sid) < 0 && index_(tabelle_("termine"), sid) < 0
       ? { fehler: "Den wöchentlichen Eintrag gibt es nicht mehr. Bitte neu laden." } : { wert: sid };
     p.bestanden = { wert: e.bestanden === true || e.bestanden === "true" };
+    p.leistung = pruefeText_(e.leistung, UNI_MAX_.leistung, "Art der Prüfung", false);
     p.notiz = pruefeText_(e.notiz, UNI_MAX_.notiz, "Notiz", false);
-    fehler = erster([p.titel, p.art, p.beginn, p.ende, p.von, p.bis, p.ort, p.kurs_id, p.modul_id, p.stunde_id, p.notiz]);
+    fehler = erster([p.titel, p.art, p.beginn, p.ende, p.von, p.bis, p.ort, p.kurs_id, p.modul_id, p.stunde_id, p.leistung, p.notiz]);
     if (fehler) return fehler;
-    if (p.art.wert !== "pruefung") p.bestanden.wert = false;
+    if (p.art.wert !== "pruefung") { p.bestanden.wert = false; p.leistung.wert = ""; }
     // Der Kurs bestimmt das Modul
     if (p.kurs_id.wert) {
       var kz = kurse.zeilen[index_(kurse, p.kurs_id.wert)];

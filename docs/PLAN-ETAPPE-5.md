@@ -224,7 +224,18 @@ alles mit einem Knopf bearbeiten, Fenster nur mit × oder Abbrechen schließen, 
   Fertige Module zählen zu den ECTS. Ohne ECTS am Modul zählt die Summe seiner Kurse. Auflagen zählen nicht zu den 120 ECTS, sie stehen in einer eigenen Zeile.
 - Fenster im Reiter Uni schließen nur mit × oder Abbrechen (kein Tipp daneben, keine Escape-Taste).
 
-## Schritt 5.6 Abschluss (0.5.6 …)
+## Schritt 5.6 Prüfungen und Woche am Handy (0.5.6 → 0.5.7)
+
+Anmerkungen der Person (31.10.2026):
+- Nur ein Knopf „+ Prüfung“ je Modul (der Kurs wird im Formular unter „Gehört zu“ gewählt); der Knopf je Kurs fällt weg.
+- Beim Anlegen von Modul und Kurs gleich eine Prüfung eintragen: freiwilliger Block „Prüfung gleich eintragen“ (Art der Prüfung, Datum, Uhrzeit, Raum).
+  Ohne Datum keine Prüfung. Klappt das Speichern der Prüfung nicht, öffnet sich das Prüfungs-Formular vorbefüllt.
+- Die **Art der Prüfung** (zum Beispiel Klausur, Hausarbeit) steht bei der Prüfung: neue Spalte `termine.leistung` (80 Zeichen, nur bei Prüfungen).
+  Das Feld Prüfungsleistung im Kurs ist nur noch sichtbar, wenn dort schon etwas steht (zum Leeren); die Spalte `kurse.pruefungsleistung` bleibt.
+- Woche am Handy im Hochformat: über der Liste ein schmales Raster mit 7 Spalten (nur Titel), der Hinweis „Handy drehen“ fällt weg.
+- Neue Art **Hobby** (Farbe `--art-hobby` #A98BC4, Lila, hell und dunkel gleich).
+
+## Schritt 5.7 Abschluss (0.5.7 …)
 
 - Anmerkungen der Person nach dem Testen (auch am Handy der Partnerin oder des Partners: nur lesen, keine Knöpfe), dann Etappe 5 abschließen:
   Plan in STAND.md einarbeiten, diese Datei löschen.

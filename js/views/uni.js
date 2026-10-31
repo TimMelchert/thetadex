@@ -32,7 +32,7 @@ const TAGE = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samsta
 const TAGE_KURZ = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 // „Urlaub“ steht auch für Feiertage und vorlesungsfreie Tage (frühere Art „frei“)
 const ARTEN_TERMIN = [['vorlesung', 'Vorlesung, Übung, Seminar'], ['pruefung', 'Prüfung'], ['arbeit', 'Arbeit'], ['zug', 'Zug'],
-    ['urlaub', 'Urlaub, Feiertag, frei'], ['sonstiges', 'Sonstiges']];
+    ['urlaub', 'Urlaub, Feiertag, frei'], ['hobby', 'Hobby'], ['sonstiges', 'Sonstiges']];
 
 const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
 const datumText = (t) => (/^\d{4}-\d{2}-\d{2}$/.test(t) ? t.slice(8, 10) + '.' + t.slice(5, 7) + '.' + t.slice(0, 4) : '');
@@ -190,6 +190,57 @@ export function render(container, ctx) {
     const ectsPasst = (t) => { const n = Number(t); return t === '' || (Number.isFinite(n) && n >= 0 && n <= 60 && Math.round(n * 2) === n * 2); };
     const ectsFeld = (id, wert) => el('input', { attrs: { id, type: 'text', inputmode: 'decimal', maxlength: 4, autocomplete: 'off', value: wert != null ? String(wert).replace('.', ',') : '' } });
 
+    // Beim Anlegen eines Moduls oder Kurses gleich eine Prüfung eintragen (freiwillig; leer = keine).
+    // id = Vorsilbe der Feld-ids. Liefert { box, werte(), fehler() }.
+    function pruefungGleich(id) {
+        const leistung = el('input', { attrs: { id: id + '-leistung', type: 'text', maxlength: 80, autocomplete: 'off', placeholder: 'zum Beispiel Klausur 90 Minuten' } });
+        const datum = datumFeld(id + '-datum', '');
+        const von = el('input', { attrs: { id: id + '-von', type: 'time' } });
+        const bis = el('input', { attrs: { id: id + '-bis', type: 'time' } });
+        const ort = el('input', { attrs: { id: id + '-ort', type: 'text', maxlength: 60, autocomplete: 'off', placeholder: 'freiwillig' } });
+        const box = el('fieldset', { class: 'uni-wiederholen' }, [
+            el('legend', { text: 'Prüfung gleich eintragen (freiwillig)' }),
+            el('div', { class: 'formular uni-ohne-rand' }, [
+                el('label', { text: 'Art der Prüfung', attrs: { for: id + '-leistung' } }), leistung,
+                el('label', { text: 'Datum (oder Abgabetag)', attrs: { for: id + '-datum' } }), datum,
+                el('div', { class: 'uni-zeiten' }, [
+                    el('div', {}, [el('label', { text: 'Von', attrs: { for: id + '-von' } }), von]),
+                    el('div', {}, [el('label', { text: 'Bis', attrs: { for: id + '-bis' } }), bis])
+                ]),
+                el('label', { text: 'Raum', attrs: { for: id + '-ort' } }), ort,
+                el('p', { class: 'leise besitz-hinweis', text: 'Ohne Datum wird keine Prüfung angelegt. Weitere Prüfungen später mit „+ Prüfung“.' })
+            ])
+        ]);
+        const werte = () => ({ leistung: leistung.value.trim(), beginn: datum.value, von: von.value, bis: bis.value, ort: ort.value.trim() });
+        function fehler() {
+            const w = werte();
+            if (!w.beginn) return (w.leistung || w.von || w.bis || w.ort) ? 'Für die Prüfung bitte ein Datum angeben (oder die Felder leeren).' : '';
+            if (Boolean(w.von) !== Boolean(w.bis)) return 'Prüfung: bitte beide Uhrzeiten angeben oder keine.';
+            if (w.von && w.bis <= w.von) return 'Prüfung: die Endzeit muss nach der Anfangszeit liegen.';
+            return '';
+        }
+        return { box, werte, fehler };
+    }
+
+    // Nach dem Speichern eines neuen Moduls oder Kurses: die Prüfung dazu anlegen.
+    // vorher = ids vor dem Speichern; zu = { modul_id } oder { kurs_id }. Klappt es nicht, öffnet sich das Prüfungs-Formular vorbefüllt.
+    async function pruefungNachAnlegen(p, liste, vorher, titel, zuSchluessel, status, knoepfe) {
+        const w = p.werte();
+        if (!w.beginn) return;
+        const neu = liste().find((x) => !vorher.has(x.id));
+        if (!neu) return;
+        const eintrag = {
+            titel, art: 'pruefung', beginn: w.beginn, ende: '', von: w.von, bis: w.bis, tage: '', ort: w.ort,
+            modul_id: '', kurs_id: '', stunde_id: '', bestanden: false, leistung: w.leistung, notiz: ''
+        };
+        eintrag[zuSchluessel] = neu.id;
+        if (await senden(status, knoepfe, 'uni_speichern', { blatt: 'termine', eintrag })) return;
+        const grund = status.textContent;
+        zeigeAlles();
+        zeigeTerminForm(null, { ...eintrag, hinweis: titel + ' ist gespeichert, die Prüfung noch nicht (' + grund + '). Bitte hier noch einmal speichern.' });
+        return 'offen';
+    }
+
     // --- Kurs anlegen oder ändern (k = null: neu, vorgabe = { modul_id }) ---
     // Ein Kurs gehört zu einem Modul. Mit Tag und Uhrzeit steht er jede Woche in der Vorlesungszeit im Kalender.
     function zeigeKursForm(k, vorgabe = {}) {
@@ -208,7 +259,9 @@ export function render(container, ctx) {
         const bis = el('input', { attrs: { id: 'uni-ku-bis', type: 'time', value: k ? k.bis : '' } });
         const ort = el('input', { attrs: { id: 'uni-ku-ort', type: 'text', maxlength: 60, autocomplete: 'off', placeholder: 'freiwillig', value: k ? k.ort : '' } });
         const dozent = el('input', { attrs: { id: 'uni-ku-dozent', type: 'text', maxlength: 60, autocomplete: 'off', placeholder: 'freiwillig', value: k ? k.dozent : '' } });
-        const leistung = el('input', { attrs: { id: 'uni-ku-leistung', type: 'text', maxlength: 80, autocomplete: 'off', placeholder: 'zum Beispiel Klausur 90 Minuten', value: k ? k.pruefungsleistung : '' } });
+        // Die Art der Prüfung steht seit 0.5.7 bei der Prüfung. Ein alter Eintrag hier bleibt sichtbar, bis er geleert ist.
+        const altLeistung = k && k.pruefungsleistung ? el('input', { attrs: { id: 'uni-ku-leistung', type: 'text', maxlength: 80, autocomplete: 'off', value: k.pruefungsleistung } }) : null;
+        const pruefung = k ? null : pruefungGleich('uni-ku-pr');
         const notiz = el('input', { attrs: { id: 'uni-ku-notiz', type: 'text', maxlength: 200, autocomplete: 'off', placeholder: 'freiwillig', value: k ? k.notiz : '' } });
         const knoepfe = formKnoepfe(k ? loeschen : null);
 
@@ -217,15 +270,22 @@ export function render(container, ctx) {
             const eintrag = {
                 modul_id: modul.value, name: name.value.trim(), ects: ects.value.trim().replace(',', '.'), semester_id: semester.value,
                 tag: tag.value, von: von.value, bis: bis.value, ort: ort.value.trim(), dozent: dozent.value.trim(),
-                pruefungsleistung: leistung.value.trim(), notiz: notiz.value.trim()
+                pruefungsleistung: altLeistung ? altLeistung.value.trim() : '', notiz: notiz.value.trim()
             };
             if (!eintrag.name) { status.textContent = 'Bitte einen Namen angeben.'; name.focus(); return; }
+            if (pruefung && pruefung.fehler()) { status.textContent = pruefung.fehler(); return; }
             if (!ectsPasst(eintrag.ects)) { status.textContent = 'ECTS bitte als Zahl von 0 bis 60 (halbe erlaubt).'; ects.focus(); return; }
             const mitZeit = [eintrag.tag, eintrag.von, eintrag.bis].filter(Boolean).length;
             if (mitZeit !== 0 && mitZeit !== 3) { status.textContent = 'Bitte Tag, Anfang und Ende angeben oder alle drei leer lassen.'; return; }
             if (eintrag.von && eintrag.bis <= eintrag.von) { status.textContent = 'Die Endzeit muss nach der Anfangszeit liegen.'; return; }
             if (k) Object.assign(eintrag, { id: k.id, geaendert_am: k.geaendert_am });
+            const vorher = new Set(daten.kurse.map((x) => x.id));
             if (!await senden(status, knoepfe, 'uni_speichern', { blatt: 'kurse', eintrag })) return;
+            if (pruefung) {
+                const m = modulVon(eintrag.modul_id);
+                const titel = (m ? m.name + ' – ' : '') + eintrag.name;
+                if (await pruefungNachAnlegen(pruefung, () => daten.kurse, vorher, titel, 'kurs_id', status, knoepfe)) return;
+            }
             dialog.close();
             zeigeGespeichert(k ? 'Geändert' : 'Gespeichert', eintrag.name);
             zeigeAlles();
@@ -254,9 +314,10 @@ export function render(container, ctx) {
                 ]),
                 el('label', { text: 'Raum', attrs: { for: 'uni-ku-ort' } }), ort,
                 el('label', { text: 'Dozent*in', attrs: { for: 'uni-ku-dozent' } }), dozent,
-                el('label', { text: 'Prüfungsleistung', attrs: { for: 'uni-ku-leistung' } }), leistung,
-                el('p', { class: 'leise besitz-hinweis', text: 'Die Prüfung selbst trägst du mit „+ Prüfung“ ein. Ist sie bestanden, ist der Kurs fertig.' }),
+                altLeistung ? el('label', { text: 'Prüfungsleistung (alt: steht jetzt bei der Prüfung, hier bitte leeren)', attrs: { for: 'uni-ku-leistung' } }) : null, altLeistung,
                 el('label', { text: 'Notiz', attrs: { for: 'uni-ku-notiz' } }), notiz,
+                pruefung ? pruefung.box : null,
+                el('p', { class: 'leise besitz-hinweis', text: 'Ist eine Prüfung des Kurses bestanden, ist der Kurs fertig.' }),
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe),
                 status
             ])
@@ -293,14 +354,16 @@ export function render(container, ctx) {
 
     // --- Termin anlegen oder ändern ---
     // x = Termin oder null (neu). vorgabe = { beginn } für einen neuen Termin an einem Tag,
-    // oder { art, modul_id, kurs_id, titel } für „+ Prüfung“ bei einem Modul oder Kurs,
+    // oder { art, modul_id, kurs_id, titel, … } für „+ Prüfung“ bei einem Modul (dazu leistung, von, bis, ort und hinweis,
+    // wenn die Prüfung beim Anlegen eines Moduls oder Kurses nicht gespeichert werden konnte),
     // oder { beginn, woche } für „Nur an diesem Tag ändern“ (Termin mit stunde_id, nur Uhrzeit, Titel, Raum, Notiz).
     function zeigeTerminForm(x, vorgabe = {}) {
         const woche = x && x.stunde_id ? wocheVon(x.stunde_id) : vorgabe.woche;
         const anders = Boolean(woche);
         const quelle = x || (woche
             ? { titel: wocheTitel(woche), ort: woche.ort, von: woche.von, bis: woche.bis, beginn: vorgabe.beginn }
-            : { beginn: vorgabe.beginn || heute(), art: vorgabe.art, modul_id: vorgabe.modul_id, kurs_id: vorgabe.kurs_id, titel: vorgabe.titel });
+            : { beginn: vorgabe.beginn || heute(), art: vorgabe.art, modul_id: vorgabe.modul_id, kurs_id: vorgabe.kurs_id, titel: vorgabe.titel,
+                leistung: vorgabe.leistung, von: vorgabe.von, bis: vorgabe.bis, ort: vorgabe.ort });
         const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
         const titel = el('input', { attrs: { id: 'uni-te-titel', type: 'text', maxlength: 80, autocomplete: 'off', value: quelle.titel || '' } });
         const artWert = quelle.art === 'frei' ? 'urlaub' : (quelle.art || 'sonstiges');
@@ -332,9 +395,13 @@ export function render(container, ctx) {
             if (m) titel.value = k ? m.name + ' – ' + k.name : m.name;
         });
 
-        // Bestanden (nur bei Prüfungen)
+        // Nur bei Prüfungen: Art der Prüfung und Bestanden
+        const leistung = el('input', { attrs: { id: 'uni-te-leistung', type: 'text', maxlength: 80, autocomplete: 'off', placeholder: 'zum Beispiel Klausur 90 Minuten, Hausarbeit', value: quelle.leistung || '' } });
         const bestanden = el('input', { attrs: { id: 'uni-te-bestanden', type: 'checkbox', checked: Boolean(quelle.bestanden) } });
-        const bestandenBox = el('div', { class: 'uni-schalter' }, [bestanden, el('label', { text: 'Bestanden', attrs: { for: 'uni-te-bestanden' } })]);
+        const bestandenBox = el('div', { class: 'uni-pruefung-felder' }, [
+            el('label', { text: 'Art der Prüfung', attrs: { for: 'uni-te-leistung' } }), leistung,
+            el('div', { class: 'uni-schalter' }, [bestanden, el('label', { text: 'Bestanden', attrs: { for: 'uni-te-bestanden' } })])
+        ]);
         const artGeaendert = () => { bestandenBox.hidden = art.value !== 'pruefung'; };
         art.addEventListener('change', artGeaendert);
         artGeaendert();
@@ -367,6 +434,7 @@ export function render(container, ctx) {
                 kurs_id: anders ? '' : (zu ? (typ === 'k' ? zuId : '') : (quelle.kurs_id || '')),
                 stunde_id: anders ? woche.id : '',
                 bestanden: !anders && art.value === 'pruefung' && bestanden.checked,
+                leistung: !anders && art.value === 'pruefung' ? leistung.value.trim() : '',
                 notiz: notiz.value.trim()
             };
             if (!eintrag.titel) { status.textContent = 'Bitte einen Titel angeben.'; titel.focus(); return; }
@@ -397,6 +465,7 @@ export function render(container, ctx) {
         oeffneDialog(anders ? 'Nur am ' + langDatum(quelle.beginn) : (x ? 'Termin ändern' : 'Neuer Termin'), [
             el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: absenden } }, [
                 anders ? el('p', { class: 'leise besitz-hinweis', text: 'Gilt nur an diesem Tag. Jede andere Woche bleibt, wie sie ist.' }) : null,
+                vorgabe.hinweis ? el('p', { class: 'meldung', text: vorgabe.hinweis }) : null,
                 anders ? null : el('label', { text: 'Art', attrs: { for: 'uni-te-art' } }), anders ? null : art,
                 zu ? el('label', { text: 'Gehört zu Modul oder Kurs', attrs: { for: 'uni-te-zu' } }) : null, zu,
                 el('label', { text: 'Titel', attrs: { for: 'uni-te-titel' } }), titel,
@@ -425,7 +494,7 @@ export function render(container, ctx) {
     async function ausfallen(woche, tag, status, knoepfe) {
         const name = wocheTitel(woche);
         if (!confirm('„' + name + '“ fällt am ' + langDatum(tag) + ' aus?')) return;
-        const eintrag = { titel: name, art: woche.art || 'vorlesung', beginn: tag, ende: '', von: '', bis: '', tage: '', ort: '', modul_id: '', kurs_id: '', stunde_id: woche.id, bestanden: false, notiz: '' };
+        const eintrag = { titel: name, art: woche.art || 'vorlesung', beginn: tag, ende: '', von: '', bis: '', tage: '', ort: '', modul_id: '', kurs_id: '', stunde_id: woche.id, bestanden: false, leistung: '', notiz: '' };
         if (!await senden(status, knoepfe, 'uni_speichern', { blatt: 'termine', eintrag })) return;
         dialog.close();
         zeigeGespeichert('Fällt aus', name);
@@ -470,7 +539,7 @@ export function render(container, ctx) {
             ['Modul', m ? m.name : ''],
             ['Kurs', pk ? pk.name : ''],
             ['Dozent*in', e.kurs ? e.kurs.dozent : ''],
-            ['Prüfungsleistung', e.kurs ? e.kurs.pruefungsleistung : ''],
+            ['Art der Prüfung', termin && termin.art === 'pruefung' ? termin.leistung : ''],
             ['Bestanden', termin && termin.art === 'pruefung' && !e.woche ? (termin.bestanden ? 'ja' : 'noch nicht') : ''],
             ['Notiz', termin ? termin.notiz : (e.woche ? e.woche.notiz : '')],
             ['Hinweis', hinweis]
@@ -578,6 +647,7 @@ export function render(container, ctx) {
             STATUS.map(([k, t]) => el('option', { text: t, attrs: { value: k, selected: (m ? m.status : 'offen') === k } })));
         const semester = semesterWahl('uni-mo-semester', m ? m.semester_id : '', '– kein Semester –');
         const notiz = el('input', { attrs: { id: 'uni-mo-notiz', type: 'text', maxlength: 200, autocomplete: 'off', placeholder: 'freiwillig', value: m ? m.notiz : '' } });
+        const pruefung = m ? null : pruefungGleich('uni-mo-pr');
         const knoepfe = formKnoepfe(m ? loeschen : null);
 
         async function absenden(ev) {
@@ -588,8 +658,11 @@ export function render(container, ctx) {
             };
             if (!eintrag.name) { status.textContent = 'Bitte einen Namen angeben.'; name.focus(); return; }
             if (!ectsPasst(eintrag.ects)) { status.textContent = 'ECTS bitte als Zahl von 0 bis 60 (halbe erlaubt).'; ects.focus(); return; }
+            if (pruefung && pruefung.fehler()) { status.textContent = pruefung.fehler(); return; }
             if (m) Object.assign(eintrag, { id: m.id, geaendert_am: m.geaendert_am });
+            const vorher = new Set(daten.module.map((x) => x.id));
             if (!await senden(status, knoepfe, 'uni_speichern', { blatt: 'module', eintrag })) return;
+            if (pruefung && await pruefungNachAnlegen(pruefung, () => daten.module, vorher, eintrag.name, 'modul_id', status, knoepfe)) return;
             dialog.close();
             zeigeGespeichert(m ? 'Geändert' : 'Gespeichert', eintrag.name);
             zeigeAlles();
@@ -618,6 +691,7 @@ export function render(container, ctx) {
                 el('p', { class: 'leise besitz-hinweis', text: 'Ohne ECTS zählt die Summe der Kurse. Sind alle Prüfungen bestanden, ist das Modul von selbst fertig.' }),
                 el('label', { text: 'Semester (belegt oder geplant)', attrs: { for: 'uni-mo-semester' } }), semester,
                 el('label', { text: 'Notiz', attrs: { for: 'uni-mo-notiz' } }), notiz,
+                pruefung ? pruefung.box : null,
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe),
                 status
             ])
@@ -642,7 +716,7 @@ export function render(container, ctx) {
         }
         const zusatz = t.titel && t.titel !== titelWeg ? ' – ' + t.titel : '';
         return el('li', { class: 'uni-pruefung' + (t.bestanden ? ' uni-ist-bestanden' : '') }, [
-            el('span', { class: 'uni-pruefung-text', text: (darfAendern() ? '' : (t.bestanden ? '✓ ' : '')) + 'Prüfung ' + pruefungText(t) + zusatz }),
+            el('span', { class: 'uni-pruefung-text', text: (darfAendern() ? '' : (t.bestanden ? '✓ ' : '')) + (t.leistung || 'Prüfung') + ': ' + pruefungText(t) + zusatz }),
             knoepfe.length ? el('span', { class: 'uni-pruefung-knoepfe' }, knoepfe) : null,
             status
         ]);
@@ -674,22 +748,16 @@ export function render(container, ctx) {
                     el('span', { class: 'uni-was' }, [
                         el('span', { class: 'uni-kurs-name', text: (kursFertig(k) ? '✓ ' : '') + k.name }),
                         el('span', { class: 'leise einkauf-klein', text: [k.ects != null ? ectsText(k.ects) : '', kursZeit(k), k.ort, k.dozent].filter(Boolean).join(' · ') }),
-                        k.pruefungsleistung ? el('span', { class: 'leise einkauf-klein', text: 'Prüfungsleistung: ' + k.pruefungsleistung }) : null
+                        k.pruefungsleistung && !pruefungenVonKurs(k).length ? el('span', { class: 'leise einkauf-klein', text: 'Prüfungsleistung: ' + k.pruefungsleistung }) : null
                     ]),
                     darf ? stift('Kurs „' + k.name + '“', () => zeigeKursForm(k)) : null
                 ]),
-                pruefungenVonKurs(k).length || darf ? el('ul', { class: 'uni-pruefungen' }, [
-                    ...pruefungenVonKurs(k).map((t) => pruefungZeile(t, m.name + ' – ' + k.name)),
-                    darf ? el('li', {}, [el('button', {
-                        class: 'knopf knopf-zweit uni-klein', text: '+ Prüfung', attrs: { type: 'button', 'aria-label': 'Prüfung für ' + k.name + ' eintragen' },
-                        on: { click: () => zeigeTerminForm(null, { art: 'pruefung', kurs_id: k.id, titel: m.name + ' – ' + k.name }) }
-                    })]) : null
-                ]) : null
+                pruefungenVonKurs(k).length ? el('ul', { class: 'uni-pruefungen' }, pruefungenVonKurs(k).map((t) => pruefungZeile(t, m.name + ' – ' + k.name))) : null
             ]))) : el('p', { class: 'leise einkauf-klein uni-kurse-leer', text: 'Noch keine Kurse.' }),
             ohneKurs.length ? el('ul', { class: 'uni-pruefungen uni-ohne-kurs' }, ohneKurs.map((t) => pruefungZeile(t, m.name))) : null,
             darf ? el('div', { class: 'uni-modul-knoepfe' }, [
                 el('button', { class: 'knopf knopf-zweit uni-klein', text: '+ Kurs', attrs: { type: 'button' }, on: { click: () => zeigeKursForm(null, { modul_id: m.id }) } }),
-                el('button', { class: 'knopf knopf-zweit uni-klein', text: '+ Prüfung fürs Modul', attrs: { type: 'button' }, on: { click: () => zeigeTerminForm(null, { art: 'pruefung', modul_id: m.id, titel: m.name }) } })
+                el('button', { class: 'knopf knopf-zweit uni-klein', text: '+ Prüfung', attrs: { type: 'button', 'aria-label': 'Prüfung für ' + m.name + ' eintragen' }, on: { click: () => zeigeTerminForm(null, { art: 'pruefung', modul_id: m.id, titel: m.name }) } })
             ]) : null
         ]);
     }
