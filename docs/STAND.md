@@ -431,7 +431,9 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Die App speichert keine Rolle; die Rechte prüft immer das Skript.
 - **Farben der Arten im Uni-Kalender** (Wunsch der Person, Plan 7.2 und Etappe 5): Vorlesung, Prüfung, Arbeit, Zug, Urlaub, Hobby, Sonstiges und Semesterferien
   haben je eine Farbe (`--art-…` in `css/base.css`, hell und dunkel). Nur als Fläche, Streifen oder Punkt, Schrift darauf `--schrift-auf-farbe`.
-  Ausnahme Hobby: Dunkelgrün `--art-hobby` mit heller Schrift `--art-hobby-schrift` (Wunsch der Person, 31.10.2026). Linie „jetzt“ in Schriftfarbe (hell schwarz, dunkel weiß), nicht rot: die Partnerin sieht keine Farben (Wunsch der Person, 31.10.2026).
+  Die Farben sind nach Helligkeit gestaffelt, damit sie auch ohne Farbsehen unterscheidbar sind (Wunsch der Person, 31.10.2026; die Partnerin sieht keine Farben):
+  Prüfung (Dunkelrot) und Hobby (Dunkelgrün) dunkel mit heller Schrift (`--art-…-schrift`), dann Vorlesung, Zug, Arbeit, Sonstiges, Urlaub immer heller. Kästen haben einen feinen Rand.
+  Knöpfe im Reiter Uni mindestens 44 px hoch, Schrift im Raster am Handy mindestens 0,7 rem. Linie „jetzt“ in Schriftfarbe (hell schwarz, dunkel weiß), nicht rot: die Partnerin sieht keine Farben (Wunsch der Person, 31.10.2026).
 - **Uni-Daten im Gerät** (Wunsch der Person, 30.10.2026): Die zuletzt geladenen Uni-Daten liegen im Gerät (`thetadex_uni`, ohne Rolle),
   damit Kalender und Module ohne Netz da sind. Dann steht „Stand von …“ da und es gibt keine Knöpfe zum Ändern. Abmelden löscht sie.
   Folge: Wer das entsperrte Handy hat, sieht den Uni-Kalender ohne Passwort (auch bei Partner*in).
