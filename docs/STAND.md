@@ -4,14 +4,15 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.5.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.6.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
-- Nächster Schritt: Etappe 6 „DSA und DnD“ (7.2), zuerst ein Plan `docs/PLAN-ETAPPE-6.md`.
+- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`.
+- Nächster Schritt: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -255,7 +256,7 @@ unter „Info“ die Version prüfen.
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt, seit 5.5 in `termine` umgezogen) |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
-  | DSA | `boegen` (ein Bogen je Zeile, Abschnitte als JSON-Spalten), `verlauf` (Geld, AP, AsP, LeP), `gegenstaende`, `bilder` |
+  | DSA | `boegen` (ein Bogen je Zeile), `eintraege` (eine Zeile je Vorteil, Talent, Zauber, Waffe, Gegenstand), `verlauf` (Geld, AP, AsP, LeP); Spalten im Plan der Etappe 6 |
 
 ---
 
@@ -453,9 +454,9 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Google-Drive-Link einfügen. Die Datei liegt im Drive der Person (hochgeladene im privaten Ordner „Thetadex Besitz“), im Sheet nur ihre Kennung.
   Das Skript liest sie als die Person und gibt sie nur mit Passwort und nur für eingetragene Bilder als Text heraus (`data:`-Bild).
   Nichts wird öffentlich geteilt, die Content-Security-Policy bleibt gleich. Das Skript `leben` braucht dafür einmal die Drive-Erlaubnis.
-- **Bilder** (DSA): Die App verkleinert ein Bild vor dem Senden (etwa 400 px, JPEG) und schickt es als Text.
-  Es liegt im Blatt `bilder`. Keine fremden Bild-Server, die Content-Security-Policy bleibt gleich (`img-src 'self' data:`).
-- **Würfel** (W4, W6, W20) rechnen nur im Gerät mit `crypto.getRandomValues`. Nichts wird gespeichert.
+- **Bilder** (DSA, Entscheidung der Person, 31.10.2026): wie bei Besitz im Google Drive der Person (privater Ordner „Thetadex DSA“), im Sheet nur die Kennung.
+  Ein geteilter Bogen zeigt sein Bild über das Skript als `data:`-Bild. Die Content-Security-Policy bleibt gleich (`img-src 'self' data:`).
+- **Würfel** (W4, W6, W8, W10, W12, W20) rechnen nur im Gerät mit `crypto.getRandomValues`, ohne Verzerrung (passende Würfe werden neu gezogen). Nichts wird gespeichert.
 - **Woche am Handy:** im Hochformat ein schmales Raster mit 7 Spalten (nur Titel), darunter die Liste je Tag; im Querformat und am PC nur das Raster (Wunsch der Person, 31.10.2026).
   Eine Web-App kann das Drehen nicht erzwingen, darum ein Hinweis „Für die Woche das Handy drehen“.
 - **Kontowecker (Etappe 7):** Eine Web-App kann keine SMS lesen, E-Mail geht beim Kontowecker nicht. Die Person nutzt Android.
@@ -496,7 +497,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern.
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile.
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-6.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`).
@@ -605,7 +606,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     (Monatsraster, Woche, Tage zählen, Schriftfarbe auf Farbfläche) werden vereinfacht übernommen.
   - Master-Übersicht: welche Module erledigt sind, welche noch fehlen, wann und welche Prüfung dazu gehört.
   - Partner*in sieht Uni mit allen Zeiten, nur lesend (Rechte in 4).
-- **Etappe 6 „DSA und DnD“ (0.6.x)**
+- **Etappe 6 „DSA und DnD“ (0.6.x)** – läuft, Plan `docs/PLAN-ETAPPE-6.md` (Reiter heißt „Pen & Paper“, DnD wie DSA aufgebaut, Würfel bis W20; der Plan gilt vor dieser Kurzfassung).
   - Ziel: neues Sheet „DSA“ mit Skript `dsa`. Vier Bögen (drei DSA, ein DnD), jeder einzeln wählbar, alle Daten in der App bearbeitbar.
   - Bogen zeigt: Kopf (Name, GP-Basis, Rasse, Kultur, Profession, Geschlecht, Alter, Größe, Gewicht, Haar- und Augenfarbe, Bild,
     Stand, Titel, Sozialstatus, Herkunft); Vor- und Nachteile; Eigenschaften und Basiswerte (MU, KL, IN, FF, GE, KO, KK zusätzlich
@@ -685,6 +686,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.5.6** Schritt 5.5: Kurse je Modul, Prüfungen „bestanden“, Termine jede Woche an bestimmten Tagen, Stundenplan in Termine umgezogen, Filter „Frei“ weg, Fenster nur mit × oder Abbrechen.
 - **0.5.7** Schritt 5.6: Art der Prüfung bei der Prüfung, ein Knopf „+ Prüfung“, Prüfung beim Anlegen von Modul und Kurs, Woche am Handy als Raster, Art Hobby.
 - **0.5.8** Schritt 5.7: Hobby dunkelgrün, Text in den Kalender-Kästen gekürzt, Linie „jetzt“ in der Woche. Etappe 5 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-5.md` gelöscht.
+- **Etappe 6** Pen & Paper (DSA und DnD). **0.6.0** Schritt 6.0: Plan `docs/PLAN-ETAPPE-6.md` (Sheet „DSA“ mit drei Blättern, Skript `dsa`, Verlauf, Würfel, Teilen; Name „Pen & Paper“, W20 als Symbol).
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
