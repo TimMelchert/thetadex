@@ -1053,3 +1053,9 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
     .dsa-eig-zeile { grid-template-columns: 5em minmax(0, 1fr) 6em 44px; }
     .dsa-zaehler-zeile { grid-template-columns: 5em minmax(0, 1fr) 12em 6em 6em 44px; grid-template-areas: "k n a s m x"; padding-bottom: 0; border-bottom: none; }
 }
+.dsa-anzahl { font-weight: 400; font-size: 0.85rem; }
+.dsa-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.dsa-chip { min-height: 44px; padding: 6px 12px; border: 1px solid var(--linie); border-radius: 999px; background: var(--hintergrund); color: var(--schrift); font: inherit; font-size: 0.95rem; cursor: pointer; text-align: left; overflow-wrap: anywhere; }
+.dsa-zeile-knopf { width: 100%; min-height: 44px; padding: 0; border: none; border-bottom: 1px solid var(--linie); background: none; color: var(--schrift); font: inherit; text-align: left; cursor: pointer; }
+.dsa-zeile-knopf:last-child { border-bottom: none; }
+.dsa-zeile-stift { width: 28px; text-align: center; color: var(--schrift-leise); }

@@ -140,7 +140,9 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
     3. Startseite: großes Icon ohne dunklen Hintergrund, nur die Karteikarte mit den farbigen Reitern (eigene Datei, zum Beispiel `icons/thetadex-karte.svg`).
     Die Werte kommen in STAND.md 4 „Erscheinungsbild“.
   - Reiter Pen & Paper: Bogen wählen, „+ Bogen“ (Vorlage DSA oder DnD), Kopf und Eigenschaften anzeigen und ändern, Eigenschaften-Leiste oben.
-- **6.2 Listen** (→ 0.6.2): Vor- und Nachteile, Sonderfertigkeiten, Gaben, Talente nach Gruppe, Besitz. Anlegen, ändern, löschen, sortieren.
+- **6.2 Listen** (→ 0.6.2) – gebaut: Vor- und Nachteile, Sonderfertigkeiten, Gaben, Talente nach Gruppe, Besitz. Anlegen, ändern, löschen, sortieren.
+  Vor- und Nachteile, Sonderfertigkeiten und Gaben als Knöpfe nebeneinander (Tipp öffnet), Talente und Besitz als Zeilen je Gruppe bzw. Ort.
+  „Speichern und weiter“ beim Anlegen (Gruppe und Ort bleiben stehen). Sortiert nach „Reihenfolge“ (freiwillig), sonst nach Name.
 - **6.3 Zauber und Waffen** (→ 0.6.3): Zauber mit allen Feldern und Modifikationen (lange Texte aufklappbar), Waffen als kleine Tabelle (am Handy Karten).
 - **6.4 Verlauf** (→ 0.6.4): Geld, Leben, AsP, AP oben mit Symbol; Tipp darauf → „+“ oder „−“, Betrag, Notiz. Liste der letzten Änderungen je Zähler.
   Geld mit Feldern je Münze (D, S, H, K), die App rechnet um. Leben und AsP mit Knopf „Voll“ (setzt auf den Höchstwert).

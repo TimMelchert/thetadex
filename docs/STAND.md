@@ -4,15 +4,15 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.6.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.6.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
-- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`. Gebaut: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen, Kopf und Eigenschaften; dazu Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte).
-- Nächster Schritt: 6.2 (Listen: Vor- und Nachteile, Sonderfertigkeiten, Talente, Besitz).
+- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`. Gebaut: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen, Kopf und Eigenschaften; dazu Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte), 6.2 (Listen).
+- Nächster Schritt: 6.3 (Zauber und Waffen).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -312,6 +312,8 @@ unter „Info“ die Version prüfen.
 - Etappe 6 (läuft, Plan `docs/PLAN-ETAPPE-6.md`): Sheet „DSA“ mit Skript `dsa` (6.1): Blätter `boegen`, `eintraege`, `verlauf`; alle Aktionen der Etappe
   (`ping`, `liste`, `bogen_speichern`, `bogen_loeschen`, `eintrag_speichern`, `eintrag_loeschen`, `verlauf_neu`, `bild`, `freigabe`, ohne Passwort `geteilt`). Funktion `einrichten`.
   Reiter Pen & Paper: Bogen wählen und anlegen (DSA oder DnD, gleiche Vorlage), Kopf, Eigenschaften, Basiswerte und Zähler ändern, Zähler und Eigenschaften kleben oben.
+  Listen (6.2): Vor- und Nachteile, Sonderfertigkeiten und Gaben (als Knöpfe nebeneinander), Talente nach Gruppe (feste Reihenfolge der Gruppen), Besitz nach Ort;
+  Tipp öffnet das Formular, „+“ legt an, „Speichern und weiter“ für viele Einträge hintereinander, Sortierung nach „Reihenfolge“, sonst nach Name.
   Semester (5.1), Kalender mit Woche, Monat, Liste, Filter nach Art, „einmal anders“ und ohne Netz (5.2), Arbeitsstunden (5.3),
   Module mit Master-Übersicht (5.4). Umbau nach Anmerkungen (5.5): kein Stundenplan mehr (in `termine` umgezogen), Kurse je Modul,
   Termine jede Woche an bestimmten Tagen, Prüfungen „bestanden“, Auflagen getrennt. 5.6: Art der Prüfung bei der Prüfung, ein Knopf „+ Prüfung“,
@@ -694,6 +696,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.5.8** Schritt 5.7: Hobby dunkelgrün, Text in den Kalender-Kästen gekürzt, Linie „jetzt“ in der Woche. Etappe 5 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-5.md` gelöscht.
 - **Etappe 6** Pen & Paper (DSA und DnD). **0.6.0** Schritt 6.0: Plan `docs/PLAN-ETAPPE-6.md` (Sheet „DSA“ mit drei Blättern, Skript `dsa`, Verlauf, Würfel, Teilen; Name „Pen & Paper“, W20 als Symbol).
 - **0.6.1** Schritt 6.1: Sheet „DSA“ und Skript `dsa`, Reiter Pen & Paper mit Bogen, Kopf, Eigenschaften und Zählern; Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte.
+- **0.6.2** Schritt 6.2: Listen bei Pen & Paper (Vor- und Nachteile, Sonderfertigkeiten und Gaben, Talente nach Gruppe, Besitz nach Ort).
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
