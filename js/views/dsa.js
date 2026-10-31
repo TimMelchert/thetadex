@@ -2,6 +2,7 @@
 // 6.2: Listen (Vor- und Nachteile, Sonderfertigkeiten und Gaben, Talente nach Gruppe, Besitz nach Ort) anlegen, ändern, löschen.
 // 6.3: Zauber (aufklappbar mit allen Feldern und Modifikationen) und Waffen (Tabelle, am Handy Karten).
 // 6.4: Verlauf. Tipp auf einen Zähler oben: „+“ oder „−“, Betrag, Notiz. Liste der letzten Änderungen.
+// 6.5: Knopf „🎲 Würfeln“ (js/ui/wuerfel.js) und Bild des Helden im Kopf (hochladen oder Drive-Link, Ordner „Thetadex DSA“).
 // Daten aus dem Skript „dsa“ (eigenes Sheet „DSA“). Nur mit Passwort.
 // Die Bögen liegen nur im Arbeitsspeicher, solange die Seite offen ist. Im Gerät steht nur, welcher Bogen gewählt war
 // (thetadex_dsa_bogen). Siehe docs/PLAN-ETAPPE-6.md.
@@ -11,11 +12,22 @@ import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
+import { verkleinereBild, bildAdresse } from '../ui/bild.js';
+import { wuerfelKnopf } from '../ui/wuerfel.js';
 
 // Zuletzt geladene Daten, nur im Arbeitsspeicher
 let daten = null;
 // Aufgeklappte Abschnitte. Bleibt, solange die Seite offen ist.
 const offen = new Set(['kopf']);
+// Schon geladene Bilder (Drive-Kennung → data:-Bild), nur im Arbeitsspeicher
+const bilder = new Map();
+async function holeBild(id) {
+    if (bilder.has(id)) return bilder.get(id);
+    const adresse = bildAdresse(await api('dsa', 'bild', { bild: id }));
+    if (!adresse) throw new Error('Unbekannte Bildart.');
+    bilder.set(id, adresse);
+    return adresse;
+}
 // Verlauf: gewählter Zähler und ob alle Änderungen zu sehen sind
 let verlaufFilter = '';
 let verlaufAlle = false;
@@ -307,10 +319,19 @@ export function render(container) {
     function kopfKarte(bogen) {
         const felder = KOPF.filter(([k]) => bogen.kopf[k]);
         const inhalt = [];
-        if (felder.length) {
-            inhalt.push(el('dl', { class: 'dsa-felder' }, felder.flatMap(([k, t]) => [el('dt', { text: t }), el('dd', { text: bogen.kopf[k] })])));
+        const liste = felder.length
+            ? el('dl', { class: 'dsa-felder' }, felder.flatMap(([k, t]) => [el('dt', { text: t }), el('dd', { text: bogen.kopf[k] })]))
+            : el('p', { class: 'leise', text: 'Noch leer. Tippe auf ✎.' });
+        if (bogen.bild) {
+            // Bild des Helden neben dem Kopf, lädt nach
+            const bild = el('img', { class: 'dsa-bild', attrs: { alt: 'Bild: ' + bogen.name, hidden: true } });
+            const bildText = el('p', { class: 'leise dsa-bild-text', text: 'Bild lädt …' });
+            holeBild(bogen.bild)
+                .then((adresse) => { bild.src = adresse; bild.hidden = false; bildText.remove(); })
+                .catch((e) => { bildText.textContent = 'Bild nicht geladen: ' + e.message; });
+            inhalt.push(el('div', { class: 'dsa-kopf-mit-bild' }, [liste, el('div', { class: 'dsa-bild-box' }, [bild, bildText])]));
         } else {
-            inhalt.push(el('p', { class: 'leise', text: 'Noch leer. Tippe auf ✎.' }));
+            inhalt.push(liste);
         }
         if (bogen.notiz) inhalt.push(el('p', { class: 'dsa-notiz', text: bogen.notiz }));
         return karte('kopf', 'Kopf', { zeichen: '✎', label: 'Kopf bearbeiten', tun: () => zeigeBogenForm(bogen) }, inhalt);
@@ -509,6 +530,48 @@ export function render(container) {
         notiz.value = b ? b.notiz : '';
         const knoepfe = formKnoepfe(b ? () => loeschen(b, status, knoepfe) : null);
 
+        // Bild (6.5): bildStand.id = gespeichertes Bild, bildStand.daten = neu gewähltes (verkleinert), bildLink = eingefügter Drive-Link.
+        // Mitgeschickt wird es nur, wenn sich etwas geändert hat.
+        let bildStand = { id: b ? b.bild || '' : '', daten: null };
+        let bildGeaendert = false;
+        const vorschau = el('img', { class: 'besitz-vorschau', attrs: { alt: 'Bild des Helden', hidden: true } });
+        const bildText = el('p', { class: 'leise besitz-hinweis' });
+        const bildEntfernen = el('button', { class: 'knopf knopf-zweit', text: 'Bild entfernen', attrs: { type: 'button', hidden: true }, on: { click: () => { bildGeaendert = true; bildStand = { id: '', daten: null }; bildDatei.value = ''; bildLink.value = ''; zeigeVorschau(null); } } });
+        const bildDatei = el('input', { attrs: { id: 'dsa-bild', type: 'file', accept: 'image/*' }, on: { change: () => bildGewaehlt() } });
+        const bildLink = el('input', {
+            attrs: { id: 'dsa-bild-link', type: 'url', inputmode: 'url', autocomplete: 'off', spellcheck: 'false', placeholder: 'https://drive.google.com/…' },
+            on: { input: () => { bildGeaendert = true; if (bildLink.value.trim()) { bildStand = { id: bildStand.id, daten: null }; zeigeVorschau(null, 'Das Bild aus dem Link erscheint nach dem Speichern.'); } } }
+        });
+        function zeigeVorschau(adresse, text = '') {
+            vorschau.hidden = !adresse;
+            if (adresse) vorschau.src = adresse; else vorschau.removeAttribute('src');
+            bildText.textContent = text;
+            bildEntfernen.hidden = !(adresse || bildStand.id || bildLink.value.trim());
+        }
+        async function bildGewaehlt() {
+            const datei = bildDatei.files && bildDatei.files[0];
+            if (!datei) return;
+            zeigeVorschau(null, 'Bild wird verkleinert …');
+            try {
+                const daten = await verkleinereBild(datei);
+                bildLink.value = '';
+                bildStand = { id: bildStand.id, daten };
+                bildGeaendert = true;
+                zeigeVorschau(daten);
+            } catch (e) {
+                bildDatei.value = '';
+                zeigeVorschau(null, e.message);
+            }
+        }
+        if (bildStand.id) {
+            const id = bildStand.id;
+            zeigeVorschau(bilder.get(id) || null, bilder.has(id) ? '' : 'Bild lädt …');
+            if (!bilder.has(id)) {
+                holeBild(id).then((a) => { if (bildStand.id === id && !bildStand.daten && !bildLink.value.trim()) zeigeVorschau(a); })
+                    .catch((e) => { if (bildStand.id === id) zeigeVorschau(null, 'Bild nicht geladen: ' + e.message); });
+            }
+        }
+
         async function absenden(ev) {
             ev.preventDefault();
             if (!name.value.trim()) { status.textContent = 'Bitte einen Namen angeben.'; return; }
@@ -516,8 +579,15 @@ export function render(container) {
             kopfFelder.forEach(([k, , f]) => { if (f.value.trim()) kopf[k] = f.value.trim(); });
             const werte = b ? bogenWerte(b) : { eigenschaften: VORLAGE_EIGENSCHAFTEN, zaehler: VORLAGE_ZAEHLER };
             Object.assign(werte, { name: name.value.trim(), regelwerk: regelwerk.value, kopf, notiz: notiz.value.trim() });
+            if (bildGeaendert) {
+                if (bildStand.daten) werte.bild_daten = bildStand.daten.replace(/^data:image\/jpeg;base64,/, '');
+                else werte.bild = bildLink.value.trim() || bildStand.id;
+            }
             const antwort = await senden(status, knoepfe, 'bogen_speichern', { bogen: werte });
             if (!antwort) return;
+            // Neu hochgeladenes Bild gleich merken, dann muss es nicht neu geladen werden
+            const neu = antwort.boegen && antwort.boegen.find((x) => x.id === (b ? b.id : antwort.id));
+            if (bildStand.daten && neu && neu.bild) bilder.set(neu.bild, bildStand.daten);
             dialog.close();
             if (antwort.id) { schreiben('dsa_bogen', antwort.id); auswahl.value = antwort.id; }
             zeigeAlles();
@@ -531,6 +601,10 @@ export function render(container) {
                 b ? null : el('p', { class: 'leise besitz-hinweis', text: 'Der Bogen startet mit den Eigenschaften und Zählern von DSA. Alles lässt sich danach ändern.' }),
                 ...kopfFelder.flatMap(([k, t, f]) => feld('dsa-kopf-' + k, t, f)),
                 ...feld('dsa-notiz', 'Notiz', notiz),
+                el('label', { text: 'Bild (freiwillig): wählen oder aufnehmen', attrs: { for: 'dsa-bild' } }), bildDatei,
+                el('label', { text: 'oder Google-Drive-Link', attrs: { for: 'dsa-bild-link' } }), bildLink,
+                vorschau, bildText, bildEntfernen,
+                el('p', { class: 'leise besitz-hinweis', text: 'Das Bild liegt in deinem Google Drive im Ordner „Thetadex DSA“.' }),
                 status,
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe)
             ])
@@ -762,7 +836,8 @@ export function render(container) {
         oben,
         abschnitte,
         neuLaden,
-        dialog
+        dialog,
+        ...wuerfelKnopf()
     );
     zeigeAlles();
     laden();
