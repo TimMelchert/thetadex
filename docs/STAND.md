@@ -4,15 +4,15 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.6.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.6.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
-- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`. Gebaut: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen, Kopf und Eigenschaften; dazu Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte), 6.2 (Listen), 6.3 (Zauber und Waffen), 6.4 (Verlauf), 6.5 (Würfel und Bild), 6.6 (Teilen).
-- Nächster Schritt: 6.7 (Bogen aus der Vorlage übertragen, Daten ohne Pull Request), danach 6.8 (Anmerkungen und Abschluss).
+- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`. Gebaut: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen, Kopf und Eigenschaften; dazu Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte), 6.2 (Listen), 6.3 (Zauber und Waffen), 6.4 (Verlauf), 6.5 (Würfel und Bild), 6.6 (Teilen), 6.7 (Faëlandel übertragen, Tabellen in den Projektdateien), 6.8a (Anmerkungen zum Aussehen).
+- Nächster Schritt: Abenteuer und DM (Plan folgt, Wunsch der Person vom 31.10.2026), danach Abschluss der Etappe.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -320,9 +320,13 @@ unter „Info“ die Version prüfen.
   „+“ geht nie über den Höchstwert (die App speichert nur bis voll), Geld kann nicht unter 0. AP: „+ gesammelt“, „− ausgegeben“; oben nur gesammelte, im Fenster auch „frei“.
   Karte „Verlauf“: neueste Änderung oben, Filter je Zähler, erst 30, dann „Alle zeigen“. Änderungen löschen nur im Sheet (wie ein Kassenbuch).
   Würfel (6.5): schwebender Knopf „🎲 Würfeln“ unten rechts, Anzahl 1 bis 20, W4 bis W20, Einzelwürfe und Summe, letzte 10 Würfe nur im Arbeitsspeicher (`js/ui/wuerfel.js`).
-  Bild (6.5): im Kopf-Fenster hochladen (App verkleinert) oder Drive-Link, Ordner „Thetadex DSA“; steht rechts neben dem Kopf. Wird nur mitgeschickt, wenn es sich ändert.
+  Bild (6.5): im Kopf-Fenster hochladen (App verkleinert) oder Drive-Link, Ordner „Thetadex DSA“; steht links neben dem Kopf. Wird nur mitgeschickt, wenn es sich ändert.
   Teilen (6.6): Knopf „🔗 Teilen“ (heißt „🔗 Geteilt“, wenn ein Link gilt): „Link erstellen“, „Link kopieren“, „Senden …“ (wenn das Gerät es kann),
   „Neuen Link erstellen“, „Nicht mehr teilen“. Den Schlüssel gibt das Skript nur beim Erstellen heraus; die App merkt ihn in `thetadex_dsa_links`.
+  Aussehen (0.6.7, Wunsch der Person): Marke DSA/DnD und „🔗 Teilen“ in einer Zeile über dem Namen; der Name ist eine große fette Überschrift
+  mit Pfeil, darüber liegt unsichtbar die Bogen-Auswahl. Geld als Münzen untereinander (Gold D, Silber S, Bronze H, Eisen K, nur mit Anzahl; am PC mit Namen).
+  Bild links: der Kasten hat das Seitenverhältnis des Bildes, so hoch wie der Kopf-Text (am Handy höchstens gut ein Drittel breit, dann niedriger).
+  Nie beschnitten, nie unscharf; Tipp zeigt es groß. Die Karte Kopf hat keine Überschrift mehr, ✎ steht unten rechts.
   Wurde der Link an einem anderen Gerät erstellt, hilft nur „Neuen Link erstellen“. Die Adresse `#/bogen/<skript>/<schluessel>` nutzt dieselbe Ansicht
   (`js/views/dsa.js`, Route `bogen` in `js/app.js`) im Modus „nur lesen“: ohne Passwort, ohne Verlauf, ohne Knöpfe zum Ändern, Tipp auf einen Eintrag zeigt ihn nur an.
   Semester (5.1), Kalender mit Woche, Monat, Liste, Filter nach Art, „einmal anders“ und ohne Netz (5.2), Arbeitsstunden (5.3),
@@ -712,6 +716,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.6.4** Schritt 6.4: Verlauf bei Pen & Paper (Zähler antippen, „+“ oder „−“, Geld je Münze, „Voll“, Karte „Verlauf“ mit Filter).
 - **0.6.5** Schritt 6.5: Würfel (W4 bis W20, Anzahl, schwebender Knopf) und Bild des Helden im Kopf bei Pen & Paper.
 - **0.6.6** Schritt 6.6: Teilen bei Pen & Paper (Link erstellen, kopieren, neu, nicht mehr teilen; geteilter Bogen `#/bogen/<skript>/<schluessel>` nur lesen).
+- **0.6.7** Anmerkungen zum Aussehen: Name als Überschrift mit Auswahl, DSA und Teilen darüber, Geld als Münzen, Bild so hoch wie der Kopf und groß per Tipp.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
