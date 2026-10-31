@@ -15,6 +15,7 @@ import * as finanzen from './views/finanzen.js';
 import * as besitz from './views/besitz.js';
 import * as einkauf from './views/einkauf.js';
 import * as uni from './views/uni.js';
+import * as dsa from './views/dsa.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
@@ -38,6 +39,7 @@ ANSICHTEN.finanzen = finanzen;
 ANSICHTEN.besitz = besitz;
 ANSICHTEN.einkauf = einkauf;
 ANSICHTEN.uni = uni;
+ANSICHTEN.dsa = dsa;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';

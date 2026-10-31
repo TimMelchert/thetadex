@@ -6,7 +6,7 @@ import { istEingerichtet } from '../store.js';
 export function render(container, ctx) {
     container.append(
         el('h1', { class: 'start-logo' }, [
-            el('img', { attrs: { src: 'icons/thetadex-icon.svg', alt: '', width: '88', height: '88' } }),
+            el('img', { attrs: { src: 'icons/thetadex-karte.svg', alt: '', width: '80', height: '88' } }),
             el('span', { text: 'Thetadex' })
         ]),
         el('p', { class: 'leise start-version', text: 'Version ' + ctx.version })

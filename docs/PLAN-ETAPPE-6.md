@@ -130,7 +130,8 @@ Die Blätter `gegenstaende` und `bilder` fallen dadurch weg (Besitz ist ein Absc
 Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Schritt prüft die Person am Handy und am PC.
 
 - **6.0 Plan** (→ 0.6.0): dieser Plan als `docs/PLAN-ETAPPE-6.md`, Antworten eingearbeitet. Kein Code.
-- **6.1 Sheet, Skript und Bogen anlegen** (→ 0.6.1)
+- **6.1 Sheet, Skript und Bogen anlegen** (→ 0.6.1) – gebaut. Kopf ändern im Fenster über ✎; Eigenschaften, Basiswerte und Zähler (Startwert, Höchstwert) in einem Fenster.
+  AsP erscheint oben nur mit Höchstwert oder Stand. Geld steht als Kreuzer im Sheet.
   - Von Hand: neues Google Sheet „DSA“, `Code.gs` einfügen, `APP_PIN` eintragen, `einrichten` ausführen, **neue Bereitstellung**, Adresse in der App eintragen.
   - Neue Datei `icons/w20.svg` (in `HUELLE` in `sw.js`), Name „Pen & Paper“ in `js/config.js`.
   - Dazu drei Wünsche der Person zum Aussehen (31.10.2026), gelten für die ganze App:
