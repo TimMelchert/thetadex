@@ -1,5 +1,6 @@
 // Reiter Pen & Paper (DSA und DnD). 6.1: Bogen wählen und anlegen, Kopf, Eigenschaften und Zähler ansehen und ändern.
 // 6.2: Listen (Vor- und Nachteile, Sonderfertigkeiten und Gaben, Talente nach Gruppe, Besitz nach Ort) anlegen, ändern, löschen.
+// 6.3: Zauber (aufklappbar mit allen Feldern und Modifikationen) und Waffen (Tabelle, am Handy Karten).
 // Daten aus dem Skript „dsa“ (eigenes Sheet „DSA“). Nur mit Passwort.
 // Die Bögen liegen nur im Arbeitsspeicher, solange die Seite offen ist. Im Gerät steht nur, welcher Bogen gewählt war
 // (thetadex_dsa_bogen). Siehe docs/PLAN-ETAPPE-6.md.
@@ -15,18 +16,29 @@ let daten = null;
 // Aufgeklappte Abschnitte. Bleibt, solange die Seite offen ist.
 const offen = new Set(['kopf']);
 
-// Listen-Abschnitte (6.2). arten: [Schlüssel im Sheet, Überschrift, Name eines Eintrags].
+// Listen-Abschnitte (6.2, Zauber und Waffen 6.3). arten: [Schlüssel im Sheet, Überschrift, Name eines Eintrags].
 // art: 'chips' = kurze Namen nebeneinander, 'gruppen' = Zeilen je Gruppe, 'orte' = Zeilen je Ort (Feld „ort“).
 const LISTEN = [
     { key: 'vorteile', titel: 'Vor- und Nachteile', art: 'chips', wert: 'Stufe oder Wert (freiwillig)',
         arten: [['vorteil', 'Vorteile', 'Vorteil'], ['nachteil', 'Nachteile', 'Nachteil']] },
     { key: 'sf', titel: 'Sonderfertigkeiten und Gaben', art: 'chips', wert: 'Wert (freiwillig)',
         arten: [['sonderfertigkeit', 'Sonderfertigkeiten', 'Sonderfertigkeit'], ['gabe', 'Gaben', 'Gabe']] },
-    { key: 'talente', titel: 'Talente', art: 'gruppen', wert: 'TaW', probe: true,
+    { key: 'talente', titel: 'Talente', art: 'gruppen', wert: 'TaW', probe: 'zum Beispiel MU · GE · KK',
         arten: [['talent', 'Talente', 'Talent']], felder: [['be', 'BE (zum Beispiel BEx2)'], ['spez', 'Spezialisierung']] },
+    { key: 'zauber', titel: 'Zauber', art: 'zauber', wert: 'ZfW', probe: 'zum Beispiel KL / IN / CH', text: 'Wirkung',
+        arten: [['zauber', 'Zauber', 'Zauber']],
+        felder: [['kosten', 'Kosten'], ['zauberdauer', 'Zauberdauer'], ['wirkungsdauer', 'Wirkungsdauer'], ['reichweite', 'Reichweite'],
+            ['technik', 'Technik'], ['merkmale', 'Merkmale'], ['mods', 'Modifikationen (je Zeile eine)', 'liste'], ['haus', 'Hauszauber', 'haken']] },
+    { key: 'waffen', titel: 'Waffen', art: 'waffen', wert: null,
+        arten: [['waffe', 'Waffen', 'Waffe']],
+        felder: [['art', 'Art (zum Beispiel Säbel, Bogen)'], ['tp', 'TP'], ['at', 'AT'], ['pa', 'PA'], ['ini', 'INI'], ['be', 'BE'], ['reichweite', 'Reichweite (Fernkampf)']] },
     { key: 'besitz', titel: 'Besitz', art: 'orte', wert: 'Anzahl (freiwillig)',
         arten: [['besitz', 'Besitz', 'Gegenstand']], felder: [['ort', 'Ort (zum Beispiel am Körper, Rucksack)'], ['gewicht', 'Gewicht']] }
 ];
+// Spalten der Waffen-Tabelle: [Feld, Überschrift]
+const WAFFEN_SPALTEN = [['tp', 'TP'], ['at', 'AT'], ['pa', 'PA'], ['ini', 'INI'], ['be', 'BE'], ['reichweite', 'RW']];
+// Weitere Felder eines Zaubers in der Ansicht
+const ZAUBER_FELDER = [['kosten', 'Kosten'], ['zauberdauer', 'Zauberdauer'], ['wirkungsdauer', 'Wirkungsdauer'], ['reichweite', 'Reichweite'], ['technik', 'Technik'], ['merkmale', 'Merkmale']];
 // Feste Reihenfolge der Talent-Gruppen (aus dem Plan), eigene Gruppen danach nach dem Alphabet
 const TALENT_GRUPPEN = ['Kampftechniken', 'Körperliche Talente', 'Gesellschaftliche Talente', 'Natur-Talente',
     'Wissenstalente', 'Handwerkliche Talente', 'Sprachen und Schriften'];
@@ -194,6 +206,10 @@ export function render(container) {
                     attrs: { type: 'button', 'aria-label': e.name + ' bearbeiten' }, on: { click: () => zeigeEintragForm(bogen, def, e) }
                 }))));
             });
+        } else if (def.art === 'zauber') {
+            sortiere(alle).forEach((e) => inhalt.push(zauberBlock(bogen, def, e)));
+        } else if (def.art === 'waffen') {
+            if (alle.length) inhalt.push(waffenTabelle(bogen, def, sortiere(alle)));
         } else {
             const gruppeVon = (e) => (def.art === 'orte' ? String((e.felder && e.felder.ort) || '') : e.gruppe);
             const leer = def.art === 'orte' ? 'Ohne Ort' : 'Ohne Gruppe';
@@ -204,6 +220,45 @@ export function render(container) {
         }
         if (!alle.length) inhalt.push(el('p', { class: 'leise', text: 'Noch leer. Tippe auf +.' }));
         return karte(def.key, def.titel, { zeichen: '+', label: 'Neu bei ' + def.titel, tun: () => zeigeEintragForm(bogen, def, null) }, inhalt, alle.length || '');
+    }
+
+    // Ein Zauber: Kopfzeile mit Name, Probe und ZfW; aufgeklappt alle Felder, Wirkung und Modifikationen
+    function zauberBlock(bogen, def, e) {
+        const f = e.felder || {};
+        const felder = ZAUBER_FELDER.filter(([k]) => f[k]);
+        const mods = Array.isArray(f.mods) ? f.mods : [];
+        const key = 'zauber-' + e.id;
+        const box = el('details', { class: 'dsa-zauber', attrs: { open: offen.has(key) } }, [
+            el('summary', {}, [
+                el('span', { class: 'dsa-zeile-name' }, [el('b', { text: e.name }), f.haus ? el('span', { class: 'dsa-marke dsa-marke-klein', text: 'Haus' }) : null]),
+                e.probe ? el('span', { class: 'leise', text: e.probe }) : null,
+                el('span', { class: 'dsa-zeile-wert', text: e.wert ? 'ZfW ' + e.wert : '' })
+            ]),
+            el('div', { class: 'dsa-zauber-inhalt' }, [
+                felder.length ? el('dl', { class: 'dsa-felder' }, felder.flatMap(([k, t]) => [el('dt', { text: t }), el('dd', { text: f[k] })])) : null,
+                e.text ? el('p', { class: 'dsa-notiz', text: e.text }) : null,
+                mods.length ? el('h4', { class: 'dsa-gruppe', text: 'Modifikationen' }) : null,
+                mods.length ? el('ul', { class: 'dsa-mods' }, mods.map((m) => el('li', { text: m }))) : null,
+                el('button', { class: 'knopf knopf-zweit dsa-klein', text: '✎ Bearbeiten', attrs: { type: 'button' }, on: { click: () => zeigeEintragForm(bogen, def, e) } })
+            ])
+        ]);
+        box.addEventListener('toggle', () => { if (box.open) offen.add(key); else offen.delete(key); });
+        return box;
+    }
+
+    // Waffen: am PC eine Tabelle, am Handy je Waffe eine Karte (CSS). Tipp auf ✎ öffnet das Formular.
+    function waffenTabelle(bogen, def, liste) {
+        return el('table', { class: 'dsa-waffen' }, [
+            el('thead', {}, [el('tr', {}, [el('th', { text: 'Waffe', attrs: { scope: 'col' } }), ...WAFFEN_SPALTEN.map(([, t]) => el('th', { text: t, attrs: { scope: 'col' } })), el('th', { attrs: { scope: 'col' } }, [el('span', { class: 'reiter-name', text: 'Bearbeiten' })])])]),
+            el('tbody', {}, liste.map((e) => {
+                const f = e.felder || {};
+                return el('tr', {}, [
+                    el('th', { attrs: { scope: 'row' } }, [el('span', { text: e.name }), f.art ? el('span', { class: 'leise dsa-waffe-art', text: f.art }) : null]),
+                    ...WAFFEN_SPALTEN.map(([k, t]) => el('td', { text: f[k] || '–', attrs: { 'data-titel': t, class: f[k] ? null : 'dsa-leer' } })),
+                    el('td', { class: 'dsa-waffe-knopf' }, [el('button', { class: 'dsa-stift', text: '✎', attrs: { type: 'button', 'aria-label': e.name + ' bearbeiten' }, on: { click: () => zeigeEintragForm(bogen, def, e) } })])
+                ]);
+            }))
+        ]);
     }
 
     // Eine Zeile (Talent oder Gegenstand). Tipp öffnet das Formular.
@@ -429,14 +484,25 @@ export function render(container) {
         art.value = e ? e.abschnitt : (vorgabe.abschnitt || def.arten[0][0]);
         const name = textFeld('dsa-ein-name', e && e.name, 80);
         const wert = textFeld('dsa-ein-wert', e && e.wert, 20);
-        const probe = textFeld('dsa-ein-probe', e && e.probe, 30, { placeholder: 'zum Beispiel MU · GE · KK' });
+        const probe = textFeld('dsa-ein-probe', e && e.probe, 30, { placeholder: def.probe || '' });
         let gruppe = null;
         if (def.art === 'gruppen') {
             gruppe = auswahlFeld({ id: 'dsa-ein-gruppe', maxlength: 40, placeholder: 'wählen oder eintippen' });
             gruppe.setzeEintraege(gruppenFolge([...TALENT_GRUPPEN, ...eigene.filter((x) => x.abschnitt === 'talent').map((x) => x.gruppe)], TALENT_GRUPPEN).filter(Boolean));
             gruppe.feld.value = e ? e.gruppe : (vorgabe.gruppe || '');
         }
-        const zusatz = (def.felder || []).map(([k, t]) => {
+        const zusatz = (def.felder || []).map(([k, t, typ]) => {
+            const alt = e && e.felder ? e.felder[k] : null;
+            if (typ === 'liste') {
+                // Je Zeile ein Eintrag (zum Beispiel Modifikationen eines Zaubers)
+                const f = el('textarea', { attrs: { id: 'dsa-ein-' + k, rows: 3, placeholder: 'freiwillig' } });
+                f.value = Array.isArray(alt) ? alt.join('\n') : '';
+                return { k, t, box: f, feld: f, wert: () => f.value.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 20) };
+            }
+            if (typ === 'haken') {
+                const f = el('input', { attrs: { id: 'dsa-ein-' + k, type: 'checkbox', checked: alt === true } });
+                return { k, t, haken: true, box: el('div', { class: 'uni-schalter' }, [f, el('label', { text: t, attrs: { for: f.id } })]), feld: f, wert: () => f.checked };
+            }
             if (k === 'ort') {
                 const a = auswahlFeld({ id: 'dsa-ein-ort', maxlength: 200, placeholder: 'wählen oder eintippen' });
                 a.setzeEintraege(gruppenFolge(eigene.filter((x) => x.abschnitt === 'besitz').map((x) => String((x.felder && x.felder.ort) || ''))).filter(Boolean));
@@ -460,10 +526,13 @@ export function render(container) {
             weiter = false;
             if (!name.value.trim()) { status.textContent = 'Bitte einen Namen angeben.'; name.focus(); return; }
             const felder = {};
-            zusatz.forEach((z) => { if (z.feld.value.trim()) felder[z.k] = z.feld.value.trim(); });
+            zusatz.forEach((z) => {
+                const v = z.wert ? z.wert() : z.feld.value.trim();
+                if (Array.isArray(v) ? v.length : v) felder[z.k] = v;
+            });
             if (e && e.felder) Object.keys(e.felder).forEach((k) => { if (!(def.felder || []).some(([x]) => x === k)) felder[k] = e.felder[k]; });
             const eintrag = {
-                bogen_id: bogen.id, abschnitt: art.value, name: name.value.trim(), wert: wert.value.trim(),
+                bogen_id: bogen.id, abschnitt: art.value, name: name.value.trim(), wert: def.wert ? wert.value.trim() : (e ? e.wert : ''),
                 probe: def.probe ? probe.value.trim() : (e ? e.probe : ''), gruppe: gruppe ? gruppe.feld.value.trim() : (e ? e.gruppe : ''),
                 felder, text: text.value.trim(), reihenfolge: reihe.value.trim() === '' ? 0 : Number(reihe.value)
             };
@@ -472,7 +541,7 @@ export function render(container) {
             zeigeAlles();
             if (mitWeiter) {
                 [name, wert, probe, text, reihe].forEach((f) => { f.value = ''; });
-                zusatz.forEach((z) => { if (!z.bleibt) z.feld.value = ''; });
+                zusatz.forEach((z) => { if (z.haken) z.feld.checked = false; else if (!z.bleibt) z.feld.value = ''; });
                 status.textContent = 'Gespeichert: ' + eintrag.name + '. Jetzt den nächsten eintragen.';
                 name.focus();
                 return;
@@ -488,9 +557,9 @@ export function render(container) {
                 ...feld('dsa-ein-name', 'Name', name),
                 ...(gruppe ? feld('dsa-ein-gruppe', 'Gruppe', gruppe.box) : []),
                 ...(def.probe ? feld('dsa-ein-probe', 'Probe', probe) : []),
-                ...feld('dsa-ein-wert', def.wert, wert),
-                ...zusatz.flatMap((z) => feld(z.feld.id, z.t, z.box)),
-                ...feld('dsa-ein-text', 'Beschreibung', text),
+                ...(def.wert ? feld('dsa-ein-wert', def.wert, wert) : []),
+                ...zusatz.flatMap((z) => (z.haken ? [z.box] : feld(z.feld.id, z.t, z.box))),
+                ...feld('dsa-ein-text', def.text || 'Beschreibung', text),
                 ...feld('dsa-ein-reihe', 'Reihenfolge (freiwillig)', reihe),
                 status,
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe)

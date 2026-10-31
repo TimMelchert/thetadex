@@ -1059,3 +1059,33 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .dsa-zeile-knopf { width: 100%; min-height: 44px; padding: 0; border: none; border-bottom: 1px solid var(--linie); background: none; color: var(--schrift); font: inherit; text-align: left; cursor: pointer; }
 .dsa-zeile-knopf:last-child { border-bottom: none; }
 .dsa-zeile-stift { width: 28px; text-align: center; color: var(--schrift-leise); }
+/* Zauber und Waffen (6.3) */
+.dsa-zauber { border-bottom: 1px solid var(--linie); }
+.dsa-zauber:last-child { border-bottom: none; }
+.dsa-zauber > summary { display: flex; align-items: center; gap: 8px; min-height: 48px; cursor: pointer; list-style: none; }
+.dsa-zauber > summary::-webkit-details-marker { display: none; }
+.dsa-zauber > summary::after { content: "▸"; color: var(--schrift-leise); }
+.dsa-zauber[open] > summary::after { content: "▾"; }
+.dsa-zauber > summary .leise { font-size: 0.8rem; white-space: nowrap; }
+.dsa-zauber .dsa-zeile-wert { min-width: 56px; white-space: nowrap; }
+.dsa-zauber-inhalt { padding: 0 0 12px; }
+.dsa-mods { margin: 4px 0 0; padding-left: 20px; }
+.dsa-marke-klein { margin-left: 8px; padding: 1px 8px; font-size: 0.7rem; vertical-align: middle; }
+.dsa-klein { margin-top: 10px; min-height: 44px; }
+.dsa-waffen { width: 100%; border-collapse: collapse; }
+.dsa-waffen th, .dsa-waffen td { padding: 6px 4px; text-align: left; border-top: 1px solid var(--linie); vertical-align: middle; }
+.dsa-waffen thead th { border-top: none; font-size: 0.75rem; font-weight: 600; color: var(--schrift-leise); }
+.dsa-waffen tbody th { font-weight: 600; }
+.dsa-waffe-art { display: block; font-size: 0.8rem; font-weight: 400; }
+.dsa-waffe-knopf { text-align: right; width: 48px; }
+@media (max-width: 599px) {
+    .dsa-waffen thead { display: none; }
+    .dsa-waffen, .dsa-waffen tbody { display: block; }
+    .dsa-waffen tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) 48px; gap: 2px 8px; padding: 8px 0; border-top: 1px solid var(--linie); }
+    .dsa-waffen tbody tr:first-child { border-top: none; }
+    .dsa-waffen th, .dsa-waffen td { display: block; padding: 0; border-top: none; }
+    .dsa-waffen tbody th { grid-column: 1 / 4; grid-row: 1; }
+    .dsa-waffe-knopf { grid-column: 4; grid-row: 1 / 3; align-self: center; }
+    .dsa-waffen td[data-titel]::before { content: attr(data-titel) " "; color: var(--schrift-leise); font-size: 0.8rem; }
+    .dsa-waffen td.dsa-leer { display: none; }
+}
