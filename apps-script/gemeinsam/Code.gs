@@ -2,7 +2,7 @@
 // GEMEINSAM – Apps Script (Person und Partner*in, mit Passwort)
 // Einkauf und Essen (Etappe 4) und Uni (Etappe 5).
 // Blätter: lebensmittel, einkaufsliste, gerichte, zutaten, vorrat;
-// Uni: semester, stundenplan, termine, module, uni_einstellungen.
+// Uni: semester, module, kurse, termine, uni_einstellungen (stundenplan nur noch alt, wird in termine umgezogen).
 // Zwei Passwörter in den Skripteigenschaften: APP_PIN (Person) und PARTNER_PIN (Partner*in).
 // Kein Passwort steht hier. Über die Partnerin oder den Partner wird nichts gespeichert.
 // Siehe docs/STAND.md (Einkauf) und docs/PLAN-ETAPPE-5.md (Uni).
@@ -16,26 +16,33 @@ var BLAETTER_ = {
   zutaten: ["id", "gericht_id", "lebensmittel_id", "menge", "erstellt_am", "geaendert_am", "geloescht"],
   vorrat: ["id", "lebensmittel_id", "ort", "menge", "erstellt_am", "geaendert_am", "geloescht"],
   semester: ["id", "name", "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "erstellt_am", "geaendert_am", "geloescht"],
+  // stundenplan: alt (bis 0.5.5). „einrichten“ zieht die Einträge in termine um, danach bleibt das Blatt nur zum Nachsehen.
   stundenplan: ["id", "semester_id", "tag", "von", "bis", "titel", "art", "ort", "modul_id", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
-  termine: ["id", "titel", "art", "beginn", "ende", "von", "bis", "ort", "modul_id", "stunde_id", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
-  module: ["id", "name", "kuerzel", "bereich", "ects", "status", "semester_id", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
+  // termine: einmalig, mehrtägig, jede Woche an „tage“ (zum Beispiel 1,3 = Mo und Mi) von beginn bis ende,
+  // oder „einmal anders“ (stunde_id = Kurs oder wiederkehrender Termin). Prüfungen mit kurs_id und bestanden.
+  termine: ["id", "titel", "art", "beginn", "ende", "von", "bis", "ort", "modul_id", "stunde_id", "notiz", "erstellt_am", "geaendert_am", "geloescht", "tage", "kurs_id", "bestanden"],
+  module: ["id", "name", "kuerzel", "bereich", "ects", "status", "semester_id", "notiz", "erstellt_am", "geaendert_am", "geloescht", "pflicht"],
+  kurse: ["id", "modul_id", "name", "ects", "semester_id", "tag", "von", "bis", "ort", "dozent", "pruefungsleistung", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
   uni_einstellungen: ["name", "wert"]   // ohne Standardspalten, eine Zeile je Wert (ects_ziel)
 };
 // Spalten, die im Sheet reiner Text bleiben (kein Datum, keine Zahl)
 var TEXT_SPALTEN_ = ["id", "name", "abteilung", "einheit", "notiz", "lebensmittel_id", "gericht_id", "link", "ort",
   "semester_id", "modul_id", "stunde_id", "titel", "art", "kuerzel", "bereich", "status",
-  "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "von", "bis"];
+  "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "von", "bis",
+  "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht"];
 var MAX_ = { name: 60, abteilung: 40, einheit: 20, notiz_lm: 200, notiz_liste: 100, notiz_gericht: 300, link: 300, ort: 40 };
 var MAX_ZAHL_ = 9999;
 var MAX_AUF_EINMAL_ = 100;     // höchstens so viele Einträge je Anfrage (auf_liste, abhaken)
 var MAX_ZUTATEN_ = 50;
 var MIN_PIN_ = 12;             // ein kürzeres Passwort wird nicht angenommen
 // Uni (Etappe 5)
-var UNI_MAX_ = { semester: 40, titel: 80, ort: 60, notiz: 200, modul: 80, kuerzel: 20, bereich: 40 };
-var UNI_ARTEN_STUNDE_ = ["vorlesung", "arbeit", "zug"];
-var UNI_ARTEN_TERMIN_ = ["vorlesung", "pruefung", "arbeit", "zug", "urlaub", "frei", "sonstiges"];
+var UNI_MAX_ = { semester: 40, titel: 80, ort: 60, notiz: 200, modul: 80, kuerzel: 20, bereich: 40, kurs: 80, dozent: 60, leistung: 80 };
+// „frei“ gibt es seit 0.5.6 nicht mehr neu (gleich wie Urlaub). Alte Einträge zeigt die App als Urlaub.
+var UNI_ARTEN_TERMIN_ = ["vorlesung", "pruefung", "arbeit", "zug", "urlaub", "sonstiges"];
 var UNI_STATUS_ = ["offen", "laeuft", "bestanden"];
-var UNI_MAX_STUNDEN_ = 200;    // höchstens so viele Stundenplan-Einträge je Semester
+var UNI_PFLICHT_ = ["pflicht", "wahlpflicht", "auflage"];
+var UNI_MAX_KURSE_ = 300;      // höchstens so viele Kurse insgesamt
+var UNI_MAX_TERMINE_ = 3000;   // höchstens so viele Termine insgesamt
 var ECTS_ZIEL_ = 120;          // Vorgabe für uni_einstellungen, ändern im Sheet
 
 // Was jede Rolle darf. Das Skript prüft das bei jeder Aktion, nicht die App.
@@ -84,6 +91,7 @@ function einrichten() {
     ue.appendRow(["ects_ziel", ECTS_ZIEL_]);
     Logger.log("Blatt 'uni_einstellungen': ects_ziel = " + ECTS_ZIEL_ + " angelegt.");
   }
+  stundenplanUmziehen_();
 
   var props = PropertiesService.getScriptProperties();
   if (!props.getProperty("APP_PIN")) Logger.log("ACHTUNG: Skripteigenschaft APP_PIN fehlt.");
@@ -655,7 +663,8 @@ function vorratLoeschen_(data) {
 }
 
 // --- 9. UNI (Etappe 5) ---
-// Semester, Stundenplan (jede Woche gleich), Termine (einmalig, mehrtägig oder „einmal anders“), Module.
+// Semester, Module mit Kursen (jede Woche in der Vorlesungszeit), Termine (einmalig, mehrtägig, jede Woche an
+// bestimmten Tagen oder „einmal anders“). Prüfungen sind Termine der Art „pruefung“ mit Kurs und „bestanden“.
 // Daten und Uhrzeiten stehen als Text (JJJJ-MM-TT, HH:MM). Hat das Sheet doch ein Datum daraus gemacht, wird es hier zurückgewandelt.
 
 // Datum als JJJJ-MM-TT (leer, wenn keins)
@@ -726,6 +735,7 @@ function semesterAus_(t, z) {
   };
 }
 
+// Alter Stundenplan-Eintrag (nur noch für den Umzug)
 function stundeAus_(t, z) {
   return {
     id: String(zelle_(z, t.sp, "id")),
@@ -737,9 +747,47 @@ function stundeAus_(t, z) {
     art: text_(z, t.sp, "art"),
     ort: text_(z, t.sp, "ort"),
     modul_id: String(zelle_(z, t.sp, "modul_id")),
-    notiz: text_(z, t.sp, "notiz"),
-    geaendert_am: stempel_(zelle_(z, t.sp, "geaendert_am"))
+    notiz: text_(z, t.sp, "notiz")
   };
+}
+
+// Wochentage als Text „1,3“ (1 = Montag … 7 = Sonntag). Liest nur die Ziffern 1 bis 7,
+// so geht es auch, wenn das Sheet aus „1,3“ eine Zahl 1.3 gemacht hat.
+function tage_(v) {
+  var gesehen = {};
+  String(v == null ? "" : v).replace(/[1-7]/g, function (c) { gesehen[c] = true; return c; });
+  return Object.keys(gesehen).sort().join(",");
+}
+
+// Ziehe den alten Stundenplan in wiederkehrende Termine um (einmal, in „einrichten“).
+// Der neue Termin bekommt dieselbe id, so zeigen die Termine „einmal anders“ weiter auf ihn.
+// Vorlesungen gelten in der Vorlesungszeit, alles andere im ganzen Semester. Danach ist die alte Zeile gelöscht (weich).
+function stundenplanUmziehen_() {
+  var sp = tabelle_("stundenplan");
+  var te = tabelle_("termine");
+  var se = tabelle_("semester");
+  var semester = {};
+  se.zeilen.forEach(function (z) { if (aktiv_(se, z)) { var s = semesterAus_(se, z); semester[s.id] = s; } });
+  var umgezogen = 0, ohneSemester = 0;
+  sp.zeilen.forEach(function (z, k) {
+    if (!aktiv_(sp, z)) return;
+    var x = stundeAus_(sp, z);
+    var s = semester[x.semester_id];
+    if (!s || !x.tag || !x.von || !x.bis) { ohneSemester++; return; }
+    if (index_(te, x.id) < 0) {
+      var vorlesung = x.art === "vorlesung";
+      neu_(te, {
+        id: x.id, titel: x.titel, art: x.art || "sonstiges",
+        beginn: vorlesung ? s.vorlesung_beginn : s.beginn, ende: vorlesung ? s.vorlesung_ende : s.ende,
+        von: x.von, bis: x.bis, ort: x.ort, modul_id: x.modul_id, stunde_id: "", notiz: x.notiz,
+        tage: String(x.tag), kurs_id: "", bestanden: false
+      });
+    }
+    weg_(sp, k);
+    umgezogen++;
+  });
+  if (umgezogen) Logger.log("Stundenplan: " + umgezogen + " Einträge in 'termine' umgezogen (jede Woche).");
+  if (ohneSemester) Logger.log("ACHTUNG: " + ohneSemester + " Stundenplan-Einträge ohne gültiges Semester oder Uhrzeit sind geblieben. Bitte im Blatt 'stundenplan' nachsehen.");
 }
 
 function terminAus_(t, z) {
@@ -751,22 +799,30 @@ function terminAus_(t, z) {
     ende: datum_(zelle_(z, t.sp, "ende")),
     von: uhr_(zelle_(z, t.sp, "von")),
     bis: uhr_(zelle_(z, t.sp, "bis")),
+    tage: tage_(zelle_(z, t.sp, "tage")),
     ort: text_(z, t.sp, "ort"),
     modul_id: String(zelle_(z, t.sp, "modul_id")),
+    kurs_id: String(zelle_(z, t.sp, "kurs_id")),
     stunde_id: String(zelle_(z, t.sp, "stunde_id")),
+    bestanden: istWahr_(zelle_(z, t.sp, "bestanden")),
     notiz: text_(z, t.sp, "notiz"),
     geaendert_am: stempel_(zelle_(z, t.sp, "geaendert_am"))
   };
 }
 
+function ectsAus_(v) {
+  var t = String(v == null ? "" : v).trim();
+  return t === "" ? null : zahl_(t);
+}
+
 function modulAus_(t, z) {
-  var ects = String(zelle_(z, t.sp, "ects")).trim();
   return {
     id: String(zelle_(z, t.sp, "id")),
     name: text_(z, t.sp, "name"),
     kuerzel: text_(z, t.sp, "kuerzel"),
     bereich: text_(z, t.sp, "bereich"),
-    ects: ects === "" ? null : zahl_(ects),
+    pflicht: text_(z, t.sp, "pflicht") || "pflicht",
+    ects: ectsAus_(zelle_(z, t.sp, "ects")),
     status: text_(z, t.sp, "status") || "offen",
     semester_id: String(zelle_(z, t.sp, "semester_id")),
     notiz: text_(z, t.sp, "notiz"),
@@ -774,7 +830,27 @@ function modulAus_(t, z) {
   };
 }
 
-var UNI_LESEN_ = { semester: semesterAus_, stundenplan: stundeAus_, termine: terminAus_, module: modulAus_ };
+function kursAus_(t, z) {
+  var tag = zahl_(zelle_(z, t.sp, "tag"));
+  return {
+    id: String(zelle_(z, t.sp, "id")),
+    modul_id: String(zelle_(z, t.sp, "modul_id")),
+    name: text_(z, t.sp, "name"),
+    ects: ectsAus_(zelle_(z, t.sp, "ects")),
+    semester_id: String(zelle_(z, t.sp, "semester_id")),
+    tag: tag >= 1 && tag <= 7 ? tag : 0,
+    von: uhr_(zelle_(z, t.sp, "von")),
+    bis: uhr_(zelle_(z, t.sp, "bis")),
+    ort: text_(z, t.sp, "ort"),
+    dozent: text_(z, t.sp, "dozent"),
+    pruefungsleistung: text_(z, t.sp, "pruefungsleistung"),
+    notiz: text_(z, t.sp, "notiz"),
+    geaendert_am: stempel_(zelle_(z, t.sp, "geaendert_am"))
+  };
+}
+
+// Blätter, die die App lesen und speichern darf
+var UNI_LESEN_ = { semester: semesterAus_, module: modulAus_, kurse: kursAus_, termine: terminAus_ };
 
 // Alles für den Reiter Uni in einer Antwort
 function uni_() {
@@ -790,6 +866,19 @@ function uni_() {
   });
   d.ects_ziel = ziel;
   return d;
+}
+
+// ECTS: leer oder 0 bis 60, halbe erlaubt
+function pruefeEcts_(roh) {
+  var t = String(roh == null ? "" : roh).trim();
+  var n = Number(t.replace(",", "."));
+  if (t === "") return { wert: "" };
+  return isFinite(n) && n >= 0 && n <= 60 && Math.round(n * 2) === n * 2 ? { wert: n } : { fehler: "ECTS bitte als Zahl von 0 bis 60 (halbe erlaubt)." };
+}
+
+// Anzahl aktiver Zeilen eines Blatts
+function anzahl_(t) {
+  return t.zeilen.filter(function (z) { return aktiv_(t, z); }).length;
 }
 
 // Prüft einen Eintrag je Blatt. Liefert { werte } oder { fehler }.
@@ -815,26 +904,27 @@ function pruefeUni_(blatt, e, id) {
       return aktiv_(t, z) && String(zelle_(z, t.sp, "id")) !== id && text_(z, t.sp, "name").toLowerCase() === klein;
     });
     if (doppelt) return { fehler: "Ein Semester mit diesem Namen gibt es schon." };
-  } else if (blatt === "stundenplan") {
-    p.semester_id = pruefeVerweis_(tabelle_("semester"), e.semester_id, "Das Semester");
-    if (!p.semester_id.fehler && !p.semester_id.wert) p.semester_id = { fehler: "Bitte ein Semester wählen." };
-    var tag = Number(e.tag);
-    p.tag = Math.floor(tag) === tag && tag >= 1 && tag <= 7 ? { wert: tag } : { fehler: "Bitte einen Wochentag wählen." };
-    p.von = pruefeUhr_(e.von, "die Anfangszeit", true);
-    p.bis = pruefeUhr_(e.bis, "die Endzeit", true);
-    p.titel = pruefeText_(e.titel, UNI_MAX_.titel, "einen Titel", true);
-    p.art = pruefeListe_(e.art, UNI_ARTEN_STUNDE_, "eine Art");
-    p.ort = pruefeText_(e.ort, UNI_MAX_.ort, "Raum oder Strecke", false);
+  } else if (blatt === "kurse") {
     p.modul_id = pruefeVerweis_(tabelle_("module"), e.modul_id, "Das Modul");
+    if (!p.modul_id.fehler && !p.modul_id.wert) p.modul_id = { fehler: "Bitte ein Modul wählen." };
+    p.name = pruefeText_(e.name, UNI_MAX_.kurs, "einen Namen", true);
+    p.ects = pruefeEcts_(e.ects);
+    p.semester_id = pruefeVerweis_(tabelle_("semester"), e.semester_id, "Das Semester");
+    var roh = String(e.tag == null ? "" : e.tag).trim();
+    var tag = Number(roh);
+    p.tag = roh === "" || roh === "0" ? { wert: "" } : (Math.floor(tag) === tag && tag >= 1 && tag <= 7 ? { wert: tag } : { fehler: "Bitte einen Wochentag wählen." });
+    p.von = pruefeUhr_(e.von, "die Anfangszeit", false);
+    p.bis = pruefeUhr_(e.bis, "die Endzeit", false);
+    p.ort = pruefeText_(e.ort, UNI_MAX_.ort, "Raum", false);
+    p.dozent = pruefeText_(e.dozent, UNI_MAX_.dozent, "Dozent*in", false);
+    p.pruefungsleistung = pruefeText_(e.pruefungsleistung, UNI_MAX_.leistung, "Prüfungsleistung", false);
     p.notiz = pruefeText_(e.notiz, UNI_MAX_.notiz, "Notiz", false);
-    fehler = erster([p.semester_id, p.tag, p.von, p.bis, p.titel, p.art, p.ort, p.modul_id, p.notiz]);
+    fehler = erster([p.modul_id, p.name, p.ects, p.semester_id, p.tag, p.von, p.bis, p.ort, p.dozent, p.pruefungsleistung, p.notiz]);
     if (fehler) return fehler;
-    if (p.bis.wert <= p.von.wert) return { fehler: "Die Endzeit muss nach der Anfangszeit liegen." };
-    if (!id) {
-      var sp = tabelle_("stundenplan");
-      var anzahl = sp.zeilen.filter(function (z) { return aktiv_(sp, z) && String(zelle_(z, sp.sp, "semester_id")) === p.semester_id.wert; }).length;
-      if (anzahl >= UNI_MAX_STUNDEN_) return { fehler: "Höchstens " + UNI_MAX_STUNDEN_ + " Einträge je Semester." };
-    }
+    var mitZeit = [p.tag.wert, p.von.wert, p.bis.wert].filter(function (w) { return w !== ""; }).length;
+    if (mitZeit !== 0 && mitZeit !== 3) return { fehler: "Bitte Tag, Anfang und Ende angeben oder alle drei leer lassen." };
+    if (p.von.wert && p.bis.wert <= p.von.wert) return { fehler: "Die Endzeit muss nach der Anfangszeit liegen." };
+    if (!id && anzahl_(tabelle_("kurse")) >= UNI_MAX_KURSE_) return { fehler: "Höchstens " + UNI_MAX_KURSE_ + " Kurse." };
   } else if (blatt === "termine") {
     p.titel = pruefeText_(e.titel, UNI_MAX_.titel, "einen Titel", true);
     p.art = pruefeListe_(e.art, UNI_ARTEN_TERMIN_, "eine Art");
@@ -842,32 +932,47 @@ function pruefeUni_(blatt, e, id) {
     p.ende = pruefeDatum_(e.ende, "Bis", false);
     p.von = pruefeUhr_(e.von, "Von", false);
     p.bis = pruefeUhr_(e.bis, "Bis (Uhrzeit)", false);
+    p.tage = { wert: tage_(Array.isArray(e.tage) ? e.tage.join(",") : e.tage) };
     p.ort = pruefeText_(e.ort, UNI_MAX_.ort, "Raum oder Strecke", false);
+    var kurse = tabelle_("kurse");
+    p.kurs_id = pruefeVerweis_(kurse, e.kurs_id, "Der Kurs");
     p.modul_id = pruefeVerweis_(tabelle_("module"), e.modul_id, "Das Modul");
-    p.stunde_id = pruefeVerweis_(tabelle_("stundenplan"), e.stunde_id, "Der Eintrag im Stundenplan");
+    // „einmal anders“: zeigt auf einen Kurs oder einen wiederkehrenden Termin
+    var sid = String(e.stunde_id == null ? "" : e.stunde_id).trim();
+    p.stunde_id = sid && index_(kurse, sid) < 0 && index_(tabelle_("termine"), sid) < 0
+      ? { fehler: "Den wöchentlichen Eintrag gibt es nicht mehr. Bitte neu laden." } : { wert: sid };
+    p.bestanden = { wert: e.bestanden === true || e.bestanden === "true" };
     p.notiz = pruefeText_(e.notiz, UNI_MAX_.notiz, "Notiz", false);
-    fehler = erster([p.titel, p.art, p.beginn, p.ende, p.von, p.bis, p.ort, p.modul_id, p.stunde_id, p.notiz]);
+    fehler = erster([p.titel, p.art, p.beginn, p.ende, p.von, p.bis, p.ort, p.kurs_id, p.modul_id, p.stunde_id, p.notiz]);
     if (fehler) return fehler;
+    if (p.art.wert !== "pruefung") p.bestanden.wert = false;
+    // Der Kurs bestimmt das Modul
+    if (p.kurs_id.wert) {
+      var kz = kurse.zeilen[index_(kurse, p.kurs_id.wert)];
+      p.modul_id.wert = String(zelle_(kz, kurse.sp, "modul_id"));
+    }
     if (p.ende.wert === p.beginn.wert) p.ende.wert = "";
     if (p.ende.wert) {
       var tage = tageZwischen_(p.beginn.wert, p.ende.wert);
       if (tage < 0 || tage > 366) return { fehler: "Der letzte Tag darf nicht vor dem ersten liegen (höchstens ein Jahr)." };
     }
     if (Boolean(p.von.wert) !== Boolean(p.bis.wert)) return { fehler: "Bitte beide Uhrzeiten angeben oder keine (ganztägig)." };
-    if (p.von.wert && !p.ende.wert && p.bis.wert <= p.von.wert) return { fehler: "Die Endzeit muss nach der Anfangszeit liegen." };
-    if (p.stunde_id.wert && p.ende.wert) return { fehler: "„Einmal anders“ gilt nur für einen Tag." };
+    var proTag = !p.ende.wert || p.tage.wert;   // die Uhrzeit gilt an jedem Tag für sich
+    if (p.von.wert && proTag && p.bis.wert <= p.von.wert) return { fehler: "Die Endzeit muss nach der Anfangszeit liegen." };
+    if (p.tage.wert && !p.ende.wert) return { fehler: "Für „jede Woche“ bitte auch den letzten Tag angeben." };
+    if (p.stunde_id.wert && (p.ende.wert || p.tage.wert)) return { fehler: "„Einmal anders“ gilt nur für einen Tag." };
+    if (p.stunde_id.wert && p.stunde_id.wert === id) return { fehler: "Ein Termin kann nicht von sich selbst abweichen." };
+    if (!id && anzahl_(tabelle_("termine")) >= UNI_MAX_TERMINE_) return { fehler: "Höchstens " + UNI_MAX_TERMINE_ + " Termine." };
   } else if (blatt === "module") {
     p.name = pruefeText_(e.name, UNI_MAX_.modul, "einen Namen", true);
     p.kuerzel = pruefeText_(e.kuerzel, UNI_MAX_.kuerzel, "Kürzel", false);
     p.bereich = pruefeText_(e.bereich, UNI_MAX_.bereich, "Bereich", false);
-    var roh = String(e.ects == null ? "" : e.ects).trim();
-    var n = Number(roh.replace(",", "."));
-    p.ects = roh === "" ? { wert: "" } : (isFinite(n) && n >= 0 && n <= 60 && Math.round(n * 2) === n * 2
-      ? { wert: n } : { fehler: "ECTS bitte als Zahl von 0 bis 60 (halbe erlaubt)." });
+    p.pflicht = pruefeListe_(e.pflicht, UNI_PFLICHT_, "Pflicht, Wahlpflicht oder Auflage", "pflicht");
+    p.ects = pruefeEcts_(e.ects);
     p.status = pruefeListe_(e.status, UNI_STATUS_, "einen Stand", "offen");
     p.semester_id = pruefeVerweis_(tabelle_("semester"), e.semester_id, "Das Semester");
     p.notiz = pruefeText_(e.notiz, UNI_MAX_.notiz, "Notiz", false);
-    fehler = erster([p.name, p.kuerzel, p.bereich, p.ects, p.status, p.semester_id, p.notiz]);
+    fehler = erster([p.name, p.kuerzel, p.bereich, p.pflicht, p.ects, p.status, p.semester_id, p.notiz]);
     if (fehler) return fehler;
   } else {
     return { fehler: "Unbekanntes Blatt." };
@@ -897,8 +1002,10 @@ function uniSpeichern_(data) {
   return uni_();
 }
 
-// Weich löschen. Ein Semester nimmt seinen Stundenplan mit, ein Stundenplan-Eintrag seine Termine „einmal anders“.
-// Ein Modul oder Semester wird bei den anderen Einträgen nur ausgetragen. data = { blatt, id, geaendert_am }.
+// Weich löschen. Was mitgeht:
+// Modul → seine Kurse (und deren „einmal anders“). Kurs oder wiederkehrender Termin → seine Termine „einmal anders“.
+// Prüfungen und andere Termine bleiben, sie werden nur vom Modul oder Kurs ausgetragen. Semester → nur ausgetragen.
+// data = { blatt, id, geaendert_am }.
 function uniLoeschen_(data) {
   var blatt = String(data.blatt || "");
   if (!UNI_LESEN_[blatt]) return { error: "eingabe", message: "Unbekanntes Blatt." };
@@ -909,29 +1016,34 @@ function uniLoeschen_(data) {
   var id = String(data.id);
   weg_(t, i);
 
-  // In einem Blatt alle aktiven Zeilen mit spalte = wert: löschen oder die Spalte leeren
+  // In einem Blatt alle aktiven Zeilen mit spalte in werte: löschen oder die Spalte leeren. Liefert die ids.
   function jeZeile(name, spalte, werte, loeschen) {
     var b = tabelle_(name);
-    var weg = [];
+    var ids = [];
     b.zeilen.forEach(function (z, k) {
       if (!aktiv_(b, z) || !werte[String(zelle_(z, b.sp, spalte))]) return;
-      if (loeschen) { weg.push(String(zelle_(z, b.sp, "id"))); weg_(b, k); }
+      ids.push(String(zelle_(z, b.sp, "id")));
+      if (loeschen) weg_(b, k);
       else { var w = {}; w[spalte] = ""; aendere_(b, k, w); }
     });
-    return weg;
+    return ids;
   }
   var eins = {};
   eins[id] = true;
   if (blatt === "semester") {
-    var stunden = {};
-    jeZeile("stundenplan", "semester_id", eins, true).forEach(function (s) { stunden[s] = true; });
-    jeZeile("termine", "stunde_id", stunden, true);
     jeZeile("module", "semester_id", eins, false);
-  } else if (blatt === "stundenplan") {
-    jeZeile("termine", "stunde_id", eins, true);
+    jeZeile("kurse", "semester_id", eins, false);
   } else if (blatt === "module") {
-    jeZeile("stundenplan", "modul_id", eins, false);
+    var kurse = {};
+    jeZeile("kurse", "modul_id", eins, true).forEach(function (k) { kurse[k] = true; });
+    jeZeile("termine", "stunde_id", kurse, true);
+    jeZeile("termine", "kurs_id", kurse, false);
     jeZeile("termine", "modul_id", eins, false);
+  } else if (blatt === "kurse") {
+    jeZeile("termine", "stunde_id", eins, true);
+    jeZeile("termine", "kurs_id", eins, false);
+  } else if (blatt === "termine") {
+    jeZeile("termine", "stunde_id", eins, true);
   }
   return uni_();
 }
