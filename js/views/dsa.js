@@ -3,13 +3,15 @@
 // 6.3: Zauber (aufklappbar mit allen Feldern und Modifikationen) und Waffen (Tabelle, am Handy Karten).
 // 6.4: Verlauf. Tipp auf einen Zähler oben: „+“ oder „−“, Betrag, Notiz. Liste der letzten Änderungen.
 // 6.5: Knopf „🎲 Würfeln“ (js/ui/wuerfel.js) und Bild des Helden im Kopf (hochladen oder Drive-Link, Ordner „Thetadex DSA“).
+// 6.6: Teilen. Knopf „🔗 Teilen“ je Bogen. Die Adresse #/bogen/<skript>/<schluessel> zeigt denselben Reiter ohne Passwort,
+// nur lesen: ein Bogen mit den aktuellen Werten und Würfel, ohne Verlauf und ohne Knöpfe zum Ändern (Aktion „geteilt“).
 // Daten aus dem Skript „dsa“ (eigenes Sheet „DSA“). Nur mit Passwort.
 // Die Bögen liegen nur im Arbeitsspeicher, solange die Seite offen ist. Im Gerät steht nur, welcher Bogen gewählt war
 // (thetadex_dsa_bogen). Siehe docs/PLAN-ETAPPE-6.md.
 
 import { el, leeren } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
-import { api } from '../api.js';
+import { api, apiOeffentlich } from '../api.js';
 import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { verkleinereBild, bildAdresse } from '../ui/bild.js';
@@ -19,6 +21,13 @@ import { wuerfelKnopf } from '../ui/wuerfel.js';
 let daten = null;
 // Aufgeklappte Abschnitte. Bleibt, solange die Seite offen ist.
 const offen = new Set(['kopf']);
+// Für wen „daten“ gilt: 'eigen' (mit Passwort) oder der Schlüssel eines geteilten Bogens
+let datenFuer = '';
+// Kennung des Skripts und Schlüssel im geteilten Link
+const KENNUNG = /^[A-Za-z0-9_-]{20,120}$/;
+const SCHLUESSEL = /^[a-f0-9]{64}$/;
+const ADRESSE = /^https:\/\/script\.google\.com\/macros\/s\/([A-Za-z0-9_-]+)\/exec$/;
+
 // Schon geladene Bilder (Drive-Kennung → data:-Bild), nur im Arbeitsspeicher
 const bilder = new Map();
 async function holeBild(id) {
@@ -150,11 +159,21 @@ function stand(bogen, z) {
     return s;
 }
 
-export function render(container) {
+export function render(container, ctx = {}) {
+    // Geteilter Bogen (6.6): nur lesen, ohne Passwort
+    const teile = ctx.teile || [];
+    const geteilt = ctx.route === 'bogen' ? { kennung: String(teile[0] || ''), schluessel: String(teile[1] || '') } : null;
+    const nurLesen = Boolean(geteilt);
+    if (nurLesen) container.setAttribute('data-bereich', 'dsa');
+    const fuer = nurLesen ? 'geteilt:' + geteilt.schluessel : 'eigen';
+    if (datenFuer !== fuer) { daten = null; datenFuer = fuer; }
+    const leerText = nurLesen ? 'Leer.' : null;
     const ladeStatus = el('p', { class: 'meldung besitz-lade', attrs: { role: 'status', 'aria-live': 'polite' } });
     const auswahl = el('select', { attrs: { id: 'dsa-bogen', 'aria-label': 'Bogen' }, on: { change: () => { schreiben('dsa_bogen', auswahl.value); zeigeAlles(); } } });
     const marke = el('span', { class: 'dsa-marke', attrs: { hidden: true } });
-    const leiste = el('div', { class: 'dsa-leiste' }, [auswahl, marke]);
+    const bogenName = el('h2', { class: 'dsa-bogen-name', attrs: { hidden: true } });
+    const teilenKnopf = el('button', { class: 'knopf knopf-zweit dsa-teilen', text: '🔗 Teilen', attrs: { type: 'button', hidden: true }, on: { click: () => { const b = gewaehlt(); if (b) zeigeTeilen(b); } } });
+    const leiste = el('div', { class: 'dsa-leiste' }, [auswahl, bogenName, marke, teilenKnopf]);
     const oben = el('div', { class: 'dsa-oben', attrs: { hidden: true } });
     const abschnitte = el('div', { class: 'dsa-abschnitte' });
     const neuKnopf = el('button', { class: 'knopf knopf-bereich', text: '+ Bogen', attrs: { type: 'button', disabled: true }, on: { click: () => zeigeBogenForm(null) } });
@@ -177,21 +196,25 @@ export function render(container) {
         leeren(auswahl);
         boegen.forEach((b) => auswahl.append(el('option', { text: b.name, attrs: { value: b.id } })));
         auswahl.value = wahl;
-        auswahl.hidden = !boegen.length;
+        auswahl.hidden = !boegen.length || nurLesen;
         neuKnopf.disabled = !daten;
 
         const bogen = gewaehlt();
+        bogenName.hidden = !(nurLesen && bogen);
+        bogenName.textContent = bogen && nurLesen ? bogen.name : '';
+        teilenKnopf.hidden = nurLesen || !bogen;
+        teilenKnopf.textContent = bogen && bogen.geteilt ? '🔗 Geteilt' : '🔗 Teilen';
         marke.hidden = !bogen;
         marke.textContent = bogen ? (bogen.regelwerk === 'dnd' ? 'DnD' : 'DSA') : '';
         leeren(oben);
         leeren(abschnitte);
         oben.hidden = !bogen;
         if (!bogen) {
-            if (daten) abschnitte.append(el('p', { class: 'leise', text: 'Noch kein Bogen. Lege mit „+ Bogen“ den ersten an.' }));
+            if (daten && !nurLesen) abschnitte.append(el('p', { class: 'leise', text: 'Noch kein Bogen. Lege mit „+ Bogen“ den ersten an.' }));
             return;
         }
         zeigeOben(bogen);
-        abschnitte.append(kopfKarte(bogen), eigenschaftenKarte(bogen), verlaufKarte(bogen), ...LISTEN.map((def) => listenKarte(bogen, def)));
+        abschnitte.append(...[kopfKarte(bogen), eigenschaftenKarte(bogen), nurLesen ? null : verlaufKarte(bogen), ...LISTEN.map((def) => listenKarte(bogen, def))].filter(Boolean));
     }
 
     // Zähler (Geld, LeP, AsP, AP) und Eigenschaften-Leiste, kleben beim Scrollen oben
@@ -205,10 +228,13 @@ export function render(container) {
                 const s = stand(bogen, z);
                 const wert = z.art === 'geld' ? [el('span', { text: geldText(s) })]
                     : [el('span', { text: String(s) }), Number(z.max) ? el('small', { text: ' / ' + z.max }) : null];
-                return el('button', { class: 'dsa-zaehler-kachel', attrs: { type: 'button', 'aria-label': (z.n || z.k) + ' ändern' }, on: { click: () => zeigeZaehlerForm(bogen, z) } }, [
+                const kachel = nurLesen ? el('div', { class: 'dsa-zaehler-kachel' })
+                    : el('button', { class: 'dsa-zaehler-kachel', attrs: { type: 'button', 'aria-label': (z.n || z.k) + ' ändern' }, on: { click: () => zeigeZaehlerForm(bogen, z) } });
+                kachel.append(
                     el('span', { class: 'dsa-zaehler-name', text: symbol(z) + ' ' + z.k }),
                     el('span', { class: 'dsa-zaehler-wert' }, wert)
-                ]);
+                );
+                return kachel;
             })));
         }
         const eig = bogen.eigenschaften.filter((e) => e.g !== 'b');
@@ -221,7 +247,7 @@ export function render(container) {
 
     // Eine aufklappbare Karte mit Titel, Zahl, Knopf (✎ oder +) und Inhalt. Auf- und Zuklappen bleibt beim Neuzeichnen.
     function karte(key, titel, knopf, inhalt, anzahl = '') {
-        const k = el('button', {
+        const k = nurLesen ? null : el('button', {
             class: 'dsa-stift', text: knopf.zeichen,
             attrs: { type: 'button', 'aria-label': knopf.label }, on: { click: (ev) => { ev.preventDefault(); knopf.tun(); } }
         });
@@ -243,7 +269,7 @@ export function render(container) {
                 if (!teil.length) return;
                 inhalt.push(el('h3', { class: 'dsa-gruppe', text: ueber }), el('div', { class: 'dsa-chips' }, teil.map((e) => el('button', {
                     class: 'dsa-chip', text: e.name + (e.wert ? ' ' + e.wert : '') + (e.text ? ' …' : ''),
-                    attrs: { type: 'button', 'aria-label': e.name + ' bearbeiten' }, on: { click: () => zeigeEintragForm(bogen, def, e) }
+                    attrs: { type: 'button', 'aria-label': e.name + (nurLesen ? ' ansehen' : ' bearbeiten') }, on: { click: () => oeffneEintrag(bogen, def, e) }
                 }))));
             });
         } else if (def.art === 'zauber') {
@@ -258,7 +284,7 @@ export function render(container) {
                 sortiere(alle.filter((e) => gruppeVon(e) === g)).forEach((e) => inhalt.push(eintragZeile(bogen, def, e)));
             });
         }
-        if (!alle.length) inhalt.push(el('p', { class: 'leise', text: 'Noch leer. Tippe auf +.' }));
+        if (!alle.length) inhalt.push(el('p', { class: 'leise', text: leerText || 'Noch leer. Tippe auf +.' }));
         return karte(def.key, def.titel, { zeichen: '+', label: 'Neu bei ' + def.titel, tun: () => zeigeEintragForm(bogen, def, null) }, inhalt, alle.length || '');
     }
 
@@ -279,7 +305,7 @@ export function render(container) {
                 e.text ? el('p', { class: 'dsa-notiz', text: e.text }) : null,
                 mods.length ? el('h4', { class: 'dsa-gruppe', text: 'Modifikationen' }) : null,
                 mods.length ? el('ul', { class: 'dsa-mods' }, mods.map((m) => el('li', { text: m }))) : null,
-                el('button', { class: 'knopf knopf-zweit dsa-klein', text: '✎ Bearbeiten', attrs: { type: 'button' }, on: { click: () => zeigeEintragForm(bogen, def, e) } })
+                nurLesen ? null : el('button', { class: 'knopf knopf-zweit dsa-klein', text: '✎ Bearbeiten', attrs: { type: 'button' }, on: { click: () => oeffneEintrag(bogen, def, e) } })
             ])
         ]);
         box.addEventListener('toggle', () => { if (box.open) offen.add(key); else offen.delete(key); });
@@ -289,13 +315,13 @@ export function render(container) {
     // Waffen: am PC eine Tabelle, am Handy je Waffe eine Karte (CSS). Tipp auf ✎ öffnet das Formular.
     function waffenTabelle(bogen, def, liste) {
         return el('table', { class: 'dsa-waffen' }, [
-            el('thead', {}, [el('tr', {}, [el('th', { text: 'Waffe', attrs: { scope: 'col' } }), ...WAFFEN_SPALTEN.map(([, t]) => el('th', { text: t, attrs: { scope: 'col' } })), el('th', { attrs: { scope: 'col' } }, [el('span', { class: 'reiter-name', text: 'Bearbeiten' })])])]),
+            el('thead', {}, [el('tr', {}, [el('th', { text: 'Waffe', attrs: { scope: 'col' } }), ...WAFFEN_SPALTEN.map(([, t]) => el('th', { text: t, attrs: { scope: 'col' } })), el('th', { attrs: { scope: 'col' } }, [el('span', { class: 'reiter-name', text: nurLesen ? 'Mehr' : 'Bearbeiten' })])])]),
             el('tbody', {}, liste.map((e) => {
                 const f = e.felder || {};
                 return el('tr', {}, [
                     el('th', { attrs: { scope: 'row' } }, [el('span', { text: e.name }), f.art ? el('span', { class: 'leise dsa-waffe-art', text: f.art }) : null]),
                     ...WAFFEN_SPALTEN.map(([k, t]) => el('td', { text: f[k] || '–', attrs: { 'data-titel': t, class: f[k] ? null : 'dsa-leer' } })),
-                    el('td', { class: 'dsa-waffe-knopf' }, [el('button', { class: 'dsa-stift', text: '✎', attrs: { type: 'button', 'aria-label': e.name + ' bearbeiten' }, on: { click: () => zeigeEintragForm(bogen, def, e) } })])
+                    el('td', { class: 'dsa-waffe-knopf' }, [el('button', { class: 'dsa-stift', text: nurLesen ? 'ⓘ' : '✎', attrs: { type: 'button', 'aria-label': e.name + (nurLesen ? ' ansehen' : ' bearbeiten') }, on: { click: () => oeffneEintrag(bogen, def, e) } })])
                 ]);
             }))
         ]);
@@ -305,14 +331,14 @@ export function render(container) {
     function eintragZeile(bogen, def, e) {
         const f = e.felder || {};
         const zusatz = def.key === 'talente' ? [e.probe, f.be].filter(Boolean).join(' · ') : (f.gewicht || '');
-        return el('button', { class: 'dsa-zeile dsa-zeile-knopf', attrs: { type: 'button', 'aria-label': e.name + ' bearbeiten' }, on: { click: () => zeigeEintragForm(bogen, def, e) } }, [
+        return el('button', { class: 'dsa-zeile dsa-zeile-knopf', attrs: { type: 'button', 'aria-label': e.name + (nurLesen ? ' ansehen' : ' bearbeiten') }, on: { click: () => oeffneEintrag(bogen, def, e) } }, [
             el('span', { class: 'dsa-zeile-name' }, [
                 el('span', { text: e.name }),
                 f.spez ? el('span', { class: 'leise', text: ' (' + f.spez + ')' }) : null
             ]),
             zusatz ? el('span', { class: 'leise', text: zusatz }) : null,
             el('span', { class: 'dsa-zeile-wert', text: e.wert || '' }),
-            el('span', { class: 'dsa-zeile-stift', text: '✎', attrs: { 'aria-hidden': 'true' } })
+            el('span', { class: 'dsa-zeile-stift', text: nurLesen ? 'ⓘ' : '✎', attrs: { 'aria-hidden': 'true' } })
         ]);
     }
 
@@ -321,7 +347,7 @@ export function render(container) {
         const inhalt = [];
         const liste = felder.length
             ? el('dl', { class: 'dsa-felder' }, felder.flatMap(([k, t]) => [el('dt', { text: t }), el('dd', { text: bogen.kopf[k] })]))
-            : el('p', { class: 'leise', text: 'Noch leer. Tippe auf ✎.' });
+            : el('p', { class: 'leise', text: leerText || 'Noch leer. Tippe auf ✎.' });
         if (bogen.bild) {
             // Bild des Helden neben dem Kopf, lädt nach
             const bild = el('img', { class: 'dsa-bild', attrs: { alt: 'Bild: ' + bogen.name, hidden: true } });
@@ -351,11 +377,11 @@ export function render(container) {
         if (bogen.zaehler.length) {
             inhalt.push(el('h3', { class: 'dsa-gruppe', text: 'Zähler oben' }), ...bogen.zaehler.map((z) => el('div', { class: 'dsa-zeile' }, [
                 el('span', { class: 'dsa-zeile-name', text: symbol(z) + ' ' + (z.n || z.k) }),
-                el('span', { class: 'leise', text: 'Start ' + (z.art === 'geld' ? geldText(z.start) : z.start) + (z.max != null ? ', höchstens ' + z.max : '') }),
+                el('span', { class: 'leise', text: nurLesen ? (z.max != null && z.max !== '' ? 'höchstens ' + z.max : '') : 'Start ' + (z.art === 'geld' ? geldText(z.start) : z.start) + (z.max != null ? ', höchstens ' + z.max : '') }),
                 el('span', { class: 'dsa-zeile-wert', text: z.art === 'geld' ? geldText(stand(bogen, z)) : String(stand(bogen, z)) })
             ])));
         }
-        if (!inhalt.length) inhalt.push(el('p', { class: 'leise', text: 'Noch leer. Tippe auf ✎.' }));
+        if (!inhalt.length) inhalt.push(el('p', { class: 'leise', text: leerText || 'Noch leer. Tippe auf ✎.' }));
         return karte('eigenschaften', 'Eigenschaften und Basiswerte', { zeichen: '✎', label: 'Eigenschaften bearbeiten', tun: () => zeigeEigenschaftenForm(bogen) }, inhalt);
     }
 
@@ -468,6 +494,88 @@ export function render(container) {
             ].filter(Boolean))
         ]);
         (muenzen ? muenzen[0][1] : betrag).focus();
+    }
+
+    // Tipp auf einen Eintrag: Formular, im geteilten Bogen nur ansehen
+    function oeffneEintrag(bogen, def, e) {
+        if (nurLesen) zeigeEintrag(def, e); else zeigeEintragForm(bogen, def, e);
+    }
+
+    // Ein Eintrag nur zum Lesen (geteilter Bogen, 6.6)
+    function zeigeEintrag(def, e) {
+        const f = e.felder || {};
+        const zeilen = [];
+        if (e.gruppe) zeilen.push(['Gruppe', e.gruppe]);
+        if (e.probe) zeilen.push(['Probe', e.probe]);
+        if (e.wert && def.wert) zeilen.push([def.wert.replace(/ \(freiwillig\)$/, ''), e.wert]);
+        (def.felder || []).forEach(([k, t, typ]) => {
+            if (typ === 'liste' || typ === 'haken' || !f[k]) return;
+            zeilen.push([t.replace(/ \(.*\)$/, ''), String(f[k])]);
+        });
+        const mods = Array.isArray(f.mods) ? f.mods : [];
+        oeffneDialog(e.name, [
+            zeilen.length ? el('dl', { class: 'dsa-felder' }, zeilen.flatMap(([t, w]) => [el('dt', { text: t }), el('dd', { text: w })])) : null,
+            e.text ? el('p', { class: 'dsa-notiz', text: e.text }) : null,
+            mods.length ? el('ul', { class: 'dsa-mods' }, mods.map((m) => el('li', { text: m }))) : null,
+            !zeilen.length && !e.text && !mods.length ? el('p', { class: 'leise', text: 'Keine weiteren Angaben.' }) : null,
+            el('div', { class: 'besitz-form-knoepfe' }, [el('button', { class: 'knopf knopf-zweit', text: 'Schließen', attrs: { type: 'button' }, on: { click: () => dialog.close() } })])
+        ].filter(Boolean));
+    }
+
+    // --- Teilen (6.6): Link erstellen, kopieren, neu erstellen, nicht mehr teilen ---
+    // Den Schlüssel gibt das Skript nur beim Erstellen heraus. Die App merkt ihn sich im Gerät (thetadex_dsa_links).
+    function zeigeTeilen(b) {
+        const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
+        const kennung = (ADRESSE.exec((lesen('skripte', {}) || {}).dsa || '') || [])[1] || '';
+        const links = lesen('dsa_links', {}) || {};
+        // Nicht mehr geteilt (zum Beispiel an einem anderen Gerät beendet): gemerkten Link vergessen
+        if (!b.geteilt && links[b.id]) { delete links[b.id]; schreiben('dsa_links', links); }
+        const schluessel = b.geteilt && SCHLUESSEL.test(links[b.id] || '') ? links[b.id] : '';
+        const link = schluessel && kennung ? location.origin + location.pathname + '#/bogen/' + kennung + '/' + schluessel : '';
+        const inhalt = [];
+        const knoepfe = [];
+
+        async function freigabe(was) {
+            const antwort = await senden(status, knoepfe, 'freigabe', { id: b.id, geaendert_am: b.geaendert_am, was });
+            if (!antwort) return;
+            const neu = lesen('dsa_links', {}) || {};
+            if (was === 'neu' && SCHLUESSEL.test(antwort.schluessel || '')) neu[b.id] = antwort.schluessel; else delete neu[b.id];
+            schreiben('dsa_links', neu);
+            zeigeAlles();
+            const jetzt = daten.boegen.find((x) => x.id === b.id);
+            if (jetzt) zeigeTeilen(jetzt); else dialog.close();
+            zeigeGespeichert(was === 'neu' ? 'Link erstellt' : 'Nicht mehr geteilt');
+        }
+
+        if (!kennung) {
+            inhalt.push(el('p', { text: 'Die Script-Adresse von „dsa“ hat nicht die erwartete Form (https://script.google.com/macros/s/…/exec). Bitte in den Einstellungen prüfen.' }));
+        } else if (!b.geteilt) {
+            inhalt.push(el('p', { text: 'Dieser Bogen ist nicht geteilt.' }),
+                el('p', { class: 'leise', text: 'Mit dem Link sehen andere den Bogen ohne Passwort: alle Werte und Listen, das Bild und die Würfel. Sie sehen keine Notiz, keinen Verlauf und können nichts ändern.' }));
+            knoepfe.push(el('button', { class: 'knopf knopf-bereich', text: 'Link erstellen', attrs: { type: 'button' }, on: { click: () => freigabe('neu') } }));
+        } else {
+            if (link) {
+                const feldLink = el('input', { attrs: { id: 'dsa-link', type: 'text', readonly: true, value: link } });
+                feldLink.addEventListener('focus', () => feldLink.select());
+                inhalt.push(el('p', { text: 'Dieser Bogen ist geteilt. Jeder mit diesem Link kann ihn ansehen:' }),
+                    el('label', { class: 'reiter-name', text: 'Link', attrs: { for: 'dsa-link' } }), feldLink);
+                knoepfe.push(el('button', {
+                    class: 'knopf knopf-bereich', text: 'Link kopieren', attrs: { type: 'button' },
+                    on: { click: async () => { try { await navigator.clipboard.writeText(link); status.textContent = 'Link kopiert.'; } catch (e) { feldLink.focus(); status.textContent = 'Bitte den Link oben markieren und kopieren.'; } } }
+                }));
+                if (navigator.share) {
+                    knoepfe.push(el('button', { class: 'knopf knopf-zweit', text: 'Senden …', attrs: { type: 'button' }, on: { click: () => navigator.share({ title: b.name, url: link }).catch(() => {}) } }));
+                }
+            } else {
+                inhalt.push(el('p', { text: 'Dieser Bogen ist geteilt. Der Link wurde auf einem anderen Gerät erstellt und ist hier nicht bekannt.' }),
+                    el('p', { class: 'leise', text: 'Mit „Neuen Link erstellen“ bekommst du hier einen Link. Der alte gilt dann nicht mehr.' }));
+            }
+            knoepfe.push(
+                el('button', { class: 'knopf knopf-zweit', text: 'Neuen Link erstellen', attrs: { type: 'button' }, on: { click: () => { if (confirm('Neuen Link erstellen? Der alte Link gilt dann sofort nicht mehr.')) freigabe('neu'); } } }),
+                el('button', { class: 'knopf knopf-zweit', text: 'Nicht mehr teilen', attrs: { type: 'button' }, on: { click: () => { if (confirm('Nicht mehr teilen? Der Link gilt dann sofort nicht mehr.')) freigabe('aus'); } } })
+            );
+        }
+        oeffneDialog('🔗 ' + b.name + ' teilen', [...inhalt, status, el('div', { class: 'besitz-form-knoepfe' }, knoepfe)]);
     }
 
     // --- Fenster und Senden ---
@@ -804,16 +912,30 @@ export function render(container) {
         });
     }
 
+    // Geteilter Bogen: das Skript schickt die aktuellen Werte. Sie werden zum Startwert, ein Verlauf fehlt.
+    async function ladeGeteilt() {
+        if (!KENNUNG.test(geteilt.kennung) || !SCHLUESSEL.test(geteilt.schluessel)) throw new Error('Dieser Link ist unvollständig. Bitte den ganzen Link öffnen.');
+        const d = await apiOeffentlich('https://script.google.com/macros/s/' + geteilt.kennung + '/exec', 'geteilt', { schluessel: geteilt.schluessel });
+        const b = d && d.bogen;
+        if (!b || !b.id) throw new Error('Der Bogen kam nicht an.');
+        b.zaehler = (Array.isArray(b.zaehler) ? b.zaehler : []).map((z) => ({ k: z.k, n: z.n, art: z.art, start: Number(z.stand) || 0, max: z.max }));
+        const adresse = d.bild ? bildAdresse(d.bild) : null;
+        b.bild = adresse ? 'geteilt-' + b.id : '';
+        if (adresse) bilder.set(b.bild, adresse);
+        return { boegen: [b], eintraege: (Array.isArray(d.eintraege) ? d.eintraege : []).map((e) => ({ ...e, bogen_id: b.id })), verlauf: [] };
+    }
+
     async function laden() {
         if (laedt) return;
         laedt = true;
         neuLaden.disabled = true;
         ladeStatus.textContent = daten ? 'Aktualisiere …' : 'Lade …';
         try {
-            setzeDaten(await api('dsa', 'liste'));
+            setzeDaten(nurLesen ? await ladeGeteilt() : await api('dsa', 'liste'));
             ladeStatus.textContent = '';
         } catch (e) {
-            ladeStatus.textContent = e.code === 'aktion'
+            if (nurLesen) daten = null;
+            ladeStatus.textContent = nurLesen ? e.message : e.code === 'aktion'
                 ? 'Das Skript „dsa“ kennt diese Aktion nicht. Bitte die neue Fassung von Code.gs einfügen und eine neue Version bereitstellen.'
                 : 'Laden fehlgeschlagen: ' + e.message;
         } finally {
@@ -823,14 +945,15 @@ export function render(container) {
         }
     }
 
-    container.append(
+    container.append(...[
         el('div', { class: 'dsa-titelzeile' }, [
             el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
                 el('img', { class: 'dsa-w20', attrs: { src: 'icons/w20.svg', alt: '', width: '44', height: '44' } }),
                 el('span', { text: 'Pen & Paper' })
             ]),
-            neuKnopf
+            nurLesen ? null : neuKnopf
         ]),
+        nurLesen ? el('p', { class: 'leise dsa-geteilt-hinweis', text: 'Geteilter Bogen, nur zum Ansehen.' }) : null,
         leiste,
         ladeStatus,
         oben,
@@ -838,7 +961,7 @@ export function render(container) {
         neuLaden,
         dialog,
         ...wuerfelKnopf()
-    );
+    ].filter(Boolean));
     zeigeAlles();
     laden();
 }
