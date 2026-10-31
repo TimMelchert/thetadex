@@ -1171,3 +1171,38 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
 .dsa-muenze-name { display: none; }
 @media (min-width: 768px) { .dsa-muenze-name { display: inline; } }
 
+
+/* Pen & Paper 0.6.8: Schalter Charakterbogen | Abenteuer | DM, Abenteuer mit Sessions, DM */
+.dsa-schalter { display: inline-flex; border: 1px solid var(--linie); border-radius: var(--rund); overflow: hidden; background: var(--hintergrund); }
+.dsa-schalter-knopf { min-height: 40px; padding: 6px 12px; border: 0; border-left: 1px solid var(--linie); background: transparent; color: var(--schrift); font: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+.dsa-schalter-knopf:first-child { border-left: 0; }
+.dsa-schalter-knopf[aria-pressed="true"] { background: var(--bereich); color: var(--schrift-auf-farbe); }
+.dsa-schalter-knopf:focus-visible { outline: 3px solid var(--bereich); outline-offset: -3px; }
+.dsa-schalter-kurz { display: none; }
+.dsa-teilen-text { margin-left: 6px; }
+@media (max-width: 599px) {
+    .dsa-schalter-lang { display: none; }
+    .dsa-schalter-kurz { display: inline; }
+    .dsa-schalter-knopf { padding: 6px 10px; }
+    .dsa-teilen-text { display: none; }
+    .dsa-teilen { min-width: 44px; padding-left: 10px; padding-right: 10px; }
+}
+.dsa-ab-kopf { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: var(--abstand) 0 4px; }
+.dsa-ab-kopf:only-child, .dsa-ab-kopf > :only-child { margin-left: auto; }
+.dsa-ab-text { margin: 0 0 10px; }
+.dsa-sessions { list-style: none; margin: 0; padding: 0; }
+.dsa-sessions > li + li { border-top: 1px solid var(--linie); }
+.dsa-session { display: grid; grid-template-columns: 6.5em 1fr; gap: 10px; width: 100%; padding: 10px 0; text-align: left; }
+.dsa-session-knopf { min-height: 44px; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.dsa-session-knopf:focus-visible { outline: 3px solid var(--bereich); outline-offset: 2px; }
+.dsa-session-datum { font-weight: 700; font-size: 0.9rem; white-space: nowrap; }
+.dsa-session-text { margin: 0; overflow-wrap: anywhere; }
+.dsa-dm-box { padding: var(--abstand); }
+.dsa-dm-titel { margin: 0; font-size: 1.1rem; }
+.dsa-dm-box .dsa-dm-titel { margin-bottom: 8px; }
+.dsa-dm-feld { display: block; width: 100%; box-sizing: border-box; min-height: 120px; padding: 10px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; line-height: 1.45; resize: vertical; }
+.dsa-dm-feld:focus { outline: 2px solid var(--bereich); outline-offset: 1px; }
+.dsa-dm-knoepfe { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.dsa-dm-knoepfe .meldung { margin: 0; }
+.dsa-dm-knoepfe .knopf[disabled] { opacity: 0.5; cursor: default; }
+.dsa-abschnitte .dsa-abschnitt-inhalt > .meldung:empty { display: none; }

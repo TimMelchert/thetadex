@@ -161,7 +161,7 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
   Tabellen zum Einfügen ins Sheet (Projektdateien, Ordner `etappe-6/`, nie ins Repo), wie die Werte in Etappe 2. Die Person fügt sie ein und prüft.
   Die anderen drei Bögen trägt die Person selbst in der App ein (Entscheidung, 31.10.2026).
   Das geht schon nach 6.3; der Verlauf startet leer mit den heutigen Werten als Startwert.
-- **6.8 Anmerkungen und Abschluss** (→ 0.6.x): 0.6.7 Aussehen (Name als Überschrift, Münzen, Bild) gebaut; Abenteuer und DM bekommen einen eigenen Plan. Sonst: gesammelte Anmerkungen der Person, dann Plan in STAND.md einarbeiten und löschen.
+- **6.8 Anmerkungen und Abschluss** (→ 0.6.x): 0.6.7 Aussehen (Name als Überschrift, Münzen, Bild) gebaut; 0.6.8 Abenteuer und DM gebaut (Festlegungen in STAND.md 4). Sonst: gesammelte Anmerkungen der Person, dann Plan in STAND.md einarbeiten und löschen.
 
 ## Datenschutz und Sicherheit
 

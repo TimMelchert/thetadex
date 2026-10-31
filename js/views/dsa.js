@@ -16,6 +16,7 @@ import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { verkleinereBild, bildAdresse } from '../ui/bild.js';
 import { wuerfelKnopf } from '../ui/wuerfel.js';
+import { abenteuerAnsicht, dmAnsicht } from './dsa-abenteuer.js';
 
 // Zuletzt geladene Daten, nur im Arbeitsspeicher
 let daten = null;
@@ -23,6 +24,9 @@ let daten = null;
 const offen = new Set(['kopf']);
 // Für wen „daten“ gilt: 'eigen' (mit Passwort) oder der Schlüssel eines geteilten Bogens
 let datenFuer = '';
+// Ansicht (ab 0.6.8): 'bogen', 'abenteuer' oder 'dm'. Bleibt beim Wechsel erhalten; im geteilten Link nur bogen und abenteuer, ohne Speichern.
+const MODI = [['bogen', 'Charakterbogen', 'Bogen'], ['abenteuer', 'Abenteuer', 'Abenteuer'], ['dm', 'DM', 'DM']];
+let modusGeteilt = 'bogen';
 // Kennung des Skripts und Schlüssel im geteilten Link
 const KENNUNG = /^[A-Za-z0-9_-]{20,120}$/;
 const SCHLUESSEL = /^[a-f0-9]{64}$/;
@@ -130,10 +134,11 @@ const MUENZEN = [[1000, 'D', 'Dukaten'], [100, 'S', 'Silbertaler'], [10, 'H', 'H
 const wertText = (z, n) => (z.art === 'geld' ? geldText(n) : String(n));
 // „2026-10-31 14:05“ → „31.10.2026 14:05“
 // (im laufenden Jahr ohne Jahreszahl: „31.10. 14:05“)
-function datumText(d) {
+// mitJahr: immer mit Jahreszahl (Sessions)
+function datumText(d, mitJahr = false) {
     const m = /^(\d{4})-(\d{2})-(\d{2})(.*)$/.exec(String(d || ''));
     if (!m) return String(d || '');
-    const jahr = Number(m[1]) === new Date().getFullYear() ? '' : m[1];
+    const jahr = !mitJahr && Number(m[1]) === new Date().getFullYear() ? '' : m[1];
     return m[3] + '.' + m[2] + '.' + jahr + m[4].replace('T', ' ').slice(0, 6);
 }
 // Text einer Änderung: AP mit „−“ heißt ausgegeben
@@ -190,8 +195,19 @@ export function render(container, ctx = {}) {
     // Name des Bogens als große Überschrift. Darüber liegt die (unsichtbare) Auswahl, Tipp öffnet sie (Wunsch der Person, 31.10.2026).
     const bogenName = el('h2', { class: 'dsa-bogen-name' });
     const namePfeil = el('span', { class: 'dsa-name-pfeil', attrs: { 'aria-hidden': 'true' } });
-    const teilenKnopf = el('button', { class: 'knopf knopf-zweit dsa-teilen', text: '🔗 Teilen', attrs: { type: 'button', hidden: true }, on: { click: () => { const b = gewaehlt(); if (b) zeigeTeilen(b); } } });
-    const leiste = el('div', { class: 'dsa-leiste' }, [marke, teilenKnopf]);
+    const teilenText = el('span', { class: 'dsa-teilen-text', text: 'Teilen' });
+    const teilenKnopf = el('button', { class: 'knopf knopf-zweit dsa-teilen', attrs: { type: 'button', hidden: true, 'aria-label': 'Teilen' }, on: { click: () => { const b = gewaehlt(); if (b) zeigeTeilen(b); } } }, [el('span', { text: '🔗', attrs: { 'aria-hidden': 'true' } }), teilenText]);
+    // Schalter Charakterbogen | Abenteuer | DM (Wunsch der Person, 31.10.2026). DM nur mit Passwort.
+    const modus = () => {
+        const m = nurLesen ? modusGeteilt : lesen('dsa_modus', 'bogen');
+        return MODI.some(([k]) => k === m) && !(nurLesen && m === 'dm') ? m : 'bogen';
+    };
+    const schalterKnoepfe = MODI.filter(([k]) => !(nurLesen && k === 'dm')).map(([k, lang, kurz]) => el('button', {
+        class: 'dsa-schalter-knopf', attrs: { type: 'button', 'data-modus': k },
+        on: { click: () => { if (nurLesen) modusGeteilt = k; else schreiben('dsa_modus', k); zeigeAlles(); } }
+    }, [el('span', { class: 'dsa-schalter-lang', text: lang }), el('span', { class: 'dsa-schalter-kurz', text: kurz, attrs: { 'aria-hidden': 'true' } })]));
+    const schalter = el('div', { class: 'dsa-schalter', attrs: { role: 'group', 'aria-label': 'Ansicht' } }, schalterKnoepfe);
+    const leiste = el('div', { class: 'dsa-leiste' }, [marke, schalter, teilenKnopf]);
     const nameZeile = el('div', { class: 'dsa-name-zeile', attrs: { hidden: true } }, [bogenName, namePfeil, auswahl]);
     const oben = el('div', { class: 'dsa-oben', attrs: { hidden: true } });
     const abschnitte = el('div', { class: 'dsa-abschnitte' });
@@ -219,25 +235,41 @@ export function render(container, ctx = {}) {
         neuKnopf.disabled = !daten;
 
         const bogen = gewaehlt();
-        nameZeile.hidden = !bogen;
+        const m = modus();
+        schalterKnoepfe.forEach((k) => k.setAttribute('aria-pressed', String(k.dataset.modus === m)));
+        const mitBogen = bogen && m !== 'dm';
+        nameZeile.hidden = !mitBogen;
         nameZeile.classList.toggle('ist-wahl', !nurLesen);
         namePfeil.hidden = nurLesen;
         bogenName.textContent = bogen ? bogen.name : '';
-        leiste.hidden = !bogen;
-        teilenKnopf.hidden = nurLesen || !bogen;
-        teilenKnopf.textContent = bogen && bogen.geteilt ? '🔗 Geteilt' : '🔗 Teilen';
-        marke.hidden = !bogen;
+        // Die Leiste mit dem Schalter steht immer da (DM geht auch ohne Bogen), im geteilten Link nur mit Bogen
+        leiste.hidden = nurLesen ? !bogen : !daten;
+        teilenKnopf.hidden = nurLesen || !mitBogen;
+        teilenText.textContent = bogen && bogen.geteilt ? 'Geteilt' : 'Teilen';
+        teilenKnopf.setAttribute('aria-label', teilenText.textContent);
+        marke.hidden = !mitBogen;
         marke.textContent = bogen ? (bogen.regelwerk === 'dnd' ? 'DnD' : 'DSA') : '';
         leeren(oben);
         leeren(abschnitte);
-        oben.hidden = !bogen;
+        oben.hidden = !mitBogen;
+        if (daten && m === 'dm') {
+            abschnitte.append(...dmAnsicht(helfer()));
+            return;
+        }
         if (!bogen) {
             if (daten && !nurLesen) abschnitte.append(el('p', { class: 'leise', text: 'Noch kein Bogen. Lege mit „+ Bogen“ den ersten an.' }));
             return;
         }
         zeigeOben(bogen);
+        if (m === 'abenteuer') {
+            abschnitte.append(...abenteuerAnsicht(helfer(), bogen));
+            return;
+        }
         abschnitte.append(...[kopfKarte(bogen), eigenschaftenKarte(bogen), nurLesen ? null : verlaufKarte(bogen), ...LISTEN.map((def) => listenKarte(bogen, def))].filter(Boolean));
     }
+
+    // Helfer für js/views/dsa-abenteuer.js
+    const helfer = () => ({ daten, nurLesen, karte, oeffneDialog, senden, formKnoepfe, textFeld, feld, dialog, zeigeAlles, datumText, offen });
 
     // Zähler (Geld, LeP, AsP, AP) und Eigenschaften-Leiste, kleben beim Scrollen oben
     function zeigeOben(bogen) {
@@ -269,7 +301,7 @@ export function render(container, ctx = {}) {
 
     // Eine aufklappbare Karte mit Titel, Zahl, Knopf (✎ oder +) und Inhalt. Auf- und Zuklappen bleibt beim Neuzeichnen.
     function karte(key, titel, knopf, inhalt, anzahl = '') {
-        const k = nurLesen ? null : el('button', {
+        const k = nurLesen || !knopf ? null : el('button', {
             class: 'dsa-stift', text: knopf.zeichen,
             attrs: { type: 'button', 'aria-label': knopf.label }, on: { click: (ev) => { ev.preventDefault(); knopf.tun(); } }
         });
@@ -955,7 +987,9 @@ export function render(container, ctx = {}) {
         daten = {
             boegen: Array.isArray(d.boegen) ? d.boegen : [],
             eintraege: Array.isArray(d.eintraege) ? d.eintraege : [],
-            verlauf: Array.isArray(d.verlauf) ? d.verlauf : []
+            verlauf: Array.isArray(d.verlauf) ? d.verlauf : [],
+            abenteuer: Array.isArray(d.abenteuer) ? d.abenteuer : [],
+            sessions: Array.isArray(d.sessions) ? d.sessions : []
         };
         daten.boegen.forEach((b) => {
             b.kopf = b.kopf && typeof b.kopf === 'object' ? b.kopf : {};
@@ -974,7 +1008,11 @@ export function render(container, ctx = {}) {
         const adresse = d.bild ? bildAdresse(d.bild) : null;
         b.bild = adresse ? 'geteilt-' + b.id : '';
         if (adresse) bilder.set(b.bild, adresse);
-        return { boegen: [b], eintraege: (Array.isArray(d.eintraege) ? d.eintraege : []).map((e) => ({ ...e, bogen_id: b.id })), verlauf: [] };
+        return {
+            boegen: [b], eintraege: (Array.isArray(d.eintraege) ? d.eintraege : []).map((e) => ({ ...e, bogen_id: b.id })), verlauf: [],
+            abenteuer: (Array.isArray(d.abenteuer) ? d.abenteuer : []).map((a) => ({ ...a, art: 'spieler', bogen_id: b.id })),
+            sessions: Array.isArray(d.sessions) ? d.sessions : []
+        };
     }
 
     async function laden() {
