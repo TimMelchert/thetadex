@@ -1,6 +1,7 @@
 // Reiter Pen & Paper (DSA und DnD). 6.1: Bogen wählen und anlegen, Kopf, Eigenschaften und Zähler ansehen und ändern.
 // 6.2: Listen (Vor- und Nachteile, Sonderfertigkeiten und Gaben, Talente nach Gruppe, Besitz nach Ort) anlegen, ändern, löschen.
 // 6.3: Zauber (aufklappbar mit allen Feldern und Modifikationen) und Waffen (Tabelle, am Handy Karten).
+// 6.4: Verlauf. Tipp auf einen Zähler oben: „+“ oder „−“, Betrag, Notiz. Liste der letzten Änderungen.
 // Daten aus dem Skript „dsa“ (eigenes Sheet „DSA“). Nur mit Passwort.
 // Die Bögen liegen nur im Arbeitsspeicher, solange die Seite offen ist. Im Gerät steht nur, welcher Bogen gewählt war
 // (thetadex_dsa_bogen). Siehe docs/PLAN-ETAPPE-6.md.
@@ -15,6 +16,9 @@ import { zeigeGespeichert } from '../ui/overlay.js';
 let daten = null;
 // Aufgeklappte Abschnitte. Bleibt, solange die Seite offen ist.
 const offen = new Set(['kopf']);
+// Verlauf: gewählter Zähler und ob alle Änderungen zu sehen sind
+let verlaufFilter = '';
+let verlaufAlle = false;
 
 // Listen-Abschnitte (6.2, Zauber und Waffen 6.3). arten: [Schlüssel im Sheet, Überschrift, Name eines Eintrags].
 // art: 'chips' = kurze Namen nebeneinander, 'gruppen' = Zeilen je Gruppe, 'orte' = Zeilen je Ort (Feld „ort“).
@@ -98,6 +102,30 @@ function geldText(kreuzer) {
     return (minus ? '− ' : '') + (teile.join(' ') || '0');
 }
 
+// Wie viele Änderungen der Verlauf zuerst zeigt
+const VERLAUF_ANFANG = 30;
+// Münzen: [Wert in Kreuzern, Kürzel, Name]
+const MUENZEN = [[1000, 'D', 'Dukaten'], [100, 'S', 'Silbertaler'], [10, 'H', 'Heller'], [1, 'K', 'Kreuzer']];
+const wertText = (z, n) => (z.art === 'geld' ? geldText(n) : String(n));
+// „2026-10-31 14:05“ → „31.10.2026 14:05“
+// (im laufenden Jahr ohne Jahreszahl: „31.10. 14:05“)
+function datumText(d) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})(.*)$/.exec(String(d || ''));
+    if (!m) return String(d || '');
+    const jahr = Number(m[1]) === new Date().getFullYear() ? '' : m[1];
+    return m[3] + '.' + m[2] + '.' + jahr + m[4].replace('T', ' ').slice(0, 6);
+}
+// Text einer Änderung: AP mit „−“ heißt ausgegeben
+const istAusgegeben = (z, a) => !!(z && z.art === 'ap' && a < 0);
+function aenderungText(z, a) {
+    const betrag = z && z.art === 'geld' ? geldText(Math.abs(a)) : String(Math.abs(a));
+    return (a < 0 ? '− ' : '+ ') + betrag + (istAusgegeben(z, a) ? ' ausgegeben' : '');
+}
+// Summe aller Änderungen (für AP: was noch frei ist)
+function summe(bogen, z) {
+    return daten.verlauf.reduce((s, v) => (v.bogen_id === bogen.id && v.zaehler === z.k ? s + v.aenderung : s), Number(z.start) || 0);
+}
+
 // Aktueller Stand eines Zählers: Startwert plus Verlauf (AP: nur gesammelte), höchstens der Höchstwert
 function stand(bogen, z) {
     let s = Number(z.start) || 0;
@@ -151,7 +179,7 @@ export function render(container) {
             return;
         }
         zeigeOben(bogen);
-        abschnitte.append(kopfKarte(bogen), eigenschaftenKarte(bogen), ...LISTEN.map((def) => listenKarte(bogen, def)));
+        abschnitte.append(kopfKarte(bogen), eigenschaftenKarte(bogen), verlaufKarte(bogen), ...LISTEN.map((def) => listenKarte(bogen, def)));
     }
 
     // Zähler (Geld, LeP, AsP, AP) und Eigenschaften-Leiste, kleben beim Scrollen oben
@@ -165,7 +193,7 @@ export function render(container) {
                 const s = stand(bogen, z);
                 const wert = z.art === 'geld' ? [el('span', { text: geldText(s) })]
                     : [el('span', { text: String(s) }), Number(z.max) ? el('small', { text: ' / ' + z.max }) : null];
-                return el('div', { class: 'dsa-zaehler-kachel' }, [
+                return el('button', { class: 'dsa-zaehler-kachel', attrs: { type: 'button', 'aria-label': (z.n || z.k) + ' ändern' }, on: { click: () => zeigeZaehlerForm(bogen, z) } }, [
                     el('span', { class: 'dsa-zaehler-name', text: symbol(z) + ' ' + z.k }),
                     el('span', { class: 'dsa-zaehler-wert' }, wert)
                 ]);
@@ -308,6 +336,117 @@ export function render(container) {
         }
         if (!inhalt.length) inhalt.push(el('p', { class: 'leise', text: 'Noch leer. Tippe auf ✎.' }));
         return karte('eigenschaften', 'Eigenschaften und Basiswerte', { zeichen: '✎', label: 'Eigenschaften bearbeiten', tun: () => zeigeEigenschaftenForm(bogen) }, inhalt);
+    }
+
+    // --- Verlauf (6.4): neueste Änderung oben, Filter je Zähler ---
+    function verlaufKarte(bogen) {
+        const liste = daten.verlauf.map((v, i) => ({ v, i })).filter(({ v }) => v.bogen_id === bogen.id)
+            .sort((a, b) => (a.v.datum < b.v.datum ? 1 : a.v.datum > b.v.datum ? -1 : b.i - a.i)).map(({ v }) => v);
+        const zaehlerVon = (k) => bogen.zaehler.find((z) => z.k === k);
+        const filter = el('select', { attrs: { id: 'dsa-verlauf-filter', 'aria-label': 'Zähler wählen' } }, [
+            el('option', { text: 'Alle Zähler', attrs: { value: '' } }),
+            ...bogen.zaehler.map((z) => el('option', { text: symbol(z) + ' ' + (z.n || z.k), attrs: { value: z.k } }))
+        ]);
+        filter.value = verlaufFilter && bogen.zaehler.some((z) => z.k === verlaufFilter) ? verlaufFilter : '';
+        const box = el('div', { class: 'dsa-verlauf' });
+        function zeige() {
+            leeren(box);
+            const passend = liste.filter((v) => !filter.value || v.zaehler === filter.value);
+            if (!passend.length) {
+                box.append(el('p', { class: 'leise', text: liste.length ? 'Keine Änderung bei diesem Zähler.' : 'Noch keine Änderung. Tippe oben auf einen Zähler.' }));
+                return;
+            }
+            const sichtbar = verlaufAlle ? passend : passend.slice(0, VERLAUF_ANFANG);
+            box.append(el('ul', { class: 'dsa-verlauf-liste' }, sichtbar.map((v) => {
+                const z = zaehlerVon(v.zaehler);
+                return el('li', { class: 'dsa-verlauf-zeile' + (v.aenderung < 0 ? ' ist-minus' : '') }, [
+                    el('span', { class: 'dsa-verlauf-wer', text: (z ? symbol(z) + ' ' : '') + v.zaehler }),
+                    el('span', { class: 'dsa-verlauf-wert' }, istAusgegeben(z, v.aenderung)
+                        ? [el('span', { text: '− ' + Math.abs(v.aenderung) }), el('small', { text: ' ausgegeben' })]
+                        : [el('span', { text: aenderungText(z, v.aenderung) })]),
+                    el('span', { class: 'leise dsa-verlauf-datum', text: datumText(v.datum) }),
+                    v.notiz ? el('span', { class: 'dsa-verlauf-notiz', text: v.notiz }) : null
+                ]);
+            })));
+            if (sichtbar.length < passend.length) {
+                box.append(el('button', { class: 'knopf knopf-zweit', text: 'Alle ' + passend.length + ' zeigen', attrs: { type: 'button' }, on: { click: () => { verlaufAlle = true; zeige(); } } }));
+            }
+        }
+        filter.addEventListener('change', () => { verlaufFilter = filter.value; zeige(); });
+        zeige();
+        const ersterZaehler = bogen.zaehler[0];
+        const knopf = ersterZaehler ? { zeichen: '+', label: 'Zähler ändern', tun: () => zeigeZaehlerForm(bogen, bogen.zaehler.find((z) => z.k === filter.value) || ersterZaehler) }
+            : { zeichen: '✎', label: 'Zähler einrichten', tun: () => zeigeEigenschaftenForm(bogen) };
+        return karte('verlauf', 'Verlauf', knopf, [bogen.zaehler.length > 1 ? filter : null, box], liste.length);
+    }
+
+    // --- Zähler ändern (6.4): „+“ oder „−“, Betrag, Notiz ---
+    function zeigeZaehlerForm(bogen, z) {
+        const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
+        const jetzt = stand(bogen, z);
+        const max = z.max != null && z.max !== '' ? Number(z.max) : null;
+        let richtung = 1;
+        const ap = z.art === 'ap';
+        const plus = el('button', { class: 'dsa-richtung', text: ap ? '+ gesammelt' : '+ dazu', attrs: { type: 'button', 'aria-pressed': 'true' }, on: { click: () => setzeRichtung(1) } });
+        const minus = el('button', { class: 'dsa-richtung', text: ap ? '− ausgegeben' : '− weg', attrs: { type: 'button', 'aria-pressed': 'false' }, on: { click: () => setzeRichtung(-1) } });
+        function setzeRichtung(r) {
+            richtung = r;
+            plus.setAttribute('aria-pressed', String(r === 1));
+            minus.setAttribute('aria-pressed', String(r === -1));
+        }
+        const zahl = (id, label) => el('input', { attrs: { id, type: 'number', inputmode: 'numeric', min: '0', max: '1000000', step: '1', placeholder: '0', 'aria-label': label } });
+        // Geld: ein Feld je Münze, die App rechnet in Kreuzer um
+        const muenzen = z.art === 'geld' ? MUENZEN.map(([wert, kurz, name]) => [wert, zahl('dsa-z-' + kurz, name), kurz, name]) : null;
+        const betrag = muenzen ? null : zahl('dsa-z-betrag', 'Betrag');
+        const notiz = textFeld('dsa-z-notiz', '', 100, { placeholder: 'freiwillig, zum Beispiel Kampf mit Orks' });
+        const voll = z.art === 'leben' && max != null ? el('button', {
+            class: 'knopf knopf-zweit', text: 'Voll (' + max + ')', attrs: { type: 'button', disabled: jetzt >= max },
+            on: { click: () => { setzeRichtung(1); betrag.value = String(max - jetzt); notiz.focus(); } }
+        }) : null;
+        const knoepfe = formKnoepfe(null);
+
+        const leseBetrag = () => (muenzen
+            ? muenzen.reduce((s, [wert, f]) => s + wert * (Number(f.value) || 0), 0)
+            : Number(betrag.value));
+        async function absenden(ev) {
+            ev.preventDefault();
+            const felder = muenzen ? muenzen.map(([, f]) => f) : [betrag];
+            if (felder.some((f) => f.value !== '' && (!Number.isInteger(Number(f.value)) || Number(f.value) < 0))) { status.textContent = 'Bitte nur ganze Zahlen ab 0.'; return; }
+            let b = leseBetrag();
+            if (!(b > 0)) { status.textContent = 'Bitte einen Betrag angeben.'; return; }
+            if (b > 1000000) { status.textContent = 'Der Betrag ist zu groß.'; return; }
+            let hinweis = '';
+            if (richtung === 1 && max != null && jetzt + b > max) {
+                // Nicht über den Höchstwert: nur bis voll speichern
+                b = max - jetzt;
+                if (b <= 0) { status.textContent = 'Ist schon voll (' + max + ').'; return; }
+                hinweis = 'bis zum Höchstwert';
+            }
+            if (richtung === -1 && z.art === 'geld' && b > jetzt) { status.textContent = 'So viel Geld ist nicht da (nur ' + geldText(jetzt) + ').'; return; }
+            const antwort = await senden(status, knoepfe, 'verlauf_neu', { bogen_id: bogen.id, zaehler: z.k, aenderung: richtung * b, notiz: notiz.value.trim() });
+            if (!antwort) return;
+            dialog.close();
+            zeigeAlles();
+            zeigeGespeichert(aenderungText(z, richtung * b), hinweis);
+        }
+
+        const standText = ap
+            ? 'Gesammelt ' + jetzt + ' · frei ' + summe(bogen, z)
+            : 'Jetzt ' + wertText(z, jetzt) + (max != null ? ' von ' + max : '');
+        oeffneDialog(symbol(z) + ' ' + (z.n || z.k), [
+            el('form', { class: 'formular', on: { submit: absenden } }, [
+                el('p', { class: 'dsa-z-stand', text: standText }),
+                el('div', { class: 'dsa-richtungen', attrs: { role: 'group', 'aria-label': 'Richtung' } }, [plus, minus]),
+                ...(muenzen
+                    ? [el('span', { class: 'dsa-z-label', text: 'Betrag' }), el('div', { class: 'dsa-muenzen' }, muenzen.map(([, f, kurz, name]) => el('label', { attrs: { for: f.id, title: name } }, [f, el('span', { text: kurz })])))]
+                    : feld('dsa-z-betrag', 'Betrag', betrag)),
+                voll,
+                ...feld('dsa-z-notiz', 'Notiz', notiz),
+                status,
+                el('div', { class: 'besitz-form-knoepfe' }, knoepfe)
+            ].filter(Boolean))
+        ]);
+        (muenzen ? muenzen[0][1] : betrag).focus();
     }
 
     // --- Fenster und Senden ---
