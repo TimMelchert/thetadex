@@ -40,6 +40,8 @@ ANSICHTEN.besitz = besitz;
 ANSICHTEN.einkauf = einkauf;
 ANSICHTEN.uni = uni;
 ANSICHTEN.dsa = dsa;
+// Geteilter Bogen (6.6): #/bogen/<skript>/<schluessel>, ohne Einrichtung, nur lesen
+ANSICHTEN.bogen = dsa;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';

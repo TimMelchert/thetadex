@@ -154,8 +154,9 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
     So zufällig wie möglich: Das ist der Zufall, den der Browser auch für Verschlüsselung nutzt, nicht berechenbar.
     Würfe, die nicht gleichmäßig auf die Seiten passen, werden verworfen und neu gezogen, damit jede Seite genau gleich oft kommen kann.
   - Bild des Helden: hochladen oder Drive-Link, wie bei Besitz (`js/ui/bild.js` wiederverwenden), privater Ordner „Thetadex DSA“.
-- **6.6 Teilen** (→ 0.6.6): Knopf „Link teilen“ je Bogen, „Neuen Link erstellen“, „Nicht mehr teilen“.
+- **6.6 Teilen** (→ 0.6.6) – gebaut: Knopf „Link teilen“ je Bogen, „Neuen Link erstellen“, „Nicht mehr teilen“.
   Adresse `#/bogen/<skript>/<schluessel>` ohne Einrichtung: ganzer Bogen mit den aktuellen Werten und Würfel, ohne Verlauf und ohne Knöpfe zum Ändern (STAND.md 4 „DSA teilen“).
+  Der Schlüssel kommt nur beim Erstellen; die App merkt ihn im Gerät (`thetadex_dsa_links`). Gleiche Ansicht wie der Reiter, Modus „nur lesen“. Sheet und Skript bleiben gleich.
 - **6.7 Bogen übertragen** (Daten, kein Pull Request, kein Code): Aus der Vorlage in den Projektdateien (`dsa-vorlagen/`, ein Bogen) erstelle ich
   Tabellen zum Einfügen ins Sheet (Projektdateien, Ordner `etappe-6/`, nie ins Repo), wie die Werte in Etappe 2. Die Person fügt sie ein und prüft.
   Die anderen drei Bögen trägt die Person selbst in der App ein (Entscheidung, 31.10.2026).

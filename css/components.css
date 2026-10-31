@@ -1135,3 +1135,9 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
 .wuerfel-stein.ist-eins { border-color: var(--minus-schrift); color: var(--minus-schrift); }
 .wuerfel-summe { margin: 10px 0 0; font-size: 1.4rem; font-weight: 800; }
 .wuerfel-letzte { margin: 12px 0 0; padding-left: 1.2em; color: var(--schrift-leise); font-size: 0.9rem; }
+
+/* Pen & Paper 6.6: Teilen und geteilter Bogen */
+.dsa-teilen { margin-left: auto; }
+.dsa-bogen-name { margin: 0; font-size: 1.25rem; overflow-wrap: anywhere; }
+.dsa-geteilt-hinweis { margin: 4px 0 0; }
+#dsa-link { width: 100%; box-sizing: border-box; min-height: 44px; padding: 8px 10px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; font-size: 0.85rem; }

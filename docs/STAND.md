@@ -4,15 +4,15 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.6.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.6.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
-- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`. Gebaut: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen, Kopf und Eigenschaften; dazu Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte), 6.2 (Listen), 6.3 (Zauber und Waffen), 6.4 (Verlauf), 6.5 (Würfel und Bild).
-- Nächster Schritt: 6.6 (Teilen).
+- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`. Gebaut: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen, Kopf und Eigenschaften; dazu Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte), 6.2 (Listen), 6.3 (Zauber und Waffen), 6.4 (Verlauf), 6.5 (Würfel und Bild), 6.6 (Teilen).
+- Nächster Schritt: 6.7 (Bogen aus der Vorlage übertragen, Daten ohne Pull Request), danach 6.8 (Anmerkungen und Abschluss).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -321,6 +321,10 @@ unter „Info“ die Version prüfen.
   Karte „Verlauf“: neueste Änderung oben, Filter je Zähler, erst 30, dann „Alle zeigen“. Änderungen löschen nur im Sheet (wie ein Kassenbuch).
   Würfel (6.5): schwebender Knopf „🎲 Würfeln“ unten rechts, Anzahl 1 bis 20, W4 bis W20, Einzelwürfe und Summe, letzte 10 Würfe nur im Arbeitsspeicher (`js/ui/wuerfel.js`).
   Bild (6.5): im Kopf-Fenster hochladen (App verkleinert) oder Drive-Link, Ordner „Thetadex DSA“; steht rechts neben dem Kopf. Wird nur mitgeschickt, wenn es sich ändert.
+  Teilen (6.6): Knopf „🔗 Teilen“ (heißt „🔗 Geteilt“, wenn ein Link gilt): „Link erstellen“, „Link kopieren“, „Senden …“ (wenn das Gerät es kann),
+  „Neuen Link erstellen“, „Nicht mehr teilen“. Den Schlüssel gibt das Skript nur beim Erstellen heraus; die App merkt ihn in `thetadex_dsa_links`.
+  Wurde der Link an einem anderen Gerät erstellt, hilft nur „Neuen Link erstellen“. Die Adresse `#/bogen/<skript>/<schluessel>` nutzt dieselbe Ansicht
+  (`js/views/dsa.js`, Route `bogen` in `js/app.js`) im Modus „nur lesen“: ohne Passwort, ohne Verlauf, ohne Knöpfe zum Ändern, Tipp auf einen Eintrag zeigt ihn nur an.
   Semester (5.1), Kalender mit Woche, Monat, Liste, Filter nach Art, „einmal anders“ und ohne Netz (5.2), Arbeitsstunden (5.3),
   Module mit Master-Übersicht (5.4). Umbau nach Anmerkungen (5.5): kein Stundenplan mehr (in `termine` umgezogen), Kurse je Modul,
   Termine jede Woche an bestimmten Tagen, Prüfungen „bestanden“, Auflagen getrennt. 5.6: Art der Prüfung bei der Prüfung, ein Knopf „+ Prüfung“,
@@ -493,7 +497,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; in den Skripten `leben` und `dsa` legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
 - **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen, zuletzt bekannte Kontostände, die Wahl beim Aussehen (`thetadex_aussehen`),
   die offene Einkaufsliste (`thetadex_einkaufsliste`, nur Einträge mit Namen, Abteilung, Einheit), abgehakte Einträge vor „Einkauf fertig“ (`thetadex_einkauf_haken`)
-  und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3), der gewählte Bogen bei Pen & Paper (`thetadex_dsa_bogen`, nur die Kennung, ab 0.6.1).
+  und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3), der gewählte Bogen bei Pen & Paper (`thetadex_dsa_bogen`, nur die Kennung, ab 0.6.1), die selbst erstellten Links zum Teilen (`thetadex_dsa_links`, Bogen-Kennung → Schlüssel, ab 0.6.6).
   Schlüssel mit Vorsilbe `thetadex_`. Keine Tracking-Einträge im Gerät speichern. Abmelden löscht alles.
   Die Tracking-Felder hält die App nur im Arbeitsspeicher (10 Minuten), damit das Formular schnell da ist.
 - **Neu laden** nach einem Update nur, wenn auf dieser Seite „Jetzt neu laden“ getippt wurde (`js/app.js`). Sonst lud die Seite
@@ -707,6 +711,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.6.3** Schritt 6.3: Zauber (aufklappbar, Modifikationen, Hauszauber) und Waffen (Tabelle, am Handy Karten) bei Pen & Paper.
 - **0.6.4** Schritt 6.4: Verlauf bei Pen & Paper (Zähler antippen, „+“ oder „−“, Geld je Münze, „Voll“, Karte „Verlauf“ mit Filter).
 - **0.6.5** Schritt 6.5: Würfel (W4 bis W20, Anzahl, schwebender Knopf) und Bild des Helden im Kopf bei Pen & Paper.
+- **0.6.6** Schritt 6.6: Teilen bei Pen & Paper (Link erstellen, kopieren, neu, nicht mehr teilen; geteilter Bogen `#/bogen/<skript>/<schluessel>` nur lesen).
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
