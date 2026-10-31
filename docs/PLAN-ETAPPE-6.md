@@ -148,7 +148,7 @@ Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Sch
 - **6.4 Verlauf** (→ 0.6.4) – gebaut: Geld, Leben, AsP, AP oben mit Symbol; Tipp darauf → „+“ oder „−“, Betrag, Notiz. Liste der letzten Änderungen je Zähler.
   Geld mit Feldern je Münze (D, S, H, K), die App rechnet um. Leben und AsP mit Knopf „Voll“ (setzt auf den Höchstwert).
   „+“ speichert höchstens bis zum Höchstwert, Geld nicht unter 0. Karte „Verlauf“ mit Filter je Zähler. Sheet und Skript bleiben gleich.
-- **6.5 Würfel und Bild** (→ 0.6.5)
+- **6.5 Würfel und Bild** (→ 0.6.5) – gebaut. Knopf „🎲 Würfeln“ schwebt unten rechts; Bild steht rechts neben dem Kopf. Sheet und Skript bleiben gleich.
   - Würfel W4, W6, W8, W10, W12, W20 (W8 bis W12 Wunsch der Person für DnD), Anzahl wählbar (zum Beispiel 3W20), Ergebnis groß mit den Einzelwürfen.
     Rechnet nur im Gerät mit `crypto.getRandomValues`, nichts wird gespeichert (STAND.md 4 „Würfel“).
     So zufällig wie möglich: Das ist der Zufall, den der Browser auch für Verschlüsselung nutzt, nicht berechenbar.
