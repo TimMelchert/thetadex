@@ -16,16 +16,17 @@ const SORTEN = [['vegan', 'Vegan', '🌱'], ['fleisch', 'Fleisch', '🥩']];
 const KENNUNG = /^[A-Za-z0-9_-]{20,120}$/;
 const ADRESSE = /^https:\/\/script\.google\.com\/macros\/s\/([A-Za-z0-9_-]+)\/exec$/;
 
-// Kennung des Skripts: geteilter Link zuerst (wird für Besucher gemerkt), dann Einrichtung, dann gemerkter Link.
+// Kennung des Skripts: eigene Einrichtung zuerst (ein fremder Link ändert sie nie, Prüfung Sicherheit, Etappe 8),
+// dann der geteilte Link (wird für Besucher gemerkt), dann der gemerkte Link.
 function kennungFinden(teile) {
+    const eigen = ADRESSE.exec((lesen('skripte', {}) || {}).doener || '');
+    if (eigen) return eigen[1];
     const ausLink = teile[0] || '';
     if (KENNUNG.test(ausLink)) {
         const oeffentlich = lesen('oeffentlich', {}) || {};
         if (oeffentlich.doener !== ausLink) schreiben('oeffentlich', { ...oeffentlich, doener: ausLink });
         return ausLink;
     }
-    const eigen = ADRESSE.exec((lesen('skripte', {}) || {}).doener || '');
-    if (eigen) return eigen[1];
     const gemerkt = (lesen('oeffentlich', {}) || {}).doener || '';
     return KENNUNG.test(gemerkt) ? gemerkt : '';
 }
