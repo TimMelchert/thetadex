@@ -7,6 +7,9 @@ var KONTEN_ = ["Konto", "Paypal", "Kreditkarte", "Portemonnaie", "Muenzglas", "P
 var MODI_ = ["ein", "aus", "umbuchung"];
 var BLATT_EINST_ = "Einstellungen";  // Zwecke, Kategorien, Rückzahlungen (siehe docs/STAND.md 7.2, Etappe 2)
 var EINST_KOPF_ = ["liste", "name", "kategorie", "betrag", "zweck"];
+var BLATT_SMS_ = "SMS";  // Kontowecker-SMS, siehe docs/PLAN-ETAPPE-9.md
+var SMS_KOPF_ = ["id", "empfangen_am", "gesendet_am", "absender", "text", "pruefsumme", "status", "erledigt_am"];
+var SMS_PRO_TAG_ = 50;  // mehr SMS am Tag lehnt das Skript ab
 var MONATE_ = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
 // --- 1. HILFSFUNKTIONEN FÜR ANTWORTEN & PASSWORT ---
@@ -45,6 +48,16 @@ function doPost(e) {
     data = JSON.parse(e.postData.contents);
   } catch (err) {
     return jsonOut_({ error: "anfrage", message: "Ungültige Anfrage" });
+  }
+
+  // Kontowecker-SMS von der Weiterleitungs-App: nur mit SMS_SCHLUESSEL, nicht mit dem Passwort.
+  // Diese Aktion legt nur eine SMS als "offen" ab. Sie liest nichts und bucht nichts.
+  if (data && data.action === "sms") {
+    try {
+      return jsonOut_(smsAnnehmen_(data));
+    } catch (err) {
+      return jsonOut_({ error: "server", message: "Fehler beim Ablegen" });
+    }
   }
 
   var status = pruefePin_(data.pin);
@@ -384,17 +397,20 @@ function getStats() {
 }
 // --- 6. EINSTELLUNGEN (Zwecke, Kategorien, Rückzahlungen) ---
 
-// Einmal im Editor ausführen: legt das Blatt "Einstellungen" mit Kopfzeile an. Ein vorhandenes Blatt bleibt unverändert.
+// Einmal im Editor ausführen: legt die Blätter "Einstellungen" und "SMS" mit Kopfzeile an.
+// Vorhandene Blätter bleiben unverändert.
 function einrichten() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (ss.getSheetByName(BLATT_EINST_)) {
-    Logger.log("Blatt '" + BLATT_EINST_ + "' gibt es schon. Nichts geändert.");
-    return;
-  }
-  var blatt = ss.insertSheet(BLATT_EINST_);
-  blatt.getRange(1, 1, 1, EINST_KOPF_.length).setValues([EINST_KOPF_]);
-  blatt.setFrozenRows(1);
-  Logger.log("Blatt '" + BLATT_EINST_ + "' angelegt.");
+  [[BLATT_EINST_, EINST_KOPF_], [BLATT_SMS_, SMS_KOPF_]].forEach(function (b) {
+    if (ss.getSheetByName(b[0])) {
+      Logger.log("Blatt '" + b[0] + "' gibt es schon. Nichts geändert.");
+      return;
+    }
+    var blatt = ss.insertSheet(b[0]);
+    blatt.getRange(1, 1, 1, b[1].length).setValues([b[1]]);
+    blatt.setFrozenRows(1);
+    Logger.log("Blatt '" + b[0] + "' angelegt.");
+  });
 }
 
 // Liest das Blatt "Einstellungen". Zeilen mit unbekannter Liste werden übersprungen.
@@ -432,4 +448,99 @@ function einstellungenLesen_() {
     else if (liste === "eigenanteil" && kat) aus.eigenanteile[kat] = betrag(i) || 0;
   }
   return aus;
+}
+
+// --- 7. KONTOWECKER-SMS (Etappe 9) ---
+
+// Einmal im Editor ausführen: erzeugt einen neuen, zufälligen SMS_SCHLUESSEL und zeigt ihn im Protokoll.
+// Ein alter Schlüssel gilt danach nicht mehr. Den Schlüssel nur in die Weiterleitungs-App eintragen, nie ins Repo.
+function smsSchluesselErzeugen() {
+  var schluessel = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, "");
+  PropertiesService.getScriptProperties().setProperty("SMS_SCHLUESSEL", schluessel);
+  Logger.log("Neuer SMS_SCHLUESSEL (in die Weiterleitungs-App kopieren): " + schluessel);
+}
+
+// Prüft den SMS-Schlüssel. Bewusst ohne Sperre nach Fehlversuchen: Der Schlüssel hat 64 zufällige Zeichen und ist
+// nicht zu erraten. Eine Sperre würde nur Fremden erlauben, echte SMS zu blockieren (das Skript antwortet der
+// Weiterleitungs-App immer mit "erfolgreich", sie würde es nicht nochmal versuchen).
+function pruefeSmsSchluessel_(schluessel) {
+  var soll = PropertiesService.getScriptProperties().getProperty("SMS_SCHLUESSEL");
+  if (!soll) return "fehlt";
+  return String(schluessel || "") === soll ? "ok" : "falsch";
+}
+
+// Sucht die Spalten des Blatts "SMS" über die Kopfzeile
+function smsSpalten_(blatt) {
+  var kopf = blatt.getRange(1, 1, 1, blatt.getLastColumn()).getValues()[0]
+    .map(function (h) { return String(h).trim().toLowerCase(); });
+  var sp = {};
+  for (var i = 0; i < SMS_KOPF_.length; i++) {
+    sp[SMS_KOPF_[i]] = kopf.indexOf(SMS_KOPF_[i]);
+    if (sp[SMS_KOPF_[i]] === -1) return null;
+  }
+  sp.breite = kopf.length;
+  return sp;
+}
+
+// Legt eine Kontowecker-SMS als "offen" ab. Antwortet nur mit ok oder Fehler, nie mit Daten.
+function smsAnnehmen_(data) {
+  var status = pruefeSmsSchluessel_(data.schluessel);
+  if (status === "fehlt") return { error: "schluessel", message: "SMS_SCHLUESSEL fehlt" };
+  if (status !== "ok") return { error: "schluessel", message: "Schlüssel falsch" };
+
+  // Zeilen der SMS mit " | " trennen, damit die App sie später wiederfindet; danach wie jeder Text schützen
+  var text = bereinigeText_(String(data.text == null ? "" : data.text).replace(/\s*[\r\n]+\s*/g, " | "), 640);
+  var absender = bereinigeText_(data.von, 40);
+  if (!text) return { error: "eingabe", message: "Text fehlt" };
+
+  var zeit = Number(data.zeit);
+  var jetzt = new Date();
+  var gesendet = (isFinite(zeit) && zeit > 0) ? new Date(zeit) : jetzt;
+  if (isNaN(gesendet.getTime()) || Math.abs(gesendet.getTime() - jetzt.getTime()) > 400 * 86400000) gesendet = jetzt;
+
+  var summe = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,
+    absender + "|" + String(data.zeit) + "|" + text, Utilities.Charset.UTF_8)
+    .map(function (b) { return ("0" + (b & 255).toString(16)).slice(-2); }).join("");
+  summe = "s" + summe;  // Buchstabe davor, damit das Sheet die Prüfsumme nie als Zahl liest
+
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) return { error: "ausgelastet", message: "Script ausgelastet" };
+  try {
+    var blatt = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BLATT_SMS_);
+    if (!blatt) return { error: "blatt", message: "Blatt 'SMS' fehlt. Bitte im Editor einmal 'einrichten' ausführen." };
+    var sp = smsSpalten_(blatt);
+    if (!sp) return { error: "blatt", message: "Im Blatt 'SMS' fehlen Spalten in Zeile 1." };
+
+    // Doppelte SMS (die Weiterleitungs-App versucht es bei Fehlern neu): in den letzten 500 Zeilen suchen
+    var letzte = blatt.getLastRow();
+    if (letzte >= 2) {
+      var ab = Math.max(2, letzte - 499);
+      var summen = blatt.getRange(ab, sp.pruefsumme + 1, letzte - ab + 1, 1).getValues();
+      for (var i = 0; i < summen.length; i++) {
+        if (String(summen[i][0]) === summe) return { ok: true };
+      }
+    }
+
+    // Höchstens SMS_PRO_TAG_ SMS am Tag
+    var cache = CacheService.getScriptCache();
+    var tagKey = "sms_tag_" + Utilities.formatDate(jetzt, Session.getScriptTimeZone(), "yyyyMMdd");
+    var anzahl = Number(cache.get(tagKey) || 0);
+    if (anzahl >= SMS_PRO_TAG_) return { error: "grenze", message: "Zu viele SMS heute" };
+
+    var zeile = [];
+    for (var k = 0; k < sp.breite; k++) zeile.push("");
+    zeile[sp.id] = Utilities.getUuid();
+    zeile[sp.empfangen_am] = jetzt;
+    zeile[sp.gesendet_am] = gesendet;
+    zeile[sp.absender] = absender;
+    zeile[sp.text] = text;
+    zeile[sp.pruefsumme] = summe;
+    zeile[sp.status] = "offen";
+    blatt.getRange(letzte + 1, 1, 1, sp.breite).setValues([zeile]);
+    SpreadsheetApp.flush();
+    cache.put(tagKey, String(anzahl + 1), 86400);
+    return { ok: true };
+  } finally {
+    lock.releaseLock();
+  }
 }
