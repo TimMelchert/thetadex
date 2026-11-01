@@ -1,4 +1,4 @@
-// Reiter Finanzen: Liste „Noch zuordnen“ mit den offenen Kontowecker-SMS (Etappe 9, docs/PLAN-ETAPPE-9.md).
+// Reiter Finanzen: Liste „Noch zuordnen“ mit den offenen Kontowecker-SMS (Etappe 9, docs/STAND.md Abschnitt 4 „Kontowecker“).
 // Die SMS kommen vom Finanz-Skript (Aktion smsListe) und liegen nur im Arbeitsspeicher, nie im Gerät.
 // Die App schlägt eine Buchung vor; gebucht wird erst, wenn die Person im Formular auf Ausgabe oder Einnahme tippt.
 
@@ -67,6 +67,7 @@ export function smsBereich(beiAnzahl, uebernehmen) {
                 } catch (e) {
                     meldung.textContent = 'NICHT verworfen: ' + e.message;
                     verwerfen.disabled = false;
+                    if (e.code === 'erledigt') laden();
                 }
             });
             liste.append(el('li', { class: 'sms-eintrag' }, [
