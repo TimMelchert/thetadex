@@ -1,6 +1,6 @@
 # Plan Etappe 9 „Kontowecker“ (1.1.x)
 
-Stand: 1.11.2026, Entwurf zur Abstimmung (Schritt 9.0, Version 1.0.0 → 1.1.0).
+Stand: 1.11.2026, mit den Antworten der Person (Schritt 9.0, Version 1.0.0 → 1.1.1).
 Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelöscht.
 Grundlage: STAND.md 1.2, 1.5, 1.6, 2.2, 4 („Kontowecker“, „Finanzen: keine Finanzdaten öffentlich“) und 7.2 (Etappe 9).
 
@@ -41,7 +41,8 @@ nur dieser Absender            als „offen“ ab, sonst nichts
 - Sie leitet nur echte SMS weiter, keine RCS-Chats. Kontowecker-Nachrichten der Bank sind normale SMS.
 
 Alternativen, falls F-Droid nicht gewünscht ist: **MacroDroid** (Play Store, einfach, aber Werbung und nicht offen) oder **Tasker** (kostet, kompliziert).
-Für beide gilt derselbe Aufbau (Aktion `sms`, Schlüssel im Inhalt). Die Wahl trifft die Person (Rückfrage 1).
+Für beide gilt derselbe Aufbau (Aktion `sms`, Schlüssel im Inhalt).
+**Entscheidung der Person (1.11.2026): „SMS to URL Forwarder“ über F-Droid.**
 
 ### Vorlage in der Weiterleitungs-App
 
@@ -88,33 +89,38 @@ Das Blatt legt die Funktion `einrichten` an (bestehende Blätter bleiben unverä
 
 ## Vorschlag für die Buchung
 
-Die App liest aus dem Text mit allgemeinen Mustern (ohne Bankname im Code):
-- **Betrag:** zum Beispiel `12,34 EUR`, `EUR 12,34`, `-12,34 €`, `1.234,56`.
-- **Ein oder Aus:** Wörter wie „Gutschrift“, „Eingang“, „Zahlungseingang“ oder `+` → Ein; „Belastung“, „Abbuchung“, „Lastschrift“, „Kartenzahlung“ oder `-` → Aus.
-- **Datum:** ein Datum im Text (`TT.MM.JJJJ` oder `TT.MM.`), sonst das Datum der SMS.
-- **Konto:** Vorgabe `Konto` (Rückfrage 4).
+Aufbau der Kontowecker-SMS (nach zwei abgeänderten Beispielen der Person im Chat, 1.11.2026; Bankname und Texte stehen nicht im Code):
+eine Kopfzeile, dann eine Zeile `<Gegenseite>: <Betrag> EUR`, dann eine Zeile mit dem neuen Saldo, dann ein Gruß.
+Die Gegenseite ist gekürzt (zum Beispiel ein Händlername mit Abkürzung).
+
+Die App liest daraus:
+- **Betrag:** aus der ersten Zeile der Form `<Text>: <Betrag> EUR`, die nicht den Saldo nennt (Betrag mit Komma, Tausender mit Punkt).
+  Die Saldo-Zeile wird nicht benutzt.
+- **Ein oder Aus:** Minus vor dem Betrag → Aus, ohne Vorzeichen → Ein.
+- **Zweck:** Vorschlag ist die Gegenseite, solange kein Suchwort passt (siehe unten).
+- **Datum:** das Datum der SMS (die SMS nennt keins).
+- **Konto:** immer `Konto` (Girokonto). Die Kreditkarte ist dieselbe Karte, eigene SMS dafür gibt es nicht (Antwort der Person, 1.11.2026).
 - **Zweck und Kategorie:** aus einer neuen Liste `sms` im bestehenden Blatt `Einstellungen` (keine neuen Spalten):
   `liste` = `sms`, `name` = Suchwort (zum Beispiel ein Händler), `zweck`, `kategorie`. Kommt das Suchwort im Text vor, füllt die App Zweck und Kategorie aus.
   Ohne Treffer bleiben sie leer und die Person wählt wie gewohnt.
 
-Kann die App keinen Betrag finden, zeigt sie nur den Text und ein leeres Formular. Die Muster passt der Agent an,
-sobald die Person zwei abgeänderte Beispiel-SMS im Chat geschickt hat (Rückfrage 2).
+Kann die App keinen Betrag finden (anderer Aufbau), zeigt sie nur den Text und ein leeres Formular. Es geht nichts verloren.
 
 ## Schritte
 
 Jeder Schritt = ein Zweig = ein Pull Request.
 
-- **9.0 Plan** (1.1.0): diese Datei, STAND.md auf Etappe 9.
-- **9.1 Skript: SMS annehmen** (1.1.1) – `apps-script/finanzen/Code.gs`:
+- **9.0 Plan** (1.1.0, mit Antworten 1.1.1): diese Datei, STAND.md auf Etappe 9.
+- **9.1 Skript: SMS annehmen** (1.1.2) – `apps-script/finanzen/Code.gs`:
   Aktion `sms` (vor der Passwort-Prüfung, nur mit `SMS_SCHLUESSEL`), Blatt `SMS` in `einrichten`, Funktion `smsSchluesselErzeugen`
   (legt den Schlüssel an und zeigt ihn einmal im Protokoll). Dazu eine Anleitung im Pull Request: Weiterleitungs-App installieren und einrichten,
   Test-SMS mit dem Knopf „Test“ der App. Die App Thetadex ändert sich in diesem Schritt nicht.
-- **9.2 Noch zuordnen** (1.1.2) – Skript: Aktionen `smsListe` (offene SMS, mit Passwort) und `smsErledigt` (verwerfen);
+- **9.2 Noch zuordnen** (1.1.3) – Skript: Aktionen `smsListe` (offene SMS, mit Passwort) und `smsErledigt` (verwerfen);
   `buchen` nimmt zusätzlich `sms_id` an und setzt die SMS im selben Lauf auf „gebucht“ (eine Sperre, kein halbes Ergebnis).
   App (`js/views/finanzen.js`, neue Datei `js/views/finanzen-sms.js`): Karte „Noch zuordnen (3)“ oben im Reiter Finanzen,
   je SMS Text, Vorschlag, Knöpfe „Buchen…“ (öffnet das bekannte Buchungsformular, vorausgefüllt) und „Verwerfen“ (mit Nachfrage).
-- **9.3 Suchwörter** (1.1.3): Liste `sms` aus dem Blatt `Einstellungen` für Zweck und Kategorie; Muster nach den Beispiel-SMS feinstellen.
-- **9.4 Abschluss** (1.1.4): kurze Prüfung Sicherheit und Datenschutz der Etappe (Bericht nur in den Projektdateien), Plan in STAND.md einarbeiten, diese Datei löschen.
+  Dazu die Suchwörter (Liste `sms` im Blatt `Einstellungen`) für Zweck und Kategorie.
+- **9.3 Abschluss** (1.1.4): kurze Prüfung Sicherheit und Datenschutz der Etappe (Bericht nur in den Projektdateien), Plan in STAND.md einarbeiten, diese Datei löschen.
 
 ## Prüfung gegen die Grundsätze (1.2)
 
@@ -123,11 +129,10 @@ Jeder Schritt = ein Zweig = ein Pull Request.
 - Geht es einfacher? Direkt buchen ohne Bestätigung wäre weniger Tippen, aber falsche Muster würden still falsche Buchungen erzeugen.
   Mit Vorschlag und einem Tipp bleibt das Sheet richtig. Ein eigenes Sheet für SMS wäre mehr Einrichtung ohne Gewinn.
 
-## Rückfragen an die Person
+## Antworten der Person (1.11.2026)
 
-1. Passt „SMS to URL Forwarder“ über F-Droid (siehe oben), oder lieber MacroDroid aus dem Play Store?
-2. Bitte zwei Kontowecker-SMS **abgeändert** in den Chat schicken (eine Abbuchung, ein Eingang): Beträge, Namen und Kontonummern ändern,
-   den Aufbau und die Wörter gleich lassen. Sie kommen nie ins Repo.
-3. Vorschlag zum Bestätigen statt automatisch buchen: passt das?
-4. Kommen Kontowecker-SMS nur für das Girokonto (Blatt `Konto`), oder auch für die Kreditkarte?
-5. Text nach der Zuordnung aus dem Blatt `SMS` löschen (Vorschlag) oder aufheben?
+1. App: „SMS to URL Forwarder“ über F-Droid ist in Ordnung.
+2. Zwei abgeänderte Beispiel-SMS kamen im Chat (nicht im Repo). Aufbau siehe „Vorschlag für die Buchung“.
+3. Immer mit Prüfung: Vorschlag zum Bestätigen, nie automatisch buchen.
+4. Nur das Girokonto (Blatt `Konto`).
+5. SMS-Text nach der Zuordnung löschen.

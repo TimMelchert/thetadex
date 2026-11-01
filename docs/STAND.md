@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.1.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.1.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -14,7 +14,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
 - Etappe 7 „Umstieg und Aufräumen“ ist fertig (1.11.2026). Die alten Apps sind abgelöst.
 - Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0.
-- Etappe 9 „Kontowecker“ (1.1.x) läuft: Plan in `docs/PLAN-ETAPPE-9.md` (Schritt 9.0), wartet auf die Antworten der Person. Nächster Schritt: 9.1.
+- Etappe 9 „Kontowecker“ (1.1.x) läuft: Plan in `docs/PLAN-ETAPPE-9.md` (Schritt 9.0), Antworten der Person eingearbeitet (1.1.1). Nächster Schritt: 9.1.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -530,7 +530,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Dafür gibt es einen eigenen Schlüssel `SMS_SCHLUESSEL` in den Skripteigenschaften. Er darf nur eine SMS als „offen“ ablegen,
   nichts lesen und nichts buchen. Liegt der Schlüssel in der fremden App, verrät er also keine Daten.
   Die App zeigt die offenen SMS im Reiter Finanzen, die Person ordnet sie zu. Die Wahl der Automations-App trifft die Person in Etappe 9.
-  Empfehlung im Plan (1.11.2026): „SMS to URL Forwarder“ (offen, ohne Werbung und Tracker, über F-Droid), Vorschlag zum Bestätigen statt automatisch buchen.
+  Entscheidung der Person (1.11.2026): „SMS to URL Forwarder“ (offen, ohne Werbung und Tracker, über F-Droid), immer Vorschlag zum Bestätigen, nur Girokonto, SMS-Text nach der Zuordnung löschen.
 
 ---
 
@@ -778,3 +778,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **Etappe 8** Prüfen und Version 1.0.0. **0.8.0** Behebungen Sicherheit: eigene Döner-Adresse geht vor fremdem Link, Hinweis bei fremdem Rahmen. **0.8.1** Behebungen Datenschutz: alte Kategorie-Felder aus dem Finanz-Skript, ehrliche Texte zum Gerät, Hinweis bei Döner, keine internen Fehlertexte ohne Passwort. **0.8.2** Behebungen Geschwindigkeit: Service Worker holt neue Dateien frisch vom Server, Suche in Besitz flüssiger. **0.8.3** Behebungen Barrierefreiheit: Schalter bei Pen & Paper mit Namen und sichtbarem Fokus, Nachbarmonat im Uni-Monat lesbar, Unterreiter brechen bei schmalen Handys um. **0.8.4** Rechtliches: `LIZENZEN.md` mit den MIT-Lizenztexten, Hinweis unter Info. Kein Impressum und keine Datenschutzerklärung nötig (Döner-Link nur an Freunde, Entscheidung der Person, 1.11.2026).
 - **1.0.0** Prüfung Datensicherung (nur Bericht, nichts zu bauen), alle Skripte im Editor aktuell. Etappe 8 abgeschlossen, Version 1.0.0 (Entscheidung der Person, 1.11.2026).
 - **Etappe 9** Kontowecker. **1.1.0** Schritt 9.0: Plan `docs/PLAN-ETAPPE-9.md` (SMS-Weiterleitung mit „SMS to URL Forwarder“, Blatt `SMS`, Liste „Noch zuordnen“ mit Vorschlag).
+- **1.1.1** Antworten zum Plan: App über F-Droid, immer mit Prüfung, nur Girokonto, SMS-Text nach Zuordnung löschen; Aufbau der SMS nach zwei abgeänderten Beispielen.
