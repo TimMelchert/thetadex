@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.0.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.1.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -13,7 +13,8 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
 - Etappe 7 „Umstieg und Aufräumen“ ist fertig (1.11.2026). Die alten Apps sind abgelöst.
-- Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0. Nächste: Etappe 9 „Kontowecker“ (1.1.x).
+- Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0.
+- Etappe 9 „Kontowecker“ (1.1.x) läuft: Plan in `docs/PLAN-ETAPPE-9.md` (Schritt 9.0), wartet auf die Antworten der Person. Nächster Schritt: 9.1.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -529,6 +530,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Dafür gibt es einen eigenen Schlüssel `SMS_SCHLUESSEL` in den Skripteigenschaften. Er darf nur eine SMS als „offen“ ablegen,
   nichts lesen und nichts buchen. Liegt der Schlüssel in der fremden App, verrät er also keine Daten.
   Die App zeigt die offenen SMS im Reiter Finanzen, die Person ordnet sie zu. Die Wahl der Automations-App trifft die Person in Etappe 9.
+  Empfehlung im Plan (1.11.2026): „SMS to URL Forwarder“ (offen, ohne Werbung und Tracker, über F-Droid), Vorschlag zum Bestätigen statt automatisch buchen.
 
 ---
 
@@ -563,7 +565,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper.
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-9.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`).
@@ -683,7 +685,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     in den Projektdateien (`apps-script-backup/`) aktuell ist, was bei Verlust des Handys verloren wäre. Keine Anleitung „neues Handy“ (Entscheidung der Person).
     Ergebnis (Bericht `pruefung/datensicherung-bericht.md`): nichts zu bauen, keine zusätzliche Sicherung (Entscheidung der Person, 1.11.2026).
   - **Version 1.0.0:** `docs/STAND.md` auf den Stand bringen, Version 1.0.0 in `js/config.js` und `sw.js`.
-- **Etappe 9 „Kontowecker“ (1.1.x)** – geplant (Wunsch der Person, 1.11.2026).
+- **Etappe 9 „Kontowecker“ (1.1.x)** – läuft, Plan in `docs/PLAN-ETAPPE-9.md` (Wunsch der Person, 1.11.2026).
   - Kontowecker-SMS automatisch an das Finanz-Skript (Vorschlag in 4, Aktion `sms` mit `SMS_SCHLUESSEL`), danach im Reiter Finanzen eine Übersicht „Noch zuordnen“.
   - Die Person wählt vorher die Automations-App. Die Prüfungen aus Etappe 8 gelten auch für diese Etappe (neuer Schlüssel, neue fremde App).
 - **Entfallen:** Startseite mit Heute-Übersicht (Entscheidung der Person, 1.11.2026).
@@ -775,3 +777,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.7.4** Etappe 7 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-7.md` gelöscht, STAND.md aufgeräumt (7.1 gekürzt, Geschichte geordnet).
 - **Etappe 8** Prüfen und Version 1.0.0. **0.8.0** Behebungen Sicherheit: eigene Döner-Adresse geht vor fremdem Link, Hinweis bei fremdem Rahmen. **0.8.1** Behebungen Datenschutz: alte Kategorie-Felder aus dem Finanz-Skript, ehrliche Texte zum Gerät, Hinweis bei Döner, keine internen Fehlertexte ohne Passwort. **0.8.2** Behebungen Geschwindigkeit: Service Worker holt neue Dateien frisch vom Server, Suche in Besitz flüssiger. **0.8.3** Behebungen Barrierefreiheit: Schalter bei Pen & Paper mit Namen und sichtbarem Fokus, Nachbarmonat im Uni-Monat lesbar, Unterreiter brechen bei schmalen Handys um. **0.8.4** Rechtliches: `LIZENZEN.md` mit den MIT-Lizenztexten, Hinweis unter Info. Kein Impressum und keine Datenschutzerklärung nötig (Döner-Link nur an Freunde, Entscheidung der Person, 1.11.2026).
 - **1.0.0** Prüfung Datensicherung (nur Bericht, nichts zu bauen), alle Skripte im Editor aktuell. Etappe 8 abgeschlossen, Version 1.0.0 (Entscheidung der Person, 1.11.2026).
+- **Etappe 9** Kontowecker. **1.1.0** Schritt 9.0: Plan `docs/PLAN-ETAPPE-9.md` (SMS-Weiterleitung mit „SMS to URL Forwarder“, Blatt `SMS`, Liste „Noch zuordnen“ mit Vorschlag).
