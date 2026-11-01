@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.6.10** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.6.12** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
@@ -12,7 +12,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
-- Nächster Schritt: Etappe 7 „Ausbau“ (freiwillig, 7.2) oder neue Wünsche der Person. Vor Etappe 7 kommt ihr eigener Plan.
+- Nächster Schritt: Etappe 7 „Umstieg und Aufräumen“ (7.2). Vor Etappe 7 kommt ihr eigener Plan. Danach Etappe 8 „Prüfen und Version 1.0.0“ und Etappe 9 „Kontowecker“.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -200,7 +200,7 @@ unter „Info“ die Version prüfen.
   Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“)
   und `#/doener/<skript>` (öffentliche Döner-Bewertung, siehe 4 „Döner öffentlich“).
   Unbekannte Adressen zeigen „Seite nicht gefunden“.
-- Startseite: Karteikarte mit den farbigen Reitern (`icons/thetadex-karte.svg`, ohne dunklen Grund) und Kacheln aller sichtbaren Reiter. Eine Heute-Übersicht (Termine, Einkauf) kommt in Etappe 7.
+- Startseite: Karteikarte mit den farbigen Reitern (`icons/thetadex-karte.svg`, ohne dunklen Grund) und Kacheln aller sichtbaren Reiter. Eine Heute-Übersicht gibt es nicht (Entscheidung der Person, 1.11.2026).
 - Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter es gibt, steht in `js/config.js` (`features`).
   Sichtbar ist ein Reiter nur, wenn die Adresse seines Skripts eingetragen ist (`BEREICHE[].skript`, ab 0.4.8): Tracking `tracking`, Finanzen `finanzen`,
   Pen & Paper (Kennung `dsa`) `dsa` (ab 6.1), Einkauf und Uni `gemeinsam`, Besitz `leben`. Döner ist immer da.
@@ -347,13 +347,13 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
-- **ToDo für die Person (Umstieg, Tor von Etappe 2):** Nach etwa zwei Wochen nur mit Thetadex, wenn alles passt:
+- **ToDo für die Person (Umstieg, Tor von Etappe 2):** Nach etwa zwei Wochen nur mit Thetadex, wenn alles passt (in Etappe 7 mit genauer Anleitung):
   1. Im Apps-Script-Editor je Sheet (Tracking, Finanzen): Bereitstellen → Bereitstellungen verwalten → **alte** Bereitstellung → Archivieren.
   2. Alte Apps vom Startbildschirm entfernen.
   3. Alte Repos `Tracking-Leben` und `App-Finazen-Tabelle` löschen: GitHub → Repo → Settings → ganz unten „Delete this repository“
      (die ZIP-Sicherung aus Schritt 0.0 bleibt).
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
-- Später als eigener Schritt (Entscheidung der Person, 30.10.2026): Kommentare in den Skripten, die auf gelöschte Plan-Dateien zeigen, aufräumen
+- In Etappe 7 (Entscheidung der Person, 30.10.2026 und 1.11.2026): Kommentare in den Skripten, die auf gelöschte Plan-Dateien zeigen, aufräumen
   (`apps-script/leben`, `gemeinsam` (zeigt noch auf `PLAN-ETAPPE-5.md`), `finanzen`, `tracking`, `dsa` (zeigt noch auf `PLAN-ETAPPE-6.md`)). Dann müssen die Skripte neu eingefügt werden.
 
 ---
@@ -525,11 +525,11 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Würfel** (W4, W6, W8, W10, W12, W20) rechnen nur im Gerät mit `crypto.getRandomValues`, ohne Verzerrung (passende Würfe werden neu gezogen). Nichts wird gespeichert.
 - **Woche am Handy:** im Hochformat ein schmales Raster mit 7 Spalten (nur Titel), darunter die Liste je Tag; im Querformat und am PC nur das Raster (Wunsch der Person, 31.10.2026).
   Eine Web-App kann das Drehen nicht erzwingen, darum ein Hinweis „Für die Woche das Handy drehen“.
-- **Kontowecker (Etappe 7):** Eine Web-App kann keine SMS lesen, E-Mail geht beim Kontowecker nicht. Die Person nutzt Android.
+- **Kontowecker (Etappe 9):** Eine Web-App kann keine SMS lesen, E-Mail geht beim Kontowecker nicht. Die Person nutzt Android.
   Vorschlag: Eine Automations-App auf dem Handy (zum Beispiel MacroDroid) schickt jede Kontowecker-SMS direkt an das Finanz-Skript (Aktion `sms`).
   Dafür gibt es einen eigenen Schlüssel `SMS_SCHLUESSEL` in den Skripteigenschaften. Er darf nur eine SMS als „offen“ ablegen,
   nichts lesen und nichts buchen. Liegt der Schlüssel in der fremden App, verrät er also keine Daten.
-  Die App zeigt die offenen SMS im Reiter Finanzen, die Person ordnet sie zu. Die Wahl der Automations-App trifft die Person in Etappe 7.
+  Die App zeigt die offenen SMS im Reiter Finanzen, die Person ordnet sie zu. Die Wahl der Automations-App trifft die Person in Etappe 9.
 
 ---
 
@@ -685,9 +685,33 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Würfel W4, W6, W20.
   - Die Eigenschaften sind eine Liste aus Kürzel, Name und Wert. So passt auch der DnD-Bogen (STR, DEX …) ohne Sonderbau.
   - Teilen per Link ohne Passwort, nur lesen (4 „DSA teilen“).
-- **Etappe 7 „Ausbau“ (optional)**
-  - Startseite mit Heute-Übersicht (heutige Termine, Einkaufsliste).
-  - Kontowecker automatisch auslesen (Vorschlag in 4), danach im Reiter Finanzen eine Übersicht „Noch zuordnen“.
+- **Etappe 7 „Umstieg und Aufräumen“ (0.7.x)** – geplant (Wunsch der Person, 1.11.2026). Aufräumen kommt vor dem Prüfen,
+  damit Etappe 8 den sauberen Stand prüft (Entscheidung der Person, 1.11.2026).
+  - **Umstieg (Tor von Etappe 2, 3.2):** alte Bereitstellungen archivieren, alte Apps vom Startbildschirm, alte Repos löschen.
+    Claude schreibt dafür eine genaue Anleitung mit allen Klicks; die Person macht es von Hand. Vorher prüft Claude, dass nichts mehr die alten Adressen braucht.
+  - **Ungenutztes:** Funktionen, CSS-Regeln, Dateien, Einträge in `HUELLE` und Skript-Aktionen, die nichts mehr nutzt. Erst Bericht (1.10), dann löschen.
+  - **Kommentare und Verweise:** Kommentare in App und Skripten, die auf gelöschte Pläne oder alte Stände zeigen (3.2), falsche Links und Abschnittsnummern.
+    Die Skripte muss die Person danach neu einfügen.
+- **Etappe 8 „Prüfen und Version 1.0.0“ (0.8.x → 1.0.0)** – geplant (Wunsch der Person, 1.11.2026). Jede Prüfung nach 1.10: erst Bericht in den Projektdateien
+  (`pruefung/<thema>-bericht.md`, nie im Repo), dann baut Claude nur, was die Person freigibt. Je Prüfung ein Schritt, Behebungen als eigene Schritte.
+  - **Sicherheit:** alle Skripte (`doener`, `finanzen`, `tracking`, `leben`, `gemeinsam`, `dsa`) und die App. Wer darf was (Rollen, geteilte Links),
+    böse Eingaben, Sperre nach Fehlversuchen, Content-Security-Policy, Links und Bilder aus Daten, was im Gerät liegt.
+  - **Barrierefreiheit:** nach WCAG 2.2, Stufe AA. Kontrast hell und dunkel, Bedienung mit Tastatur, Beschriftungen für Bildschirmleser,
+    Tippflächen, Zoom bis 200 %. Bildschirmleser auf echten Geräten prüft die Person.
+  - **Datenschutz:** welche Daten wo liegen (Sheet, Gerät, Drive), wer sie sieht, was öffentlich ist (Döner, geteilte Bögen, Repo),
+    ob etwas Persönliches im öffentlichen Repo oder in seiner Geschichte steht.
+  - **Rechtliches:** ob die App ein Impressum oder eine Datenschutzerklärung braucht (privat, aber mit öffentlichem Döner-Reiter und geteilten Links),
+    Lizenzen fremder Teile (Chart.js in `vendor/`, Schriften, Symbole), Inhalte aus DSA und DnD (Regelwerke) und Bilder.
+    Claude ersetzt keine Rechtsberatung; der Bericht nennt, was unsicher ist.
+  - **Geschwindigkeit und ohne Netz:** Ladezeit, Größe der Hülle, was ohne Netz geht (Einkaufsliste, Uni) und welche Meldung sonst kommt.
+    Echte Ladezeiten am Handy prüft die Person.
+  - **Datensicherung:** ob sich jedes Sheet, Skript und die Bilder im Drive wiederherstellen lassen, ob die Sicherung der Skripte
+    in den Projektdateien (`apps-script-backup/`) aktuell ist, was bei Verlust des Handys verloren wäre. Keine Anleitung „neues Handy“ (Entscheidung der Person).
+  - **Version 1.0.0:** `docs/STAND.md` auf den Stand bringen, Version 1.0.0 in `js/config.js` und `sw.js`.
+- **Etappe 9 „Kontowecker“ (1.1.x)** – geplant (Wunsch der Person, 1.11.2026).
+  - Kontowecker-SMS automatisch an das Finanz-Skript (Vorschlag in 4, Aktion `sms` mit `SMS_SCHLUESSEL`), danach im Reiter Finanzen eine Übersicht „Noch zuordnen“.
+  - Die Person wählt vorher die Automations-App. Die Prüfungen aus Etappe 8 gelten auch für diese Etappe (neuer Schlüssel, neue fremde App).
+- **Entfallen:** Startseite mit Heute-Übersicht (Entscheidung der Person, 1.11.2026).
 
 Prüfung gegen die Grundsätze (1.2):
 - Welche Daten? Nur was die Person beschrieben hat. Über die Partnerin oder den Partner werden keine Daten gespeichert.
@@ -764,6 +788,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.6.8** Abenteuer und DM: Schalter Charakterbogen | Abenteuer | DM, Abenteuer mit Sessions je Charakter (auch im geteilten Link), DM mit Abenteuerideen und abschließbaren Abenteuern.
 - **0.6.9** Bilder je gespieltem Abenteuer (auch im geteilten Link), Marke DSA rechts und nur umrandet, größerer Schalter, Abenteuer ohne klebende Leiste.
 - **0.6.10** Etappe 6 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-6.md` gelöscht.
+- **0.6.11–0.6.12** Weitere Etappen geplant: 7 „Umstieg und Aufräumen“, 8 „Prüfen und Version 1.0.0“ (mit Geschwindigkeit und Datensicherung), 9 „Kontowecker“. Heute-Übersicht entfällt.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
