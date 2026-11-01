@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.7.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.7.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
@@ -12,7 +12,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
-- Etappe 7 „Umstieg und Aufräumen“ läuft, Plan in `docs/PLAN-ETAPPE-7.md`. Nächster Schritt: 7.1 Bericht „Ungenutztes und Verweise“. Danach Etappe 8 „Prüfen und Version 1.0.0“ und Etappe 9 „Kontowecker“.
+- Etappe 7 „Umstieg und Aufräumen“ läuft, Plan in `docs/PLAN-ETAPPE-7.md`. Zuerst macht die Person den Umstieg (7.4, Anleitung in den Projektdateien), danach 7.1 Bericht „Ungenutztes und Verweise“. Danach Etappe 8 „Prüfen und Version 1.0.0“ und Etappe 9 „Kontowecker“.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -790,6 +790,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.6.10** Etappe 6 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-6.md` gelöscht.
 - **0.6.11–0.6.12** Weitere Etappen geplant: 7 „Umstieg und Aufräumen“, 8 „Prüfen und Version 1.0.0“ (mit Geschwindigkeit und Datensicherung), 9 „Kontowecker“. Heute-Übersicht entfällt.
 - **Etappe 7** Umstieg und Aufräumen. **0.7.0** Schritt 7.0: Plan `docs/PLAN-ETAPPE-7.md` (Bericht Ungenutztes, App und Skripte aufräumen, Umstieg mit Anleitung).
+- **0.7.1** Antworten zum Plan: Umstieg zuerst (1.11.2026), Bericht nur privat, alte Zweige löschen, STAND.md mit aufräumen.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

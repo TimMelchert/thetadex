@@ -5,6 +5,14 @@ Drei Teile: **Ungenutztes** löschen, **Kommentare und Verweise** richtigstellen
 Regeln: STAND.md 1.2, 1.6, 1.10, 3.2 und 7.2 (Etappe 7).
 Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelöscht.
 
+Antworten der Person (1.11.2026, eingearbeitet in 0.7.1):
+- Der Umstieg (7.4) kommt zuerst, die Person macht ihn am 1.11.2026. Die alten Apps nutzt nur noch das Handy (installiert) und ein Lesezeichen,
+  keine Automation und keine anderen Menschen.
+- Der Bericht (7.1) liegt nur in den privaten Projektdateien, nie im Repo, damit niemand Schwachstellen öffentlich sieht.
+- Alte, schon gemergte Zweige im Repo `thetadex` werden gelöscht. Das macht Claude direkt auf GitHub (geht nicht in einem Pull Request),
+  nach Zusage der Person. Gemergte Zweige lassen sich im alten Pull Request mit „Restore branch“ zurückholen.
+- In 7.5 wird auch `docs/STAND.md` selbst aufgeräumt: veralteter Abschnitt 7.1 „Etappe 0 (jetzt)“ kürzen, Geschichte (8) in die richtige Reihenfolge.
+
 Was gleich bleibt:
 - Keine neuen Funktionen, kein neues Aussehen, keine neuen Daten, keine neuen Blätter oder Spalten.
 - Sheets bleiben, wie sie sind. Keine Script-Adresse ändert sich (nur „Neue Version“ der Thetadex-Bereitstellung, keine neue Bereitstellung).
@@ -23,7 +31,7 @@ Was gleich bleibt:
 
 Jeder Schritt mit Änderung im Repo ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Schritt prüft die Person.
 
-- **7.0 Plan** (0.6.12 → 0.7.0): diese Datei. Sheet und Skript bleiben unverändert.
+- **7.0 Plan** (0.6.12 → 0.7.0, Antworten 0.7.1): diese Datei. Sheet und Skript bleiben unverändert.
 
 - **7.1 Bericht „Ungenutztes und Verweise“** (ohne Pull Request, ohne neue Version)
   - Datei `pruefung/ungenutztes-bericht.md` in den Projektdateien, nie im Repo (STAND.md 1.10).
@@ -36,13 +44,13 @@ Jeder Schritt mit Änderung im Repo ist ein eigener Zweig und ein eigener Pull R
   - Je Fund: Ort, was es ist, Vorschlag (löschen, behalten, Kommentar ändern), Risiko. Die Person kreuzt an, was weg darf.
   - Etwas, das sicher noch gebraucht wird (zum Beispiel alte Spalten für Daten im Sheet), bleibt und steht im Bericht mit Grund.
 
-- **7.2 App aufräumen** (0.7.0 → 0.7.1)
+- **7.2 App aufräumen** (0.7.1 → 0.7.2)
   - Löschen, was die Person in 7.1 freigegeben hat (JS, CSS, Dateien, `HUELLE`).
   - Kommentare und Verweise in `js/`, `css/`, `index.html`, `sw.js` und `README.md` richtigstellen.
   - Die App sieht danach genauso aus und tut dasselbe. Sheet und Skript bleiben unverändert.
   - Prüfliste: jeder Reiter einmal öffnen, je eine Sache speichern, die man ohnehin speichern wollte.
 
-- **7.3 Skripte aufräumen** (0.7.1 → 0.7.2)
+- **7.3 Skripte aufräumen** (0.7.2 → 0.7.3)
   - Alle Änderungen an `.gs`-Dateien in einem Schritt, damit die Person jedes Skript nur einmal neu einfügt.
   - Freigegebene Aktionen und Hilfsfunktionen löschen, Kommentare richtigstellen (STAND.md 3.2).
   - Nur Skripte, die sich wirklich ändern, kommen in „Von Hand zu erledigen“ (STAND.md 1.6): Datei ersetzen,
@@ -50,10 +58,10 @@ Jeder Schritt mit Änderung im Repo ist ein eigener Zweig und ein eigener Pull R
   - Danach je Skript „Verbindung prüfen“ unter Einstellungen.
 
 - **7.4 Umstieg** (ohne Pull Request; die Person macht es von Hand)
-  - Wann: wenn die Person mit Thetadex zufrieden ist. Richtwert zwei Wochen nach Etappe 2, also ab etwa 13.11.2026 (STAND.md 7.2, Etappe 2 „Tor“).
+  - Wann: am 1.11.2026, vor 7.1 (Entscheidung der Person; der Richtwert zwei Wochen aus STAND.md 7.2 entfällt).
   - Vorher prüft Claude: In Thetadex steht keine alte Adresse (Thetadex speichert Adressen nur im Gerät, die Person trägt die neuen ein).
     In den alten Repos steht nichts, was Thetadex noch fehlt. Die Sicherung der Skripte in den Projektdateien ist aktuell.
-  - Claude schreibt die Anleitung `etappe-7/umstieg-anleitung.md` in die Projektdateien, mit allen Klicks:
+  - Claude schreibt die Anleitung `etappe-7/umstieg-anleitung.md` in die Projektdateien, mit allen Klicks (dazu: alte Lesezeichen löschen):
     1. Tracking-Sheet und Finanz-Sheet: Erweiterungen → Apps Script → Bereitstellen → Bereitstellungen verwalten → die **alte** Bereitstellung → Archivieren.
        Woran man die alte erkennt (Datum, Beschreibung) steht in der Anleitung.
     2. Danach in Thetadex: Tracking und Finanzen einmal öffnen und speichern (die neue Bereitstellung läuft weiter).
@@ -62,9 +70,9 @@ Jeder Schritt mit Änderung im Repo ist ein eigener Zweig und ein eigener Pull R
        Grund: Die alten Repos zeigen öffentlich die alten Script-Adressen. Nach Schritt 1 antworten diese Adressen nicht mehr.
   - Die Person meldet im Chat, wenn sie fertig ist.
 
-- **7.5 Abschluss** (0.7.2 → 0.7.3)
+- **7.5 Abschluss** (0.7.3 → 0.7.4)
   - Plan in `docs/STAND.md` einarbeiten und löschen. In STAND.md 3.2 den Umstieg und das Aufräumen als erledigt streichen.
-  - Abschnittsnummern und Verweise in STAND.md selbst prüfen.
+  - Abschnittsnummern und Verweise in STAND.md selbst prüfen. Abschnitt 7.1 „Etappe 0“ kürzen, Geschichte (8) ordnen.
   - Sheet und Skript bleiben unverändert.
 
 ## Datenschutz und Sicherheit
