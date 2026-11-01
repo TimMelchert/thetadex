@@ -332,7 +332,11 @@ function doPost(e) {
 
   // Ohne Passwort: nur ein geteilter Bogen, nur lesen
   if (data.action === "geteilt") {
-    try { return jsonOut_(geteilt_(data)); } catch (err) { return jsonOut_({ error: "server", message: String(err) }); }
+    try { return jsonOut_(geteilt_(data)); } catch (err) {
+      // Keine internen Fehlertexte nach außen, den genauen Text ins Protokoll
+      console.error(err);
+      return jsonOut_({ error: "server", message: "Fehler im Skript. Bitte später nochmal versuchen." });
+    }
   }
 
   var status = pruefePin_(data.pin);

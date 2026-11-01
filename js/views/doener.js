@@ -472,6 +472,7 @@ export function render(container, ctx) {
         el('label', { text: 'Begründung (freiwillig)', attrs: { for: 'doener-begruendung' } }),
         begruendungFeld,
         el('div', { class: 'lockfeld', attrs: { 'aria-hidden': 'true' } }, [lockFeld]),
+        el('p', { class: 'leise', text: 'Bitte keine Namen oder persönlichen Angaben. Bewertungen sind für alle sichtbar.' }),
         el('div', { class: 'doener-form-knoepfe' }, [
             sendenKnopf,
             el('button', { class: 'knopf knopf-zweit', text: 'Abbrechen', attrs: { type: 'button' }, on: { click: abbrechen } })

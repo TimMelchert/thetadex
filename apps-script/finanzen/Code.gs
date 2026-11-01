@@ -109,43 +109,6 @@ function getAnalyseData() {
     einGesamt: getIdx("Gesamteinnahmen"),
     bilanz: getIdx("Monatsbilanz"),
     budgetMonat: getIdx("Budget-Monat"),
-
-    // Ausgaben-Kategorien (-Out)
-    ausAllg: getIdx("Allgemein-Out"),
-    ausEssen: getIdx("Essen-Out"),
-    ausFreizeit: getIdx("Freizeit-Out"),
-    ausHygiene: getIdx("Hygiene-Out"),
-    ausSpenden: getIdx("Spenden-Out"),
-    ausStyle: getIdx("Style-Out"),
-    ausTechnik: getIdx("Technik-Out"),
-    ausWohnen: getIdx("Wohnen-Out"),
-    ausAbos: getIdx("Abos-Out"),
-    ausMobil: getIdx("Fortbewegung-Out"),
-    ausGeschenk: getIdx("Geschenke-Out"),
-    ausAktiv: getIdx("Aktivismus-Out"),
-    ausUrlaub: getIdx("Urlaub-Out"),
-    ausStudium: getIdx("Studium-Out"),
-    ausBank: getIdx("Bank-Out"),
-
-    // Einnahmen-Kategorien (-In)
-    einAllg: getIdx("Allgemein-In"),
-    einZuhause: getIdx("Zuhause-In"),
-    einStaat: getIdx("Staat-In"),
-    einTip: getIdx("Trinkgeld-In"),
-    einBank: getIdx("Bank-In"),
-    einOma: getIdx("Großeltern-In"),
-    einAbos: getIdx("Abos-In"),
-    einWohnen: getIdx("Wohnen-In"),
-    einMobil: getIdx("Fortbewegung-In"),
-    einJob: getIdx("Job-In"),
-
-    // Netto-Spalten
-    nAbos: getIdx("Netto-Abos"),
-    nWohnen: getIdx("Netto-Wohnen"),
-    nAllg: getIdx("Netto-Allgemein"),
-    nMobil: getIdx("Netto-Fortbewegung"),
-    nBank: getIdx("Netto-Bank"),
-    nEssen: getIdx("Netto-Essen"),
     nMonatsNetto: getIdx("Monatsnetto")
   };
 
@@ -175,49 +138,10 @@ function getAnalyseData() {
     kategorien: kategorienAus(v),
     jahr: roh(v, cols.jahr),
     monat: roh(v, cols.monat),
-
-    // Ausgaben Brutto (für Diagramme)
-    aus_Allg: num(v, cols.ausAllg),
-    aus_Essen: num(v, cols.ausEssen),
-    aus_Freizeit: num(v, cols.ausFreizeit),
-    aus_Hygiene: num(v, cols.ausHygiene),
-    aus_Spenden: num(v, cols.ausSpenden),
-    aus_Style: num(v, cols.ausStyle),
-    aus_Technik: num(v, cols.ausTechnik),
-    aus_Wohnen: num(v, cols.ausWohnen),
-    aus_Abos: num(v, cols.ausAbos),
-    aus_Mobil: num(v, cols.ausMobil),
-    aus_Geschenk: num(v, cols.ausGeschenk),
-    aus_Aktivismus: num(v, cols.ausAktiv),
-    aus_Urlaub: num(v, cols.ausUrlaub),
-    aus_Studium: num(v, cols.ausStudium),
-    aus_Bank: num(v, cols.ausBank),
     ausgabenGesamt: num(v, cols.ausGesamt),
     einnahmenGesamt: num(v, cols.einGesamt),
-
-    // Einnahmen
-    einAllg: num(v, cols.einAllg),
-    einZuhause: num(v, cols.einZuhause),
-    einStaat: num(v, cols.einStaat),
-    einTrinkgeld: num(v, cols.einTip),
-    einBank: num(v, cols.einBank),
-    einOma: num(v, cols.einOma),
-    einAbos: num(v, cols.einAbos),
-    einWohnen: num(v, cols.einWohnen),
-    einMobil: num(v, cols.einMobil),
-    einJob: num(v, cols.einJob),
-
-    // Bilanz & Budget
     bilanz: num(v, cols.bilanz),
     budgetMonat: num(v, cols.budgetMonat),
-
-    // Netto-Werte (für Balken und Kacheln)
-    nettoAbos: num(v, cols.nAbos),
-    nettoWohnen: num(v, cols.nWohnen),
-    nettoAllgemein: num(v, cols.nAllg),
-    nettoMobil: num(v, cols.nMobil),
-    nettoBank: num(v, cols.nBank),
-    nettoEssen: num(v, cols.nEssen),
     nettoGesamt: Math.abs(num(v, cols.nMonatsNetto))
   });
 

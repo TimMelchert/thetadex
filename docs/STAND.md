@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.8.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.8.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -13,7 +13,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
 - Etappe 7 „Umstieg und Aufräumen“ ist fertig (1.11.2026). Die alten Apps sind abgelöst.
-- Etappe 8 „Prüfen und Version 1.0.0“ (7.2) läuft: Berichte in den Projektdateien (`pruefung/`), Behebungen gesammelt in einem Pull Request (0.8.0). Danach Etappe 9 „Kontowecker“.
+- Etappe 8 „Prüfen und Version 1.0.0“ (7.2) läuft: Berichte in den Projektdateien (`pruefung/`), Behebungen gesammelt in einem Pull Request (0.8.x). Danach Etappe 9 „Kontowecker“.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -495,9 +495,9 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Die App speichert keine Rolle; die Rechte prüft immer das Skript.
 - **Farben der Arten im Uni-Kalender** (Wunsch der Person, Plan 7.2 und Etappe 5): Vorlesung, Prüfung, Arbeit, Zug, Urlaub, Hobby, Sonstiges und Semesterferien
   haben je eine Farbe (`--art-…` in `css/base.css`, hell und dunkel). Nur als Fläche, Streifen oder Punkt, Schrift darauf `--schrift-auf-farbe`.
-  Die Farben sind nach Helligkeit gestaffelt, damit sie auch ohne Farbsehen unterscheidbar sind (Wunsch der Person, 31.10.2026; die Partnerin sieht keine Farben):
+  Die Farben sind nach Helligkeit gestaffelt, damit sie auch ohne Farbsehen unterscheidbar sind (Wunsch der Person, 31.10.2026):
   Prüfung (Dunkelrot) und Hobby (Dunkelgrün) dunkel mit heller Schrift (`--art-…-schrift`), dann Vorlesung, Zug, Arbeit, Sonstiges, Urlaub immer heller. Kästen haben einen feinen Rand.
-  Knöpfe im Reiter Uni mindestens 44 px hoch, Schrift im Raster am Handy mindestens 0,7 rem. Linie „jetzt“ in Schriftfarbe (hell schwarz, dunkel weiß), nicht rot: die Partnerin sieht keine Farben (Wunsch der Person, 31.10.2026).
+  Knöpfe im Reiter Uni mindestens 44 px hoch, Schrift im Raster am Handy mindestens 0,7 rem. Linie „jetzt“ in Schriftfarbe (hell schwarz, dunkel weiß), nicht rot, damit sie auch ohne Farbsehen erkennbar ist (Wunsch der Person, 31.10.2026).
 - **Uni-Daten im Gerät** (Wunsch der Person, 30.10.2026): Die zuletzt geladenen Uni-Daten liegen im Gerät (`thetadex_uni`, ohne Rolle),
   damit Kalender und Module ohne Netz da sind. Dann steht „Stand von …“ da und es gibt keine Knöpfe zum Ändern. Abmelden löscht sie.
   Folge: Wer das entsperrte Handy hat, sieht den Uni-Kalender ohne Passwort (auch bei Partner*in).
@@ -770,4 +770,4 @@ Prüfung gegen die Grundsätze (1.2):
 - Umstieg (7.4) und Bericht (7.1) von der Person erledigt, alte Repos und Zweige gelöscht. **0.7.2** Schritt 7.2: Platzhalter, `etappe`, `#/einrichtung`, alte Art „frei“ und eine CSS-Regel entfernt, `README.md`.
 - **0.7.3** Schritt 7.3: Skripte aufräumen (Stundenplan-Umzug und „frei“ aus `gemeinsam`, Kommentare auf gelöschte Pläne in fünf Skripten).
 - **0.7.4** Etappe 7 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-7.md` gelöscht, STAND.md aufgeräumt (7.1 gekürzt, Geschichte geordnet).
-- **Etappe 8** Prüfen und Version 1.0.0. **0.8.0** Behebungen aus den Prüfungen (Sicherheit: eigene Döner-Adresse geht vor fremdem Link, Hinweis bei fremdem Rahmen).
+- **Etappe 8** Prüfen und Version 1.0.0. **0.8.0** Behebungen Sicherheit: eigene Döner-Adresse geht vor fremdem Link, Hinweis bei fremdem Rahmen. **0.8.1** Behebungen Datenschutz: alte Kategorie-Felder aus dem Finanz-Skript, ehrliche Texte zum Gerät, Hinweis bei Döner, keine internen Fehlertexte ohne Passwort.
