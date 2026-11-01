@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.1.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.1.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -784,3 +784,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.1.1** Antworten zum Plan: App über F-Droid, immer mit Prüfung, nur Girokonto, SMS-Text nach Zuordnung löschen; Aufbau der SMS nach zwei abgeänderten Beispielen.
 - **1.1.2** Schritt 9.1: Finanz-Skript nimmt Kontowecker-SMS an (Aktion `sms`, Blatt `SMS`, `smsSchluesselErzeugen`), Anleitung für die Weiterleitungs-App im Pull Request.
 - **1.1.3** Schritt 9.2: Reiter Finanzen → „Noch zuordnen“ mit Vorschlag (Übernehmen ins Formular, Verwerfen), Suchwörter aus `Einstellungen`, Skript-Aktionen `smsListe`, `smsErledigt`, `buchen` mit `sms_id`.
+- **1.1.4** Nachbesserung 9.2: Finanz-Skript schreibt bei `sms` „SMS angenommen“ oder „SMS abgelehnt: <Grund>“ ins Protokoll (Editor → Ausführungen), weil die Weiterleitungs-App immer „erfolgreich“ zeigt.

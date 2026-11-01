@@ -53,11 +53,17 @@ function doPost(e) {
   // Kontowecker-SMS von der Weiterleitungs-App: nur mit SMS_SCHLUESSEL, nicht mit dem Passwort.
   // Diese Aktion legt nur eine SMS als "offen" ab. Sie liest nichts und bucht nichts.
   if (data && data.action === "sms") {
+    var antwort;
     try {
-      return jsonOut_(smsAnnehmen_(data));
+      antwort = smsAnnehmen_(data);
     } catch (err) {
-      return jsonOut_({ error: "server", message: "Fehler beim Ablegen" });
+      antwort = { error: "server", message: "Fehler beim Ablegen: " + String(err) };
     }
+    // Die Weiterleitungs-App zeigt immer "erfolgreich". Den Grund für eine Ablehnung sieht man im Editor unter
+    // "Ausführungen" (Uhr links) beim Eintrag doPost. Ohne SMS-Inhalt, ohne Schlüssel.
+    if (antwort.error) console.warn("SMS abgelehnt: " + antwort.message);
+    else console.log("SMS angenommen");
+    return jsonOut_(antwort);
   }
 
   var status = pruefePin_(data.pin);
