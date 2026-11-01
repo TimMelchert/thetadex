@@ -91,7 +91,8 @@ export function render(container, ctx) {
         smsAktiv = null;
         smsHinweis.hidden = true;
     }
-    const sms = smsBereich((eintrag, v) => {
+    let beiSmsAnzahl = () => {};
+    const sms = smsBereich((n) => beiSmsAnzahl(n), (eintrag, v) => {
         smsAktiv = eintrag;
         konto.value = 'Konto';
         datum.value = eintrag.datum;
@@ -105,6 +106,7 @@ export function render(container, ctx) {
             (v ? ': Vorschlag ' + (v.mode === 'aus' ? 'Ausgabe' : 'Einnahme') + '. Prüfen, dann buchen.' : ': bitte ausfüllen, dann buchen.');
         smsHinweis.hidden = false;
         status.textContent = '';
+        zeigeModus('buchen');
         formular.scrollIntoView({ block: 'start', behavior: 'smooth' });
     });
 
@@ -185,30 +187,39 @@ export function render(container, ctx) {
     const neuLaden = el('button', { class: 'knopf knopf-zweit', text: 'Erneut laden', attrs: { type: 'button' }, on: { click: () => laden() } });
     neuLaden.hidden = true;
 
-    // Umschalter Buchen / Auswertung (wie bei Tracking und Döner)
-    const buchenBox = el('div', { attrs: { id: 'finanz-buchen' } }, [staende, sms.box, formular, neuLaden]);
+    // Umschalter Buchen / SMS / Auswertung (wie bei Tracking und Döner).
+    // „SMS“ (offene Kontowecker-SMS, „Noch zuordnen“) ist ein eigener Umschalter am Handy und auf schmalen Bildschirmen;
+    // auf breiten Bildschirmen steht die Liste rechts neben dem Formular (css/components.css). So passt „Buchen“ weiter auf einen Bildschirm.
+    const haupt = el('div', { class: 'finanz-haupt' }, [staende, formular, neuLaden]);
+    const buchenBox = el('div', { attrs: { id: 'finanz-buchen', 'data-modus': 'buchen' } }, [haupt, sms.box]);
     const auswertungBox = el('div', { attrs: { id: 'finanz-auswertung', hidden: true } });
     let auswertungTeil = null;
-    const ansichtKnoepfe = [['Buchen', buchenBox], ['Auswertung', auswertungBox]].map(([text, box], i) => {
+    const ansichtKnoepfe = [['Buchen', 'buchen', 'finanz-buchen'], ['SMS', 'sms', 'sms-karte'], ['Auswertung', 'auswertung', 'finanz-auswertung']].map(([text, modus, ziel], i) => {
         const b = el('button', {
-            class: 'ansicht', text,
-            attrs: { type: 'button', 'aria-pressed': i === 0 ? 'true' : 'false', 'aria-controls': box.id },
-            on: {
-                click: () => {
-                    ansichtKnoepfe.forEach(([k, kb]) => {
-                        const an = k === b;
-                        k.setAttribute('aria-pressed', an ? 'true' : 'false');
-                        kb.hidden = !an;
-                    });
-                    if (box !== auswertungBox || auswertungAktuell) return;
-                    auswertungAktuell = true;
-                    if (auswertungTeil) auswertungTeil.neuLaden();
-                    else auswertungTeil = auswertung(auswertungBox, () => einstellungen);
-                }
-            }
+            class: 'ansicht' + (modus === 'sms' ? ' ansicht-sms' : ''), text,
+            attrs: { type: 'button', 'aria-pressed': i === 0 ? 'true' : 'false', 'aria-controls': ziel },
+            on: { click: () => zeigeModus(modus) }
         });
-        return [b, box];
+        return [b, modus];
     });
+    const smsKnopf = ansichtKnoepfe[1][0];
+    smsKnopf.hidden = true;
+    function zeigeModus(modus) {
+        ansichtKnoepfe.forEach(([k, m]) => k.setAttribute('aria-pressed', m === modus ? 'true' : 'false'));
+        buchenBox.hidden = modus === 'auswertung';
+        auswertungBox.hidden = modus !== 'auswertung';
+        if (modus !== 'auswertung') buchenBox.dataset.modus = modus;
+        if (modus !== 'auswertung' || auswertungAktuell) return;
+        auswertungAktuell = true;
+        if (auswertungTeil) auswertungTeil.neuLaden();
+        else auswertungTeil = auswertung(auswertungBox, () => einstellungen);
+    }
+    // Anzahl offener SMS am Umschalter; ohne offene SMS verschwindet er
+    beiSmsAnzahl = (n) => {
+        smsKnopf.textContent = 'SMS (' + n + ')';
+        smsKnopf.hidden = n === 0;
+        if (n === 0 && buchenBox.dataset.modus === 'sms' && !buchenBox.hidden) zeigeModus('buchen');
+    };
 
     container.append(el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
         el('span', { class: 'titel-emoji', text: '💶', attrs: { 'aria-hidden': 'true' } }),
