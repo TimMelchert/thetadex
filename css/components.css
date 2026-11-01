@@ -1226,3 +1226,16 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
 .sms-hinweis span { flex: 1 1 200px; }
 .sms-hinweis .knopf { margin-top: 0; }
 .sms-karte .meldung:empty { display: none; }
+
+/* „Noch zuordnen“: schmal als eigener Umschalter „SMS“, breit rechts neben dem Formular (Wunsch der Person, 1.11.2026) */
+@media (max-width: 1199px) {
+    #finanz-buchen[data-modus="buchen"] .sms-karte { display: none; }
+    #finanz-buchen[data-modus="sms"] .finanz-haupt { display: none; }
+}
+@media (min-width: 1200px) {
+    .ansicht-sms { display: none; }
+    .inhalt:has(#finanz-buchen:not([hidden]) .sms-karte:not([hidden])) { max-width: 1040px; }
+    #finanz-buchen:has(.sms-karte:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--abstand); align-items: start; }
+    #finanz-buchen .sms-knoepfe { grid-template-columns: 1fr; }
+    #finanz-buchen .sms-karte { position: sticky; top: var(--abstand); max-height: calc(100vh - 2 * var(--abstand)); overflow-y: auto; }
+}

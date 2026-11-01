@@ -33,13 +33,13 @@ export function smsVorschlag(text, woerter = []) {
     return null;
 }
 
-// Baut die Karte „Noch zuordnen“. uebernehmen(sms, vorschlag) füllt das Buchungsformular.
+// Baut die Karte „Noch zuordnen“. beiAnzahl(n) meldet die Zahl offener SMS, uebernehmen(sms, vorschlag) füllt das Buchungsformular.
 // Liefert { box, laden(woerter), entfernen(id) }.
-export function smsBereich(uebernehmen) {
+export function smsBereich(beiAnzahl, uebernehmen) {
     const liste = el('ul', { class: 'sms-liste' });
     const titel = el('h2', { class: 'sms-titel', text: 'Noch zuordnen' });
     const meldung = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
-    const box = el('section', { class: 'karte sms-karte', attrs: { 'aria-labelledby': 'sms-titel', hidden: true } }, [titel, liste, meldung]);
+    const box = el('section', { class: 'karte sms-karte', attrs: { id: 'sms-karte', 'aria-labelledby': 'sms-titel', hidden: true } }, [titel, liste, meldung]);
     titel.id = 'sms-titel';
     let offen = [];
     let woerter = [];
@@ -48,6 +48,7 @@ export function smsBereich(uebernehmen) {
         leeren(liste);
         titel.textContent = 'Noch zuordnen (' + offen.length + ')';
         box.hidden = offen.length === 0 && !meldung.textContent;
+        beiAnzahl(offen.length);
         for (const sms of offen) {
             const v = smsVorschlag(sms.text, woerter);
             const datum = sms.datum.split('-').reverse().join('.');

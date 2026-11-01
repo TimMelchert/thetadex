@@ -123,7 +123,8 @@ Jeder Schritt = ein Zweig = ein Pull Request.
   je SMS Text, Vorschlag, Knöpfe „Buchen…“ (öffnet das bekannte Buchungsformular, vorausgefüllt) und „Verwerfen“ (mit Nachfrage).
   Dazu die Suchwörter (Liste `sms` im Blatt `Einstellungen`) für Zweck und Kategorie.
   Gebaut (1.1.3): „Übernehmen“ füllt das Formular (Konto, Datum der SMS, Betrag, Zweck, Kategorie) und zeigt darüber einen Hinweis mit „Abbrechen“;
-  gebucht wird mit „Ausgabe“ oder „Einnahme“ wie sonst. Die Liste steht zwischen Kontoständen und Formular und ist ohne offene SMS ausgeblendet.
+  gebucht wird mit „Ausgabe“ oder „Einnahme“ wie sonst. Ohne offene SMS ist alles ausgeblendet.
+  Ort (Wunsch der Person, 1.11.2026, 1.1.5): am Handy und unter 1200 px ein eigener Umschalter „SMS (n)“ neben Buchen und Auswertung, ab 1200 px rechts neben dem Formular. „Buchen“ passt so weiter auf einen Bildschirm.
 - **9.3 Abschluss** (1.1.4): kurze Prüfung Sicherheit und Datenschutz der Etappe (Bericht nur in den Projektdateien), Plan in STAND.md einarbeiten, diese Datei löschen.
 
 ## Prüfung gegen die Grundsätze (1.2)
