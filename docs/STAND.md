@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.1.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.1.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -542,7 +542,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     Die Weiterleitungs-App zeigt immer „erfolgreich“; ob das Skript angenommen hat, steht im Editor unter „Ausführungen“ („SMS angenommen“ / „SMS abgelehnt: <Grund>“).
   - **App:** Finanzen → „Noch zuordnen“: am Handy und unter 1200 px eigener Umschalter „SMS (n)“, ab 1200 px rechts neben dem Formular, ohne offene SMS unsichtbar
     (Wunsch der Person: „Buchen“ passt auf einen Bildschirm). „Übernehmen“ füllt das Formular, gebucht wird erst mit Ausgabe oder Einnahme (immer mit Prüfung, Entscheidung der Person).
-    „Verwerfen“ erledigt ohne Buchung. Nach Buchen oder Verwerfen löscht das Skript Text und Absender (Entscheidung der Person).
+    Die Liste lädt neu beim Öffnen des Reiters, beim Tippen auf „SMS“, wenn die Seite wieder sichtbar wird, und alle 5 Minuten (ab 1.1.7). „Verwerfen“ erledigt ohne Buchung. Nach Buchen oder Verwerfen löscht das Skript Text und Absender (Entscheidung der Person).
   - **Vorschlag:** erste Zeile `<Gegenseite>: <Betrag> EUR` ohne „Saldo“; Minus = Ausgabe, sonst Einnahme; Zweck = Gegenseite oder Suchwort-Treffer
     (Blatt `Einstellungen`, `liste` = `sms`); Datum der SMS; immer Konto `Konto` (nur Girokonto). Bankname und echte SMS stehen nie im Repo.
   - Prüfung Sicherheit und Datenschutz: Bericht `pruefung/etappe-9-kontowecker-bericht.md` in den Projektdateien, nichts zu bauen.
@@ -798,3 +798,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.1.4** Nachbesserung 9.2: Finanz-Skript schreibt bei `sms` „SMS angenommen“ oder „SMS abgelehnt: <Grund>“ ins Protokoll (Editor → Ausführungen), weil die Weiterleitungs-App immer „erfolgreich“ zeigt.
 - **1.1.5** Nachbesserung 9.2: „Noch zuordnen“ nicht mehr über dem Formular. Am Handy und auf schmalen Bildschirmen eigener Umschalter „SMS (n)“ (nur mit offenen SMS), ab 1200 px rechts neben dem Formular (Wunsch der Person: Buchen passt auf einen Bildschirm).
 - **1.1.6** Schritt 9.3: Etappe 9 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht, nichts zu bauen), Plan in STAND.md eingearbeitet (4 „Kontowecker“, Anleitung mit Header `{}`), `docs/PLAN-ETAPPE-9.md` gelöscht.
+- **1.1.7** Nachbesserung 9.3: „Noch zuordnen“ lädt von selbst neu (Seite wieder sichtbar, Tipp auf „SMS“, alle 5 Minuten), damit am PC keine am Handy erledigte SMS stehen bleibt.

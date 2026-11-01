@@ -67,6 +67,7 @@ export function smsBereich(beiAnzahl, uebernehmen) {
                 } catch (e) {
                     meldung.textContent = 'NICHT verworfen: ' + e.message;
                     verwerfen.disabled = false;
+                    if (e.code === 'erledigt') laden();
                 }
             });
             liste.append(el('li', { class: 'sms-eintrag' }, [

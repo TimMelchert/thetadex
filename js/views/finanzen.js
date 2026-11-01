@@ -198,7 +198,7 @@ export function render(container, ctx) {
         const b = el('button', {
             class: 'ansicht' + (modus === 'sms' ? ' ansicht-sms' : ''), text,
             attrs: { type: 'button', 'aria-pressed': i === 0 ? 'true' : 'false', 'aria-controls': ziel },
-            on: { click: () => zeigeModus(modus) }
+            on: { click: () => { zeigeModus(modus); if (modus === 'sms') sms.laden(); } }
         });
         return [b, modus];
     });
@@ -214,6 +214,19 @@ export function render(container, ctx) {
         if (auswertungTeil) auswertungTeil.neuLaden();
         else auswertungTeil = auswertung(auswertungBox, () => einstellungen);
     }
+    // Offene SMS neu laden, wenn die Seite wieder sichtbar wird, und alle 5 Minuten, solange sie offen ist
+    // (sonst bliebe am PC eine SMS stehen, die am Handy schon erledigt ist). Endet, sobald der Reiter verlassen wird.
+    const smsFrisch = () => {
+        if (!buchenBox.isConnected) {
+            document.removeEventListener('visibilitychange', smsFrisch);
+            clearInterval(smsUhr);
+            return;
+        }
+        if (!document.hidden) sms.laden();
+    };
+    document.addEventListener('visibilitychange', smsFrisch);
+    const smsUhr = setInterval(smsFrisch, 5 * 60 * 1000);
+
     // Anzahl offener SMS am Umschalter; ohne offene SMS verschwindet er
     beiSmsAnzahl = (n) => {
         smsKnopf.textContent = 'SMS (' + n + ')';
