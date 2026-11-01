@@ -157,7 +157,9 @@ function doPost(e) {
 
     return jsonOut_({ error: "aktion", message: "Unbekannte Aktion" });
   } catch (err) {
-    return jsonOut_({ error: "server", message: String(err.message || err) });
+    // Keine internen Fehlertexte nach außen (ohne Passwort erreichbar), den genauen Text ins Protokoll
+    console.error(err);
+    return jsonOut_({ error: "server", message: "Fehler im Skript. Bitte später nochmal versuchen." });
   }
 }
 

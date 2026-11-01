@@ -285,7 +285,7 @@
 .doener-form-knoepfe .knopf { margin-top: 0; }
 
 /* Umschalter Rangliste / Vergleich */
-.doener-ansichten, .ansichten { display: flex; gap: 0; margin-top: var(--abstand); border: 1px solid var(--linie); border-radius: var(--rund); overflow: hidden; width: fit-content; }
+.doener-ansichten, .ansichten { display: flex; flex-wrap: wrap; gap: 0; margin-top: var(--abstand); border: 1px solid var(--linie); border-radius: var(--rund); overflow: hidden; width: fit-content; }
 
 .doener-ansicht, .ansicht {
     min-height: 44px;
@@ -933,7 +933,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
     border: none; border-radius: 6px; background: var(--kachel); color: var(--schrift); font: inherit; text-align: left; cursor: pointer;
 }
 .uni-monat-tag.uni-ferien { background: var(--art-ferien); }
-.uni-monat-tag.uni-anderer { opacity: 0.45; }
+.uni-monat-tag.uni-anderer .uni-monat-zahl { color: var(--schrift-leise); font-weight: 400; }
 .uni-monat-tag.uni-heute { box-shadow: inset 0 0 0 2px var(--bereich); }
 .uni-monat-zahl { font-size: 0.85rem; font-weight: 600; text-align: center; }
 .uni-monat-eintrag { display: block; height: 6px; overflow: hidden; border-radius: 3px; background: var(--art); color: transparent; font-size: 0; }
@@ -1175,7 +1175,7 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
 .dsa-schalter-knopf { min-height: 46px; padding: 8px 16px; border: 0; border-left: 1px solid var(--linie); background: transparent; color: var(--schrift); font: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; }
 .dsa-schalter-knopf:first-child { border-left: 0; }
 .dsa-schalter-knopf[aria-pressed="true"] { background: var(--bereich); color: var(--schrift-auf-farbe); }
-.dsa-schalter-knopf:focus-visible { outline: 3px solid var(--bereich); outline-offset: -3px; }
+.dsa-schalter-knopf:focus-visible { outline: 3px solid var(--fokus); outline-offset: -3px; }
 .dsa-schalter-kurz { display: none; }
 .dsa-teilen-text { margin-left: 6px; }
 @media (max-width: 599px) {

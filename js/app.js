@@ -126,18 +126,31 @@ function beobachteUpdates(reg) {
     });
 }
 
-wendeAussehenAn();
-window.addEventListener('hashchange', zeigeAnsicht);
-// Nach dem Speichern in den Einstellungen: Reiterleiste gleich anpassen, ohne die Seite neu zu zeichnen
-window.addEventListener('thetadex-skripte', () => baueReiter(sichtbareBereiche()));
-zeigeAnsicht();
-// Tracking-Felder schon im Hintergrund holen, damit das Formular schneller da ist (nur im Arbeitsspeicher)
-if (istEingerichtet()) tracking.vorladen();
+// Schutz vor fremden Rahmen (Prüfung Sicherheit, Etappe 8): Bettet eine andere Seite Thetadex ein,
+// zeigt die App nur einen Hinweis. Der Server-Kopf „frame-ancestors“ geht auf GitHub Pages nicht.
+let imRahmen = true;
+try { imRahmen = window.top !== window.self; } catch (e) { /* fremder Rahmen */ }
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-            .then((reg) => { beobachteUpdates(reg); reg.update(); })
-            .catch(() => {});
-    });
+if (imRahmen) {
+    wendeAussehenAn();
+    const inhalt = document.getElementById('inhalt');
+    leeren(inhalt);
+    leeren(document.getElementById('reiter'));
+    inhalt.append(el('p', { class: 'meldung', text: 'Thetadex bitte direkt öffnen, nicht eingebettet in einer anderen Seite.' }));
+} else {
+    wendeAussehenAn();
+    window.addEventListener('hashchange', zeigeAnsicht);
+    // Nach dem Speichern in den Einstellungen: Reiterleiste gleich anpassen, ohne die Seite neu zu zeichnen
+    window.addEventListener('thetadex-skripte', () => baueReiter(sichtbareBereiche()));
+    zeigeAnsicht();
+    // Tracking-Felder schon im Hintergrund holen, damit das Formular schneller da ist (nur im Arbeitsspeicher)
+    if (istEingerichtet()) tracking.vorladen();
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then((reg) => { beobachteUpdates(reg); reg.update(); })
+                .catch(() => {});
+        });
+    }
 }

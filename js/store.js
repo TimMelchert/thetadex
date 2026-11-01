@@ -1,4 +1,5 @@
-// Speicher im Gerät (localStorage). Nur Passwort, Script-Adressen und Einstellungen.
+// Speicher im Gerät (localStorage): Passwort, Script-Adressen, Einstellungen, letzte Kontostände,
+// Einkaufsliste, Uni-Daten für ohne Netz, Teilen-Links (Liste in docs/STAND.md 5).
 // Alle Schlüssel beginnen mit "thetadex_". Abmelden löscht alle.
 
 const VORSILBE = 'thetadex_';
