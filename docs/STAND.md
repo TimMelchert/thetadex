@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.8.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.8.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -556,7 +556,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 
 ## 6. Dateiübersicht
 
-- Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
+- Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `LIZENZEN.md` (Lizenztexte von Chart.js, @kurkle/color, Feather-Zahnrad; neue fremde Teile hier eintragen), `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
@@ -770,4 +770,4 @@ Prüfung gegen die Grundsätze (1.2):
 - Umstieg (7.4) und Bericht (7.1) von der Person erledigt, alte Repos und Zweige gelöscht. **0.7.2** Schritt 7.2: Platzhalter, `etappe`, `#/einrichtung`, alte Art „frei“ und eine CSS-Regel entfernt, `README.md`.
 - **0.7.3** Schritt 7.3: Skripte aufräumen (Stundenplan-Umzug und „frei“ aus `gemeinsam`, Kommentare auf gelöschte Pläne in fünf Skripten).
 - **0.7.4** Etappe 7 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-7.md` gelöscht, STAND.md aufgeräumt (7.1 gekürzt, Geschichte geordnet).
-- **Etappe 8** Prüfen und Version 1.0.0. **0.8.0** Behebungen Sicherheit: eigene Döner-Adresse geht vor fremdem Link, Hinweis bei fremdem Rahmen. **0.8.1** Behebungen Datenschutz: alte Kategorie-Felder aus dem Finanz-Skript, ehrliche Texte zum Gerät, Hinweis bei Döner, keine internen Fehlertexte ohne Passwort. **0.8.2** Behebungen Geschwindigkeit: Service Worker holt neue Dateien frisch vom Server, Suche in Besitz flüssiger. **0.8.3** Behebungen Barrierefreiheit: Schalter bei Pen & Paper mit Namen und sichtbarem Fokus, Nachbarmonat im Uni-Monat lesbar, Unterreiter brechen bei schmalen Handys um.
+- **Etappe 8** Prüfen und Version 1.0.0. **0.8.0** Behebungen Sicherheit: eigene Döner-Adresse geht vor fremdem Link, Hinweis bei fremdem Rahmen. **0.8.1** Behebungen Datenschutz: alte Kategorie-Felder aus dem Finanz-Skript, ehrliche Texte zum Gerät, Hinweis bei Döner, keine internen Fehlertexte ohne Passwort. **0.8.2** Behebungen Geschwindigkeit: Service Worker holt neue Dateien frisch vom Server, Suche in Besitz flüssiger. **0.8.3** Behebungen Barrierefreiheit: Schalter bei Pen & Paper mit Namen und sichtbarem Fokus, Nachbarmonat im Uni-Monat lesbar, Unterreiter brechen bei schmalen Handys um. **0.8.4** Rechtliches: `LIZENZEN.md` mit den MIT-Lizenztexten, Hinweis unter Info. Kein Impressum und keine Datenschutzerklärung nötig (Döner-Link nur an Freunde, Entscheidung der Person, 1.11.2026).
