@@ -53,11 +53,17 @@ function doPost(e) {
   // Kontowecker-SMS von der Weiterleitungs-App: nur mit SMS_SCHLUESSEL, nicht mit dem Passwort.
   // Diese Aktion legt nur eine SMS als "offen" ab. Sie liest nichts und bucht nichts.
   if (data && data.action === "sms") {
+    var antwort;
     try {
-      return jsonOut_(smsAnnehmen_(data));
+      antwort = smsAnnehmen_(data);
     } catch (err) {
-      return jsonOut_({ error: "server", message: "Fehler beim Ablegen" });
+      antwort = { error: "server", message: "Fehler beim Ablegen: " + String(err) };
     }
+    // Die Weiterleitungs-App zeigt immer "erfolgreich". Den Grund für eine Ablehnung sieht man im Editor unter
+    // "Ausführungen" (Uhr links) beim Eintrag doPost. Ohne SMS-Inhalt, ohne Schlüssel.
+    if (antwort.error) console.warn("SMS abgelehnt: " + antwort.message);
+    else console.log("SMS angenommen");
+    return jsonOut_(antwort);
   }
 
   var status = pruefePin_(data.pin);
@@ -72,6 +78,8 @@ function doPost(e) {
     if (data.action === "stats")   return jsonOut_(getStats());
     if (data.action === "einstellungen") return jsonOut_(einstellungenLesen_());
     if (data.action === "analyse") return jsonOut_(getAnalyseData());
+    if (data.action === "smsListe") return jsonOut_(smsListe_());
+    if (data.action === "smsErledigt") return jsonOut_(mitSperre_(function () { return smsErledigt_(data.id); }));
 
     if (data.action === "buchen") {
       // Sperre: Es kann immer nur eine Buchung gleichzeitig laufen
@@ -80,6 +88,14 @@ function doPost(e) {
         return jsonOut_({ error: "ausgelastet", message: "Script ausgelastet. Bitte gleich nochmal versuchen." });
       }
       try {
+        // Buchung aus einer Kontowecker-SMS: Die SMS muss noch offen sein (gegen doppelte Buchung) und wird im selben Lauf erledigt
+        if (data.sms_id) {
+          var sms = smsFinden_(data.sms_id);
+          if (sms.fehler) return jsonOut_(sms.fehler);
+          var ergebnis = buchungSpeichern_(data);
+          if (!ergebnis.error) smsAbschliessen_(sms, "gebucht");
+          return jsonOut_(ergebnis);
+        }
         return jsonOut_(buchungSpeichern_(data));
       } finally {
         lock.releaseLock();
@@ -436,7 +452,7 @@ function einstellungenLesen_() {
     return isFinite(n) ? Math.round(n * 100) / 100 : null;
   };
 
-  var aus = { zwecke: [], kategorien: [], rueckzahlungen: [], eigenanteile: {} };
+  var aus = { zwecke: [], kategorien: [], rueckzahlungen: [], eigenanteile: {}, smsWoerter: [] };
   for (var i = 1; i < text.length && i <= 500; i++) {
     var z = text[i];
     var liste = zelle(z, "liste").toLowerCase();
@@ -446,6 +462,7 @@ function einstellungenLesen_() {
     else if (liste === "kategorie" && name) aus.kategorien.push(name);
     else if (liste === "rueckzahlung" && name && kat) aus.rueckzahlungen.push({ name: name, kategorie: kat, zweck: zelle(z, "zweck") });
     else if (liste === "eigenanteil" && kat) aus.eigenanteile[kat] = betrag(i) || 0;
+    else if (liste === "sms" && name) aus.smsWoerter.push({ name: name, zweck: zelle(z, "zweck"), kategorie: kat });
   }
   return aus;
 }
@@ -543,4 +560,76 @@ function smsAnnehmen_(data) {
   } finally {
     lock.releaseLock();
   }
+}
+
+// Führt eine Änderung mit Sperre aus (nur ein Schreibzugriff gleichzeitig)
+function mitSperre_(fn) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) return { error: "ausgelastet", message: "Script ausgelastet. Bitte gleich nochmal versuchen." };
+  try {
+    return fn();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// Offene SMS für die App (nur mit Passwort): Kennung, Datum der SMS (JJJJ-MM-TT) und Text, älteste zuerst
+function smsListe_() {
+  var blatt = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BLATT_SMS_);
+  if (!blatt) return { offen: [] };
+  var sp = smsSpalten_(blatt);
+  if (!sp) return { error: "blatt", message: "Im Blatt 'SMS' fehlen Spalten in Zeile 1." };
+  var letzte = blatt.getLastRow();
+  if (letzte < 2) return { offen: [] };
+  var werte = blatt.getRange(2, 1, letzte - 1, sp.breite).getValues();
+  var zone = Session.getScriptTimeZone();
+  var offen = [];
+  for (var i = 0; i < werte.length && offen.length < 100; i++) {
+    var z = werte[i];
+    if (String(z[sp.status]) !== "offen") continue;
+    var d = z[sp.gesendet_am] instanceof Date ? z[sp.gesendet_am] : (z[sp.empfangen_am] instanceof Date ? z[sp.empfangen_am] : new Date());
+    offen.push({ id: String(z[sp.id]), datum: Utilities.formatDate(d, zone, "yyyy-MM-dd"), text: String(z[sp.text]) });
+  }
+  return { offen: offen };
+}
+
+// Sucht eine offene SMS über ihre Kennung. Liefert { blatt, sp, zeile } oder { fehler }
+function smsFinden_(id) {
+  var kennung = String(id || "");
+  if (!/^[0-9a-f-]{36}$/.test(kennung)) return { fehler: { error: "eingabe", message: "Ungültige SMS" } };
+  var blatt = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BLATT_SMS_);
+  if (!blatt) return { fehler: { error: "blatt", message: "Blatt 'SMS' fehlt" } };
+  var sp = smsSpalten_(blatt);
+  if (!sp) return { fehler: { error: "blatt", message: "Im Blatt 'SMS' fehlen Spalten in Zeile 1." } };
+  var letzte = blatt.getLastRow();
+  if (letzte >= 2) {
+    var ids = blatt.getRange(2, sp.id + 1, letzte - 1, 1).getValues();
+    for (var i = 0; i < ids.length; i++) {
+      if (String(ids[i][0]) !== kennung) continue;
+      var zeile = i + 2;
+      if (String(blatt.getRange(zeile, sp.status + 1).getValue()) !== "offen") {
+        return { fehler: { error: "erledigt", message: "Diese SMS ist schon erledigt. Bitte neu laden." } };
+      }
+      return { blatt: blatt, sp: sp, zeile: zeile };
+    }
+  }
+  return { fehler: { error: "erledigt", message: "Diese SMS gibt es nicht mehr. Bitte neu laden." } };
+}
+
+// Setzt den Status und löscht Text und Absender (Entscheidung der Person: nach der Zuordnung nicht aufheben)
+function smsAbschliessen_(sms, status) {
+  var b = sms.blatt, sp = sms.sp, z = sms.zeile;
+  b.getRange(z, sp.status + 1).setValue(status);
+  b.getRange(z, sp.erledigt_am + 1).setValue(new Date());
+  b.getRange(z, sp.text + 1).setValue("");
+  b.getRange(z, sp.absender + 1).setValue("");
+  SpreadsheetApp.flush();
+}
+
+// SMS verwerfen (ohne Buchung)
+function smsErledigt_(id) {
+  var sms = smsFinden_(id);
+  if (sms.fehler) return sms.fehler;
+  smsAbschliessen_(sms, "verworfen");
+  return { ok: true };
 }

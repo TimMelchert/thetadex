@@ -8,6 +8,7 @@ import { lesen, schreiben } from '../store.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { auswertung } from './finanzen-auswertung.js';
+import { smsBereich } from './finanzen-sms.js';
 
 // Konten wie im Finanz-Skript (KONTEN_). [Wert fürs Skript, Name in der Auswahl, Schlüssel in den Ständen, kurzer Name]
 const KONTEN = [
@@ -79,6 +80,34 @@ export function render(container, ctx) {
     const knopfUmb = el('button', { class: 'knopf knopf-zweit', text: 'Umbuchung bestätigen', attrs: { type: 'button' }, on: { click: () => senden('umbuchung') } });
     const knoepfe = [knopfAus, knopfEin, knopfUmb];
 
+    // --- Kontowecker-SMS (Etappe 9): Vorschlag ins Formular übernehmen, gebucht wird erst mit Ausgabe oder Einnahme ---
+    let smsAktiv = null;
+    const smsHinweisText = el('span');
+    const smsHinweis = el('p', { class: 'sms-hinweis', attrs: { hidden: true } }, [
+        smsHinweisText,
+        el('button', { class: 'knopf knopf-zweit', text: 'Abbrechen', attrs: { type: 'button' }, on: { click: () => smsLoesen() } })
+    ]);
+    function smsLoesen() {
+        smsAktiv = null;
+        smsHinweis.hidden = true;
+    }
+    const sms = smsBereich((eintrag, v) => {
+        smsAktiv = eintrag;
+        konto.value = 'Konto';
+        datum.value = eintrag.datum;
+        datumManuell = true;
+        betrag.value = v ? String(v.betrag) : '';
+        zweck.feld.value = v ? v.zweck : '';
+        kategorie.feld.value = v ? v.kategorie : '';
+        if (v) zweckAnwenden(v.zweck, false);
+        split.checked = false;
+        smsHinweisText.textContent = 'Aus SMS vom ' + eintrag.datum.split('-').reverse().join('.') +
+            (v ? ': Vorschlag ' + (v.mode === 'aus' ? 'Ausgabe' : 'Einnahme') + '. Prüfen, dann buchen.' : ': bitte ausfüllen, dann buchen.');
+        smsHinweis.hidden = false;
+        status.textContent = '';
+        formular.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
+
     let sendet = false; // gegen Doppelbuchungen durch mehrfaches Tippen
     async function senden(mode) {
         if (sendet) return;
@@ -111,8 +140,10 @@ export function render(container, ctx) {
                 zweck: zweck.feld.value.trim() || 'Transfer',
                 kategorie: kategorie.feld.value.trim() || 'Allgemein',
                 datum: datum.value,
-                split: split.checked
+                split: split.checked,
+                ...(smsAktiv ? { sms_id: smsAktiv.id } : {})
             });
+            if (smsAktiv) { sms.entfernen(smsAktiv.id); smsLoesen(); datumManuell = false; datum.value = heute(); }
             zeigeStaende(s);
             schreiben('kontostaende', s);
             // Felder leeren; Konto und Datum bleiben
@@ -126,6 +157,7 @@ export function render(container, ctx) {
             auswertungAktuell = false;
         } catch (e) {
             status.textContent = 'NICHT gespeichert: ' + e.message;
+            if (e.code === 'erledigt') { smsLoesen(); sms.laden(); }
         } finally {
             sendet = false;
             knoepfe.forEach((k) => { k.disabled = false; });
@@ -133,6 +165,7 @@ export function render(container, ctx) {
     }
 
     const formular = el('form', { class: 'formular finanz-formular', attrs: { novalidate: true }, on: { submit: (ev) => ev.preventDefault() } }, [
+        smsHinweis,
         el('label', { text: 'Konto', attrs: { for: 'finanz-konto' } }), konto,
         el('label', { text: 'Datum', attrs: { for: 'finanz-datum' } }), datum,
         el('label', { text: 'Zweck', attrs: { for: 'finanz-zweck' } }), zweck.box,
@@ -153,7 +186,7 @@ export function render(container, ctx) {
     neuLaden.hidden = true;
 
     // Umschalter Buchen / Auswertung (wie bei Tracking und Döner)
-    const buchenBox = el('div', { attrs: { id: 'finanz-buchen' } }, [staende, formular, neuLaden]);
+    const buchenBox = el('div', { attrs: { id: 'finanz-buchen' } }, [staende, sms.box, formular, neuLaden]);
     const auswertungBox = el('div', { attrs: { id: 'finanz-auswertung', hidden: true } });
     let auswertungTeil = null;
     const ansichtKnoepfe = [['Buchen', buchenBox], ['Auswertung', auswertungBox]].map(([text, box], i) => {
@@ -194,6 +227,7 @@ export function render(container, ctx) {
             zwecke = Array.isArray(e.zwecke) ? e.zwecke : [];
             zweck.setzeEintraege(zwecke.map((z) => z.name));
             kategorie.setzeEintraege(Array.isArray(e.kategorien) ? e.kategorien : []);
+            sms.laden(Array.isArray(e.smsWoerter) ? e.smsWoerter : []);
             if (!neuLaden.hidden) { neuLaden.hidden = true; status.textContent = ''; }
         } catch (err) {
             status.textContent = 'Laden fehlgeschlagen: ' + err.message;

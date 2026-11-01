@@ -1212,3 +1212,17 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
 .dsa-ab-bild { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; padding: 0; overflow: hidden; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: inherit; font: inherit; cursor: zoom-in; }
 .dsa-ab-bild img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .dsa-ab-bild:focus-visible { outline: 3px solid var(--bereich); outline-offset: 2px; }
+
+/* Kontowecker-SMS „Noch zuordnen“ (Etappe 9) */
+.sms-karte { border-top: 4px solid var(--bereich); }
+.sms-titel { margin: 0 0 8px; font-size: 1.1rem; }
+.sms-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.sms-eintrag { padding: 10px; border-radius: var(--rund); background: var(--hintergrund); }
+.sms-vorschlag { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.sms-text { margin: 4px 0 0; font-size: 0.85rem; overflow-wrap: anywhere; }
+.sms-knoepfe { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.sms-knoepfe .knopf { margin-top: 0; }
+.sms-hinweis { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 8px; padding: 10px; border: 2px solid var(--bereich); border-radius: var(--rund); font-weight: 600; }
+.sms-hinweis span { flex: 1 1 200px; }
+.sms-hinweis .knopf { margin-top: 0; }
+.sms-karte .meldung:empty { display: none; }
