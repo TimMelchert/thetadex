@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.7.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.8.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -13,7 +13,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
 - Etappe 7 „Umstieg und Aufräumen“ ist fertig (1.11.2026). Die alten Apps sind abgelöst.
-- Nächster Schritt: Etappe 8 „Prüfen und Version 1.0.0“ (7.2). Vor Etappe 8 kommt ihr eigener Plan. Danach Etappe 9 „Kontowecker“.
+- Etappe 8 „Prüfen und Version 1.0.0“ (7.2) läuft: Berichte in den Projektdateien (`pruefung/`), Behebungen gesammelt in einem Pull Request (0.8.0). Danach Etappe 9 „Kontowecker“.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -544,6 +544,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3), der gewählte Bogen bei Pen & Paper (`thetadex_dsa_bogen`, nur die Kennung, ab 0.6.1), die selbst erstellten Links zum Teilen (`thetadex_dsa_links`, Bogen-Kennung → Schlüssel, ab 0.6.6), die gewählte Ansicht bei Pen & Paper (`thetadex_dsa_modus`, ab 0.6.8).
   Schlüssel mit Vorsilbe `thetadex_`. Keine Tracking-Einträge im Gerät speichern. Abmelden löscht alles.
   Die Tracking-Felder hält die App nur im Arbeitsspeicher (10 Minuten), damit das Formular schnell da ist.
+- **Fremder Rahmen** (ab 0.8.0): Läuft die Seite eingebettet in einer anderen Seite, zeigt `js/app.js` nur einen Hinweis (Schutz vor Klick-Fallen; `frame-ancestors` geht auf GitHub Pages nicht).
 - **Neu laden** nach einem Update nur, wenn auf dieser Seite „Jetzt neu laden“ getippt wurde (`js/app.js`). Sonst lud die Seite
   beim ersten Besuch von selbst neu, weil der Service Worker die Seite übernimmt (`clients.claim`), und Formulare waren weg.
 - **Service Worker** (`sw.js`): App-Dateien zwischenspeichern (`<name>-<VERSION>`), Daten nicht im Service Worker,
@@ -603,6 +604,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     Rangliste: je Laden zwei Balken nebeneinander (🌱 und 🥩), sortiert nach der veganen Wertung. Vergleich: jeder Laden
     erscheint je Sorte als eigene Zeile mit 🌱 oder 🥩.
   - Teilen: Link `#/doener/<skript>` ohne Einrichtung. Für dich steht der Reiter normal in der Reiterleiste.
+    Ist die eigene Döner-Adresse eingetragen, gilt immer sie; ein fremder Link ändert sie nicht (ab 0.8.0).
   - Reiter-Symbole (Wunsch der Person): jeder Reiter hat ein Symbol, am Handy nur das Symbol, am PC Symbol und Name.
     Ohne Einrichtung zeigt die Reiterleiste nur öffentliche Reiter.
   - Datenschutz: Nur Laden, Sterne, Begründung und Datum. Keine Namen, keine Geräte-Kennung.
@@ -768,3 +770,4 @@ Prüfung gegen die Grundsätze (1.2):
 - Umstieg (7.4) und Bericht (7.1) von der Person erledigt, alte Repos und Zweige gelöscht. **0.7.2** Schritt 7.2: Platzhalter, `etappe`, `#/einrichtung`, alte Art „frei“ und eine CSS-Regel entfernt, `README.md`.
 - **0.7.3** Schritt 7.3: Skripte aufräumen (Stundenplan-Umzug und „frei“ aus `gemeinsam`, Kommentare auf gelöschte Pläne in fünf Skripten).
 - **0.7.4** Etappe 7 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-7.md` gelöscht, STAND.md aufgeräumt (7.1 gekürzt, Geschichte geordnet).
+- **Etappe 8** Prüfen und Version 1.0.0. **0.8.0** Behebungen aus den Prüfungen (Sicherheit: eigene Döner-Adresse geht vor fremdem Link, Hinweis bei fremdem Rahmen).
