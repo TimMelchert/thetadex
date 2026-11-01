@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.1.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.1.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -14,7 +14,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
 - Etappe 7 „Umstieg und Aufräumen“ ist fertig (1.11.2026). Die alten Apps sind abgelöst.
 - Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0.
-- Etappe 9 „Kontowecker“ (1.1.x) läuft: Plan in `docs/PLAN-ETAPPE-9.md` (Schritt 9.0), Antworten der Person eingearbeitet (1.1.1). Nächster Schritt: 9.1.
+- Etappe 9 „Kontowecker“ (1.1.x) läuft: Plan in `docs/PLAN-ETAPPE-9.md` (Schritt 9.0), Antworten der Person eingearbeitet (1.1.1). Schritt 9.1 (Skript nimmt SMS an, 1.1.2) ist gebaut. Nächster Schritt: 9.2.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -275,6 +275,7 @@ unter „Info“ die Version prüfen.
     Funktion `einrichten` legt das Blatt `Einstellungen` an (Spalten `feld, gruppe, art, vorgabe, optionen, schritt, farben`).
   - Finanzen: Aktionen `stats`, `analyse` (ab 2.4 mit `kategorien` je Monat: `aus`, `ein`, `netto`), `buchen`, `einstellungen` (ab 2.2: Zwecke, Kategorien, Rückzahlungen, Eigenanteile
     aus Blatt `Einstellungen`, Spalten `liste, name, kategorie, betrag, zweck`). Funktion `einrichten` legt das Blatt an.
+    Ab 9.1: Aktion `sms` (ohne Passwort, nur mit `SMS_SCHLUESSEL`, legt eine SMS im Blatt `SMS` als „offen“ ab, antwortet nur `ok`); `einrichten` legt auch das Blatt `SMS` an.
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
 - Etappe 1: Symbole für alle Reiter (1.1). Döner-Skript und Reiter mit Rangliste, Einzelheiten, Bewerten und Teilen-Link (1.2).
@@ -354,7 +355,7 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026).
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). Ausnahme: `finanzen` nach dem Merge von 9.1 neu einfügen (Abschnitt „Von Hand zu erledigen“ im Pull Request).
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
 
 ---
@@ -542,7 +543,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
-- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; in den Skripten `leben` und `dsa` legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
+- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `finanzen` zusätzlich `SMS_SCHLUESSEL` (nur für die Aktion `sms`, legt die Funktion `smsSchluesselErzeugen` an, ab 9.1); in den Skripten `leben` und `dsa` legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
 - **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen, zuletzt bekannte Kontostände, die Wahl beim Aussehen (`thetadex_aussehen`),
   die offene Einkaufsliste (`thetadex_einkaufsliste`, nur Einträge mit Namen, Abteilung, Einheit), abgehakte Einträge vor „Einkauf fertig“ (`thetadex_einkauf_haken`)
   und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3), der gewählte Bogen bei Pen & Paper (`thetadex_dsa_bogen`, nur die Kennung, ab 0.6.1), die selbst erstellten Links zum Teilen (`thetadex_dsa_links`, Bogen-Kennung → Schlüssel, ab 0.6.6), die gewählte Ansicht bei Pen & Paper (`thetadex_dsa_modus`, ab 0.6.8).
@@ -779,3 +780,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.0.0** Prüfung Datensicherung (nur Bericht, nichts zu bauen), alle Skripte im Editor aktuell. Etappe 8 abgeschlossen, Version 1.0.0 (Entscheidung der Person, 1.11.2026).
 - **Etappe 9** Kontowecker. **1.1.0** Schritt 9.0: Plan `docs/PLAN-ETAPPE-9.md` (SMS-Weiterleitung mit „SMS to URL Forwarder“, Blatt `SMS`, Liste „Noch zuordnen“ mit Vorschlag).
 - **1.1.1** Antworten zum Plan: App über F-Droid, immer mit Prüfung, nur Girokonto, SMS-Text nach Zuordnung löschen; Aufbau der SMS nach zwei abgeänderten Beispielen.
+- **1.1.2** Schritt 9.1: Finanz-Skript nimmt Kontowecker-SMS an (Aktion `sms`, Blatt `SMS`, `smsSchluesselErzeugen`), Anleitung für die Weiterleitungs-App im Pull Request.

@@ -62,7 +62,9 @@ Die Unterschrift `X-Signature` der App bleibt darum aus.
   Er ist nicht das Passwort `APP_PIN`. Mit ihm geht nur eins: eine SMS als „offen“ ablegen. Er liest nichts, bucht nichts, löscht nichts.
   Die Antwort auf `sms` ist nur `{ok: true}` oder ein Fehler, nie Daten. Liegt der Schlüssel in der fremden App oder geht das Handy verloren,
   kann jemand höchstens falsche „offene“ SMS anlegen. Die Person sieht sie und verwirft sie. Neuer Schlüssel: Funktion im Editor nochmal ausführen.
-- **Sperre:** 5 falsche Schlüssel → 15 Minuten gesperrt (eigener Zähler, getrennt vom Passwort). Höchstens 50 SMS am Tag, dann lehnt das Skript ab.
+- **Keine Sperre nach Fehlversuchen** (geändert in 9.1): Der Schlüssel hat 64 zufällige Zeichen und ist nicht zu erraten. Eine Sperre würde nur Fremden erlauben,
+  echte SMS zu blockieren, denn das Skript antwortet der Weiterleitungs-App immer mit „erfolgreich“ und sie versucht es dann nicht nochmal.
+  Höchstens 50 SMS am Tag, dann lehnt das Skript ab.
 - **Böse Eingaben:** Text höchstens 640 Zeichen, Absender 40 Zeichen, beide mit `bereinigeText_`. Die App zeigt den Text nur mit `textContent`.
 - **Doppelte SMS:** Die Weiterleitungs-App versucht es bei Fehlern neu. Das Skript bildet aus Absender, Zeit und Text eine Prüfsumme (SHA-256)
   und legt dieselbe SMS kein zweites Mal ab.
