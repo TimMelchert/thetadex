@@ -1,6 +1,6 @@
 // Thetadex Service Worker
 // VERSION muss exakt gleich sein wie in js/config.js (bei jeder Änderung beide hochzählen).
-const VERSION = '0.8.1';
+const VERSION = '0.8.2';
 const CACHE_NAME = 'thetadex-' + VERSION;
 
 // App-Hülle: alle Dateien, die die App zum Starten braucht. Neue Dateien hier eintragen.
@@ -56,7 +56,8 @@ const HUELLE = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(HUELLE)));
+  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(HUELLE.map((u) => new Request(u, { cache: 'reload' })))));
+  // cache: 'reload' holt jede Datei frisch vom Server, nicht aus dem Browser-Speicher (sonst alte Dateien bei zwei Versionen kurz hintereinander)
   // Kein skipWaiting hier: Die Seite fragt erst („Jetzt neu laden“).
 });
 

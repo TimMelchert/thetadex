@@ -249,8 +249,20 @@ export function render(container, ctx) {
     }
 
     // Hauptsachen = Sachen, die nicht selbst Zubehör einer vorhandenen Sache sind
-    const istZubehoer = (s) => Boolean(s.gehoert_zu) && sachen.some((x) => x.id === s.gehoert_zu);
-    const zubehoerVon = (id) => (sachen || []).filter((x) => x.gehoert_zu === id);
+    // Während zeigeListe() läuft, gilt ein Verzeichnis (ids und Zubehör je Hauptsache), damit die Suche flüssig bleibt (Etappe 8).
+    // Es wird bei jedem Aufruf neu gebaut, weil Speichern die Liste direkt ändert.
+    let verzeichnis = null;
+    const baueVerzeichnis = () => {
+        const ids = new Set();
+        const kinder = new Map();
+        for (const x of sachen) {
+            ids.add(x.id);
+            if (x.gehoert_zu) (kinder.get(x.gehoert_zu) || kinder.set(x.gehoert_zu, []).get(x.gehoert_zu)).push(x);
+        }
+        return { ids, kinder };
+    };
+    const istZubehoer = (s) => Boolean(s.gehoert_zu) && (verzeichnis ? verzeichnis.ids.has(s.gehoert_zu) : sachen.some((x) => x.id === s.gehoert_zu));
+    const zubehoerVon = (id) => (verzeichnis ? (verzeichnis.kinder.get(id) || []).slice() : (sachen || []).filter((x) => x.gehoert_zu === id));
 
     // Füllt „Gehört zu“ für die Sache, die gerade im Formular steht (null = neu)
     function fuelleGehoert(sache) {
@@ -394,8 +406,10 @@ export function render(container, ctx) {
     // --- Suche und Filter (rechnen nur im Gerät) ---
     const suche = el('input', {
         attrs: { id: 'besitz-suche', type: 'search', autocomplete: 'off', placeholder: 'Name, Kategorie, Ort, Notiz, ausgeliehen an' },
-        on: { input: () => zeigeListe() }
+        // Erst 200 ms nach dem letzten Buchstaben neu zeichnen, damit Tippen nicht ruckelt (Etappe 8)
+        on: { input: () => { clearTimeout(suchWarten); suchWarten = setTimeout(zeigeListe, 200); } }
     });
+    let suchWarten = null;
     const ortFilter = el('select', { attrs: { id: 'besitz-filter-ort' }, on: { change: () => zeigeListe() } });
     const katFilter = el('select', { attrs: { id: 'besitz-filter-kategorie' }, on: { change: () => zeigeListe() } });
     const leihFilter = el('select', { attrs: { id: 'besitz-filter-leihe' }, on: { change: () => zeigeListe() } });
@@ -429,6 +443,16 @@ export function render(container, ctx) {
 
     // --- Liste ---
     function zeigeListe() {
+        clearTimeout(suchWarten);
+        verzeichnis = sachen ? baueVerzeichnis() : null;
+        try {
+            zeichneListe();
+        } finally {
+            verzeichnis = null;
+        }
+    }
+
+    function zeichneListe() {
         leeren(listeBox);
         if (!sachen) return;
         const alleOrte = [...new Set(sachen.map((s) => s.ort).filter(Boolean))].sort(vergleiche);
