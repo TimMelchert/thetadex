@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.8.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.0.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -13,7 +13,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
 - Etappe 7 „Umstieg und Aufräumen“ ist fertig (1.11.2026). Die alten Apps sind abgelöst.
-- Etappe 8 „Prüfen und Version 1.0.0“ (7.2) läuft: Berichte in den Projektdateien (`pruefung/`), Behebungen gesammelt in einem Pull Request (0.8.x). Danach Etappe 9 „Kontowecker“.
+- Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0. Nächste: Etappe 9 „Kontowecker“ (1.1.x).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -77,6 +77,7 @@ Sie prüft jede Änderung auf Handy und PC und übernimmt Änderungen am Google-
 
 - **Version:** Bei jeder Änderung `VERSION` in `js/config.js` UND in `sw.js` gemeinsam hochzählen. Beide müssen am Ende exakt gleich sein.
   Vor 1.0: Etappe = mittlere Zahl (0.1.0, 0.2.0 …), Schritte und Nachbesserungen den letzten Teil (0.1.0 → 0.1.1).
+  Ab 1.0.0 (1.11.2026): Etappe 9 = 1.1.x, Etappe 10 = 1.2.x und so weiter; Schritte und Nachbesserungen wie bisher den letzten Teil.
   Die erste Zahl ändert sich nur, wenn die Person es sagt. Jede Nachbesserung zählt hoch, auch in einem noch offenen Pull Request.
 - **Script-Adressen nie im Repo.** Die Adressen der Apps Scripts gibt die Person bei der Ersteinrichtung in der App ein.
   Die App speichert sie nur im Gerät (localStorage). `js/config.js` enthält nur VERSION und `features`, keine Adressen.
@@ -347,11 +348,12 @@ unter „Info“ die Version prüfen.
 - Etappe 7 (fertig): Umstieg von den alten Apps am 1.11.2026 (alte Bereitstellungen archiviert, alte Repos und Zweige gelöscht).
   Aufgeräumt nach Bericht (`pruefung/ungenutztes-bericht.md` in den Projektdateien): Platzhalter-Ansicht, Feld `etappe`, Adresse `#/einrichtung`,
   alte Art „frei“, Stundenplan-Umzug im Skript `gemeinsam`, Kommentare auf gelöschte Pläne, kurze `README.md`.
+- Etappe 8 (fertig): Prüfungen Sicherheit, Datenschutz, Geschwindigkeit, Barrierefreiheit, Rechtliches und Datensicherung, Berichte nur in den
+  Projektdateien (`pruefung/`). Behebungen in 0.8.0 bis 0.8.4 (Pull Request #65), Einzelheiten in der Geschichte (8). Version 1.0.0.
 
 ### 3.2 Offen
 
-- **Skripte aus 0.7.3 noch nicht eingefügt** (Entscheidung der Person, 1.11.2026): `dsa`, `finanzen`, `gemeinsam`, `leben`, `tracking` laufen im Editor
-  noch auf dem Stand vor 7.3. Das ist ungefährlich (nur Kommentare und der alte Stundenplan-Umzug). Beim nächsten Schritt, der ein Skript ändert, die ganze Datei einfügen.
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026).
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
 
 ---
@@ -663,8 +665,8 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Umstieg (7.4) zuerst, von Hand nach Anleitung in den Projektdateien (`etappe-7/umstieg-anleitung.md`): alte Bereitstellungen über die Script-Adresse erkannt
     und archiviert, alte App und Lesezeichen entfernt, alte Repos gelöscht. Dazu alle gemergten Zweige im Repo `thetadex` (die Person, von Hand).
   - Bericht „Ungenutztes und Verweise“ (7.1) nur in den privaten Projektdateien. Die Person kreuzte an, was weg darf; App (7.2) und Skripte (7.3) danach aufgeräumt.
-  - Die Skripte aus 7.3 sind im Editor noch nicht eingefügt (3.2, Entscheidung der Person).
-- **Etappe 8 „Prüfen und Version 1.0.0“ (0.8.x → 1.0.0)** – geplant (Wunsch der Person, 1.11.2026). Jede Prüfung nach 1.10: erst Bericht in den Projektdateien
+  - Die Skripte aus 7.3 hat die Person nach 0.8.4 zusammen mit den Skripten aus Etappe 8 eingefügt.
+- **Etappe 8 „Prüfen und Version 1.0.0“ (0.8.x → 1.0.0)** – fertig (1.11.2026), Pull Requests #65 und #66. Ursprünglicher Plan (Wunsch der Person, 1.11.2026): Jede Prüfung nach 1.10: erst Bericht in den Projektdateien
   (`pruefung/<thema>-bericht.md`, nie im Repo), dann baut Claude nur, was die Person freigibt. Je Prüfung ein Schritt, Behebungen als eigene Schritte.
   - **Sicherheit:** alle Skripte (`doener`, `finanzen`, `tracking`, `leben`, `gemeinsam`, `dsa`) und die App. Wer darf was (Rollen, geteilte Links),
     böse Eingaben, Sperre nach Fehlversuchen, Content-Security-Policy, Links und Bilder aus Daten, was im Gerät liegt.
@@ -679,6 +681,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     Echte Ladezeiten am Handy prüft die Person.
   - **Datensicherung:** ob sich jedes Sheet, Skript und die Bilder im Drive wiederherstellen lassen, ob die Sicherung der Skripte
     in den Projektdateien (`apps-script-backup/`) aktuell ist, was bei Verlust des Handys verloren wäre. Keine Anleitung „neues Handy“ (Entscheidung der Person).
+    Ergebnis (Bericht `pruefung/datensicherung-bericht.md`): nichts zu bauen, keine zusätzliche Sicherung (Entscheidung der Person, 1.11.2026).
   - **Version 1.0.0:** `docs/STAND.md` auf den Stand bringen, Version 1.0.0 in `js/config.js` und `sw.js`.
 - **Etappe 9 „Kontowecker“ (1.1.x)** – geplant (Wunsch der Person, 1.11.2026).
   - Kontowecker-SMS automatisch an das Finanz-Skript (Vorschlag in 4, Aktion `sms` mit `SMS_SCHLUESSEL`), danach im Reiter Finanzen eine Übersicht „Noch zuordnen“.
@@ -771,3 +774,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.7.3** Schritt 7.3: Skripte aufräumen (Stundenplan-Umzug und „frei“ aus `gemeinsam`, Kommentare auf gelöschte Pläne in fünf Skripten).
 - **0.7.4** Etappe 7 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-7.md` gelöscht, STAND.md aufgeräumt (7.1 gekürzt, Geschichte geordnet).
 - **Etappe 8** Prüfen und Version 1.0.0. **0.8.0** Behebungen Sicherheit: eigene Döner-Adresse geht vor fremdem Link, Hinweis bei fremdem Rahmen. **0.8.1** Behebungen Datenschutz: alte Kategorie-Felder aus dem Finanz-Skript, ehrliche Texte zum Gerät, Hinweis bei Döner, keine internen Fehlertexte ohne Passwort. **0.8.2** Behebungen Geschwindigkeit: Service Worker holt neue Dateien frisch vom Server, Suche in Besitz flüssiger. **0.8.3** Behebungen Barrierefreiheit: Schalter bei Pen & Paper mit Namen und sichtbarem Fokus, Nachbarmonat im Uni-Monat lesbar, Unterreiter brechen bei schmalen Handys um. **0.8.4** Rechtliches: `LIZENZEN.md` mit den MIT-Lizenztexten, Hinweis unter Info. Kein Impressum und keine Datenschutzerklärung nötig (Döner-Link nur an Freunde, Entscheidung der Person, 1.11.2026).
+- **1.0.0** Prüfung Datensicherung (nur Bericht, nichts zu bauen), alle Skripte im Editor aktuell. Etappe 8 abgeschlossen, Version 1.0.0 (Entscheidung der Person, 1.11.2026).
