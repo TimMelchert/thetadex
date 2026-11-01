@@ -1142,7 +1142,7 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
 .wuerfel-letzte { margin: 12px 0 0; padding-left: 1.2em; color: var(--schrift-leise); font-size: 0.9rem; }
 
 /* Pen & Paper 6.6: Teilen und geteilter Bogen */
-.dsa-teilen { margin-left: auto; }
+.dsa-teilen { margin-left: 0; }
 .dsa-bogen-name { margin: 0; font-size: 1.25rem; overflow-wrap: anywhere; }
 .dsa-geteilt-hinweis { margin: 4px 0 0; }
 #dsa-link { width: 100%; box-sizing: border-box; min-height: 44px; padding: 8px 10px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; font-size: 0.85rem; }
@@ -1174,7 +1174,7 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
 
 /* Pen & Paper 0.6.8: Schalter Charakterbogen | Abenteuer | DM, Abenteuer mit Sessions, DM */
 .dsa-schalter { display: inline-flex; border: 1px solid var(--linie); border-radius: var(--rund); overflow: hidden; background: var(--hintergrund); }
-.dsa-schalter-knopf { min-height: 40px; padding: 6px 12px; border: 0; border-left: 1px solid var(--linie); background: transparent; color: var(--schrift); font: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+.dsa-schalter-knopf { min-height: 46px; padding: 8px 16px; border: 0; border-left: 1px solid var(--linie); background: transparent; color: var(--schrift); font: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; }
 .dsa-schalter-knopf:first-child { border-left: 0; }
 .dsa-schalter-knopf[aria-pressed="true"] { background: var(--bereich); color: var(--schrift-auf-farbe); }
 .dsa-schalter-knopf:focus-visible { outline: 3px solid var(--bereich); outline-offset: -3px; }
@@ -1183,7 +1183,7 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
 @media (max-width: 599px) {
     .dsa-schalter-lang { display: none; }
     .dsa-schalter-kurz { display: inline; }
-    .dsa-schalter-knopf { padding: 6px 10px; }
+    .dsa-schalter-knopf { padding: 8px 12px; }
     .dsa-teilen-text { display: none; }
     .dsa-teilen { min-width: 44px; padding-left: 10px; padding-right: 10px; }
 }
@@ -1206,3 +1206,11 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
 .dsa-dm-knoepfe .meldung { margin: 0; }
 .dsa-dm-knoepfe .knopf[disabled] { opacity: 0.5; cursor: default; }
 .dsa-abschnitte .dsa-abschnitt-inhalt > .meldung:empty { display: none; }
+
+/* Pen & Paper 0.6.9: Marke DSA rechts, nur weiß umrandet (Wunsch der Person, 1.11.2026); Bilder je Abenteuer */
+.dsa-leiste .dsa-marke { margin-left: auto; padding: 4px 12px; border: 2px solid #FFFFFF; background: transparent; color: var(--schrift); font-size: 0.85rem; }
+.dsa-ab-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
+.dsa-ab-bilder { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 6px; margin: 0 0 10px; }
+.dsa-ab-bild { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; padding: 0; overflow: hidden; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: inherit; font: inherit; cursor: zoom-in; }
+.dsa-ab-bild img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.dsa-ab-bild:focus-visible { outline: 3px solid var(--bereich); outline-offset: 2px; }

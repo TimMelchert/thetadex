@@ -16,7 +16,7 @@ var KOEPFE_ = {
   boegen: ["id", "name", "regelwerk", "kopf", "eigenschaften", "zaehler", "bild", "freigabe", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
   eintraege: ["id", "bogen_id", "abschnitt", "gruppe", "name", "wert", "probe", "felder", "text", "reihenfolge", "erstellt_am", "geaendert_am", "geloescht"],
   verlauf: ["id", "bogen_id", "zaehler", "aenderung", "notiz", "datum", "erstellt_am", "geaendert_am", "geloescht"],
-  abenteuer: ["id", "bogen_id", "art", "titel", "text", "abgeschlossen", "erstellt_am", "geaendert_am", "geloescht"],
+  abenteuer: ["id", "bogen_id", "art", "titel", "text", "abgeschlossen", "bilder", "erstellt_am", "geaendert_am", "geloescht"],
   sessions: ["id", "abenteuer_id", "datum", "text", "erstellt_am", "geaendert_am", "geloescht"]
 };
 // Diese Spalten bleiben im Sheet reiner Text (kein Datum, keine Zahl)
@@ -24,7 +24,7 @@ var TEXT_SPALTEN_ = {
   boegen: ["id", "name", "regelwerk", "kopf", "eigenschaften", "zaehler", "bild", "freigabe", "notiz"],
   eintraege: ["id", "bogen_id", "abschnitt", "gruppe", "name", "wert", "probe", "felder", "text"],
   verlauf: ["id", "bogen_id", "zaehler", "notiz", "datum"],
-  abenteuer: ["id", "bogen_id", "art", "titel", "text"],
+  abenteuer: ["id", "bogen_id", "art", "titel", "text", "bilder"],
   sessions: ["id", "abenteuer_id", "datum", "text"]
 };
 // Arten im Blatt „abenteuer“: spieler = Abenteuer eines Charakters (mit Sessions), dm = Abenteuer, das die Person leitet,
@@ -52,7 +52,8 @@ var MAX_ZAEHLER_ = 6;
 var MAX_MODS_ = 20;
 var MAX_EINTRAEGE_ = 1000;
 var MAX_ABENTEUER_ = 500;
-var MAX_SESSIONS_ = 300;              // je Abenteuer            // je Bogen
+var MAX_SESSIONS_ = 300;              // je Abenteuer
+var MAX_AB_BILDER_ = 30;              // Bilder je gespieltem Abenteuer (ab 0.6.9)
 var MAX_ZAHL_ = 1000000;              // Start, Höchstwert und Änderung eines Zählers
 var BILD_ORDNER_NAME_ = "Thetadex DSA";
 var MAX_BILD_TEXT_ = 4000000;
@@ -260,6 +261,7 @@ function abenteuerAus_(z, sp) {
     titel: ohneSchutz_(zelle_(z, sp, "titel")),
     text: ohneSchutz_(zelle_(z, sp, "text")),
     abgeschlossen: istWahr_(zelle_(z, sp, "abgeschlossen")),
+    bilder: bilderListe_(zelle_(z, sp, "bilder")),
     geaendert_am: stempel_(zelle_(z, sp, "geaendert_am"))
   };
 }
@@ -346,7 +348,8 @@ function doPost(e) {
     eintrag_speichern: eintragSpeichern_, eintrag_loeschen: eintragLoeschen_,
     verlauf_neu: verlaufNeu_, freigabe: freigabe_,
     abenteuer_speichern: abenteuerSpeichern_, abenteuer_loeschen: abenteuerLoeschen_,
-    session_speichern: sessionSpeichern_, session_loeschen: sessionLoeschen_
+    session_speichern: sessionSpeichern_, session_loeschen: sessionLoeschen_,
+    abenteuer_bild: abenteuerBild_, abenteuer_bild_weg: abenteuerBildWeg_
   };
   try {
     if (data.action === "ping") return jsonOut_({ ok: true });
@@ -445,7 +448,13 @@ function geteilt_(data) {
   ids[bogen.id] = true;
   var ab = abenteuerListe_(ids);
   var abenteuer = ab.abenteuer.filter(function (x) { return x.art === "spieler" && x.bogen_id === bogen.id; })
-    .map(function (x) { return { id: x.id, bogen_id: x.bogen_id, art: x.art, titel: x.titel, text: x.text }; });
+    .map(function (x) { return { id: x.id, bogen_id: x.bogen_id, art: x.art, titel: x.titel, text: x.text, bilder: x.bilder }; });
+  // Ein Bild eines gespielten Abenteuers dieses Bogens nachladen (ab 0.6.9): nur Bilder, die dort eingetragen sind
+  if (data.bild != null) {
+    var bid = driveKennung_(data.bild);
+    if (!bid || !abenteuer.some(function (x) { return x.bilder.indexOf(bid) >= 0; })) return { error: "eingabe", message: "Unbekanntes Bild." };
+    return bildDaten_(bid);
+  }
   var aids = {};
   abenteuer.forEach(function (x) { aids[x.id] = true; });
   var sessions = ab.sessions.filter(function (x) { return aids[x.abenteuer_id]; })
@@ -761,6 +770,45 @@ function sessionLoeschen_(data) {
   });
 }
 
+// Bilder eines gespielten Abenteuers (ab 0.6.9): Spalte „bilder“ = JSON-Liste von Drive-Kennungen, Dateien im Ordner „Thetadex DSA“
+function bilderListe_(v) {
+  var liste = json_(v, []);
+  return Array.isArray(liste) ? liste.map(function (x) { return String(x); }).filter(function (x) { return /^[A-Za-z0-9_-]{20,}$/.test(x); }) : [];
+}
+
+function spielerAbenteuer_(data) {
+  var sheet = blatt_("abenteuer"), sp = spalten_(sheet);
+  var z = zeileFuer_(sheet, sp, { id: data.abenteuer_id, geaendert_am: data.geaendert_am });
+  if (z.neu) throw new Eingabe_("Welches Abenteuer?");
+  if (String(z.zeile[sp.art]) !== "spieler") throw new Eingabe_("Bilder gibt es nur bei gespielten Abenteuern.");
+  return { sheet: sheet, sp: sp, z: z, bilder: bilderListe_(z.zeile[sp.bilder]) };
+}
+
+// Neues Bild hochladen und hinten anhängen
+function abenteuerBild_(data) {
+  return mitPruefung_(function () {
+    var a = spielerAbenteuer_(data);
+    if (a.bilder.length >= MAX_AB_BILDER_) throw new Eingabe_("Höchstens " + MAX_AB_BILDER_ + " Bilder je Abenteuer.");
+    if (!data.bild_daten) throw new Eingabe_("Bitte ein Bild wählen.");
+    var bild = bildAus_({ bild_daten: data.bild_daten, name: data.name || "Abenteuer" });
+    if (bild.fehler) throw new Eingabe_(bild.fehler);
+    a.bilder.push(bild.id);
+    schreibeZeile_(a.sheet, a.sp, a.z, { bilder: JSON.stringify(a.bilder) });
+    return { bild: bild.id };
+  });
+}
+
+// Bild vom Abenteuer abnehmen. Die Datei bleibt im Drive-Ordner (zurückholbar).
+function abenteuerBildWeg_(data) {
+  return mitPruefung_(function () {
+    var a = spielerAbenteuer_(data);
+    var id = String(data.bild || "");
+    if (a.bilder.indexOf(id) < 0) throw new Eingabe_("Das Bild gehört nicht (mehr) zu diesem Abenteuer. Bitte neu laden.");
+    schreibeZeile_(a.sheet, a.sp, a.z, { bilder: JSON.stringify(a.bilder.filter(function (x) { return x !== id; })) });
+    return { ok: true };
+  });
+}
+
 // Langer Text mit eigener Grenze (Zeilenumbrüche bleiben)
 function freiLang_(v, max) {
   var t = String(v == null ? "" : v);
@@ -843,6 +891,11 @@ function bildLesen_(data) {
   var id = driveKennung_(data.bild);
   var sheet = blatt_("boegen"), sp = spalten_(sheet);
   var bekannt = id && lebende_(sheet, sp).some(function (r) { return String(r.zeile[sp.bild]).trim() === id; });
+  if (id && !bekannt) {
+    var ids = {};
+    lebende_(sheet, sp).forEach(function (r) { ids[String(r.zeile[sp.id])] = true; });
+    bekannt = abenteuerListe_(ids).abenteuer.some(function (a) { return a.art === "spieler" && a.bilder.indexOf(id) >= 0; });
+  }
   if (!bekannt) return { error: "eingabe", message: "Unbekanntes Bild." };
   return bildDaten_(id);
 }

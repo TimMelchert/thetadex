@@ -207,7 +207,7 @@ export function render(container, ctx = {}) {
         on: { click: () => { if (nurLesen) modusGeteilt = k; else schreiben('dsa_modus', k); zeigeAlles(); } }
     }, [el('span', { class: 'dsa-schalter-lang', text: lang }), el('span', { class: 'dsa-schalter-kurz', text: kurz, attrs: { 'aria-hidden': 'true' } })]));
     const schalter = el('div', { class: 'dsa-schalter', attrs: { role: 'group', 'aria-label': 'Ansicht' } }, schalterKnoepfe);
-    const leiste = el('div', { class: 'dsa-leiste' }, [marke, schalter, teilenKnopf]);
+    const leiste = el('div', { class: 'dsa-leiste' }, [schalter, marke, teilenKnopf]);
     const nameZeile = el('div', { class: 'dsa-name-zeile', attrs: { hidden: true } }, [bogenName, namePfeil, auswahl]);
     const oben = el('div', { class: 'dsa-oben', attrs: { hidden: true } });
     const abschnitte = el('div', { class: 'dsa-abschnitte' });
@@ -251,7 +251,8 @@ export function render(container, ctx = {}) {
         marke.textContent = bogen ? (bogen.regelwerk === 'dnd' ? 'DnD' : 'DSA') : '';
         leeren(oben);
         leeren(abschnitte);
-        oben.hidden = !mitBogen;
+        // Bei Abenteuer ohne die klebende Leiste mit Zählern und Eigenschaften (Wunsch der Person, 1.11.2026)
+        oben.hidden = !mitBogen || m === 'abenteuer';
         if (daten && m === 'dm') {
             abschnitte.append(...dmAnsicht(helfer()));
             return;
@@ -260,16 +261,26 @@ export function render(container, ctx = {}) {
             if (daten && !nurLesen) abschnitte.append(el('p', { class: 'leise', text: 'Noch kein Bogen. Lege mit „+ Bogen“ den ersten an.' }));
             return;
         }
-        zeigeOben(bogen);
         if (m === 'abenteuer') {
             abschnitte.append(...abenteuerAnsicht(helfer(), bogen));
             return;
         }
+        zeigeOben(bogen);
         abschnitte.append(...[kopfKarte(bogen), eigenschaftenKarte(bogen), nurLesen ? null : verlaufKarte(bogen), ...LISTEN.map((def) => listenKarte(bogen, def))].filter(Boolean));
     }
 
     // Helfer für js/views/dsa-abenteuer.js
-    const helfer = () => ({ daten, nurLesen, karte, oeffneDialog, senden, formKnoepfe, textFeld, feld, dialog, zeigeAlles, datumText, offen });
+    const helfer = () => ({ daten, nurLesen, karte, oeffneDialog, senden, formKnoepfe, textFeld, feld, dialog, zeigeAlles, datumText, offen, holeBild: holeAbBild, jetzt: () => daten });
+    // Bild eines gespielten Abenteuers (ab 0.6.9): mit Passwort wie das Bogenbild, im geteilten Link über „geteilt“ mit dem Schlüssel
+    async function holeAbBild(id) {
+        if (!nurLesen) return holeBild(id);
+        const key = 'geteilt-ab-' + id;
+        if (bilder.has(key)) return bilder.get(key);
+        const adresse = bildAdresse(await apiOeffentlich('https://script.google.com/macros/s/' + geteilt.kennung + '/exec', 'geteilt', { schluessel: geteilt.schluessel, bild: id }));
+        if (!adresse) throw new Error('Unbekannte Bildart.');
+        bilder.set(key, adresse);
+        return adresse;
+    }
 
     // Zähler (Geld, LeP, AsP, AP) und Eigenschaften-Leiste, kleben beim Scrollen oben
     function zeigeOben(bogen) {

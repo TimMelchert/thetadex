@@ -2,10 +2,13 @@
 // Abenteuer: gehören zu genau einem Charakter, darin Sessions mit Datum und kurzem Text. Der geteilte Link zeigt sie (nur lesen).
 // DM: ein Textfeld „Abenteuerideen“ und Abenteuer, die die Person leitet (Titel, Text, Haken „abgeschlossen“).
 // DM-Inhalte gibt das Skript nie über den geteilten Link heraus.
-// h = Helfer aus js/views/dsa.js: daten, nurLesen, karte, oeffneDialog, senden, formKnoepfe, textFeld, feld, dialog, zeigeAlles, datumText
+// Ab 0.6.9: Bilder je gespieltem Abenteuer (Wunsch der Person, 1.11.2026), auch im geteilten Link zu sehen.
+// h = Helfer aus js/views/dsa.js: daten, nurLesen, karte, oeffneDialog, senden, formKnoepfe, textFeld, feld, dialog, zeigeAlles, datumText,
+//     offen, holeBild (lädt ein Bild nach), jetzt (die aktuellen Daten nach dem Senden)
 
 import { el, heute, kalenderBeiKlick } from '../ui/dom.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
+import { verkleinereBild } from '../ui/bild.js';
 
 const MAX_ATEXT = 10000;
 const MAX_STEXT = 3000;
@@ -35,6 +38,8 @@ export function abenteuerAnsicht(h, bogen) {
         const sessions = sessionsVon(a);
         const inhalt = [];
         if (a.text) inhalt.push(el('p', { class: 'dsa-notiz dsa-ab-text', text: a.text }));
+        const fotos = Array.isArray(a.bilder) ? a.bilder : [];
+        if (fotos.length) inhalt.push(bilderLeiste(h, a, fotos));
         if (sessions.length) {
             inhalt.push(el('ol', { class: 'dsa-sessions' }, sessions.map((s) => {
                 const kinder = [el('span', { class: 'dsa-session-datum', text: h.datumText(s.datum, true) }), el('span', { class: 'dsa-notiz dsa-session-text', text: s.text || '–' })];
@@ -45,11 +50,85 @@ export function abenteuerAnsicht(h, bogen) {
             inhalt.push(el('p', { class: 'leise', text: nurLesen ? 'Noch keine Session.' : 'Noch keine Session. Tippe auf +.' }));
         }
         if (!nurLesen) {
-            inhalt.push(el('button', { class: 'knopf knopf-zweit dsa-klein', text: '✎ Abenteuer bearbeiten', attrs: { type: 'button' }, on: { click: () => zeigeAbenteuerForm(h, bogen, a) } }));
+            const st = status();
+            const datei = el('input', { class: 'unsichtbar', attrs: { id: 'dsa-ab-bild-' + a.id, type: 'file', accept: 'image/*', multiple: true, tabindex: '-1', 'aria-hidden': 'true' } });
+            datei.addEventListener('change', () => ladeHoch(h, a, [...datei.files], st, knoepfe));
+            const knoepfe = [
+                el('button', { class: 'knopf knopf-zweit dsa-klein', text: '✎ Abenteuer bearbeiten', attrs: { type: 'button' }, on: { click: () => zeigeAbenteuerForm(h, bogen, a) } }),
+                el('button', { class: 'knopf knopf-zweit dsa-klein', text: '🖼 Bild anhängen', attrs: { type: 'button' }, on: { click: () => datei.click() } })
+            ];
+            inhalt.push(el('div', { class: 'dsa-ab-knoepfe' }, [...knoepfe, datei]), st);
         }
         teile.push(h.karte('ab-' + a.id, a.titel, { zeichen: '+', label: 'Neue Session bei ' + a.titel, tun: () => zeigeSessionForm(h, a, null) }, inhalt, sessions.length));
     });
     return teile;
+}
+
+// Vorschaubilder eines Abenteuers. Tipp zeigt das Bild groß (mit Passwort auch „Bild entfernen“).
+function bilderLeiste(h, a, fotos) {
+    return el('div', { class: 'dsa-ab-bilder' }, fotos.map((id, i) => {
+        const bild = el('img', { attrs: { alt: 'Bild ' + (i + 1) + ' zu ' + a.titel, hidden: true, loading: 'lazy' } });
+        const text = el('span', { class: 'leise', text: '…' });
+        h.holeBild(id)
+            .then((adresse) => { bild.src = adresse; bild.hidden = false; text.remove(); })
+            .catch(() => { text.textContent = '⚠'; text.title = 'Bild nicht geladen'; });
+        return el('button', {
+            class: 'dsa-ab-bild', attrs: { type: 'button', 'aria-label': 'Bild ' + (i + 1) + ' groß zeigen' },
+            on: { click: () => { if (!bild.hidden) zeigeGross(h, a, id, bild.src, i, fotos.length); } }
+        }, [bild, text]);
+    }));
+}
+
+function zeigeGross(h, a, id, src, i, n) {
+    const st = status();
+    const zu = el('button', { class: 'knopf knopf-zweit', text: 'Schließen', attrs: { type: 'button' }, on: { click: () => h.dialog.close() } });
+    const knoepfe = [zu];
+    if (!h.nurLesen) {
+        knoepfe.unshift(el('button', {
+            class: 'knopf knopf-zweit', text: 'Bild entfernen', attrs: { type: 'button' },
+            on: {
+                click: async () => {
+                    if (!confirm('Bild vom Abenteuer entfernen? (Die Datei bleibt im Drive-Ordner „Thetadex DSA“.)')) return;
+                    const jetzt = h.jetzt().abenteuer.find((x) => x.id === a.id) || a;
+                    if (!await h.senden(st, knoepfe, 'abenteuer_bild_weg', { abenteuer_id: a.id, geaendert_am: jetzt.geaendert_am, bild: id })) return;
+                    h.dialog.close();
+                    h.zeigeAlles();
+                    zeigeGespeichert('Entfernt');
+                }
+            }
+        }));
+    }
+    h.oeffneDialog(a.titel + (n > 1 ? ' · Bild ' + (i + 1) + ' von ' + n : ''), [
+        el('img', { class: 'besitz-dialog-bild', attrs: { src, alt: 'Bild ' + (i + 1) + ' zu ' + a.titel } }),
+        st,
+        el('div', { class: 'besitz-form-knoepfe' }, knoepfe)
+    ]);
+}
+
+// Gewählte Bilder nacheinander verkleinern und hochladen
+async function ladeHoch(h, a, dateien, st, knoepfe) {
+    if (!dateien.length) return;
+    let fertig = 0;
+    for (const datei of dateien) {
+        let daten;
+        try {
+            st.textContent = 'Verkleinere Bild ' + (fertig + 1) + ' von ' + dateien.length + ' …';
+            daten = await verkleinereBild(datei);
+        } catch (e) {
+            st.textContent = e.message;
+            break;
+        }
+        const jetzt = h.jetzt().abenteuer.find((x) => x.id === a.id);
+        if (!jetzt) { st.textContent = 'Das Abenteuer gibt es nicht mehr. Bitte neu laden.'; break; }
+        const name = String(datei.name || 'Bild').replace(/\.[^.]*$/, '').slice(0, 60);
+        if (!await h.senden(st, knoepfe, 'abenteuer_bild', { abenteuer_id: a.id, geaendert_am: jetzt.geaendert_am, name, bild_daten: daten.replace(/^data:image\/jpeg;base64,/, '') })) break;
+        fertig += 1;
+    }
+    if (fertig) {
+        h.offen.add('ab-' + a.id);
+        h.zeigeAlles();
+        zeigeGespeichert(fertig > 1 ? fertig + ' Bilder angehängt' : 'Bild angehängt');
+    }
 }
 
 function zeigeAbenteuerForm(h, bogen, a) {
