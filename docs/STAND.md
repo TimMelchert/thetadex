@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.6.12** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.7.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
@@ -12,7 +12,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
-- Nächster Schritt: Etappe 7 „Umstieg und Aufräumen“ (7.2). Vor Etappe 7 kommt ihr eigener Plan. Danach Etappe 8 „Prüfen und Version 1.0.0“ und Etappe 9 „Kontowecker“.
+- Etappe 7 „Umstieg und Aufräumen“ läuft, Plan in `docs/PLAN-ETAPPE-7.md`. Zuerst macht die Person den Umstieg (7.4, Anleitung in den Projektdateien), danach 7.1 Bericht „Ungenutztes und Verweise“. Danach Etappe 8 „Prüfen und Version 1.0.0“ und Etappe 9 „Kontowecker“.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -563,7 +563,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper.
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-7.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`).
@@ -685,7 +685,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Würfel W4, W6, W20.
   - Die Eigenschaften sind eine Liste aus Kürzel, Name und Wert. So passt auch der DnD-Bogen (STR, DEX …) ohne Sonderbau.
   - Teilen per Link ohne Passwort, nur lesen (4 „DSA teilen“).
-- **Etappe 7 „Umstieg und Aufräumen“ (0.7.x)** – geplant (Wunsch der Person, 1.11.2026). Aufräumen kommt vor dem Prüfen,
+- **Etappe 7 „Umstieg und Aufräumen“ (0.7.x)** – läuft, Plan in `docs/PLAN-ETAPPE-7.md` (Wunsch der Person, 1.11.2026). Aufräumen kommt vor dem Prüfen,
   damit Etappe 8 den sauberen Stand prüft (Entscheidung der Person, 1.11.2026).
   - **Umstieg (Tor von Etappe 2, 3.2):** alte Bereitstellungen archivieren, alte Apps vom Startbildschirm, alte Repos löschen.
     Claude schreibt dafür eine genaue Anleitung mit allen Klicks; die Person macht es von Hand. Vorher prüft Claude, dass nichts mehr die alten Adressen braucht.
@@ -789,6 +789,8 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.6.9** Bilder je gespieltem Abenteuer (auch im geteilten Link), Marke DSA rechts und nur umrandet, größerer Schalter, Abenteuer ohne klebende Leiste.
 - **0.6.10** Etappe 6 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-6.md` gelöscht.
 - **0.6.11–0.6.12** Weitere Etappen geplant: 7 „Umstieg und Aufräumen“, 8 „Prüfen und Version 1.0.0“ (mit Geschwindigkeit und Datensicherung), 9 „Kontowecker“. Heute-Übersicht entfällt.
+- **Etappe 7** Umstieg und Aufräumen. **0.7.0** Schritt 7.0: Plan `docs/PLAN-ETAPPE-7.md` (Bericht Ungenutztes, App und Skripte aufräumen, Umstieg mit Anleitung).
+- **0.7.1** Antworten zum Plan: Umstieg zuerst (1.11.2026), Bericht nur privat, alte Zweige löschen, STAND.md mit aufräumen.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
