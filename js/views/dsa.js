@@ -7,7 +7,7 @@
 // nur lesen: ein Bogen mit den aktuellen Werten und Würfel, ohne Verlauf und ohne Knöpfe zum Ändern (Aktion „geteilt“).
 // Daten aus dem Skript „dsa“ (eigenes Sheet „DSA“). Nur mit Passwort.
 // Die Bögen liegen nur im Arbeitsspeicher, solange die Seite offen ist. Im Gerät steht nur, welcher Bogen gewählt war
-// (thetadex_dsa_bogen). Siehe docs/PLAN-ETAPPE-6.md.
+// (thetadex_dsa_bogen). Siehe docs/STAND.md 4 „Pen & Paper, Sheet ‚DSA‘“.
 
 import { el, leeren } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';

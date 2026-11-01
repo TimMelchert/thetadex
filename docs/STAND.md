@@ -4,15 +4,15 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.6.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.6.10** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
-- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`. Gebaut: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen, Kopf und Eigenschaften; dazu Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte), 6.2 (Listen), 6.3 (Zauber und Waffen), 6.4 (Verlauf), 6.5 (Würfel und Bild), 6.6 (Teilen), 6.7 (Faëlandel übertragen, Tabellen in den Projektdateien), 6.8a (Anmerkungen zum Aussehen), 6.8b (Abenteuer und DM), 6.8c (Bilder je Abenteuer, Marke und Schalter).
-- Nächster Schritt: weitere Anmerkungen der Person, danach Abschluss der Etappe (Plan hier einarbeiten und löschen).
+- Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
+- Nächster Schritt: Etappe 7 „Ausbau“ (freiwillig, 7.2) oder neue Wünsche der Person. Vor Etappe 7 kommt ihr eigener Plan.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -256,7 +256,7 @@ unter „Info“ die Version prüfen.
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt, seit 5.5 in `termine` umgezogen) |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
-  | DSA | `boegen` (ein Bogen je Zeile), `eintraege` (eine Zeile je Vorteil, Talent, Zauber, Waffe, Gegenstand), `verlauf` (Geld, AP, AsP, LeP); Spalten im Plan der Etappe 6 |
+  | DSA | `boegen` (ein Bogen je Zeile), `eintraege` (eine Zeile je Vorteil, Talent, Zauber, Waffe, Gegenstand), `verlauf` (Geld, AP, AsP, LeP), `abenteuer`, `sessions`; Spalten in 4 „Pen & Paper, Sheet ‚DSA‘“ |
 
 ---
 
@@ -309,7 +309,11 @@ unter „Info“ die Version prüfen.
   gleich unter der Suche; im Gericht-Formular „+ Neues Lebensmittel“ mit Name, Abteilung und Einheit, kommt gleich als Zutat dazu.
   Gemeinsam nutzen (4.5): Reiter erscheinen nach eingetragenen Script-Adressen. „Verbindung prüfen“ zeigt bei `gemeinsam`, ob als Hauptperson oder Partner*in angemeldet.
 - Etappe 5 (fertig): Reiter Uni im Sheet „Gemeinsam“ (Skript `gemeinsam`), Regeln in 4 „Uni, Sheet ‚Gemeinsam‘“.
-- Etappe 6 (läuft, Plan `docs/PLAN-ETAPPE-6.md`): Sheet „DSA“ mit Skript `dsa` (6.1): Blätter `boegen`, `eintraege`, `verlauf`, ab 0.6.8 `abenteuer`, `sessions`; alle Aktionen der Etappe
+  Semester (5.1), Kalender mit Woche, Monat, Liste, Filter nach Art, „einmal anders“ und ohne Netz (5.2), Arbeitsstunden (5.3),
+  Module mit Master-Übersicht (5.4). Umbau nach Anmerkungen (5.5): kein Stundenplan mehr (in `termine` umgezogen), Kurse je Modul,
+  Termine jede Woche an bestimmten Tagen, Prüfungen „bestanden“, Auflagen getrennt. 5.6: Art der Prüfung bei der Prüfung, ein Knopf „+ Prüfung“,
+  Prüfung gleich beim Anlegen von Modul und Kurs, Woche am Handy als Raster, Art Hobby. 5.7: Hobby dunkelgrün, Text in den Kästen gekürzt, Linie „jetzt“.
+- Etappe 6 (fertig, Regeln in 4 „Pen & Paper, Sheet ‚DSA‘“): Sheet „DSA“ mit Skript `dsa` (6.1): Blätter `boegen`, `eintraege`, `verlauf`, ab 0.6.8 `abenteuer`, `sessions`; alle Aktionen der Etappe
   (`ping`, `liste`, `bogen_speichern`, `bogen_loeschen`, `eintrag_speichern`, `eintrag_loeschen`, `verlauf_neu`, `bild`, `freigabe`,
   `abenteuer_speichern`, `abenteuer_loeschen`, `session_speichern`, `session_loeschen`, ab 0.6.9 `abenteuer_bild`, `abenteuer_bild_weg`,
   ohne Passwort `geteilt`, auch mit `bild` für ein Abenteuer-Bild). Funktion `einrichten`.
@@ -325,6 +329,9 @@ unter „Info“ die Version prüfen.
   Bild (6.5): im Kopf-Fenster hochladen (App verkleinert) oder Drive-Link, Ordner „Thetadex DSA“; steht links neben dem Kopf. Wird nur mitgeschickt, wenn es sich ändert.
   Teilen (6.6): Knopf „🔗 Teilen“ (heißt „🔗 Geteilt“, wenn ein Link gilt): „Link erstellen“, „Link kopieren“, „Senden …“ (wenn das Gerät es kann),
   „Neuen Link erstellen“, „Nicht mehr teilen“. Den Schlüssel gibt das Skript nur beim Erstellen heraus; die App merkt ihn in `thetadex_dsa_links`.
+  Wurde der Link an einem anderen Gerät erstellt, hilft nur „Neuen Link erstellen“. Die Adresse `#/bogen/<skript>/<schluessel>` nutzt dieselbe Ansicht
+  (`js/views/dsa.js`, Route `bogen` in `js/app.js`) im Modus „nur lesen“: ohne Passwort, ohne Verlauf, ohne Knöpfe zum Ändern, Tipp auf einen Eintrag zeigt ihn nur an.
+  Bogen Faëlandel (6.7): Tabellen zum Einfügen ins Sheet liegen in den Projektdateien (`etappe-6/bogen-faelandel/`), nie im Repo. Die anderen Bögen trägt die Person in der App ein.
   Aussehen (0.6.7, Wunsch der Person): Marke DSA/DnD und „🔗 Teilen“ in einer Zeile über dem Namen; der Name ist eine große fette Überschrift
   mit Pfeil, darüber liegt unsichtbar die Bogen-Auswahl. Geld als Münzen untereinander (Gold D, Silber S, Bronze H, Eisen K, nur mit Anzahl; am PC mit Namen).
   Bild links: der Kasten hat das Seitenverhältnis des Bildes, so hoch wie der Kopf-Text (am Handy höchstens gut ein Drittel breit, dann niedriger).
@@ -337,12 +344,6 @@ unter „Info“ die Version prüfen.
   Der geteilte Link zeigt Bogen und Abenteuer des Charakters (nur lesen), nie DM.
   Bilder je gespieltem Abenteuer (0.6.9): „🖼 Bild anhängen“ (mehrere auf einmal, App verkleinert), Vorschau als Raster, Tipp zeigt groß,
   dort „Bild entfernen“ (Datei bleibt im Drive). Im geteilten Link zu sehen, ohne Entfernen.
-  Wurde der Link an einem anderen Gerät erstellt, hilft nur „Neuen Link erstellen“. Die Adresse `#/bogen/<skript>/<schluessel>` nutzt dieselbe Ansicht
-  (`js/views/dsa.js`, Route `bogen` in `js/app.js`) im Modus „nur lesen“: ohne Passwort, ohne Verlauf, ohne Knöpfe zum Ändern, Tipp auf einen Eintrag zeigt ihn nur an.
-  Semester (5.1), Kalender mit Woche, Monat, Liste, Filter nach Art, „einmal anders“ und ohne Netz (5.2), Arbeitsstunden (5.3),
-  Module mit Master-Übersicht (5.4). Umbau nach Anmerkungen (5.5): kein Stundenplan mehr (in `termine` umgezogen), Kurse je Modul,
-  Termine jede Woche an bestimmten Tagen, Prüfungen „bestanden“, Auflagen getrennt. 5.6: Art der Prüfung bei der Prüfung, ein Knopf „+ Prüfung“,
-  Prüfung gleich beim Anlegen von Modul und Kurs, Woche am Handy als Raster, Art Hobby. 5.7: Hobby dunkelgrün, Text in den Kästen gekürzt, Linie „jetzt“.
 
 ### 3.2 Offen
 
@@ -352,9 +353,8 @@ unter „Info“ die Version prüfen.
   3. Alte Repos `Tracking-Leben` und `App-Finazen-Tabelle` löschen: GitHub → Repo → Settings → ganz unten „Delete this repository“
      (die ZIP-Sicherung aus Schritt 0.0 bleibt).
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
-- Ein Beispiel-Charakterbogen zum Verständnis (kommt nicht ins Repo).
 - Später als eigener Schritt (Entscheidung der Person, 30.10.2026): Kommentare in den Skripten, die auf gelöschte Plan-Dateien zeigen, aufräumen
-  (`apps-script/leben`, `gemeinsam` (zeigt noch auf `PLAN-ETAPPE-5.md`), `finanzen`, `tracking`). Dann müssen die Skripte neu eingefügt werden.
+  (`apps-script/leben`, `gemeinsam` (zeigt noch auf `PLAN-ETAPPE-5.md`), `finanzen`, `tracking`, `dsa` (zeigt noch auf `PLAN-ETAPPE-6.md`)). Dann müssen die Skripte neu eingefügt werden.
 
 ---
 
@@ -412,13 +412,39 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
   Der Link enthält die Skript-Kennung und diesen Schlüssel, nie das Passwort. „Neuen Link erstellen“ macht alte Links ungültig.
   Die geteilte Ansicht zeigt den ganzen Bogen, aber keine Knöpfe zum Ändern. Grund: Bögen sollen ohne Passwort an andere gehen.
-- **DSA Abenteuer** (0.6.8): Blatt `abenteuer` (`id, bogen_id, art, titel, text, abgeschlossen` + Standard), `art` = `spieler` (gehört zu einem Bogen),
-  `dm` (ohne Bogen, mit `abgeschlossen`) oder `ideen` (genau eine Zeile, das Textfeld „Abenteuerideen“). Text höchstens 10000 Zeichen.
-  Spalte `bilder` (ab 0.6.9): JSON-Liste von Drive-Kennungen, höchstens 30, nur bei `spieler`; Dateien im Ordner „Thetadex DSA“.
-  `bild` (mit Passwort) liefert auch diese Bilder; `geteilt` mit `bild` nur Bilder der Abenteuer dieses Bogens.
-  Blatt `sessions` (`id, abenteuer_id, datum, text` + Standard), nur zu `spieler`-Abenteuern, Datum JJJJ-MM-TT, Text höchstens 3000 Zeichen.
-  Löschen eines Bogens löscht seine Abenteuer und Sessions mit (weich), Löschen eines Abenteuers seine Sessions.
-  `geteilt` gibt nur `spieler`-Abenteuer des Bogens und ihre Sessions heraus, nie `dm` oder `ideen`. Fehlen die Blätter noch, läuft `liste` trotzdem.
+- **Pen & Paper, Sheet „DSA“** (Etappe 6, Plan eingearbeitet am 1.11.2026). Reiter heißt „Pen & Paper“; Kennung `dsa`, Adresse `#/dsa`, Skript `dsa`
+  und Sheet „DSA“ heißen weiter so. Eigenes Sheet und eigenes Skript: Ein Fehler beim Teilen kann nie andere Bereiche verraten (2.2).
+  Nur `APP_PIN` (Rolle Person), `PARTNER_PIN` kennt das Skript nicht. Ohne Passwort nur `geteilt`.
+  - **Keine Bögen im Repo:** keine Namen von Helden, keine Werte, keine Zauber-Texte, auch nicht in Beispielen, Tests oder Pull-Request-Texten.
+    Im Repo stehen nur allgemeine Spielbegriffe als Vorlage (Kürzel wie MU, KL, Namen der Talent-Gruppen). Tabellen zum Einfügen nur in den Projektdateien.
+  - **DnD wie DSA** (Entscheidung der Person, 31.10.2026): eine Vorlage für beide; Spalte `regelwerk` (`dsa`, `dnd`) zeigt nur die Marke. Eigenschaften,
+    Gruppen und Zähler sind frei änderbare Listen. Braucht DnD Anpassungen, meldet die Person sie.
+  - Alle Blätter haben zusätzlich `id, erstellt_am, geaendert_am, geloescht`; Löschen ist weich, Ändern schickt `geaendert_am` (Schutz vor Überschreiben).
+    | Blatt | Spalten (Grenzen) |
+    | --- | --- |
+    | `boegen` | `name` (Pflicht, 80), `regelwerk`, `kopf` (JSON, je Feld 80), `eigenschaften` (JSON-Liste Kürzel, Name, Wert, Gruppe; höchstens 40), `zaehler` (JSON-Liste Kürzel, Name, Art `geld`/`leben`/`ap`/`zahl`, Start, Höchstwert; höchstens 6), `bild` (Drive-Kennung), `freigabe` (Schlüssel, setzt das Skript), `notiz` (1000); höchstens 20 Bögen |
+    | `eintraege` | `bogen_id`, `abschnitt` (`vorteil`, `nachteil`, `sonderfertigkeit`, `gabe`, `talent`, `zauber`, `waffe`, `besitz`), `gruppe` (40), `name` (Pflicht, 80), `wert` (Text, 20), `probe` (30), `felder` (JSON, je Feld 200), `text` (3000), `reihenfolge` (0 bis 9999); höchstens 1000 je Bogen |
+    | `verlauf` | `bogen_id`, `zaehler` (muss es am Bogen geben), `aenderung` (ganze Zahl, ±1.000.000; Geld in Kreuzern), `notiz` (100), `datum` (setzt das Skript) |
+    | `abenteuer` | `bogen_id`, `art`, `titel` (80), `text` (10000), `abgeschlossen`, `bilder` (siehe unten) |
+    | `sessions` | `abenteuer_id`, `datum` (JJJJ-MM-TT), `text` (3000); höchstens 300 je Abenteuer |
+  - Weitere Felder je Abschnitt (`felder`): Zauber Kosten, Zauberdauer, Wirkungsdauer, Reichweite, Technik, Merkmale, Hauszauber, Modifikationen (höchstens 20);
+    Waffe Art, INI, AT, PA, TP, BE, Reichweite; Talent BE, Spezialisierung; Besitz Ort, Gewicht.
+  - Warum eine Zeile je Eintrag statt JSON-Spalten: Eine Zelle fasst höchstens 50.000 Zeichen, lange Zauber-Texte kämen an die Grenze.
+    So ist das Sheet lesbar, ein Eintrag lässt sich einzeln ändern, und Bögen lassen sich als Tabelle einfügen.
+  - **Stand eines Zählers** = Startwert plus alle Änderungen; Leben und AsP nie über dem Höchstwert, Geld nie unter 0. Geld: 1 Dukaten = 10 Silbertaler
+    = 100 Heller = 1000 Kreuzer. **AP** (Entscheidung der Person): „+“ gesammelt, „−“ ausgegeben; oben nur die gesammelten, im Verlauf beide.
+    Verlauf löschen nur im Sheet (wie ein Kassenbuch).
+  - **Geteilt:** nie `freigabe`, kein Verlauf (nur aktuelle Werte, Entscheidung der Person), nichts von anderen Bögen, nie DM oder Ideen.
+    Falsche Schlüssel zählen für eine Sperre (20 in 15 Minuten).
+  - Im Gerät nur die Wahl des Bogens (`thetadex_dsa_bogen`), die eigenen Links (`thetadex_dsa_links`) und die Ansicht (`thetadex_dsa_modus`).
+    Kein Bogen ohne Netz (Entscheidung der Person: online reicht). Fenster schließen nur mit × oder Abbrechen.
+  - Abenteuer (0.6.8): Blatt `abenteuer` (`id, bogen_id, art, titel, text, abgeschlossen` + Standard), `art` = `spieler` (gehört zu einem Bogen),
+    `dm` (ohne Bogen, mit `abgeschlossen`) oder `ideen` (genau eine Zeile, das Textfeld „Abenteuerideen“). Text höchstens 10000 Zeichen.
+    Spalte `bilder` (ab 0.6.9): JSON-Liste von Drive-Kennungen, höchstens 30, nur bei `spieler`; Dateien im Ordner „Thetadex DSA“.
+    `bild` (mit Passwort) liefert auch diese Bilder; `geteilt` mit `bild` nur Bilder der Abenteuer dieses Bogens.
+    Blatt `sessions` (`id, abenteuer_id, datum, text` + Standard), nur zu `spieler`-Abenteuern, Datum JJJJ-MM-TT, Text höchstens 3000 Zeichen.
+    Löschen eines Bogens löscht seine Abenteuer und Sessions mit (weich), Löschen eines Abenteuers seine Sessions.
+    `geteilt` gibt nur `spieler`-Abenteuer des Bogens und ihre Sessions heraus, nie `dm` oder `ideen`. Fehlen die Blätter noch, läuft `liste` trotzdem.
 - **Einkauf, Sheet „Gemeinsam“** (Etappe 4). Alle Blätter haben zusätzlich `id, erstellt_am, geaendert_am, geloescht`; Löschen ist weich.
   | Blatt | Spalten (Grenzen) |
   | --- | --- |
@@ -537,7 +563,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper.
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-6.md`).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`).
@@ -646,7 +672,8 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
     (Monatsraster, Woche, Tage zählen, Schriftfarbe auf Farbfläche) werden vereinfacht übernommen.
   - Master-Übersicht: welche Module erledigt sind, welche noch fehlen, wann und welche Prüfung dazu gehört.
   - Partner*in sieht Uni mit allen Zeiten, nur lesend (Rechte in 4).
-- **Etappe 6 „DSA und DnD“ (0.6.x)** – läuft, Plan `docs/PLAN-ETAPPE-6.md` (Reiter heißt „Pen & Paper“, DnD wie DSA aufgebaut, Würfel bis W20; der Plan gilt vor dieser Kurzfassung).
+- **Etappe 6 „DSA und DnD“ (0.6.x)** – fertig (1.11.2026), Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“). Gebaut wurde mehr und anders als hier:
+  Reiter „Pen & Paper“, DnD wie DSA, Würfel bis W20, dazu Abenteuer mit Sessions und DM (Wunsch der Person). Ursprünglicher Plan:
   - Ziel: neues Sheet „DSA“ mit Skript `dsa`. Vier Bögen (drei DSA, ein DnD), jeder einzeln wählbar, alle Daten in der App bearbeitbar.
   - Bogen zeigt: Kopf (Name, GP-Basis, Rasse, Kultur, Profession, Geschlecht, Alter, Größe, Gewicht, Haar- und Augenfarbe, Bild,
     Stand, Titel, Sozialstatus, Herkunft); Vor- und Nachteile; Eigenschaften und Basiswerte (MU, KL, IN, FF, GE, KO, KK zusätzlich
@@ -736,6 +763,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.6.7** Anmerkungen zum Aussehen: Name als Überschrift mit Auswahl, DSA und Teilen darüber, Geld als Münzen, Bild links im eigenen Seitenverhältnis und groß per Tipp, Kopf ohne Überschrift.
 - **0.6.8** Abenteuer und DM: Schalter Charakterbogen | Abenteuer | DM, Abenteuer mit Sessions je Charakter (auch im geteilten Link), DM mit Abenteuerideen und abschließbaren Abenteuern.
 - **0.6.9** Bilder je gespieltem Abenteuer (auch im geteilten Link), Marke DSA rechts und nur umrandet, größerer Schalter, Abenteuer ohne klebende Leiste.
+- **0.6.10** Etappe 6 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-6.md` gelöscht.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
