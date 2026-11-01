@@ -4,15 +4,15 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.7.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.7.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
-- Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
+- Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
-- Etappe 7 „Umstieg und Aufräumen“ läuft, Plan in `docs/PLAN-ETAPPE-7.md`. Zuerst macht die Person den Umstieg (7.4, Anleitung in den Projektdateien), danach 7.1 Bericht „Ungenutztes und Verweise“. Danach Etappe 8 „Prüfen und Version 1.0.0“ und Etappe 9 „Kontowecker“.
+- Etappe 7 „Umstieg und Aufräumen“ läuft, Plan in `docs/PLAN-ETAPPE-7.md`. Erledigt: Umstieg (7.4), Bericht (7.1), App aufräumen (7.2). Nächster Schritt: 7.3 Skripte aufräumen. Danach Etappe 8 „Prüfen und Version 1.0.0“ und Etappe 9 „Kontowecker“.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -173,7 +173,6 @@ unter „Info“ die Version prüfen.
 - Keine neuen Bibliotheken, keinen Build, keine Tracker, keine Cookies.
 - Keine Funktionen bauen, die nicht im Plan stehen. Ideen schreibst du unter „Rückfragen“.
 - Keine echten Personennamen oder Fotos mit Personen in Beispieldaten.
-- Die alten Repos (`Tracking-Leben`, `App-Finazen-Tabelle`) nicht ändern. Sie laufen bis zum Umstieg weiter.
 
 ### 1.10 Prüfungen
 
@@ -196,7 +195,7 @@ unter „Info“ die Version prüfen.
   Repo-Bereiche: `index.html`, `manifest.webmanifest`, `sw.js`, `docs/`, `icons/`,
   `css/` (base, layout, components), `js/` (app, config, api, store, ui/, views/), `vendor/` (lokale Bibliotheken, siehe 4),
   `apps-script/` (Code aller Google-Skripte, je Bereich ein Ordner).
-- Hash-Routing: `#/tracking`, `#/doener`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einstellungen`, `#/info` (die alte Adresse `#/einrichtung` leitet weiter).
+- Hash-Routing: `#/tracking`, `#/doener`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einstellungen`, `#/info`.
   Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“)
   und `#/doener/<skript>` (öffentliche Döner-Bewertung, siehe 4 „Döner öffentlich“).
   Unbekannte Adressen zeigen „Seite nicht gefunden“.
@@ -264,7 +263,7 @@ unter „Info“ die Version prüfen.
 
 ### 3.1 Stand
 
-- Zwei alte Apps laufen noch weiter, bis zum Umstieg (3.2): Repos `TimMelchert/Tracking-Leben` und `TimMelchert/App-Finazen-Tabelle` (öffentlich, GitHub Pages).
+- Die zwei alten Apps (Repos `Tracking-Leben` und `App-Finazen-Tabelle`) sind abgelöst (Umstieg 1.11.2026): alte Bereitstellungen archiviert, Repos gelöscht.
 - Skript-Code beider Apps liegt als Sicherung in den Projektdateien (`apps-script-backup/`).
   - Finanzen: Passwort in Skripteigenschaft `APP_PIN`, Sperre nach Fehlversuchen, `LockService`, Eingabeprüfung.
   - Tracking (ab 0.2): Passwort aus `APP_PIN`, Sperre, JSON-Antworten, `LockService`, Prüfung von Datum und Feldnamen.
@@ -347,11 +346,6 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
-- **ToDo für die Person (Umstieg, Tor von Etappe 2):** Nach etwa zwei Wochen nur mit Thetadex, wenn alles passt (in Etappe 7 mit genauer Anleitung):
-  1. Im Apps-Script-Editor je Sheet (Tracking, Finanzen): Bereitstellen → Bereitstellungen verwalten → **alte** Bereitstellung → Archivieren.
-  2. Alte Apps vom Startbildschirm entfernen.
-  3. Alte Repos `Tracking-Leben` und `App-Finazen-Tabelle` löschen: GitHub → Repo → Settings → ganz unten „Delete this repository“
-     (die ZIP-Sicherung aus Schritt 0.0 bleibt).
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
 - In Etappe 7 (Entscheidung der Person, 30.10.2026 und 1.11.2026): Kommentare in den Skripten, die auf gelöschte Plan-Dateien zeigen, aufräumen
   (`apps-script/leben`, `gemeinsam` (zeigt noch auf `PLAN-ETAPPE-5.md`), `finanzen`, `tracking`, `dsa` (zeigt noch auf `PLAN-ETAPPE-6.md`)). Dann müssen die Skripte neu eingefügt werden.
@@ -367,7 +361,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Beträge oder Geheimnisse enthält. Beträge, Kontostände, Buchungen und Namen erscheinen nie im Repo, auch nicht in Kommentaren,
   Beispielen oder Pull-Request-Texten.
 - **Daten bleiben in den bestehenden Sheets.** Kein Export oder Import. Die neue App spricht dieselben Sheets an.
-- **Jedes Skript bekommt beim Umzug eine neue Bereitstellung** (neue Adresse). Die alten Bereitstellungen werden erst nach dem Umstieg archiviert.
+- **Jedes Skript bekommt beim Umzug eine neue Bereitstellung** (neue Adresse). Die alten Bereitstellungen sind seit dem Umstieg (1.11.2026) archiviert.
 - **Chart.js** (Finanz-Auswertung) als lokale Datei in `vendor/`, feste Version 4.4.1, statt aus dem Internet. Grund: keine fremden Server. Bestätigt von der Person am 29.10.2026 (Ringe wie bisher statt CSS-Balken).
 - **Icons** als eigene SVG-Dateien statt Google Fonts (Material Icons). Grund: keine fremden Server.
 - **Erscheinungsbild** (entschieden am 29.10.2026):
@@ -473,7 +467,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     `semester_id` (belegt oder geplant), `notiz` (200). **Keine Noten** (stehen auf der Uni-Plattform).
   - `kurse`: `modul_id` (Pflicht), `name` (80), `ects`, `semester_id` (leer = wie das Modul), `tag` (1 = Montag … 7), `von`, `bis` (alle drei oder keins),
     `ort` (Raum, 60), `dozent` (60, freiwillig), `pruefungsleistung` (alt, nur noch zum Leeren sichtbar), `notiz`. Höchstens 300.
-  - `termine`: `titel` (80), `art` (`vorlesung`, `pruefung`, `arbeit`, `zug`, `urlaub`, `hobby`, `sonstiges`; alte `frei` gelten als Urlaub), `beginn`, `ende` (leer = eintägig,
+  - `termine`: `titel` (80), `art` (`vorlesung`, `pruefung`, `arbeit`, `zug`, `urlaub`, `hobby`, `sonstiges`; die alte Art `frei` gibt es nicht mehr, seit 0.7.2 kennt die App sie nicht), `beginn`, `ende` (leer = eintägig,
     höchstens 366 Tage), `von`, `bis` (beide oder keine = ganztägig), `tage` (Wochentage als Text, zum Beispiel `1,3`; dann ist `ende` Pflicht), `ort` (60),
     `modul_id`, `kurs_id` (der Kurs bestimmt das Modul), `stunde_id`, `bestanden` und `leistung` (Art der Prüfung, 80; beide nur bei Prüfungen), `notiz`. Höchstens 3000.
   - `uni_einstellungen` (`name`, `wert`): `ects_ziel`, `einrichten` legt 120 an; ändern im Sheet.
@@ -561,7 +555,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
-- `js/views/`: `start.js` (Kacheln), `platzhalter.js` (Reiter ohne Inhalt), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
+- `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper.
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-7.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
@@ -634,7 +628,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Reiter-Symbole (Wunsch der Person): jeder Reiter hat ein Symbol, am Handy nur das Symbol, am PC Symbol und Name.
     Ohne Einrichtung zeigt die Reiterleiste nur öffentliche Reiter.
   - Datenschutz: Nur Laden, Sterne, Begründung und Datum. Keine Namen, keine Geräte-Kennung.
-- **Etappe 2 „Bestehendes umziehen“ (0.2.x) – fertig bis auf den Umstieg (3.2).** So ist es gebaut (Schritte 2.0 bis 2.5, Pull Requests #14 bis #21):
+- **Etappe 2 „Bestehendes umziehen“ (0.2.x) – fertig, Umstieg am 1.11.2026.** So ist es gebaut (Schritte 2.0 bis 2.5, Pull Requests #14 bis #21):
   - Daten bleiben in den bestehenden Sheets, kein Export oder Import. Je Sheet kam nur ein Blatt `Einstellungen` dazu.
     Skript-Änderungen gehen nur in die Thetadex-Bereitstellung, die alten Apps laufen mit ihrer alten Bereitstellung weiter.
     Die Werte der alten Apps lagen als Tabellen zum Einfügen in den Projektdateien (`etappe-2/`), nie im Repo.
@@ -791,6 +785,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.6.11–0.6.12** Weitere Etappen geplant: 7 „Umstieg und Aufräumen“, 8 „Prüfen und Version 1.0.0“ (mit Geschwindigkeit und Datensicherung), 9 „Kontowecker“. Heute-Übersicht entfällt.
 - **Etappe 7** Umstieg und Aufräumen. **0.7.0** Schritt 7.0: Plan `docs/PLAN-ETAPPE-7.md` (Bericht Ungenutztes, App und Skripte aufräumen, Umstieg mit Anleitung).
 - **0.7.1** Antworten zum Plan: Umstieg zuerst (1.11.2026), Bericht nur privat, alte Zweige löschen, STAND.md mit aufräumen.
+- Umstieg (7.4) und Bericht (7.1) von der Person erledigt, alte Repos und Zweige gelöscht. **0.7.2** Schritt 7.2: Platzhalter, `etappe`, `#/einrichtung`, alte Art „frei“ und eine CSS-Regel entfernt, `README.md`.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

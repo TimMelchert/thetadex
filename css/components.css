@@ -835,7 +835,6 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .uni-leiste:empty { display: none; }
 .uni-leiste select { min-height: 44px; padding: 8px 12px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; font-weight: 600; }
 .uni-zeitraum { font-size: 0.85rem; }
-.uni-neu { margin-top: var(--abstand); }
 .uni-tag h2 { margin: 24px 0 0; font-size: 1.1rem; }
 .uni-eintrag { display: flex; align-items: flex-start; gap: 14px; width: 100%; min-height: 52px; margin: 8px 0; padding: 10px 12px; border: none; border-left: 6px solid var(--art, var(--bereich)); border-radius: var(--rund); background: var(--kachel); color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .uni-zeit { flex: 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -854,7 +853,6 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 [data-art="zug"]       { --art: var(--art-zug); }
 [data-art="urlaub"]    { --art: var(--art-urlaub); }
 [data-art="hobby"]     { --art: var(--art-hobby); --art-schrift: var(--art-hobby-schrift); }
-[data-art="frei"]      { --art: var(--art-frei); }
 [data-art="sonstiges"] { --art: var(--art-sonstiges); }
 [data-art="ferien"]    { --art: var(--art-ferien); }
 
