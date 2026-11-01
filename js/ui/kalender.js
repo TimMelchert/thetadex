@@ -51,9 +51,9 @@ export function minuten(u) {
     return h * 60 + m;
 }
 
-// Urlaub nimmt alle wöchentlichen Einträge des Tages weg. „frei“ (bis 0.5.5) zählt wie Urlaub.
+// Urlaub nimmt alle wöchentlichen Einträge des Tages weg.
 export function istFrei(art) {
-    return art === 'urlaub' || art === 'frei';
+    return art === 'urlaub';
 }
 
 // „1,3“ → [1, 3]. Liest nur die Ziffern 1 bis 7.
@@ -112,7 +112,6 @@ export function eintraegeAm(t, daten) {
             erster: x.beginn === t, letzter: (x.ende || x.beginn) === t
         });
     });
-    liste.forEach((e) => { if (e.art === 'frei') e.art = 'urlaub'; });
     liste.sort((a, b) => (b.ganztags - a.ganztags) || (a.von || '').localeCompare(b.von || '') || a.titel.localeCompare(b.titel, 'de'));
     const ferien = semester.length > 0 && !semester.some((s) => s.vorlesung_beginn <= t && t <= s.vorlesung_ende);
     return { eintraege: liste, ferien };

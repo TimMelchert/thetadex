@@ -366,7 +366,7 @@ export function render(container, ctx) {
                 leistung: vorgabe.leistung, von: vorgabe.von, bis: vorgabe.bis, ort: vorgabe.ort });
         const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
         const titel = el('input', { attrs: { id: 'uni-te-titel', type: 'text', maxlength: 80, autocomplete: 'off', value: quelle.titel || '' } });
-        const artWert = quelle.art === 'frei' ? 'urlaub' : (quelle.art || 'sonstiges');
+        const artWert = quelle.art || 'sonstiges';
         const art = el('select', { attrs: { id: 'uni-te-art' } },
             ARTEN_TERMIN.map(([k, t]) => el('option', { text: t, attrs: { value: k, selected: artWert === k } })));
         const beginn = datumFeld('uni-te-beginn', quelle.beginn);

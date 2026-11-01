@@ -11,6 +11,8 @@ Antworten der Person (1.11.2026, eingearbeitet in 0.7.1):
 - Der Bericht (7.1) liegt nur in den privaten Projektdateien, nie im Repo, damit niemand Schwachstellen öffentlich sieht.
 - Alte, schon gemergte Zweige im Repo `thetadex` werden gelöscht. Das macht Claude direkt auf GitHub (geht nicht in einem Pull Request),
   nach Zusage der Person. Gemergte Zweige lassen sich im alten Pull Request mit „Restore branch“ zurückholen.
+- Freigabe nach dem Bericht (1.11.2026): A1 bis A5 löschen (auch `#/einrichtung`), A6 bleibt. B1 löschen (die zwei Einträge im Blatt `stundenplan`
+  legt die Person neu an). B2: Es gibt keine Einträge mit Art „frei“, darum fällt „frei“ in App (7.2) und Skript (7.3) ganz weg. C1 bis C7 machen.
 - In 7.5 wird auch `docs/STAND.md` selbst aufgeräumt: veralteter Abschnitt 7.1 „Etappe 0 (jetzt)“ kürzen, Geschichte (8) in die richtige Reihenfolge.
 
 Was gleich bleibt:

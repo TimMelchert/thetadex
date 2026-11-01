@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '0.7.1';
+export const VERSION = '0.7.2';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {
@@ -16,18 +16,17 @@ export const features = {
 };
 
 // Die sieben Bereiche in der Reihenfolge der Reiterleiste.
-// etappe = in welcher Etappe der Reiter Inhalt bekommt (siehe docs/STAND.md, Abschnitt 7).
 // oeffentlich = immer sichtbar, auch ohne Einrichtung. Symbol: icons/reiter/<id>.svg
 // skript = der Reiter erscheint nur, wenn die Adresse dieses Skripts eingetragen ist (Schritt 4.5).
 // So sieht die Partnerin oder der Partner mit nur `gemeinsam` nur Einkauf, Uni und Döner. Die Rechte prüft trotzdem das Skript.
 export const BEREICHE = [
-    { id: 'tracking', titel: 'Tracking', etappe: 2, oeffentlich: false, skript: 'tracking' },
-    { id: 'finanzen', titel: 'Finanzen', etappe: 2, oeffentlich: false, skript: 'finanzen' },
-    { id: 'dsa',      titel: 'Pen & Paper', etappe: 6, oeffentlich: false, skript: 'dsa' },
-    { id: 'einkauf',  titel: 'Einkauf',  etappe: 4, oeffentlich: false, skript: 'gemeinsam' },
-    { id: 'besitz',   titel: 'Besitz',   etappe: 3, oeffentlich: false, skript: 'leben' },
-    { id: 'uni',      titel: 'Uni',      etappe: 5, oeffentlich: false, skript: 'gemeinsam' },
-    { id: 'doener',   titel: 'Döner',    etappe: 1, oeffentlich: true }
+    { id: 'tracking', titel: 'Tracking', oeffentlich: false, skript: 'tracking' },
+    { id: 'finanzen', titel: 'Finanzen', oeffentlich: false, skript: 'finanzen' },
+    { id: 'dsa',      titel: 'Pen & Paper', oeffentlich: false, skript: 'dsa' },
+    { id: 'einkauf',  titel: 'Einkauf',  oeffentlich: false, skript: 'gemeinsam' },
+    { id: 'besitz',   titel: 'Besitz',   oeffentlich: false, skript: 'leben' },
+    { id: 'uni',      titel: 'Uni',      oeffentlich: false, skript: 'gemeinsam' },
+    { id: 'doener',   titel: 'Döner',    oeffentlich: true }
 ];
 
 // Skripte, deren Adresse in der Ersteinrichtung eingetragen wird.

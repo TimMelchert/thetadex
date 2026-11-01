@@ -10,8 +10,7 @@ export const ARTEN = [
     ['vorlesung', 'Vorlesung'], ['pruefung', 'Prüfung'], ['arbeit', 'Arbeit'], ['zug', 'Zug'],
     ['urlaub', 'Urlaub'], ['hobby', 'Hobby'], ['sonstiges', 'Sonstiges'], ['ferien', 'Semesterferien']
 ];
-// „frei“ (bis 0.5.5) heißt jetzt Urlaub
-export const ART_NAME = { ...Object.fromEntries(ARTEN), frei: 'Urlaub' };
+export const ART_NAME = Object.fromEntries(ARTEN);
 
 const TAGE_KURZ = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const TAGE_LANG = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
