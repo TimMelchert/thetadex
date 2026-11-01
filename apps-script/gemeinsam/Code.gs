@@ -2,10 +2,10 @@
 // GEMEINSAM – Apps Script (Person und Partner*in, mit Passwort)
 // Einkauf und Essen (Etappe 4) und Uni (Etappe 5).
 // Blätter: lebensmittel, einkaufsliste, gerichte, zutaten, vorrat;
-// Uni: semester, module, kurse, termine, uni_einstellungen (stundenplan nur noch alt, wird in termine umgezogen).
+// Uni: semester, module, kurse, termine, uni_einstellungen.
 // Zwei Passwörter in den Skripteigenschaften: APP_PIN (Person) und PARTNER_PIN (Partner*in).
 // Kein Passwort steht hier. Über die Partnerin oder den Partner wird nichts gespeichert.
-// Siehe docs/STAND.md (Einkauf) und docs/PLAN-ETAPPE-5.md (Uni).
+// Siehe docs/STAND.md 4 „Einkauf, Sheet ‚Gemeinsam‘“ und „Uni, Sheet ‚Gemeinsam‘“.
 // =====================================================
 
 var STANDARD_ = ["id", "erstellt_am", "geaendert_am", "geloescht"];
@@ -16,8 +16,6 @@ var BLAETTER_ = {
   zutaten: ["id", "gericht_id", "lebensmittel_id", "menge", "erstellt_am", "geaendert_am", "geloescht"],
   vorrat: ["id", "lebensmittel_id", "ort", "menge", "erstellt_am", "geaendert_am", "geloescht"],
   semester: ["id", "name", "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "erstellt_am", "geaendert_am", "geloescht"],
-  // stundenplan: alt (bis 0.5.5). „einrichten“ zieht die Einträge in termine um, danach bleibt das Blatt nur zum Nachsehen.
-  stundenplan: ["id", "semester_id", "tag", "von", "bis", "titel", "art", "ort", "modul_id", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
   // termine: einmalig, mehrtägig, jede Woche an „tage“ (zum Beispiel 1,3 = Mo und Mi) von beginn bis ende,
   // oder „einmal anders“ (stunde_id = Kurs oder wiederkehrender Termin). Prüfungen mit kurs_id, bestanden und leistung (Art der Prüfung, seit 0.5.7).
   termine: ["id", "titel", "art", "beginn", "ende", "von", "bis", "ort", "modul_id", "stunde_id", "notiz", "erstellt_am", "geaendert_am", "geloescht", "tage", "kurs_id", "bestanden", "leistung"],
@@ -37,7 +35,6 @@ var MAX_ZUTATEN_ = 50;
 var MIN_PIN_ = 12;             // ein kürzeres Passwort wird nicht angenommen
 // Uni (Etappe 5)
 var UNI_MAX_ = { semester: 40, titel: 80, ort: 60, notiz: 200, modul: 80, kuerzel: 20, bereich: 40, kurs: 80, dozent: 60, leistung: 80 };
-// „frei“ gibt es seit 0.5.6 nicht mehr neu (gleich wie Urlaub). Alte Einträge zeigt die App als Urlaub.
 var UNI_ARTEN_TERMIN_ = ["vorlesung", "pruefung", "arbeit", "zug", "urlaub", "hobby", "sonstiges"];
 var UNI_STATUS_ = ["offen", "laeuft", "bestanden"];
 var UNI_PFLICHT_ = ["pflicht", "wahlpflicht", "auflage"];
@@ -91,7 +88,6 @@ function einrichten() {
     ue.appendRow(["ects_ziel", ECTS_ZIEL_]);
     Logger.log("Blatt 'uni_einstellungen': ects_ziel = " + ECTS_ZIEL_ + " angelegt.");
   }
-  stundenplanUmziehen_();
 
   var props = PropertiesService.getScriptProperties();
   if (!props.getProperty("APP_PIN")) Logger.log("ACHTUNG: Skripteigenschaft APP_PIN fehlt.");
@@ -735,59 +731,12 @@ function semesterAus_(t, z) {
   };
 }
 
-// Alter Stundenplan-Eintrag (nur noch für den Umzug)
-function stundeAus_(t, z) {
-  return {
-    id: String(zelle_(z, t.sp, "id")),
-    semester_id: String(zelle_(z, t.sp, "semester_id")),
-    tag: zahl_(zelle_(z, t.sp, "tag")),
-    von: uhr_(zelle_(z, t.sp, "von")),
-    bis: uhr_(zelle_(z, t.sp, "bis")),
-    titel: text_(z, t.sp, "titel"),
-    art: text_(z, t.sp, "art"),
-    ort: text_(z, t.sp, "ort"),
-    modul_id: String(zelle_(z, t.sp, "modul_id")),
-    notiz: text_(z, t.sp, "notiz")
-  };
-}
-
 // Wochentage als Text „1,3“ (1 = Montag … 7 = Sonntag). Liest nur die Ziffern 1 bis 7,
 // so geht es auch, wenn das Sheet aus „1,3“ eine Zahl 1.3 gemacht hat.
 function tage_(v) {
   var gesehen = {};
   String(v == null ? "" : v).replace(/[1-7]/g, function (c) { gesehen[c] = true; return c; });
   return Object.keys(gesehen).sort().join(",");
-}
-
-// Ziehe den alten Stundenplan in wiederkehrende Termine um (einmal, in „einrichten“).
-// Der neue Termin bekommt dieselbe id, so zeigen die Termine „einmal anders“ weiter auf ihn.
-// Vorlesungen gelten in der Vorlesungszeit, alles andere im ganzen Semester. Danach ist die alte Zeile gelöscht (weich).
-function stundenplanUmziehen_() {
-  var sp = tabelle_("stundenplan");
-  var te = tabelle_("termine");
-  var se = tabelle_("semester");
-  var semester = {};
-  se.zeilen.forEach(function (z) { if (aktiv_(se, z)) { var s = semesterAus_(se, z); semester[s.id] = s; } });
-  var umgezogen = 0, ohneSemester = 0;
-  sp.zeilen.forEach(function (z, k) {
-    if (!aktiv_(sp, z)) return;
-    var x = stundeAus_(sp, z);
-    var s = semester[x.semester_id];
-    if (!s || !x.tag || !x.von || !x.bis) { ohneSemester++; return; }
-    if (index_(te, x.id) < 0) {
-      var vorlesung = x.art === "vorlesung";
-      neu_(te, {
-        id: x.id, titel: x.titel, art: x.art || "sonstiges",
-        beginn: vorlesung ? s.vorlesung_beginn : s.beginn, ende: vorlesung ? s.vorlesung_ende : s.ende,
-        von: x.von, bis: x.bis, ort: x.ort, modul_id: x.modul_id, stunde_id: "", notiz: x.notiz,
-        tage: String(x.tag), kurs_id: "", bestanden: false, leistung: ""
-      });
-    }
-    weg_(sp, k);
-    umgezogen++;
-  });
-  if (umgezogen) Logger.log("Stundenplan: " + umgezogen + " Einträge in 'termine' umgezogen (jede Woche).");
-  if (ohneSemester) Logger.log("ACHTUNG: " + ohneSemester + " Stundenplan-Einträge ohne gültiges Semester oder Uhrzeit sind geblieben. Bitte im Blatt 'stundenplan' nachsehen.");
 }
 
 function terminAus_(t, z) {

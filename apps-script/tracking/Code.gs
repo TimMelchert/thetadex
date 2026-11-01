@@ -7,7 +7,7 @@ var BLATT_ = "Tabellenblatt1";
 var KOPFZEILE_ = 4;          // In dieser Zeile stehen die Spaltennamen
 var MAX_FELDER_ = 60;        // Höchstzahl Felder pro Eintrag
 var MAX_TEXT_ = 100;         // Höchstlänge eines Textwerts
-var BLATT_EINST_ = "Einstellungen";  // Felder des Formulars (siehe docs/PLAN-ETAPPE-2.md, Schritt 2.1)
+var BLATT_EINST_ = "Einstellungen";  // Felder des Formulars (siehe docs/STAND.md 7.2, Etappe 2)
 var EINST_KOPF_ = ["feld", "gruppe", "art", "vorgabe", "optionen", "schritt", "farben"];
 var ARTEN_ = ["haken", "zahl", "auswahl"];
 

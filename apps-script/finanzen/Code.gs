@@ -5,7 +5,7 @@
 
 var KONTEN_ = ["Konto", "Paypal", "Kreditkarte", "Portemonnaie", "Muenzglas", "Pfandbons"];
 var MODI_ = ["ein", "aus", "umbuchung"];
-var BLATT_EINST_ = "Einstellungen";  // Zwecke, Kategorien, Rückzahlungen (siehe docs/PLAN-ETAPPE-2.md, Schritt 2.2)
+var BLATT_EINST_ = "Einstellungen";  // Zwecke, Kategorien, Rückzahlungen (siehe docs/STAND.md 7.2, Etappe 2)
 var EINST_KOPF_ = ["liste", "name", "kategorie", "betrag", "zweck"];
 var MONATE_ = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 

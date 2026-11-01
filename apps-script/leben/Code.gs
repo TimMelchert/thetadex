@@ -7,7 +7,7 @@
 // Ausgeliehen (ab 3.6): Spalte „ausgeliehen_an“, freier Text (an wen), leer = nicht ausgeliehen.
 // Ausgeliehene Anzahl (ab 0.4.2): Spalte „ausgeliehen_anzahl“, wie viele Stück davon ausgeliehen sind; leer = alle.
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN).
-// Siehe docs/PLAN-ETAPPE-3.md, Schritte 3.2 bis 3.6.
+// Siehe docs/STAND.md 4 „Besitz, Blatt ‚besitz‘ im Sheet ‚Leben‘“.
 // =====================================================
 
 var BLATT_BESITZ_ = "besitz";

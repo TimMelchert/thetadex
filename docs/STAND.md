@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.7.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.7.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -12,7 +12,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
-- Etappe 7 „Umstieg und Aufräumen“ läuft, Plan in `docs/PLAN-ETAPPE-7.md`. Erledigt: Umstieg (7.4), Bericht (7.1), App aufräumen (7.2). Nächster Schritt: 7.3 Skripte aufräumen. Danach Etappe 8 „Prüfen und Version 1.0.0“ und Etappe 9 „Kontowecker“.
+- Etappe 7 „Umstieg und Aufräumen“ läuft, Plan in `docs/PLAN-ETAPPE-7.md`. Erledigt: Umstieg (7.4), Bericht (7.1), App aufräumen (7.2), Skripte aufräumen (7.3). Nächster Schritt: 7.5 Abschluss. Danach Etappe 8 „Prüfen und Version 1.0.0“ und Etappe 9 „Kontowecker“.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -252,7 +252,7 @@ unter „Info“ die Version prüfen.
   | Sheet | Blätter |
   | --- | --- |
   | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026) |
-  | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt, seit 5.5 in `termine` umgezogen) |
+  | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt und seit 0.7.3 nicht mehr im Skript; das Blatt darf die Person löschen) |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
   | DSA | `boegen` (ein Bogen je Zeile), `eintraege` (eine Zeile je Vorteil, Talent, Zauber, Waffe, Gegenstand), `verlauf` (Geld, AP, AsP, LeP), `abenteuer`, `sessions`; Spalten in 4 „Pen & Paper, Sheet ‚DSA‘“ |
@@ -346,9 +346,9 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
+- **Skripte aus 0.7.3 noch nicht eingefügt** (Entscheidung der Person, 1.11.2026): `dsa`, `finanzen`, `gemeinsam`, `leben`, `tracking` laufen im Editor
+  noch auf dem Stand vor 7.3. Das ist ungefährlich (nur Kommentare und der alte Stundenplan-Umzug). Beim nächsten Schritt, der ein Skript ändert, die ganze Datei einfügen.
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
-- In Etappe 7 (Entscheidung der Person, 30.10.2026 und 1.11.2026): Kommentare in den Skripten, die auf gelöschte Plan-Dateien zeigen, aufräumen
-  (`apps-script/leben`, `gemeinsam` (zeigt noch auf `PLAN-ETAPPE-5.md`), `finanzen`, `tracking`, `dsa` (zeigt noch auf `PLAN-ETAPPE-6.md`)). Dann müssen die Skripte neu eingefügt werden.
 
 ---
 
@@ -471,8 +471,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     höchstens 366 Tage), `von`, `bis` (beide oder keine = ganztägig), `tage` (Wochentage als Text, zum Beispiel `1,3`; dann ist `ende` Pflicht), `ort` (60),
     `modul_id`, `kurs_id` (der Kurs bestimmt das Modul), `stunde_id`, `bestanden` und `leistung` (Art der Prüfung, 80; beide nur bei Prüfungen), `notiz`. Höchstens 3000.
   - `uni_einstellungen` (`name`, `wert`): `ects_ziel`, `einrichten` legt 120 an; ändern im Sheet.
-  - `stundenplan`: alt (bis 0.5.5). `einrichten` zieht aktive Einträge in `termine` um (gleiche id, `tage` = Wochentag; Vorlesungen in der Vorlesungszeit,
-    sonst ganzes Semester) und löscht sie weich. Einträge ohne gültiges Semester bleiben stehen (Protokoll).
+  - `stundenplan`: alt (bis 0.5.5), in 0.5.6 nach `termine` umgezogen. Seit 0.7.3 kennt das Skript das Blatt nicht mehr.
   - Aktionen: `uni` (beide Rollen, alles in einer Antwort), `uni_speichern` (`blatt` = `semester`, `module`, `kurse`, `termine`; ändern mit `geaendert_am`)
     und `uni_loeschen` (nur `person`). Modul löschen nimmt seine Kurse mit; Kurs oder wiederkehrender Termin seine Ausnahmen.
     Prüfungen und andere Termine bleiben, sie werden nur ausgetragen. Semester löschen trägt es bei Modulen und Kursen aus.
@@ -786,6 +785,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **Etappe 7** Umstieg und Aufräumen. **0.7.0** Schritt 7.0: Plan `docs/PLAN-ETAPPE-7.md` (Bericht Ungenutztes, App und Skripte aufräumen, Umstieg mit Anleitung).
 - **0.7.1** Antworten zum Plan: Umstieg zuerst (1.11.2026), Bericht nur privat, alte Zweige löschen, STAND.md mit aufräumen.
 - Umstieg (7.4) und Bericht (7.1) von der Person erledigt, alte Repos und Zweige gelöscht. **0.7.2** Schritt 7.2: Platzhalter, `etappe`, `#/einrichtung`, alte Art „frei“ und eine CSS-Regel entfernt, `README.md`.
+- **0.7.3** Schritt 7.3: Skripte aufräumen (Stundenplan-Umzug und „frei“ aus `gemeinsam`, Kommentare auf gelöschte Pläne in fünf Skripten).
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.

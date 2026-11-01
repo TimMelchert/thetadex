@@ -8,7 +8,7 @@
 // genau ein Bogen mit seinem Freigabe-Schlüssel, nur lesen, ohne Verlauf.
 // Bilder liegen im privaten Drive-Ordner „Thetadex DSA“, im Sheet steht nur ihre Kennung.
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN).
-// Siehe docs/PLAN-ETAPPE-6.md.
+// Siehe docs/STAND.md 4 „Pen & Paper, Sheet ‚DSA‘“.
 // =====================================================
 
 var STANDARD_ = ["id", "erstellt_am", "geaendert_am", "geloescht"];
