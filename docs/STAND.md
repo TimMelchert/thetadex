@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.7.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.7.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -12,7 +12,8 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
 - Etappe 6 „Pen & Paper“ (DSA und DnD) ist fertig (1.11.2026). Festlegungen in 4 („Pen & Paper, Sheet ‚DSA‘“).
-- Etappe 7 „Umstieg und Aufräumen“ läuft, Plan in `docs/PLAN-ETAPPE-7.md`. Erledigt: Umstieg (7.4), Bericht (7.1), App aufräumen (7.2), Skripte aufräumen (7.3). Nächster Schritt: 7.5 Abschluss. Danach Etappe 8 „Prüfen und Version 1.0.0“ und Etappe 9 „Kontowecker“.
+- Etappe 7 „Umstieg und Aufräumen“ ist fertig (1.11.2026). Die alten Apps sind abgelöst.
+- Nächster Schritt: Etappe 8 „Prüfen und Version 1.0.0“ (7.2). Vor Etappe 8 kommt ihr eigener Plan. Danach Etappe 9 „Kontowecker“.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -343,6 +344,9 @@ unter „Info“ die Version prüfen.
   Der geteilte Link zeigt Bogen und Abenteuer des Charakters (nur lesen), nie DM.
   Bilder je gespieltem Abenteuer (0.6.9): „🖼 Bild anhängen“ (mehrere auf einmal, App verkleinert), Vorschau als Raster, Tipp zeigt groß,
   dort „Bild entfernen“ (Datei bleibt im Drive). Im geteilten Link zu sehen, ohne Entfernen.
+- Etappe 7 (fertig): Umstieg von den alten Apps am 1.11.2026 (alte Bereitstellungen archiviert, alte Repos und Zweige gelöscht).
+  Aufgeräumt nach Bericht (`pruefung/ungenutztes-bericht.md` in den Projektdateien): Platzhalter-Ansicht, Feld `etappe`, Adresse `#/einrichtung`,
+  alte Art „frei“, Stundenplan-Umzug im Skript `gemeinsam`, Kommentare auf gelöschte Pläne, kurze `README.md`.
 
 ### 3.2 Offen
 
@@ -556,7 +560,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper.
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-7.md`).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`).
@@ -565,35 +569,10 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 
 ## 7. Pläne
 
-### 7.1 Etappe 0 „Start“ (jetzt)
+### 7.1 Etappe 0 „Start“ (0.0.x) – fertig
 
-Jeder Schritt ist ein eigener Zweig und ein eigener Pull Request. Nach jedem Schritt prüft die Person.
-
-- **0.0 Sichern (Person, ohne Pull Request)**
-  - Beide Sheets kopieren (Datei → Kopie erstellen). Kopien bleiben im Google Drive.
-  - Neues öffentliches Repo anlegen, `docs/STAND.md` und `CLAUDE.md` hineinkopieren.
-  - Beide Skripte kommen per Pull Request ins Repo (Tracking ohne PIN). Icons kommen mit Schritt 0.1.
-  - Alte Repos als ZIP herunterladen (Code → Download ZIP).
-- **0.1 Grundstruktur im Repo** (Version 0.0.0 → 0.0.1)
-  - Leeres App-Gerüst nach 2.1: `index.html` mit Content-Security-Policy, `manifest.webmanifest`, `sw.js` mit `HUELLE`,
-    `js/config.js` (VERSION, `features`), `js/app.js` (Routing, „Seite nicht gefunden“), `js/api.js`, `js/store.js`,
-    `js/ui/dom.js`, `css/base.css`, `css/layout.css`, `css/components.css`, Icons aus `icons/` (Manifest-Größen daraus ableiten), Ansicht `#/einrichtung` und `#/info`.
-  - Nur Startseite mit Name und Version und die Ersteinrichtung. Noch keine Reiter mit Daten.
-  - Von Hand (Person): GitHub → Settings → Pages → Source „Deploy from a branch“, `main`, `/ (root)`.
-  - Wiederverwenden, was in den bestehenden Apps gut war (Finanz-`app.js`: `api()`, Combo-Feld, Doppelbuchungs-Sperre).
-- **0.2 Skripte vereinheitlichen** (0.0.1 → 0.0.2)
-  - Tracking-Skript auf den Stand des Finanz-Skripts bringen: Passwort aus `APP_PIN`, `pruefePin_` mit Sperre, `doGet`,
-    JSON-Antworten, `LockService`, `bereinigeText_` bzw. Prüfung der Werte gegen die Spaltennamen.
-  - Finanz-Skript nur prüfen; ändern nur, was für die neue App nötig ist (z. B. Aktion `einstellungen`).
-  - Ergebnis im Pull Request: Liste „übernommen / angepasst / entfernt“ und Abschnitt „Von Hand zu erledigen“
-    (neues Passwort in beiden Skripten als `APP_PIN`, Skript einfügen, **neue Bereitstellung** je Skript, Adressen in der App eintragen).
-  - Die alten Apps laufen mit den alten Bereitstellungen weiter. Achtung: Die alte Tracking-App sendet die alte PIN;
-    darum bleibt die alte Tracking-Bereitstellung auf der alten Fassung, bis zum Umstieg.
-- **0.3 Plan Version 1 fertigstellen** (0.0.2 → 0.1.0)
-  - Die Person beschreibt alle Reiter genauer.
-  - Claude füllt alle **[OFFEN: …]** in dieser Datei, schreibt 7.2 als Plan Version 1 (Etappen mit Ziel, Schritten, Tabs, Datenschutz je Etappe)
-    und stellt Rückfragen gesammelt am Ende.
-  - Prüfung je Etappe gegen die Grundsätze 1.2: Welche Daten? Wer sieht sie? Geht es einfacher?
+- 0.0 Sichern (Sheets kopiert, alte Repos als ZIP), 0.1 App-Gerüst, 0.2 Skripte vereinheitlicht (Passwort `APP_PIN`, neue Bereitstellungen),
+  0.3 Plan Version 1 (7.2). Einzelheiten in der Geschichte (8) und in den Pull Requests #1 bis #6.
 
 ### 7.2 Plan Version 1 (29.10.2026)
 
@@ -644,7 +623,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Schritte: Blatt `Einstellungen` je Sheet (Tracking-Felder; Zwecke, Kategorien, Personen für Rückzahlungen) und Aktion `einstellungen`;
     Reiter Tracking (Eingabe wie bisher); Reiter Finanzen (Übersicht, Buchen, Auswertung mit Chart.js aus `vendor/`).
   - Datenschutz: Finanz- und Tracking-Daten nur nach Passwort, nichts im Gerät außer den letzten Kontoständen (5).
-  - **Tor:** Die Person ist mit der neuen App zufrieden (Richtwert 2 Wochen). Dann alte Bereitstellungen archivieren und alte Repos löschen.
+  - **Tor:** Die Person ist mit der neuen App zufrieden. Erledigt am 1.11.2026 (Etappe 7): alte Bereitstellungen archiviert, alte Repos gelöscht.
 - **Etappe 3 „Besitz“ (0.3.x)** – fertig (30.10.2026), Plan eingearbeitet (3.1 und 4).
   - Gebaut: „Einstellungen“ statt „Einrichtung“ mit Aussehen Hell, Dunkel, Wie Gerät. Neues Sheet „Leben“ mit Skript `leben` (nur die Person).
   - Reiter Besitz mit Unterreitern „Liste“ und „Übersicht“: Liste je Ort (PC Tabelle mit Strich je Sache, Handy Karten), Suche,
@@ -678,13 +657,11 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - Würfel W4, W6, W20.
   - Die Eigenschaften sind eine Liste aus Kürzel, Name und Wert. So passt auch der DnD-Bogen (STR, DEX …) ohne Sonderbau.
   - Teilen per Link ohne Passwort, nur lesen (4 „DSA teilen“).
-- **Etappe 7 „Umstieg und Aufräumen“ (0.7.x)** – läuft, Plan in `docs/PLAN-ETAPPE-7.md` (Wunsch der Person, 1.11.2026). Aufräumen kommt vor dem Prüfen,
-  damit Etappe 8 den sauberen Stand prüft (Entscheidung der Person, 1.11.2026).
-  - **Umstieg (Tor von Etappe 2, 3.2):** alte Bereitstellungen archivieren, alte Apps vom Startbildschirm, alte Repos löschen.
-    Claude schreibt dafür eine genaue Anleitung mit allen Klicks; die Person macht es von Hand. Vorher prüft Claude, dass nichts mehr die alten Adressen braucht.
-  - **Ungenutztes:** Funktionen, CSS-Regeln, Dateien, Einträge in `HUELLE` und Skript-Aktionen, die nichts mehr nutzt. Erst Bericht (1.10), dann löschen.
-  - **Kommentare und Verweise:** Kommentare in App und Skripten, die auf gelöschte Pläne oder alte Stände zeigen (3.2), falsche Links und Abschnittsnummern.
-    Die Skripte muss die Person danach neu einfügen.
+- **Etappe 7 „Umstieg und Aufräumen“ (0.7.x)** – fertig (1.11.2026), Plan eingearbeitet (3.1). Schritte 7.0 bis 7.5, Pull Requests #61 bis #64.
+  - Umstieg (7.4) zuerst, von Hand nach Anleitung in den Projektdateien (`etappe-7/umstieg-anleitung.md`): alte Bereitstellungen über die Script-Adresse erkannt
+    und archiviert, alte App und Lesezeichen entfernt, alte Repos gelöscht. Dazu alle gemergten Zweige im Repo `thetadex` (die Person, von Hand).
+  - Bericht „Ungenutztes und Verweise“ (7.1) nur in den privaten Projektdateien. Die Person kreuzte an, was weg darf; App (7.2) und Skripte (7.3) danach aufgeräumt.
+  - Die Skripte aus 7.3 sind im Editor noch nicht eingefügt (3.2, Entscheidung der Person).
 - **Etappe 8 „Prüfen und Version 1.0.0“ (0.8.x → 1.0.0)** – geplant (Wunsch der Person, 1.11.2026). Jede Prüfung nach 1.10: erst Bericht in den Projektdateien
   (`pruefung/<thema>-bericht.md`, nie im Repo), dann baut Claude nur, was die Person freigibt. Je Prüfung ein Schritt, Behebungen als eigene Schritte.
   - **Sicherheit:** alle Skripte (`doener`, `finanzen`, `tracking`, `leben`, `gemeinsam`, `dsa`) und die App. Wer darf was (Rollen, geteilte Links),
@@ -725,6 +702,10 @@ Prüfung gegen die Grundsätze (1.2):
 - **Etappe 1** Döner Landau (vor dem Umzug, Wunsch der Person). **0.1.4** Schritt 1.1: Symbole für alle Reiter, ohne Einrichtung nur öffentliche Reiter.
 - **0.1.5** Schritt 1.2: Döner-Skript (`apps-script/doener/Code.gs`) und Reiter Döner.
 - **0.1.6** Schritt 1.3: ausführliche Bewertung nach Kriterien (Blatt `kriterien`, `details`), Laden-Note (Service, Gemütlichkeit).
+- **0.1.7** Schritt 1.4: Döner-Optik nach Rückmeldung (bunter Döner, Bewerten mit kleinen Dönern, „+ Bewerten“, Laden-Auswahl, Einrückung).
+- **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
+  Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
+- **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.10** Etappe 1 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-1.md` gelöscht.
 - **Etappe 2** Bestehendes umziehen. **0.2.0–0.2.1** Schritt 2.0: Plan `docs/PLAN-ETAPPE-2.md`, Diagramme mit Chart.js.
 - **0.2.2** Schritt 2.1: Reiter Tracking, Felder aus dem Blatt `Einstellungen`, Aktion `einstellungen`.
@@ -786,7 +767,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.7.1** Antworten zum Plan: Umstieg zuerst (1.11.2026), Bericht nur privat, alte Zweige löschen, STAND.md mit aufräumen.
 - Umstieg (7.4) und Bericht (7.1) von der Person erledigt, alte Repos und Zweige gelöscht. **0.7.2** Schritt 7.2: Platzhalter, `etappe`, `#/einrichtung`, alte Art „frei“ und eine CSS-Regel entfernt, `README.md`.
 - **0.7.3** Schritt 7.3: Skripte aufräumen (Stundenplan-Umzug und „frei“ aus `gemeinsam`, Kommentare auf gelöschte Pläne in fünf Skripten).
-- **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
-- **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
-  Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
-- **0.1.7** Schritt 1.4: Döner-Optik nach Rückmeldung (bunter Döner, Bewerten mit kleinen Dönern, „+ Bewerten“, Laden-Auswahl, Einrückung).
+- **0.7.4** Etappe 7 abgeschlossen, Plan eingearbeitet, `docs/PLAN-ETAPPE-7.md` gelöscht, STAND.md aufgeräumt (7.1 gekürzt, Geschichte geordnet).
