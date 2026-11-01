@@ -4,14 +4,14 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **0.6.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **0.6.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Offen ist nur der Umstieg von Hand (3.2).
 - Etappe 3 „Besitz“ ist fertig (30.10.2026).
 - Etappe 4 „Einkauf und Essen“ ist fertig (30.10.2026).
 - Etappe 5 „Uni“ ist fertig (31.10.2026). Festlegungen in 4 („Uni, Sheet ‚Gemeinsam‘“).
-- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`. Gebaut: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen, Kopf und Eigenschaften; dazu Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte), 6.2 (Listen), 6.3 (Zauber und Waffen), 6.4 (Verlauf), 6.5 (Würfel und Bild), 6.6 (Teilen), 6.7 (Faëlandel übertragen, Tabellen in den Projektdateien), 6.8a (Anmerkungen zum Aussehen), 6.8b (Abenteuer und DM).
+- Etappe 6 „Pen & Paper“ (DSA und DnD) läuft: Plan `docs/PLAN-ETAPPE-6.md`. Gebaut: 6.1 (Sheet „DSA“, Skript `dsa`, Bogen anlegen, Kopf und Eigenschaften; dazu Kopfzeile dunkel, Hintergrund beige-grau, Startseite mit Karteikarte), 6.2 (Listen), 6.3 (Zauber und Waffen), 6.4 (Verlauf), 6.5 (Würfel und Bild), 6.6 (Teilen), 6.7 (Faëlandel übertragen, Tabellen in den Projektdateien), 6.8a (Anmerkungen zum Aussehen), 6.8b (Abenteuer und DM), 6.8c (Bilder je Abenteuer, Marke und Schalter).
 - Nächster Schritt: weitere Anmerkungen der Person, danach Abschluss der Etappe (Plan hier einarbeiten und löschen).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
@@ -311,7 +311,8 @@ unter „Info“ die Version prüfen.
 - Etappe 5 (fertig): Reiter Uni im Sheet „Gemeinsam“ (Skript `gemeinsam`), Regeln in 4 „Uni, Sheet ‚Gemeinsam‘“.
 - Etappe 6 (läuft, Plan `docs/PLAN-ETAPPE-6.md`): Sheet „DSA“ mit Skript `dsa` (6.1): Blätter `boegen`, `eintraege`, `verlauf`, ab 0.6.8 `abenteuer`, `sessions`; alle Aktionen der Etappe
   (`ping`, `liste`, `bogen_speichern`, `bogen_loeschen`, `eintrag_speichern`, `eintrag_loeschen`, `verlauf_neu`, `bild`, `freigabe`,
-  `abenteuer_speichern`, `abenteuer_loeschen`, `session_speichern`, `session_loeschen`, ohne Passwort `geteilt`). Funktion `einrichten`.
+  `abenteuer_speichern`, `abenteuer_loeschen`, `session_speichern`, `session_loeschen`, ab 0.6.9 `abenteuer_bild`, `abenteuer_bild_weg`,
+  ohne Passwort `geteilt`, auch mit `bild` für ein Abenteuer-Bild). Funktion `einrichten`.
   Reiter Pen & Paper: Bogen wählen und anlegen (DSA oder DnD, gleiche Vorlage), Kopf, Eigenschaften, Basiswerte und Zähler ändern, Zähler und Eigenschaften kleben oben.
   Listen (6.2): Vor- und Nachteile, Sonderfertigkeiten und Gaben (als Knöpfe nebeneinander), Talente nach Gruppe (feste Reihenfolge der Gruppen), Besitz nach Ort;
   Tipp öffnet das Formular, „+“ legt an, „Speichern und weiter“ für viele Einträge hintereinander, Sortierung nach „Reihenfolge“, sonst nach Name.
@@ -328,11 +329,14 @@ unter „Info“ die Version prüfen.
   mit Pfeil, darüber liegt unsichtbar die Bogen-Auswahl. Geld als Münzen untereinander (Gold D, Silber S, Bronze H, Eisen K, nur mit Anzahl; am PC mit Namen).
   Bild links: der Kasten hat das Seitenverhältnis des Bildes, so hoch wie der Kopf-Text (am Handy höchstens gut ein Drittel breit, dann niedriger).
   Nie beschnitten, nie unscharf; Tipp zeigt es groß. Die Karte Kopf hat keine Überschrift mehr, ✎ steht unten rechts.
-  Schalter „Charakterbogen | Abenteuer | DM“ (0.6.8, am Handy „Bogen“, Teilen nur 🔗) in der Zeile mit DSA und Teilen; die Wahl bleibt (`thetadex_dsa_modus`).
+  Schalter „Charakterbogen | Abenteuer | DM“ (0.6.8, am Handy „Bogen“, Teilen nur 🔗) links in der Zeile, rechts davon die Marke DSA (nur weiß umrandet, 0.6.9) und Teilen;
+  die Wahl bleibt (`thetadex_dsa_modus`). Bei Abenteuer fehlt die klebende Leiste mit Zählern und Eigenschaften (0.6.9).
   Abenteuer: je Charakter (genau einer je Abenteuer), Titel und Beschreibung, darin Sessions mit Datum und Text, neueste oben. „+“ an der Karte = neue Session,
   Tipp auf eine Session = bearbeiten. DM: Textfeld „Abenteuerideen“ und Abenteuer, die die Person leitet (Titel, Text direkt in der Karte, keine Sessions),
   Haken „Abenteuer abgeschlossen“ speichert sofort und schiebt es unten in die zuklappbare Karte „Abgeschlossene Abenteuer“. DM geht auch ohne Bogen.
   Der geteilte Link zeigt Bogen und Abenteuer des Charakters (nur lesen), nie DM.
+  Bilder je gespieltem Abenteuer (0.6.9): „🖼 Bild anhängen“ (mehrere auf einmal, App verkleinert), Vorschau als Raster, Tipp zeigt groß,
+  dort „Bild entfernen“ (Datei bleibt im Drive). Im geteilten Link zu sehen, ohne Entfernen.
   Wurde der Link an einem anderen Gerät erstellt, hilft nur „Neuen Link erstellen“. Die Adresse `#/bogen/<skript>/<schluessel>` nutzt dieselbe Ansicht
   (`js/views/dsa.js`, Route `bogen` in `js/app.js`) im Modus „nur lesen“: ohne Passwort, ohne Verlauf, ohne Knöpfe zum Ändern, Tipp auf einen Eintrag zeigt ihn nur an.
   Semester (5.1), Kalender mit Woche, Monat, Liste, Filter nach Art, „einmal anders“ und ohne Netz (5.2), Arbeitsstunden (5.3),
@@ -410,6 +414,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Die geteilte Ansicht zeigt den ganzen Bogen, aber keine Knöpfe zum Ändern. Grund: Bögen sollen ohne Passwort an andere gehen.
 - **DSA Abenteuer** (0.6.8): Blatt `abenteuer` (`id, bogen_id, art, titel, text, abgeschlossen` + Standard), `art` = `spieler` (gehört zu einem Bogen),
   `dm` (ohne Bogen, mit `abgeschlossen`) oder `ideen` (genau eine Zeile, das Textfeld „Abenteuerideen“). Text höchstens 10000 Zeichen.
+  Spalte `bilder` (ab 0.6.9): JSON-Liste von Drive-Kennungen, höchstens 30, nur bei `spieler`; Dateien im Ordner „Thetadex DSA“.
+  `bild` (mit Passwort) liefert auch diese Bilder; `geteilt` mit `bild` nur Bilder der Abenteuer dieses Bogens.
   Blatt `sessions` (`id, abenteuer_id, datum, text` + Standard), nur zu `spieler`-Abenteuern, Datum JJJJ-MM-TT, Text höchstens 3000 Zeichen.
   Löschen eines Bogens löscht seine Abenteuer und Sessions mit (weich), Löschen eines Abenteuers seine Sessions.
   `geteilt` gibt nur `spieler`-Abenteuer des Bogens und ihre Sessions heraus, nie `dm` oder `ideen`. Fehlen die Blätter noch, läuft `liste` trotzdem.
@@ -729,6 +735,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **0.6.6** Schritt 6.6: Teilen bei Pen & Paper (Link erstellen, kopieren, neu, nicht mehr teilen; geteilter Bogen `#/bogen/<skript>/<schluessel>` nur lesen).
 - **0.6.7** Anmerkungen zum Aussehen: Name als Überschrift mit Auswahl, DSA und Teilen darüber, Geld als Münzen, Bild links im eigenen Seitenverhältnis und groß per Tipp, Kopf ohne Überschrift.
 - **0.6.8** Abenteuer und DM: Schalter Charakterbogen | Abenteuer | DM, Abenteuer mit Sessions je Charakter (auch im geteilten Link), DM mit Abenteuerideen und abschließbaren Abenteuern.
+- **0.6.9** Bilder je gespieltem Abenteuer (auch im geteilten Link), Marke DSA rechts und nur umrandet, größerer Schalter, Abenteuer ohne klebende Leiste.
 - **0.1.9** Schritt 1.6: Feinschliff Döner (Titel „Veganes Döner-Rating Landau“, Danke verschwindet, Pokal-Spalte, gelbe Dreiecke, Gruppen als Kacheln).
 - **0.1.8** Schritt 1.5: 🥙 statt Bild, „Döner-Rating Landau“, gelbe Knöpfe, Kriterium in einer Zeile, × und Abbrechen,
   Vergleich aller Kriterien mit Gewinnern; Seite lädt nicht mehr von selbst neu.
