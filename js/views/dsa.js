@@ -205,7 +205,7 @@ export function render(container, ctx = {}) {
     const schalterKnoepfe = MODI.filter(([k]) => !(nurLesen && k === 'dm')).map(([k, lang, kurz]) => el('button', {
         class: 'dsa-schalter-knopf', attrs: { type: 'button', 'data-modus': k },
         on: { click: () => { if (nurLesen) modusGeteilt = k; else schreiben('dsa_modus', k); zeigeAlles(); } }
-    }, [el('span', { class: 'dsa-schalter-lang', text: lang }), el('span', { class: 'dsa-schalter-kurz', text: kurz, attrs: { 'aria-hidden': 'true' } })]));
+    }, [el('span', { class: 'dsa-schalter-lang', text: lang }), el('span', { class: 'dsa-schalter-kurz', text: kurz })]));
     const schalter = el('div', { class: 'dsa-schalter', attrs: { role: 'group', 'aria-label': 'Ansicht' } }, schalterKnoepfe);
     const leiste = el('div', { class: 'dsa-leiste' }, [schalter, marke, teilenKnopf]);
     const nameZeile = el('div', { class: 'dsa-name-zeile', attrs: { hidden: true } }, [bogenName, namePfeil, auswahl]);
