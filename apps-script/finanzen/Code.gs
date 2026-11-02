@@ -499,6 +499,20 @@ function smsSpalten_(blatt) {
   return sp;
 }
 
+// Teilt eine SMS mit mehreren Umsatz-Zeilen in einen Text je Umsatz. Umsatz-Zeile: „<Text>: <Betrag> EUR“ ohne „Saldo“.
+// Mit nur einem (oder keinem) Umsatz bleibt der Text, wie er ist.
+function smsTeile_(text) {
+  var zeilen = text.split(" | ");
+  var istUmsatz = function (z) { return !/saldo/i.test(z) && /:\s*[-−+]?\s*(\d{1,3}(\.\d{3})+|\d+),\d{2}\s*(EUR|€)/i.test(z); };
+  var umsaetze = [];
+  zeilen.forEach(function (z, i) { if (istUmsatz(z)) umsaetze.push(i); });
+  if (umsaetze.length < 2) return [text];
+  return umsaetze.map(function (nr, n) {
+    var rest = zeilen.filter(function (z, i) { return i === nr || umsaetze.indexOf(i) === -1; });
+    return "Teil " + (n + 1) + "/" + umsaetze.length + " | " + rest.join(" | ");
+  });
+}
+
 // Legt eine Kontowecker-SMS als "offen" ab. Antwortet nur mit ok oder Fehler, nie mit Daten.
 function smsAnnehmen_(data) {
   var status = pruefeSmsSchluessel_(data.schluessel);
@@ -534,7 +548,8 @@ function smsAnnehmen_(data) {
       var ab = Math.max(2, letzte - 499);
       var summen = blatt.getRange(ab, sp.pruefsumme + 1, letzte - ab + 1, 1).getValues();
       for (var i = 0; i < summen.length; i++) {
-        if (String(summen[i][0]) === summe) return { ok: true };
+        var alt = String(summen[i][0]);
+        if (alt === summe || alt.indexOf(summe + "-") === 0) return { ok: true };
       }
     }
 
@@ -544,16 +559,22 @@ function smsAnnehmen_(data) {
     var anzahl = Number(cache.get(tagKey) || 0);
     if (anzahl >= SMS_PRO_TAG_) return { error: "grenze", message: "Zu viele SMS heute" };
 
-    var zeile = [];
-    for (var k = 0; k < sp.breite; k++) zeile.push("");
-    zeile[sp.id] = Utilities.getUuid();
-    zeile[sp.empfangen_am] = jetzt;
-    zeile[sp.gesendet_am] = gesendet;
-    zeile[sp.absender] = absender;
-    zeile[sp.text] = text;
-    zeile[sp.pruefsumme] = summe;
-    zeile[sp.status] = "offen";
-    blatt.getRange(letzte + 1, 1, 1, sp.breite).setValues([zeile]);
+    // Eine SMS kann mehrere Umsätze enthalten (mehrere Zeilen „…: Betrag EUR“). Dann eine Zeile je Umsatz,
+    // damit jeder einzeln gebucht wird. Jede Zeile behält die übrigen Zeilen der SMS (Kopf, Saldo), aber nur ihren Umsatz.
+    var teile = smsTeile_(text);
+    var zeilen = teile.map(function (teilText, n) {
+      var zeile = [];
+      for (var k = 0; k < sp.breite; k++) zeile.push("");
+      zeile[sp.id] = Utilities.getUuid();
+      zeile[sp.empfangen_am] = jetzt;
+      zeile[sp.gesendet_am] = gesendet;
+      zeile[sp.absender] = absender;
+      zeile[sp.text] = teilText;
+      zeile[sp.pruefsumme] = teile.length > 1 ? summe + "-" + (n + 1) : summe;
+      zeile[sp.status] = "offen";
+      return zeile;
+    });
+    blatt.getRange(letzte + 1, 1, zeilen.length, sp.breite).setValues(zeilen);
     SpreadsheetApp.flush();
     cache.put(tagKey, String(anzahl + 1), 86400);
     return { ok: true };
