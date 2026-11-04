@@ -1239,3 +1239,32 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
     #finanz-buchen .sms-knoepfe { grid-template-columns: 1fr; }
     #finanz-buchen .sms-karte { position: sticky; top: var(--abstand); max-height: calc(100vh - 2 * var(--abstand)); overflow-y: auto; }
 }
+
+/* Visitenkarte (Etappe 10). Besucher sehen nur die Karte: keine Reiterleiste, keine Kopf-Links, Marke ohne Link. */
+body[data-seite="karte"] .reiter,
+body[data-seite="karte"] .kopf-links { display: none; }
+body[data-seite="karte"] .kopf-marke { pointer-events: none; }
+body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
+@media (min-width: 768px) {
+    body[data-seite="karte"] { grid-template-columns: 1fr; }
+}
+.vk { padding: calc(1.5 * var(--abstand)); }
+.vk-name { margin: 0; font-size: 1.8rem; }
+.vk-status { margin: 4px 0 0; font-size: 1.1rem; font-weight: 600; }
+.vk-text { margin: 8px 0 0; }
+.vk-gruppe { margin-top: calc(1.5 * var(--abstand)); }
+.vk-gruppe > h2, .vk-gruppe > h3 { margin: 0 0 8px; font-size: 1rem; color: var(--schrift-leise); text-transform: uppercase; letter-spacing: 0.04em; }
+.vk-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.vk-liste li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-height: 44px; border-bottom: 1px solid var(--linie); }
+.vk-liste li:last-child { border-bottom: none; }
+.vk-beschriftung { flex: 0 0 8rem; color: var(--schrift-leise); }
+.vk-wert { flex: 1 1 12rem; font-weight: 600; overflow-wrap: anywhere; }
+.vk-zeigen { margin: 0; }
+.vk-veroeff { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.vk-veroeff-link { display: flex; gap: 12px; align-items: center; min-height: 44px; padding: 8px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); text-decoration: none; }
+.vk-veroeff-link:focus-visible { outline: 3px solid var(--fokus); outline-offset: 2px; }
+.vk-veroeff-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.vk-vorschau { flex: 0 0 72px; height: 96px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px; background: var(--kachel); }
+.vk-vorschau img { display: block; max-width: 100%; max-height: 100%; }
+.vk-speichern { margin-top: calc(1.5 * var(--abstand)); width: 100%; }
+.vk .meldung:empty { display: none; }
