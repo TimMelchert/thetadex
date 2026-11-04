@@ -12,16 +12,17 @@
 // =====================================================
 
 var KOEPFE_ = {
-  angaben: ["id", "art", "titel", "wert", "link", "bild", "karten", "reihenfolge", "erstellt_am", "geaendert_am", "geloescht"],
+  angaben: ["id", "art", "titel", "wert", "link", "bild", "karten", "reihenfolge", "erstellt_am", "geaendert_am", "geloescht", "zusatz"],
   links: ["id", "karte", "schluessel", "erstellt_am", "geaendert_am"]
 };
 // Diese Spalten bleiben im Sheet reiner Text (zum Beispiel bleibt die führende 0 einer Telefonnummer)
 var TEXT_SPALTEN_ = {
-  angaben: ["id", "art", "titel", "wert", "link", "bild", "karten"],
+  angaben: ["id", "art", "titel", "wert", "link", "bild", "karten", "zusatz"],
   links: ["id", "karte", "schluessel"]
 };
+var FREIWILLIG_ = ["zusatz"];                     // neu ab 1.2.10, ohne „einrichten“ einfach leer
 var KARTEN_ = ["privat", "arbeit", "aktivismus"];
-var ARTEN_ = ["name", "status", "email", "telefon", "social", "veroeffentlichung", "text"];
+var ARTEN_ = ["name", "status", "email", "telefon", "adresse", "social", "veroeffentlichung", "text"];
 var KONTAKT_ = ["email", "telefon"];
 var MIT_BILD_ = ["veroeffentlichung", "status"];  // Vorschaubild bzw. Logo der Gruppe
 var SYMBOLE_ = ["hut"];                           // Wort in Spalte „bild“ statt Drive-Link: eingebautes Symbol links vor dem Text
@@ -30,6 +31,7 @@ var MAX_ANGABEN_ = 100;
 var MAX_ABRUFE_ = { karte: 300, kontakt: 60, bild: 600 };   // je Stunde, für alle zusammen
 var MAX_FALSCHE_ = 20;                            // falsche Schlüssel in 15 Minuten
 var MAX_BILD_SENDEN_ = 1500000;
+var MAX_BILD_ECHT_ = 400000;                     // PNG, GIF, WebP bis zu dieser Größe als Datei selbst (Vorschau aus Drive macht den Hintergrund weiß)
 
 // --- 1. EINRICHTEN (im Editor ausführen, auch nach einem Update) ---
 
@@ -130,7 +132,8 @@ function blatt_(name) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
   if (!sheet) throw new Error("Blatt '" + name + "' fehlt. Bitte im Editor einmal 'einrichten' ausführen.");
   var sp = spalten_(sheet);
-  var fehlen = KOEPFE_[name].filter(function (k) { return sp[k] == null; });
+  // Spalten, die später dazukamen (zum Beispiel „zusatz“), dürfen bis zum nächsten „einrichten“ fehlen
+  var fehlen = KOEPFE_[name].filter(function (k) { return sp[k] == null && FREIWILLIG_.indexOf(k) < 0; });
   if (fehlen.length) throw new Error("Im Blatt '" + name + "' fehlen Spalten: " + fehlen.join(", ") + ". Bitte 'einrichten' ausführen.");
   return sheet;
 }
@@ -204,6 +207,7 @@ function angabeAus_(z, sp, nr) {
     art: String(z[sp.art] == null ? "" : z[sp.art]).trim().toLowerCase(),
     titel: kurz_(z[sp.titel], MAX_.titel),
     wert: kurz_(z[sp.wert], MAX_.wert),
+    zusatz: sp.zusatz == null ? "" : kurz_(z[sp.zusatz], MAX_.wert),
     link: String(z[sp.link] == null ? "" : z[sp.link]).trim(),
     bild: driveKennung_(z[sp.bild]),
     symbol: symbolAus_(z[sp.bild]),
@@ -219,7 +223,7 @@ function angabeAus_(z, sp, nr) {
   else if (!a.wert && !a.titel) a.fehler = "Leer";
   else if (!a.karten.length) a.fehler = "Auf keiner Karte";
   if (MIT_BILD_.indexOf(a.art) < 0) a.bild = "";
-  if (a.art === "email" || a.art === "telefon") a.link = "";
+  if (a.art === "email" || a.art === "telefon" || a.art === "adresse") a.link = "";
   return a;
 }
 
@@ -292,7 +296,7 @@ function karte_(data) {
   return {
     karte: k.karte,
     angaben: angabenDerKarte_(k.karte).map(function (a) {
-      return { id: a.id, art: a.art, titel: a.titel, wert: a.wert, link: a.link, bild: Boolean(a.bild && a.id), symbol: a.symbol };
+      return { id: a.id, art: a.art, titel: a.titel, wert: a.wert, zusatz: a.zusatz, link: a.link, bild: Boolean(a.bild && a.id), symbol: a.symbol };
     })
   };
 }
@@ -330,7 +334,9 @@ function bildDaten_(driveId) {
   try {
     var f = DriveApp.getFileById(driveId);
     if (!/^image\//.test(f.getMimeType())) return { error: "eingabe", message: "Die Datei ist kein Bild." };
-    blob = f.getThumbnail();
+    // Kleine PNG, GIF und WebP als Datei selbst: So bleibt ein durchsichtiger Hintergrund durchsichtig
+    if (/^image\/(png|gif|webp)$/.test(f.getMimeType()) && f.getSize() <= MAX_BILD_ECHT_) blob = f.getBlob();
+    else blob = f.getThumbnail();
     if (!blob && f.getSize() <= MAX_BILD_SENDEN_) blob = f.getBlob();
   } catch (e) {
     return { error: "fehlt", message: "Das Bild ist nicht mehr da." };
@@ -358,7 +364,7 @@ function angaben_() {
     karten: KARTEN_,
     geteilt: geteilt,
     angaben: alleAngaben_().map(function (a) {
-      return { id: a.id, zeile: a.zeile, art: a.art, titel: a.titel, wert: a.wert, link: a.link, bild: Boolean(a.bild && a.id), symbol: a.symbol, karten: a.karten, fehler: a.fehler };
+      return { id: a.id, zeile: a.zeile, art: a.art, titel: a.titel, wert: a.wert, zusatz: a.zusatz, link: a.link, bild: Boolean(a.bild && a.id), symbol: a.symbol, karten: a.karten, fehler: a.fehler };
     })
   };
 }

@@ -15,8 +15,6 @@
     --farbe-doener: #E2A23B;
     /* Visitenkarte (Wunsch der Person, 4.11.2026): Olivgrün, nur in der Visitenkarte, nicht im Icon */
     --farbe-visitenkarte: #A8AE6E;
-    /* Weißer Grund hinter Logos beim Status, damit sie auch im Dunkelmodus lesbar sind */
-    --logo-grund: #FFFFFF;
 
     /* Schrift auf Bereichsfarbe (hell und dunkel gleich, Kontrast über 7:1) */
     --schrift-auf-farbe: #1C1B19;
