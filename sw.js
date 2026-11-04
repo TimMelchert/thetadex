@@ -1,6 +1,6 @@
 // Thetadex Service Worker
 // VERSION muss exakt gleich sein wie in js/config.js (bei jeder Änderung beide hochzählen).
-const VERSION = '1.2.3';
+const VERSION = '1.2.4';
 const CACHE_NAME = 'thetadex-' + VERSION;
 
 // App-Hülle: alle Dateien, die die App zum Starten braucht. Neue Dateien hier eintragen.
@@ -31,6 +31,7 @@ const HUELLE = [
   './js/views/uni-kalender.js',
   './js/views/dsa.js',
   './js/views/karte.js',
+  './js/views/visitenkarte.js',
   './js/views/dsa-abenteuer.js',
   './js/ui/kalender.js',
   './js/ui/auswahl.js',
@@ -40,6 +41,7 @@ const HUELLE = [
   './js/ui/bild.js',
   './js/ui/wuerfel.js',
   './vendor/chart.umd.js',
+  './vendor/qrcode.js',
   './icons/thetadex-icon.svg',
   './icons/thetadex-karte.svg',
   './icons/w20.svg',
