@@ -16,6 +16,7 @@ import * as einkauf from './views/einkauf.js';
 import * as uni from './views/uni.js';
 import * as dsa from './views/dsa.js';
 import * as karte from './views/karte.js';
+import * as visitenkarte from './views/visitenkarte.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
@@ -43,16 +44,19 @@ ANSICHTEN.dsa = dsa;
 ANSICHTEN.bogen = dsa;
 // Visitenkarte (10.2): #/karte/<skript>/<schluessel>, ohne Einrichtung, nur lesen. Ohne Reiterleiste und Kopf-Links (CSS über data-seite).
 ANSICHTEN.karte = karte;
+ANSICHTEN.visitenkarte = visitenkarte;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';
 function baueReiter(sichtbar) {
-    const schluessel = sichtbar.map((b) => b.id).join(',');
+    // Bereiche mit nurKachel (Visitenkarte) stehen nur auf der Startseite, nicht in der Leiste
+    const inLeiste = sichtbar.filter((b) => !b.nurKachel);
+    const schluessel = inLeiste.map((b) => b.id).join(',');
     if (schluessel === leisteFuer) return;
     leisteFuer = schluessel;
     const leiste = document.getElementById('reiter');
     leeren(leiste);
-    sichtbar.forEach((b) => {
+    inLeiste.forEach((b) => {
         leiste.append(el('a', {
             class: 'reiter-link',
             attrs: { href: '#/' + b.id, 'data-route': b.id, 'data-bereich': b.id }

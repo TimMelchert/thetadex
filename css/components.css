@@ -104,6 +104,7 @@
 [data-symbol="besitz"]   { --symbol: url("../icons/reiter/besitz.svg"); }
 [data-symbol="uni"]      { --symbol: url("../icons/reiter/uni.svg"); }
 [data-symbol="doener"]   { --symbol: url("../icons/reiter/doener.svg"); }
+[data-symbol="visitenkarte"] { --symbol: url("../icons/reiter/visitenkarte.svg"); }
 [data-symbol="einstellungen"] { --symbol: url("../icons/einstellungen.svg"); }
 
 /* Kacheln auf der Startseite */
@@ -1268,3 +1269,9 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .vk-vorschau img { display: block; max-width: 100%; max-height: 100%; }
 .vk-speichern { margin-top: calc(1.5 * var(--abstand)); width: 100%; }
 .vk .meldung:empty { display: none; }
+.vk-links label { display: block; margin-bottom: 6px; font-weight: 600; }
+.vk-links input { width: 100%; min-height: 44px; font: inherit; }
+.vk-links .besitz-form-knoepfe { flex-wrap: wrap; }
+.vk-qr { display: block; width: min(100%, 360px); height: auto; margin: 8px auto; image-rendering: pixelated; }
+[data-bereich="visitenkarte"] .ansicht[aria-pressed="true"] { background: var(--knopf-grund); color: var(--knopf-schrift); }
+.vk-links input { padding: 0 10px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); }

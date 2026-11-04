@@ -131,6 +131,8 @@
 [data-bereich="besitz"]   { --bereich: var(--farbe-besitz); }
 [data-bereich="uni"]      { --bereich: var(--farbe-uni); }
 [data-bereich="doener"]   { --bereich: var(--farbe-doener); }
+/* Visitenkarte (10.3): keine eigene Bereichsfarbe, nur Grau (Wunsch der Person: die sieben Register bleiben) */
+[data-bereich="visitenkarte"] { --bereich: var(--schrift-leise); }
 
 *, *::before, *::after { box-sizing: border-box; }
 
