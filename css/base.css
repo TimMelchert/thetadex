@@ -13,6 +13,8 @@
     --farbe-besitz: #7FA7A0;
     --farbe-uni: #C9784A;
     --farbe-doener: #E2A23B;
+    /* Visitenkarte (Wunsch der Person, 4.11.2026): Lavendel, nur in der Visitenkarte, nicht im Icon */
+    --farbe-visitenkarte: #9C8FC4;
 
     /* Schrift auf Bereichsfarbe (hell und dunkel gleich, Kontrast über 7:1) */
     --schrift-auf-farbe: #1C1B19;
@@ -131,8 +133,8 @@
 [data-bereich="besitz"]   { --bereich: var(--farbe-besitz); }
 [data-bereich="uni"]      { --bereich: var(--farbe-uni); }
 [data-bereich="doener"]   { --bereich: var(--farbe-doener); }
-/* Visitenkarte (10.3): keine eigene Bereichsfarbe, nur Grau (Wunsch der Person: die sieben Register bleiben) */
-[data-bereich="visitenkarte"] { --bereich: var(--schrift-leise); }
+/* Visitenkarte: eigene Farbe Lavendel, die sieben Register im Icon bleiben (Wunsch der Person, 4.11.2026) */
+[data-bereich="visitenkarte"] { --bereich: var(--farbe-visitenkarte); }
 
 *, *::before, *::after { box-sizing: border-box; }
 

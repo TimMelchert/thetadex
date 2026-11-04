@@ -1249,12 +1249,12 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 @media (min-width: 768px) {
     body[data-seite="karte"] { grid-template-columns: 1fr; }
 }
-.vk { padding: calc(1.5 * var(--abstand)); }
+.vk { padding: calc(1.5 * var(--abstand)); border-top: 6px solid var(--bereich); }
 .vk-name { margin: 0; font-size: 1.8rem; }
 .vk-status { margin: 4px 0 0; font-size: 1.1rem; font-weight: 600; }
 .vk-text { margin: 8px 0 0; }
 .vk-gruppe { margin-top: calc(1.5 * var(--abstand)); }
-.vk-gruppe > h2, .vk-gruppe > h3 { margin: 0 0 8px; font-size: 1rem; color: var(--schrift-leise); text-transform: uppercase; letter-spacing: 0.04em; }
+.vk-gruppe > h2, .vk-gruppe > h3 { padding-left: 8px; border-left: 4px solid var(--bereich); margin: 0 0 8px; font-size: 1rem; color: var(--schrift-leise); text-transform: uppercase; letter-spacing: 0.04em; }
 .vk-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .vk-liste li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-height: 44px; border-bottom: 1px solid var(--linie); }
 .vk-liste li:last-child { border-bottom: none; }
@@ -1273,5 +1273,4 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .vk-links input { width: 100%; min-height: 44px; font: inherit; }
 .vk-links .besitz-form-knoepfe { flex-wrap: wrap; }
 .vk-qr { display: block; width: min(100%, 360px); height: auto; margin: 8px auto; image-rendering: pixelated; }
-[data-bereich="visitenkarte"] .ansicht[aria-pressed="true"] { background: var(--knopf-grund); color: var(--knopf-schrift); }
 .vk-links input { padding: 0 10px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); }

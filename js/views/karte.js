@@ -175,7 +175,7 @@ export function zeichneKarte(angaben, optionen = {}) {
 
     if (optionen.kartenLink !== undefined) {
         teile.push(el('button', {
-            class: 'knopf vk-speichern', text: 'Kontakt speichern', attrs: { type: 'button' },
+            class: 'knopf knopf-bereich vk-speichern', text: 'Kontakt speichern', attrs: { type: 'button' },
             on: {
                 click: async () => {
                     const k = await holeKontakt();
@@ -196,6 +196,8 @@ export function render(container, ctx = {}) {
     const kennung = String(teile[0] || '');
     const schluessel = String(teile[1] || '');
     const meldung = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' }, text: 'Lade …' });
+    // Farbe der Visitenkarte (Lavendel) auch für Besucher
+    container.setAttribute('data-bereich', 'visitenkarte');
     container.append(meldung);
 
     if (!KENNUNG.test(kennung) || !SCHLUESSEL.test(schluessel)) {

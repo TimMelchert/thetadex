@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.2.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.2.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -392,6 +392,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - Bereichsfarben: Tracking `#E07A5F`, Finanzen `#8DB580`, DSA `#B5838D`, Einkauf/Essen `#D4B483`,
     Besitz `#7FA7A0`, Uni `#C9784A`, Döner `#E2A23B` (frühere Farbe von ToDos, der Reiter ist am 29.10.2026 entfallen). Kein Blau.
     Damit gibt es wieder sieben Reiter, passend zum Icon.
+    Ausnahme Visitenkarte (Wunsch der Person, 4.11.2026): eigene Farbe Lavendel `#9C8FC4` (`--farbe-visitenkarte`), nur für die Kachel und die Karte, nicht im Icon.
   - Bereichsfarben auf hellem Grund nur als Fläche oder Marke, nicht als Schriftfarbe (zu wenig Kontrast nach WCAG AA).
   - Ausnahme (Wunsch der Person, 29.10.2026): Nach dem Speichern erscheint kurz ein Fenster mit grünem Haken (`--erfolg`).
     Die Tracking-Übersicht färbt Zellen mit eigenen Zellfarben (`--zelle-…` in `css/base.css`, hell und dunkel) nach Regeln
@@ -469,7 +470,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - **Aktionen:** mit `KARTE_PIN` `ping`, `angaben`, `link`, `link_weg`, `bild`; ohne Passwort nur mit Schlüssel `karte` (ohne E-Mail und Telefon), `kontakt` (E-Mail und Telefon, nach Tipp), `bild_karte` (Vorschaubild einer Angabe dieser Karte).
     Ein gültiger Schlüssel geht immer durch (Fund 1); 20 falsche in 15 Minuten geben nur „gesperrt“. Obergrenze je Stunde für alle: 300 Karten, 60 Kontakte, 300 Bilder. Kein Captcha (fremde Dienste, Entscheidung der Person).
   - **App:** Besucher-Ansicht ohne Reiterleiste und Kopf-Links, im Gerät der Besucher nichts. „Kontakt speichern“ erzeugt im Gerät eine vCard mit dem Link der Karte.
-    Für die Person nur die Kachel `#/visitenkarte` (grau, nicht in der Leiste, Icon und Register bleiben): Umschalter, Vorschau, Link erstellen, kopieren, QR-Code (im Gerät, `vendor/qrcode.js`) zeigen und speichern, erneuern, nicht mehr teilen.
+    Für die Person nur die Kachel `#/visitenkarte` (Lavendel, nicht in der Leiste, Icon und Register bleiben): Umschalter, Vorschau, Link erstellen, kopieren, QR-Code (im Gerät, `vendor/qrcode.js`) zeigen und speichern, erneuern, nicht mehr teilen.
   - Prüfungen: Plan (`pruefung/visitenkarte-plan-bericht.md`) und gebaut (`pruefung/etappe-10-visitenkarte-bericht.md`) in den Projektdateien, nichts offen.
 - **Einkauf, Sheet „Gemeinsam“** (Etappe 4). Alle Blätter haben zusätzlich `id, erstellt_am, geaendert_am, geloescht`; Löschen ist weich.
   | Blatt | Spalten (Grenzen) |
@@ -832,3 +833,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.2.4** Schritt 10.3: Kachel „Visitenkarte“ auf der Startseite (`#/visitenkarte`, nicht in der Leiste): Umschalter Privat, Arbeit, Aktivismus mit Vorschau, Link erstellen, kopieren, als QR-Code zeigen und speichern, erneuern, nicht mehr teilen; Liste „Erscheint auf keiner Karte“. `vendor/qrcode.js`, Eintrag in `LIZENZEN.md`.
 - **1.2.5** Schritt 10.4: Etappe 10 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht, nichts zu bauen), Plan in STAND.md eingearbeitet (4 „Visitenkarte“), `docs/PLAN-ETAPPE-10.md` gelöscht.
 - **1.2.6** Nachbesserung: Hinweis zu hängenden GitHub-Pages-Läufen im Merkzettel (5); neue Version, damit Pages nach dem hängenden Lauf von 1.2.5 neu ausliefert.
+- **1.2.7** Nachbesserung Visitenkarte: Farbe Lavendel statt Grau (Kachel, Streifen oben an der Karte, Gruppen, Knöpfe), auch für Besucher.

@@ -155,13 +155,13 @@ export function render(container) {
         const reihe = el('div', { class: 'besitz-form-knoepfe' });
         if (!daten.geteilt[wahl]) {
             linkBereich.append(el('p', { text: 'Die Karte „' + titel + '“ hat noch keinen Link.' }));
-            reihe.append(el('button', { class: 'knopf', text: 'Link erstellen', attrs: { type: 'button' }, on: { click: () => link('link') } }));
+            reihe.append(el('button', { class: 'knopf knopf-bereich', text: 'Link erstellen', attrs: { type: 'button' }, on: { click: () => link('link') } }));
         } else if (adresse) {
             const feld = el('input', { attrs: { id: 'vk-link', type: 'text', readonly: true, value: adresse } });
             feld.addEventListener('focus', () => feld.select());
             linkBereich.append(el('label', { text: 'Link der Karte „' + titel + '“', attrs: { for: 'vk-link' } }), feld);
             reihe.append(
-                el('button', { class: 'knopf', text: 'QR-Code zeigen', attrs: { type: 'button' }, on: { click: () => zeigeQr(adresse) } }),
+                el('button', { class: 'knopf knopf-bereich', text: 'QR-Code zeigen', attrs: { type: 'button' }, on: { click: () => zeigeQr(adresse) } }),
                 el('button', {
                     class: 'knopf knopf-zweit', text: 'Link kopieren', attrs: { type: 'button' },
                     on: { click: async () => { try { await navigator.clipboard.writeText(adresse); ladeStatus.textContent = 'Link kopiert.'; } catch (e) { feld.focus(); ladeStatus.textContent = 'Bitte den Link markieren und kopieren.'; } } }
