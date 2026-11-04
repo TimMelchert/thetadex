@@ -1258,6 +1258,9 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 /* Bunte Symbole der Dienste (Markenfarben, Wunsch der Person, 4.11.2026) */
 .vk-beschriftung { display: inline-flex; align-items: center; gap: 8px; }
 .vk-symbol { flex: 0 0 24px; width: 24px; height: 24px; }
+/* Eingebautes Symbol vor dem Text (Spalte „bild“ = „hut“) */
+.vk-eigen-symbol { vertical-align: -5px; margin-right: 8px; }
+.vk-status .vk-eigen-symbol { width: 32px; height: 32px; margin-right: 0; }
 .vk-text { margin: 8px 0 0; }
 .vk-gruppe { margin-top: calc(1.5 * var(--abstand)); }
 .vk-gruppe > h2, .vk-gruppe > h3, .vk-gruppe > h4 { padding-left: 8px; border-left: 4px solid var(--bereich); margin: 0 0 8px; font-size: 1rem; color: var(--schrift-leise); text-transform: uppercase; letter-spacing: 0.04em; }
@@ -1284,7 +1287,7 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
     .vk-seite { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--abstand); align-items: start; margin-top: var(--abstand); }
     .vk-seite-rechts { grid-column: 2; grid-row: 1; position: sticky; top: var(--abstand); }
     .vk-seite-haupt { grid-column: 1; grid-row: 1; }
-    .vk-seite-haupt > h2:first-child { margin-top: 0; }
+    .vk-seite-haupt > div:first-child > .vk { margin-top: 0; }
 }
 .vk-qr { display: block; width: min(100%, 360px); height: auto; margin: 8px auto; image-rendering: pixelated; }
 .vk-links input { padding: 0 10px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); }

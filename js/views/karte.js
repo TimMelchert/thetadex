@@ -107,16 +107,23 @@ export function zeichneKarte(angaben, optionen = {}) {
         return platz;
     }
 
+    // Eingebautes Symbol aus Spalte „bild“ (zum Beispiel „hut“), Farbe wie die Schrift
+    const SYMBOLE = { hut: 'uni' };
+    function symbol(a) {
+        const s = SYMBOLE[a.symbol];
+        return s ? el('span', { class: 'reiter-symbol vk-eigen-symbol', attrs: { 'data-symbol': s, 'aria-hidden': 'true' } }) : null;
+    }
+
     const teile = [];
     teile.push(el(ebene, { class: 'vk-name', text: name ? name.wert || name.titel : 'Visitenkarte' }));
     art('status').forEach((a) => teile.push(el('p', { class: 'vk-status' }, [
-        bildPlatz(a, 'vk-logo'),
+        symbol(a) || bildPlatz(a, 'vk-logo'),
         el('span', { text: a.wert || a.titel })
     ])));
 
     function textBlock(a) {
         const u = nurHttps(a.link);
-        return el('p', { class: 'vk-text' }, [u ? aeusserLink(u, a.wert || a.titel) : document.createTextNode(a.wert || a.titel)]);
+        return el('p', { class: 'vk-text' }, [symbol(a), u ? aeusserLink(u, a.wert || a.titel) : document.createTextNode(a.wert || a.titel)]);
     }
 
     function kontaktBlock() {
@@ -158,7 +165,7 @@ export function zeichneKarte(angaben, optionen = {}) {
                 el('a', { class: 'vk-veroeff-link', attrs: { href: nurHttps(a.link), target: '_blank', rel: 'noopener noreferrer' } }, [
                     bildPlatz(a, 'vk-vorschau'),
                     el('span', { class: 'vk-veroeff-text' }, [
-                        el('strong', { text: a.titel || a.wert }),
+                        el('strong', {}, [symbol(a), document.createTextNode(a.titel || a.wert)]),
                         a.titel && a.wert ? el('span', { class: 'leise', text: a.wert }) : null
                     ])
                 ])
