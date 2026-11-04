@@ -25,6 +25,15 @@ export function render(container) {
         titel: s.titel
     }));
 
+    // Eigene Passwörter einzelner Skripte (Visitenkarte, ab 10.1)
+    const eigeneFelder = SKRIPTE.filter((s) => s.eigenesPasswort).map((s) => ({
+        name: s.eigenesPasswort,
+        titel: s.titel,
+        feld: el('input', {
+            attrs: { id: 'feld-pw-' + s.id, type: 'password', autocomplete: 'off', placeholder: lesen(s.eigenesPasswort) ? 'gespeichert – nur zum Ändern ausfüllen' : '' }
+        })
+    }));
+
     function speichern(ev) {
         ev.preventDefault();
         const neu = {};
@@ -44,8 +53,13 @@ export function render(container) {
             passwortFeld.focus();
             return;
         }
-        const ok = schreiben('skripte', neu) && (!pw || schreiben('passwort', pw));
+        const ok = schreiben('skripte', neu) && (!pw || schreiben('passwort', pw))
+            && eigeneFelder.every((f) => !f.feld.value || schreiben(f.name, f.feld.value));
         passwortFeld.value = '';
+        eigeneFelder.forEach((f) => {
+            if (ok && f.feld.value) f.feld.setAttribute('placeholder', 'gespeichert – nur zum Ändern ausfüllen');
+            f.feld.value = '';
+        });
         meldung.textContent = ok ? 'Gespeichert.' : 'Konnte nicht speichern. Ist der private Modus des Browsers an?';
         if (ok) passwortFeld.setAttribute('placeholder', 'gespeichert – nur zum Ändern ausfüllen');
         // Welche Reiter sichtbar sind, hängt an den Adressen (Schritt 4.5)
@@ -79,7 +93,7 @@ export function render(container) {
     }
 
     function allesLoeschen() {
-        if (!confirm('Passwort und Script-Adressen von diesem Gerät löschen?')) return;
+        if (!confirm('Passwörter und Script-Adressen von diesem Gerät löschen?')) return;
         abmelden();
         wendeAussehenAn();
         location.hash = '#/';
@@ -91,7 +105,12 @@ export function render(container) {
         el('p', { class: 'leise', text: 'Nur Skripte mit eingetragener Adresse erscheinen als Reiter. Leere Felder bleiben einfach leer.' }),
         ...adressFelder.flatMap((a) => [
             el('label', { text: 'Script-Adresse ' + a.titel, attrs: { for: 'feld-skript-' + a.id } }),
-            a.feld
+            a.feld,
+            ...eigeneFelder.filter((f) => 'feld-pw-' + a.id === f.feld.id).flatMap((f) => [
+                el('label', { text: 'Eigenes Passwort ' + f.titel, attrs: { for: f.feld.id } }),
+                f.feld,
+                el('p', { class: 'leise', text: 'Nicht dasselbe wie oben. Die Adresse dieses Skripts steht in jedem Link, darum hat es ein eigenes Passwort.' })
+            ])
         ]),
         el('button', { class: 'knopf', text: 'Speichern', attrs: { type: 'submit' } })
     ]);
@@ -124,7 +143,7 @@ export function render(container) {
         pruefKnopf,
         ergebnis,
         el('h2', { text: 'Abmelden' }),
-        el('p', { text: 'Löscht alles, was Thetadex auf diesem Gerät gespeichert hat: Passwort, Adressen, Aussehen, Kontostände, Einkaufsliste, Uni-Daten und Teilen-Links.' }),
+        el('p', { text: 'Löscht alles, was Thetadex auf diesem Gerät gespeichert hat: Passwörter, Adressen, Aussehen, Kontostände, Einkaufsliste, Uni-Daten und Teilen-Links.' }),
         el('button', { class: 'knopf knopf-zweit', text: 'Abmelden', attrs: { type: 'button' }, on: { click: allesLoeschen } })
     );
 }

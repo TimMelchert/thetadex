@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '1.2.1';
+export const VERSION = '1.2.2';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {
@@ -37,5 +37,7 @@ export const SKRIPTE = [
     { id: 'doener',   titel: 'Döner',    test: 'liste' },
     { id: 'leben',    titel: 'Besitz',   test: 'liste' },
     { id: 'gemeinsam', titel: 'Einkauf und Uni', test: 'ping' },
-    { id: 'dsa',      titel: 'Pen & Paper', test: 'ping' }
+    { id: 'dsa',      titel: 'Pen & Paper', test: 'ping' },
+    // Visitenkarte (ab 10.1): eigenes Passwort KARTE_PIN, die App schickt diesem Skript nie das Hauptpasswort
+    { id: 'karte',    titel: 'Visitenkarte', test: 'ping', eigenesPasswort: 'karte_passwort' }
 ];

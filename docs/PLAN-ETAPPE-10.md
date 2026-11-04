@@ -47,7 +47,7 @@ Nur `KARTE_PIN` (Skripteigenschaft, mindestens 12 Zeichen, anders als `APP_PIN`;
 - **Ohne Passwort, nur mit Schlüssel:**
   - `karte`: welche Karte der Schlüssel öffnet und ihre Angaben **ohne** E-Mail und Telefon (dort steht nur, dass es sie gibt). Nie den Schlüssel, nie andere Karten, nie `geloescht`.
   - `kontakt`: E-Mail und Telefon dieser Karte (für „zeigen“ und „Kontakt speichern“).
-  - `bild` mit Kennung einer Angabe: Vorschaubild als `data:`-Bild, nur für Angaben dieser Karte, nur Bilddateien, als kleines Vorschaubild aus Drive.
+  - `bild_karte` mit Kennung einer Angabe (mit Passwort heißt die Aktion `bild`): Vorschaubild als `data:`-Bild, nur für Angaben dieser Karte, nur Bilddateien, als kleines Vorschaubild aus Drive.
 - **Schutz:** Ein gültiger Schlüssel geht immer durch (Fund 1, anders als beim DSA-Bogen: dort prüft das Skript zuerst die Sperre).
   Erst nach 20 falschen Schlüsseln in 15 Minuten werden weitere falsche sofort abgewiesen (eigener Zähler). So können Fremde keine Karte sperren. Obergrenze für alle zusammen:
   höchstens 300 Abrufe von `karte` und 60 von `kontakt` je Stunde (`CacheService`). Danach freundliche Meldung „Gerade zu viele Abrufe“.
