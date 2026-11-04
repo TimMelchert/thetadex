@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.2.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.2.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -15,7 +15,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 7 „Umstieg und Aufräumen“ ist fertig (1.11.2026). Die alten Apps sind abgelöst.
 - Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0.
 - Etappe 9 „Kontowecker“ ist fertig (1.11.2026): Kontowecker-SMS kommen von selbst ins Finanz-Sheet, Festlegungen in 4 („Kontowecker“).
-- Etappe 10 „Visitenkarte“ läuft: Plan `docs/PLAN-ETAPPE-10.md` (Schritt 10.0, 4.11.2026). 10.1 (Sheet und Skript `karte`), 10.2 (Besucher-Ansicht `#/karte/…`) und 10.3 (Kachel `#/visitenkarte` mit Links und QR-Code) sind gebaut. Nächster Schritt: 10.4 Abschluss.
+- Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“). Nächste Etappe: offen (Wunsch der Person abwarten).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -202,7 +202,7 @@ unter „Info“ die Version prüfen.
 - Hash-Routing: `#/tracking`, `#/doener`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einstellungen`, `#/info`, ab 10.3 `#/visitenkarte` (nur Kachel auf der Startseite, `nurKachel` in `BEREICHE`).
   Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“)
   und `#/doener/<skript>` (öffentliche Döner-Bewertung, siehe 4 „Döner öffentlich“)
-  und `#/karte/<skript>/<schluessel>` (Visitenkarte, nur lesen, ohne Reiterleiste und Kopf-Links, ab 10.2, siehe `docs/PLAN-ETAPPE-10.md`).
+  und `#/karte/<skript>/<schluessel>` (Visitenkarte, nur lesen, ohne Reiterleiste und Kopf-Links, ab 10.2, siehe 4 „Visitenkarte“).
   Unbekannte Adressen zeigen „Seite nicht gefunden“.
 - Startseite: Karteikarte mit den farbigen Reitern (`icons/thetadex-karte.svg`, ohne dunklen Grund) und Kacheln aller sichtbaren Reiter. Eine Heute-Übersicht gibt es nicht (Entscheidung der Person, 1.11.2026).
 - Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter es gibt, steht in `js/config.js` (`features`).
@@ -407,6 +407,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   | Einkauf und Essen | lesen, ändern | lesen, ändern | – |
   | Uni (alle Zeiten, auch Arbeit und Zug) | lesen, ändern | nur lesen | – |
   | DSA-Bögen | lesen, ändern | – | ein Bogen per Link, nur lesen |
+  | Visitenkarte | lesen, Links verwalten (eigenes Passwort `KARTE_PIN`); ändern nur im Sheet | – | eine Karte per Link, nur lesen; E-Mail und Telefon nach Tipp |
   | Döner | lesen, bewerten; löschen nur im Sheet | wie alle | lesen, bewerten |
 - **Besitz: keine Daten öffentlich** (Wunsch der Person). Wie bei Finanzen: keine Gegenstände, Orte oder Preise im Repo.
   Auch die Namen bei „Ausgeliehen an“ stehen nur im Sheet „Leben“, nie im Repo, in Beispielen oder Pull-Request-Texten.
@@ -455,6 +456,21 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     Blatt `sessions` (`id, abenteuer_id, datum, text` + Standard), nur zu `spieler`-Abenteuern, Datum JJJJ-MM-TT, Text höchstens 3000 Zeichen.
     Löschen eines Bogens löscht seine Abenteuer und Sessions mit (weich), Löschen eines Abenteuers seine Sessions.
     `geteilt` gibt nur `spieler`-Abenteuer des Bogens und ihre Sessions heraus, nie `dm` oder `ideen`. Fehlen die Blätter noch, läuft `liste` trotzdem.
+- **Visitenkarte, Sheet „Visitenkarte“** (Etappe 10, Plan eingearbeitet am 4.11.2026). Eigenes Sheet und Skript `karte`: Ein Fehler hier kann nie andere Bereiche verraten (2.2).
+  Die Online-Karte ist nur der Notfall, wenn keine Papierkarte dabei ist (Person). Kein Impressum, keine Datenschutzerklärung, kein Foto (Entscheidung der Person, 4.11.2026).
+  - **Drei Karten** `privat`, `arbeit`, `aktivismus`, jede mit eigenem Link `#/karte/<skript>/<schluessel>` (Schlüssel 64 Zeichen). **Ein Link zeigt nur seine Karte**, Besucher haben keinen Umschalter.
+    „Neuen Link erstellen“ macht alten Link und alte QR-Codes ungültig. Die Script-Adresse steht im Link, weil Besucher nichts eingerichtet haben; ohne Schlüssel gibt sie nichts heraus.
+  - **Eigenes Passwort `KARTE_PIN`** (Fund 4 der Prüfung, Entscheidung der Person): Das Skript kennt `APP_PIN` nicht, die App schickt ihm nur `KARTE_PIN` (`eigenesPasswort` in `SKRIPTE`). Grund: Seine Adresse geht an Fremde.
+  - Blatt `angaben`: `id, art, titel, wert, link, bild, karten, reihenfolge, erstellt_am, geaendert_am, geloescht`. `art` = `name`, `status`, `email`, `telefon`, `social`, `veroeffentlichung`, `text`;
+    `titel` 60, `wert` 200, `link` nur `https://` (300), `bild` Drive-Link nur bei Veröffentlichungen, `karten` zum Beispiel `privat, aktivismus`. Höchstens 100 Angaben. Pflege nur im Sheet; fehlende `id` ergänzt das Skript.
+    Blatt `links`: `id, karte, schluessel, erstellt_am, geaendert_am`.
+  - **Öffentlich nur, was passt:** leere oder unbekannte `karten` = auf keiner Karte (Fund 2); E-Mail nur `name@domain`, Telefon nur Ziffern, `+`, Leerzeichen, `/`, `-` (Fund 3).
+    Was nicht passt, steht in der Vorschau der Person unter „Erscheint auf keiner Karte“ mit Grund.
+  - **Aktionen:** mit `KARTE_PIN` `ping`, `angaben`, `link`, `link_weg`, `bild`; ohne Passwort nur mit Schlüssel `karte` (ohne E-Mail und Telefon), `kontakt` (E-Mail und Telefon, nach Tipp), `bild_karte` (Vorschaubild einer Angabe dieser Karte).
+    Ein gültiger Schlüssel geht immer durch (Fund 1); 20 falsche in 15 Minuten geben nur „gesperrt“. Obergrenze je Stunde für alle: 300 Karten, 60 Kontakte, 300 Bilder. Kein Captcha (fremde Dienste, Entscheidung der Person).
+  - **App:** Besucher-Ansicht ohne Reiterleiste und Kopf-Links, im Gerät der Besucher nichts. „Kontakt speichern“ erzeugt im Gerät eine vCard mit dem Link der Karte.
+    Für die Person nur die Kachel `#/visitenkarte` (grau, nicht in der Leiste, Icon und Register bleiben): Umschalter, Vorschau, Link erstellen, kopieren, QR-Code (im Gerät, `vendor/qrcode.js`) zeigen und speichern, erneuern, nicht mehr teilen.
+  - Prüfungen: Plan (`pruefung/visitenkarte-plan-bericht.md`) und gebaut (`pruefung/etappe-10-visitenkarte-bericht.md`) in den Projektdateien, nichts offen.
 - **Einkauf, Sheet „Gemeinsam“** (Etappe 4). Alle Blätter haben zusätzlich `id, erstellt_am, geaendert_am, geloescht`; Löschen ist weich.
   | Blatt | Spalten (Grenzen) |
   | --- | --- |
@@ -585,7 +601,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `finanzen-sms.js` (Noch zuordnen, Vorschlag aus der SMS, ab 9.2), `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8), `karte.js` (Visitenkarte für Besucher und `zeichneKarte` für die Vorschau, ab 10.2), `visitenkarte.js` (Vorschau, Links und QR-Code für die Person, ab 10.3). `vendor/qrcode.js`: QR Code Generator 1.4.4. `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper. `icons/reiter/visitenkarte.svg`: Kachel Visitenkarte (ab 10.3).
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-10.md`).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`),
@@ -708,7 +724,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
   - **Version 1.0.0:** `docs/STAND.md` auf den Stand bringen, Version 1.0.0 in `js/config.js` und `sw.js`.
 - **Etappe 9 „Kontowecker“ (1.1.x)** – fertig (1.11.2026). Kontowecker-SMS automatisch an das Finanz-Skript, im Reiter Finanzen „Noch zuordnen“ mit Vorschlag.
   Schritte: 9.0 Plan, 9.1 Skript nimmt SMS an, 9.2 Noch zuordnen (mit Nachbesserungen), 9.3 Abschluss mit Prüfung. Festlegungen in 4 („Kontowecker“).
-- **Etappe 10 „Visitenkarte“ (1.2.x)** – läuft. Plan in `docs/PLAN-ETAPPE-10.md`: eigenes Sheet und Skript `karte`, drei Karten (privat, Arbeit, Aktivismus) je mit eigenem Link, nur Kachel auf der Startseite.
+- **Etappe 10 „Visitenkarte“ (1.2.x)** – fertig (4.11.2026), Plan eingearbeitet (4 „Visitenkarte“). Schritte 10.0 Plan mit Prüfung, 10.1 Sheet und Skript `karte`, 10.2 Besucher-Ansicht, 10.3 Kachel mit Links und QR-Code, 10.4 Abschluss mit Prüfung (Pull Requests #73 bis #77).
 - **Entfallen:** Startseite mit Heute-Übersicht (Entscheidung der Person, 1.11.2026).
 
 Prüfung gegen die Grundsätze (1.2):
@@ -812,3 +828,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.2.2** Schritt 10.1: Sheet „Visitenkarte“ und Skript `karte` (Blätter `angaben`, `links`; mit `KARTE_PIN` `ping`, `angaben`, `link`, `link_weg`, `bild`; ohne Passwort `karte`, `kontakt`, `bild_karte`), Adresse und eigenes Passwort in den Einstellungen.
 - **1.2.3** Schritt 10.2: Besucher-Ansicht `#/karte/<skript>/<schluessel>` (Name, Status, Kontakt erst nach Tipp, Social Media, Veröffentlichungen mit Vorschaubild, „Kontakt speichern“ als vCard mit dem Link der Karte), ohne Reiterleiste und Kopf-Links.
 - **1.2.4** Schritt 10.3: Kachel „Visitenkarte“ auf der Startseite (`#/visitenkarte`, nicht in der Leiste): Umschalter Privat, Arbeit, Aktivismus mit Vorschau, Link erstellen, kopieren, als QR-Code zeigen und speichern, erneuern, nicht mehr teilen; Liste „Erscheint auf keiner Karte“. `vendor/qrcode.js`, Eintrag in `LIZENZEN.md`.
+- **1.2.5** Schritt 10.4: Etappe 10 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht, nichts zu bauen), Plan in STAND.md eingearbeitet (4 „Visitenkarte“), `docs/PLAN-ETAPPE-10.md` gelöscht.

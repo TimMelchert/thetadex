@@ -1,7 +1,7 @@
 // Visitenkarte (Etappe 10).
 // Besucher: #/karte/<skript>/<schluessel> ohne Einrichtung und ohne Passwort, nur lesen (Schritt 10.2).
 // Ein Link zeigt genau eine Karte. E-Mail und Telefon kommen erst nach einem Tipp (eigene Anfrage „kontakt“).
-// Im Gerät der Besucher wird nichts gespeichert. Siehe docs/PLAN-ETAPPE-10.md.
+// Im Gerät der Besucher wird nichts gespeichert. Siehe docs/STAND.md 4 „Visitenkarte“.
 // zeichneKarte nutzt auch die Vorschau der Person (Schritt 10.3).
 
 import { el, leeren, sichereUrl } from '../ui/dom.js';

@@ -7,7 +7,7 @@
 // Ohne Passwort gibt es nur „karte“, „kontakt“ und „bild“, immer nur mit dem Schlüssel einer Karte.
 // Das Skript schreibt nie Angaben, nur Schlüssel und fehlende Kennungen.
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (KARTE_PIN).
-// Siehe docs/PLAN-ETAPPE-10.md.
+// Siehe docs/STAND.md 4 „Visitenkarte“.
 // =====================================================
 
 var KOEPFE_ = {
