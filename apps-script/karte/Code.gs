@@ -24,6 +24,7 @@ var KARTEN_ = ["privat", "arbeit", "aktivismus"];
 var ARTEN_ = ["name", "status", "email", "telefon", "social", "veroeffentlichung", "text"];
 var KONTAKT_ = ["email", "telefon"];
 var MIT_BILD_ = ["veroeffentlichung", "status"];  // Vorschaubild bzw. Logo der Gruppe
+var SYMBOLE_ = ["hut"];                           // Wort in Spalte „bild“ statt Drive-Link: eingebautes Symbol links vor dem Text
 var MAX_ = { titel: 60, wert: 200, link: 300 };
 var MAX_ANGABEN_ = 100;
 var MAX_ABRUFE_ = { karte: 300, kontakt: 60, bild: 600 };   // je Stunde, für alle zusammen
@@ -149,6 +150,12 @@ function istWahr_(v) {
 }
 
 // Kennung einer Drive-Datei aus einem Link oder der Kennung selbst
+// Eingebautes Symbol (zum Beispiel „hut“ = Studentenhut), sonst leer
+function symbolAus_(text) {
+  var t = String(text == null ? "" : text).trim().toLowerCase();
+  return SYMBOLE_.indexOf(t) >= 0 ? t : "";
+}
+
 function driveKennung_(text) {
   var t = String(text == null ? "" : text).trim();
   var m = /\/d\/([A-Za-z0-9_-]{20,})/.exec(t) || /[?&]id=([A-Za-z0-9_-]{20,})/.exec(t) || /^([A-Za-z0-9_-]{20,})$/.exec(t);
@@ -199,6 +206,7 @@ function angabeAus_(z, sp, nr) {
     wert: kurz_(z[sp.wert], MAX_.wert),
     link: String(z[sp.link] == null ? "" : z[sp.link]).trim(),
     bild: driveKennung_(z[sp.bild]),
+    symbol: symbolAus_(z[sp.bild]),
     karten: kartenListe_(z[sp.karten]),
     reihenfolge: Number(z[sp.reihenfolge]) || 0,
     fehler: ""
@@ -284,7 +292,7 @@ function karte_(data) {
   return {
     karte: k.karte,
     angaben: angabenDerKarte_(k.karte).map(function (a) {
-      return { id: a.id, art: a.art, titel: a.titel, wert: a.wert, link: a.link, bild: Boolean(a.bild && a.id) };
+      return { id: a.id, art: a.art, titel: a.titel, wert: a.wert, link: a.link, bild: Boolean(a.bild && a.id), symbol: a.symbol };
     })
   };
 }
@@ -350,7 +358,7 @@ function angaben_() {
     karten: KARTEN_,
     geteilt: geteilt,
     angaben: alleAngaben_().map(function (a) {
-      return { id: a.id, zeile: a.zeile, art: a.art, titel: a.titel, wert: a.wert, link: a.link, bild: Boolean(a.bild && a.id), karten: a.karten, fehler: a.fehler };
+      return { id: a.id, zeile: a.zeile, art: a.art, titel: a.titel, wert: a.wert, link: a.link, bild: Boolean(a.bild && a.id), symbol: a.symbol, karten: a.karten, fehler: a.fehler };
     })
   };
 }

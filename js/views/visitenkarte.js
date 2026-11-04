@@ -78,8 +78,6 @@ export function render(container) {
         el('div', { class: 'vk-seite' }, [
             el('aside', { class: 'vk-seite-rechts', attrs: { 'aria-label': 'Link und QR-Code' } }, [linkBereich]),
             el('div', { class: 'vk-seite-haupt' }, [
-                el('h2', { text: 'So sehen es Besucher' }),
-                el('p', { class: 'leise', text: 'Ändern geht im Sheet „Visitenkarte“, danach „Neu laden“.' }),
                 vorschau, hinweise,
                 el('button', { class: 'knopf knopf-zweit', text: 'Neu laden', attrs: { type: 'button' }, on: { click: laden } })
             ])
