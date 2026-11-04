@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.2.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.2.10** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -463,8 +463,9 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - **Drei Karten** `privat`, `arbeit`, `aktivismus`, jede mit eigenem Link `#/karte/<skript>/<schluessel>` (Schlüssel 64 Zeichen). **Ein Link zeigt nur seine Karte**, Besucher haben keinen Umschalter.
     „Neuen Link erstellen“ macht alten Link und alte QR-Codes ungültig. Die Script-Adresse steht im Link, weil Besucher nichts eingerichtet haben; ohne Schlüssel gibt sie nichts heraus.
   - **Eigenes Passwort `KARTE_PIN`** (Fund 4 der Prüfung, Entscheidung der Person): Das Skript kennt `APP_PIN` nicht, die App schickt ihm nur `KARTE_PIN` (`eigenesPasswort` in `SKRIPTE`). Grund: Seine Adresse geht an Fremde.
-  - Blatt `angaben`: `id, art, titel, wert, link, bild, karten, reihenfolge, erstellt_am, geaendert_am, geloescht`. `art` = `name`, `status`, `email`, `telefon`, `social`, `veroeffentlichung`, `text`;
+  - Blatt `angaben`: `id, art, titel, wert, link, bild, karten, reihenfolge, erstellt_am, geaendert_am, geloescht, zusatz`. `art` = `name`, `status`, `email`, `telefon`, `adresse` (ab 1.2.10, im Block Kontakt, Link zu OpenStreetMap erst beim Tipp), `social`, `veroeffentlichung`, `text`;
     `titel` 60, `wert` 200, `link` nur `https://` (300), `bild` Drive-Link bei Veröffentlichungen (Vorschaubild) und beim Status (Logo der Gruppe, ab 1.2.8), oder das Wort `hut` bei jeder Art (Studentenhut links vor dem Text, Symbol aus `icons/reiter/uni.svg`, ab 1.2.9), `karten` zum Beispiel `privat, aktivismus`. Höchstens 100 Angaben. Pflege nur im Sheet; fehlende `id` ergänzt das Skript.
+    `zusatz` (ab 1.2.10, 200, freiwillig bis zum nächsten `einrichten`): steht beim Status direkt nach `wert`, nicht fett. Kleine PNG, GIF, WebP (bis 400 KB) schickt das Skript als Datei selbst, damit durchsichtige Hintergründe bleiben.
     Blatt `links`: `id, karte, schluessel, erstellt_am, geaendert_am`.
   - **Öffentlich nur, was passt:** leere oder unbekannte `karten` = auf keiner Karte (Fund 2); E-Mail nur `name@domain`, Telefon nur Ziffern, `+`, Leerzeichen, `/`, `-` (Fund 3).
     Was nicht passt, steht in der Vorschau der Person unter „Erscheint auf keiner Karte“ mit Grund.
@@ -838,3 +839,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.2.7** Nachbesserung Visitenkarte: Farbe Lavendel statt Grau (Kachel, Streifen oben an der Karte, Gruppen, Knöpfe), auch für Besucher.
 - **1.2.8** Nachbesserung Visitenkarte: Olivgrün statt Lavendel, Rahmen um die ganze Karte, E-Mail und Telefon gleich sichtbar (Skript `karte` neu), Reihenfolge gilt auch für Texte und Gruppen, bunte Symbole für Instagram, LinkedIn und Signal, Logo je Status, am PC Reiter in der Seitenleiste und Link-Kasten rechts.
 - **1.2.9** Nachbesserung Visitenkarte: `hut` in Spalte `bild` zeigt einen Studentenhut vor dem Text (Skript `karte` neu), Satz „So sehen es Besucher …“ über der Vorschau entfernt.
+- **1.2.10** Nachbesserung Visitenkarte: Logos ohne weißen Hintergrund, Spalte `zusatz` (Status teils nicht fett), Art `adresse`.
