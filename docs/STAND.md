@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.2.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.2.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -804,3 +804,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.1.7** Nachbesserung 9.3: „Noch zuordnen“ lädt von selbst neu (Seite wieder sichtbar, Tipp auf „SMS“, alle 5 Minuten), damit am PC keine am Handy erledigte SMS stehen bleibt.
 - **1.1.8** Nachbesserung Etappe 9: SMS mit mehreren Umsätzen werden im Skript in eine Zeile je Umsatz geteilt, jeder Umsatz wird einzeln vorgeschlagen und gebucht.
 - **Etappe 10** Visitenkarte. **1.2.0** Schritt 10.0: Plan `docs/PLAN-ETAPPE-10.md` (Sheet „Visitenkarte“, Skript `karte`, ein Link je Karte, E-Mail und Telefon erst nach Tipp, QR-Code mit lokaler Bibliothek).
+- **1.2.1** Prüfung des Plans (Bericht nur in den Projektdateien): gültige Links gehen immer durch, leere Spalte `karten` = auf keiner Karte, Form von E-Mail und Telefon geprüft, eigenes Passwort `KARTE_PIN`.
