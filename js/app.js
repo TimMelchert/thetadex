@@ -15,6 +15,7 @@ import * as besitz from './views/besitz.js';
 import * as einkauf from './views/einkauf.js';
 import * as uni from './views/uni.js';
 import * as dsa from './views/dsa.js';
+import * as karte from './views/karte.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
@@ -40,6 +41,8 @@ ANSICHTEN.uni = uni;
 ANSICHTEN.dsa = dsa;
 // Geteilter Bogen (6.6): #/bogen/<skript>/<schluessel>, ohne Einrichtung, nur lesen
 ANSICHTEN.bogen = dsa;
+// Visitenkarte (10.2): #/karte/<skript>/<schluessel>, ohne Einrichtung, nur lesen. Ohne Reiterleiste und Kopf-Links (CSS über data-seite).
+ANSICHTEN.karte = karte;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';
