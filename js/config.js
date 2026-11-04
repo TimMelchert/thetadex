@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '1.2.7';
+export const VERSION = '1.2.8';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {
@@ -16,7 +16,7 @@ export const features = {
     visitenkarte: true
 };
 
-// Die sieben Bereiche in der Reihenfolge der Reiterleiste, dazu die Visitenkarte nur als Kachel (nurKachel).
+// Die sieben Bereiche in der Reihenfolge der Reiterleiste, dazu die Visitenkarte: am Handy nur als Kachel, am PC auch in der Seitenleiste (nurBreit).
 // oeffentlich = immer sichtbar, auch ohne Einrichtung. Symbol: icons/reiter/<id>.svg
 // skript = der Reiter erscheint nur, wenn die Adresse dieses Skripts eingetragen ist (Schritt 4.5).
 // So sieht die Partnerin oder der Partner mit nur `gemeinsam` nur Einkauf, Uni und Döner. Die Rechte prüft trotzdem das Skript.
@@ -29,7 +29,7 @@ export const BEREICHE = [
     { id: 'uni',      titel: 'Uni',      oeffentlich: false, skript: 'gemeinsam' },
     { id: 'doener',   titel: 'Döner',    oeffentlich: true },
     // Visitenkarte (10.3): nur Kachel auf der Startseite, kein Reiter in der Leiste (Wunsch der Person, 4.11.2026)
-    { id: 'visitenkarte', titel: 'Visitenkarte', oeffentlich: false, skript: 'karte', nurKachel: true }
+    { id: 'visitenkarte', titel: 'Visitenkarte', oeffentlich: false, skript: 'karte', nurBreit: true }
 ];
 
 // Skripte, deren Adresse in der Ersteinrichtung eingetragen wird.

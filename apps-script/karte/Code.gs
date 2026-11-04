@@ -4,7 +4,8 @@
 // Blätter: „angaben“ (eine Angabe je Zeile, die Person pflegt sie im Sheet) und „links“ (je Karte ein Schlüssel).
 // Drei Karten: privat, arbeit, aktivismus. Ein Link zeigt genau eine Karte.
 // Mit Passwort (KARTE_PIN, NICHT APP_PIN) darf die Person alles lesen und Links erstellen.
-// Ohne Passwort gibt es nur „karte“, „kontakt“ und „bild“, immer nur mit dem Schlüssel einer Karte.
+// Ohne Passwort gibt es nur „karte“, „kontakt“ und „bild_karte“, immer nur mit dem Schlüssel einer Karte.
+// Seit 1.2.8 schickt „karte“ E-Mail und Telefon gleich mit (Wunsch der Person). „kontakt“ bleibt für ältere App-Fassungen.
 // Das Skript schreibt nie Angaben, nur Schlüssel und fehlende Kennungen.
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (KARTE_PIN).
 // Siehe docs/STAND.md 4 „Visitenkarte“.
@@ -21,10 +22,11 @@ var TEXT_SPALTEN_ = {
 };
 var KARTEN_ = ["privat", "arbeit", "aktivismus"];
 var ARTEN_ = ["name", "status", "email", "telefon", "social", "veroeffentlichung", "text"];
-var VERDECKT_ = ["email", "telefon"];            // kommen erst mit „kontakt“ heraus
+var KONTAKT_ = ["email", "telefon"];
+var MIT_BILD_ = ["veroeffentlichung", "status"];  // Vorschaubild bzw. Logo der Gruppe
 var MAX_ = { titel: 60, wert: 200, link: 300 };
 var MAX_ANGABEN_ = 100;
-var MAX_ABRUFE_ = { karte: 300, kontakt: 60, bild: 300 };   // je Stunde, für alle zusammen
+var MAX_ABRUFE_ = { karte: 300, kontakt: 60, bild: 600 };   // je Stunde, für alle zusammen
 var MAX_FALSCHE_ = 20;                            // falsche Schlüssel in 15 Minuten
 var MAX_BILD_SENDEN_ = 1500000;
 
@@ -208,7 +210,7 @@ function angabeAus_(z, sp, nr) {
   else if ((a.art === "social" || a.art === "veroeffentlichung") && !a.link) a.fehler = "Link fehlt";
   else if (!a.wert && !a.titel) a.fehler = "Leer";
   else if (!a.karten.length) a.fehler = "Auf keiner Karte";
-  if (a.art !== "veroeffentlichung") a.bild = "";
+  if (MIT_BILD_.indexOf(a.art) < 0) a.bild = "";
   if (a.art === "email" || a.art === "telefon") a.link = "";
   return a;
 }
@@ -282,20 +284,19 @@ function karte_(data) {
   return {
     karte: k.karte,
     angaben: angabenDerKarte_(k.karte).map(function (a) {
-      var verdeckt = VERDECKT_.indexOf(a.art) >= 0;
-      return { id: a.id, art: a.art, titel: a.titel, wert: verdeckt ? "" : a.wert, link: a.link, bild: Boolean(a.bild && a.id), verdeckt: verdeckt };
+      return { id: a.id, art: a.art, titel: a.titel, wert: a.wert, link: a.link, bild: Boolean(a.bild && a.id) };
     })
   };
 }
 
-// E-Mail und Telefon dieser Karte (für „zeigen“ und „Kontakt speichern“)
+// E-Mail und Telefon dieser Karte (nur noch für ältere App-Fassungen, die sie getrennt holen)
 function kontakt_(data) {
   var k = karteFuer_(data.schluessel);
   if (k.error) return k;
   if (!nochErlaubt_("kontakt")) return zuViele_();
   return {
     karte: k.karte,
-    kontakt: angabenDerKarte_(k.karte).filter(function (a) { return VERDECKT_.indexOf(a.art) >= 0; })
+    kontakt: angabenDerKarte_(k.karte).filter(function (a) { return KONTAKT_.indexOf(a.art) >= 0; })
       .map(function (a) { return { id: a.id, art: a.art, titel: a.titel, wert: a.wert }; })
   };
 }
