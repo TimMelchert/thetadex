@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.2.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.2.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -15,7 +15,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 7 „Umstieg und Aufräumen“ ist fertig (1.11.2026). Die alten Apps sind abgelöst.
 - Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0.
 - Etappe 9 „Kontowecker“ ist fertig (1.11.2026): Kontowecker-SMS kommen von selbst ins Finanz-Sheet, Festlegungen in 4 („Kontowecker“).
-- Etappe 10 „Visitenkarte“ läuft: Plan `docs/PLAN-ETAPPE-10.md` (Schritt 10.0, 4.11.2026). Nächster Schritt: 10.1 Sheet „Visitenkarte“ und Skript `karte`.
+- Etappe 10 „Visitenkarte“ läuft: Plan `docs/PLAN-ETAPPE-10.md` (Schritt 10.0, 4.11.2026). 10.1 (Sheet und Skript `karte`) ist gebaut. Nächster Schritt: 10.2 Besucher-Ansicht `#/karte/…`.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -223,6 +223,7 @@ unter „Info“ die Version prüfen.
   | Einkauf und Essen, Uni | `apps-script/gemeinsam/Code.gs` | neues Sheet „Gemeinsam“ (ab Etappe 4), Person und Partner*in |
   | DSA und DnD | `apps-script/dsa/Code.gs` | neues Sheet „DSA“ (ab Etappe 6), Bögen per Link lesbar |
   | Döner | `apps-script/doener/Code.gs` | neues Sheet „Döner“ (ab Etappe 1), öffentlich lesen und bewerten |
+  | Visitenkarte | `apps-script/karte/Code.gs` | neues Sheet „Visitenkarte“ (ab Etappe 10), je Karte per Link lesbar, eigenes Passwort `KARTE_PIN` |
 - **Warum eigene Sheets statt einem:** Die Sheets sind nach „Wer darf das sehen?“ getrennt. Ein Fehler in der Freigabe
   eines Bogens, beim öffentlichen Bewerten oder im Partner-Zugang kann so nie Besitz, Tracking oder Finanzen verraten.
 - Aufruf per POST mit JSON als `text/plain`. Das Feld für die Aktion heißt `action` (wie im bestehenden Finanz-Skript).
@@ -235,8 +236,8 @@ unter „Info“ die Version prüfen.
   Damit darf die Partnerin oder der Partner Einkauf und Essen lesen und ändern und Uni nur lesen. Alle anderen Skripte kennen `PARTNER_PIN` nicht.
   Die Aktion `ping` antwortet mit der Rolle (`person` oder `partner`). Die App zeigt danach nur die erlaubten Reiter.
   Die Rechte prüft immer das Skript, nie nur die App.
-- **Ohne Passwort** gibt nur das Skript `dsa` etwas heraus (genau einen Bogen, nur lesen, nur mit seinem Freigabe-Schlüssel)
-  und das Skript `doener` (Bewertungen lesen und neue anlegen, nie ändern oder löschen).
+- **Ohne Passwort** gibt nur das Skript `dsa` etwas heraus (genau einen Bogen, nur lesen, nur mit seinem Freigabe-Schlüssel),
+  das Skript `karte` (genau eine Visitenkarte, nur lesen, nur mit ihrem Schlüssel, ab 10.1) und das Skript `doener` (Bewertungen lesen und neue anlegen, nie ändern oder löschen).
 - **Sonst liefert ohne Passwort kein Skript Daten.** `doGet` antwortet nur mit dem Namen der Schnittstelle.
 - **Freigabe der Sheets:** Die Sheets werden mit niemandem geteilt. Wer ein Sheet bearbeiten darf, sieht auch das Skript
   und seine Skripteigenschaften (also die Passwörter). Geteilt wird nur über die App.
@@ -559,7 +560,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
-- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `finanzen` zusätzlich `SMS_SCHLUESSEL` (nur für die Aktion `sms`, legt die Funktion `smsSchluesselErzeugen` an, ab 9.1); in den Skripten `leben` und `dsa` legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
+- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `karte` statt `APP_PIN` nur `KARTE_PIN` (eigenes Passwort, mindestens 12 Zeichen, ab 10.1; die App speichert es als `thetadex_karte_passwort` und schickt es nur an `karte`); im Skript `finanzen` zusätzlich `SMS_SCHLUESSEL` (nur für die Aktion `sms`, legt die Funktion `smsSchluesselErzeugen` an, ab 9.1); in den Skripten `leben` und `dsa` legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
 - **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen, zuletzt bekannte Kontostände, die Wahl beim Aussehen (`thetadex_aussehen`),
   die offene Einkaufsliste (`thetadex_einkaufsliste`, nur Einträge mit Namen, Abteilung, Einheit), abgehakte Einträge vor „Einkauf fertig“ (`thetadex_einkauf_haken`)
   und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3), der gewählte Bogen bei Pen & Paper (`thetadex_dsa_bogen`, nur die Kennung, ab 0.6.1), die selbst erstellten Links zum Teilen (`thetadex_dsa_links`, Bogen-Kennung → Schlüssel, ab 0.6.6), die gewählte Ansicht bei Pen & Paper (`thetadex_dsa_modus`, ab 0.6.8).
@@ -585,7 +586,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-10.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
-  `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`).
+  `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`),
+  `apps-script/karte/Code.gs` (Visitenkarte, mit `KARTE_PIN`, ohne nur `karte`, `kontakt`, `bild_karte` mit Schlüssel, Funktion `einrichten`, ab 10.1).
 
 ---
 
@@ -805,3 +807,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.1.8** Nachbesserung Etappe 9: SMS mit mehreren Umsätzen werden im Skript in eine Zeile je Umsatz geteilt, jeder Umsatz wird einzeln vorgeschlagen und gebucht.
 - **Etappe 10** Visitenkarte. **1.2.0** Schritt 10.0: Plan `docs/PLAN-ETAPPE-10.md` (Sheet „Visitenkarte“, Skript `karte`, ein Link je Karte, E-Mail und Telefon erst nach Tipp, QR-Code mit lokaler Bibliothek).
 - **1.2.1** Prüfung des Plans (Bericht nur in den Projektdateien): gültige Links gehen immer durch, leere Spalte `karten` = auf keiner Karte, Form von E-Mail und Telefon geprüft, eigenes Passwort `KARTE_PIN`.
+- **1.2.2** Schritt 10.1: Sheet „Visitenkarte“ und Skript `karte` (Blätter `angaben`, `links`; mit `KARTE_PIN` `ping`, `angaben`, `link`, `link_weg`, `bild`; ohne Passwort `karte`, `kontakt`, `bild_karte`), Adresse und eigenes Passwort in den Einstellungen.

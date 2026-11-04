@@ -3,6 +3,7 @@
 // Erfolg gibt es nur, wenn das Skript eine Antwort ohne "error" schickt.
 
 import { lesen } from './store.js';
+import { SKRIPTE } from './config.js';
 
 export class ApiFehler extends Error {
     constructor(code, text) {
@@ -14,9 +15,13 @@ export class ApiFehler extends Error {
 // skript = 'tracking' | 'finanzen' | ...; action = Name der Aktion im Skript
 export async function api(skript, action, daten = {}) {
     const adresse = (lesen('skripte', {}) || {})[skript];
-    const passwort = lesen('passwort');
+    // Skripte mit eigenem Passwort (Visitenkarte, ab 10.1) bekommen nur dieses, nie das Hauptpasswort
+    const eigenes = (SKRIPTE.find((s) => s.id === skript) || {}).eigenesPasswort;
+    const passwort = lesen(eigenes || 'passwort');
     if (!adresse || !passwort) {
-        throw new ApiFehler('einrichtung', 'Bitte zuerst unter „Einstellungen“ Passwort und Script-Adresse eintragen.');
+        throw new ApiFehler('einrichtung', eigenes
+            ? 'Bitte zuerst unter „Einstellungen“ das eigene Passwort und die Script-Adresse eintragen.'
+            : 'Bitte zuerst unter „Einstellungen“ Passwort und Script-Adresse eintragen.');
     }
     return senden(adresse, { ...daten, pin: passwort, action });
 }
