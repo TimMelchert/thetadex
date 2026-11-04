@@ -1,6 +1,6 @@
 // Visitenkarte (Etappe 10).
 // Besucher: #/karte/<skript>/<schluessel> ohne Einrichtung und ohne Passwort, nur lesen (Schritt 10.2).
-// Ein Link zeigt genau eine Karte. E-Mail und Telefon kommen erst nach einem Tipp (eigene Anfrage „kontakt“).
+// Ein Link zeigt genau eine Karte. E-Mail und Telefon stehen gleich da (Wunsch der Person, 4.11.2026, ab 1.2.8).
 // Im Gerät der Besucher wird nichts gespeichert. Siehe docs/STAND.md 4 „Visitenkarte“.
 // zeichneKarte nutzt auch die Vorschau der Person (Schritt 10.3).
 
@@ -42,12 +42,12 @@ function vText(t) {
 }
 
 // Adressbuch-Datei (vCard 3.0) mit Name, Status, E-Mail, Telefon, dem Link der Karte und den Social-Media-Links
-export function vcard(angaben, kontakt, kartenLink) {
+export function vcard(angaben, kartenLink) {
     const name = (angaben.find((a) => a.art === 'name') || {}).wert || 'Kontakt';
     const status = angaben.filter((a) => a.art === 'status').map((a) => a.wert).filter(Boolean);
     const zeilen = ['BEGIN:VCARD', 'VERSION:3.0', 'FN:' + vText(name), 'N:' + vText(name) + ';;;;'];
     if (status.length) zeilen.push('TITLE:' + vText(status[0]));
-    kontakt.forEach((a) => {
+    angaben.forEach((a) => {
         if (a.art === 'email' && EMAIL.test(a.wert || '')) zeilen.push('EMAIL;TYPE=INTERNET:' + a.wert);
         if (a.art === 'telefon' && TELEFON.test(a.wert || '')) zeilen.push('TEL:' + a.wert.replace(/[\s/]/g, ''));
     });
@@ -55,6 +55,20 @@ export function vcard(angaben, kontakt, kartenLink) {
     angaben.filter((a) => a.art === 'social').forEach((a) => { const u = nurHttps(a.link); if (u) zeilen.push('URL:' + u); });
     zeilen.push('END:VCARD');
     return zeilen.join('\r\n') + '\r\n';
+}
+
+// Bunte Symbole für bekannte Dienste (selbst gezeichnet, icons/social/). Erkannt am Link, sonst an der Beschriftung.
+const DIENSTE = [
+    { id: 'instagram', hosts: ['instagram.com', 'instagr.am'] },
+    { id: 'linkedin', hosts: ['linkedin.com', 'lnkd.in'] },
+    { id: 'signal', hosts: ['signal.me', 'signal.group', 'signal.org'] }
+];
+export function dienstVon(a) {
+    let host = '';
+    try { host = new URL(nurHttps(a.link) || 'https://x.invalid').hostname.toLowerCase(); } catch (e) { host = ''; }
+    const titel = String(a.titel || '').toLowerCase();
+    const d = DIENSTE.find((x) => x.hosts.some((h) => host === h || host.endsWith('.' + h))) || DIENSTE.find((x) => titel.includes(x.id));
+    return d ? d.id : '';
 }
 
 function speichereDatei(text, dateiname) {
@@ -67,120 +81,110 @@ function speichereDatei(text, dateiname) {
 }
 
 // Zeichnet eine Karte. optionen:
-//   kontaktHolen: async () => Liste { id, art, titel, wert } (Besucher: Anfrage „kontakt“). Ohne: Werte stehen schon in den Angaben.
-//   bildHolen: async (id) => data:-Adresse oder null
-//   kartenLink: Link der Karte für „Kontakt speichern“ (leer = ohne)
-//   ueberschrift: 'h1' (Besucher) oder 'h2' (Vorschau)
+//   bildHolen: async (id) => data:-Adresse oder null (Vorschaubilder und Logos beim Status)
+//   kartenLink: Link der Karte für „Kontakt speichern“ (undefined = ohne Knopf)
+//   ueberschrift: 'h1' (Besucher) oder 'h2'/'h3' (Vorschau)
+// Name und Status stehen immer oben. Danach kommen die Blöcke (jeder Text einzeln, Kontakt, Social Media,
+// Veröffentlichungen) in der Reihenfolge der Angaben: Ein Block steht dort, wo seine erste Angabe steht.
+// Die Angaben kommen vom Skript schon nach Spalte „reihenfolge“ sortiert.
 export function zeichneKarte(angaben, optionen = {}) {
     const ebene = optionen.ueberschrift || 'h1';
-    const unter = ebene === 'h1' ? 'h2' : 'h3';
+    const unter = ebene === 'h1' ? 'h2' : (ebene === 'h2' ? 'h3' : 'h4');
     const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
     const art = (name) => angaben.filter((a) => a.art === name);
     const name = art('name')[0];
-    let kontakt = optionen.kontaktHolen ? null : angaben.filter((a) => a.art === 'email' || a.art === 'telefon');
 
-    async function holeKontakt() {
-        if (kontakt) return kontakt;
-        status.textContent = 'Lade …';
-        try {
-            const liste = await optionen.kontaktHolen();
-            kontakt = Array.isArray(liste) ? liste : [];
-            status.textContent = '';
-        } catch (e) {
-            status.textContent = e.message;
-            return null;
+    // Kleines Bild aus Drive (Vorschau oder Logo), erscheint erst, wenn es geladen ist
+    function bildPlatz(a, klasse) {
+        const platz = el('span', { class: klasse, attrs: { 'aria-hidden': 'true', hidden: true } });
+        if (a.bild && optionen.bildHolen) {
+            optionen.bildHolen(a.id).then((adresse) => {
+                if (!adresse) return;
+                platz.append(el('img', { attrs: { src: adresse, alt: '', loading: 'lazy' } }));
+                platz.hidden = false;
+            }).catch(() => {});
         }
-        return kontakt;
+        return platz;
     }
 
     const teile = [];
     teile.push(el(ebene, { class: 'vk-name', text: name ? name.wert || name.titel : 'Visitenkarte' }));
-    art('status').forEach((a) => teile.push(el('p', { class: 'vk-status', text: a.wert || a.titel })));
-    art('text').forEach((a) => {
+    art('status').forEach((a) => teile.push(el('p', { class: 'vk-status' }, [
+        bildPlatz(a, 'vk-logo'),
+        el('span', { text: a.wert || a.titel })
+    ])));
+
+    function textBlock(a) {
         const u = nurHttps(a.link);
-        teile.push(el('p', { class: 'vk-text' }, [u ? aeusserLink(u, a.wert || a.titel) : document.createTextNode(a.wert || a.titel)]));
-    });
+        return el('p', { class: 'vk-text' }, [u ? aeusserLink(u, a.wert || a.titel) : document.createTextNode(a.wert || a.titel)]);
+    }
 
-    // Kontakt: je Angabe ein Knopf „… zeigen“, nach dem Tipp ein Mail- oder Telefon-Link
-    const kontaktAngaben = angaben.filter((a) => a.art === 'email' || a.art === 'telefon');
-    if (kontaktAngaben.length) {
+    function kontaktBlock() {
         const liste = el('ul', { class: 'vk-liste' });
-        kontaktAngaben.forEach((a) => {
-            const zeile = el('li');
-            const beschriftung = a.titel || (a.art === 'email' ? 'E-Mail' : 'Telefon');
-            const zeige = (eintrag) => {
-                leeren(zeile);
-                const link = eintrag ? kontaktLink(eintrag) : null;
-                zeile.append(el('span', { class: 'vk-beschriftung', text: beschriftung }),
-                    link ? el('a', { class: 'vk-wert', text: eintrag.wert, attrs: { href: link } }) : el('span', { class: 'leise', text: 'nicht verfügbar' }));
-            };
-            if (!optionen.kontaktHolen) { zeige(a); liste.append(zeile); return; }
-            const knopf = el('button', {
-                class: 'knopf knopf-zweit vk-zeigen', text: (a.art === 'email' ? 'E-Mail' : 'Nummer') + ' zeigen' + (a.titel ? ' (' + a.titel + ')' : ''),
-                attrs: { type: 'button' },
-                on: {
-                    click: async () => {
-                        knopf.disabled = true;
-                        const k = await holeKontakt();
-                        knopf.disabled = false;
-                        if (!k) return;
-                        // Nach einem Tipp alle Kontaktangaben zeigen, sie sind ja schon da
-                        Array.from(liste.children).forEach((li) => li._zeige && li._zeige(k.find((x) => x.id === li._id)));
-                    }
-                }
-            });
-            zeile._id = a.id;
-            zeile._zeige = zeige;
-            zeile.append(knopf);
-            liste.append(zeile);
+        angaben.filter((a) => a.art === 'email' || a.art === 'telefon').forEach((a) => {
+            const link = kontaktLink(a);
+            liste.append(el('li', {}, [
+                el('span', { class: 'vk-beschriftung', text: a.titel || (a.art === 'email' ? 'E-Mail' : 'Telefon') }),
+                link ? el('a', { class: 'vk-wert', text: a.wert, attrs: { href: link } }) : el('span', { class: 'leise', text: 'nicht verfügbar' })
+            ]));
         });
-        teile.push(el('section', { class: 'vk-gruppe' }, [el(unter, { text: 'Kontakt' }), liste]));
+        return el('section', { class: 'vk-gruppe' }, [el(unter, { text: 'Kontakt' }), liste]);
     }
 
-    const social = art('social').filter((a) => nurHttps(a.link));
-    if (social.length) {
-        teile.push(el('section', { class: 'vk-gruppe' }, [
+    function socialBlock() {
+        const social = art('social').filter((a) => nurHttps(a.link));
+        if (!social.length) return null;
+        return el('section', { class: 'vk-gruppe' }, [
             el(unter, { text: 'Social Media' }),
-            el('ul', { class: 'vk-liste' }, social.map((a) => el('li', {}, [
-                el('span', { class: 'vk-beschriftung', text: a.titel || 'Link' }),
-                aeusserLink(nurHttps(a.link), a.wert || new URL(nurHttps(a.link)).hostname, 'vk-wert')
-            ])))
-        ]));
-    }
-
-    const veroeff = art('veroeffentlichung').filter((a) => nurHttps(a.link));
-    if (veroeff.length) {
-        teile.push(el('section', { class: 'vk-gruppe' }, [
-            el(unter, { text: 'Veröffentlichungen' }),
-            el('ul', { class: 'vk-veroeff' }, veroeff.map((a) => {
-                const bildPlatz = el('span', { class: 'vk-vorschau', attrs: { 'aria-hidden': 'true', hidden: !a.bild } });
-                if (a.bild && optionen.bildHolen) {
-                    optionen.bildHolen(a.id).then((adresse) => {
-                        if (adresse) bildPlatz.append(el('img', { attrs: { src: adresse, alt: '', loading: 'lazy' } }));
-                        else bildPlatz.hidden = true;
-                    }).catch(() => { bildPlatz.hidden = true; });
-                }
+            el('ul', { class: 'vk-liste' }, social.map((a) => {
+                const dienst = dienstVon(a);
                 return el('li', {}, [
-                    el('a', { class: 'vk-veroeff-link', attrs: { href: nurHttps(a.link), target: '_blank', rel: 'noopener noreferrer' } }, [
-                        bildPlatz,
-                        el('span', { class: 'vk-veroeff-text' }, [
-                            el('strong', { text: a.titel || a.wert }),
-                            a.titel && a.wert ? el('span', { class: 'leise', text: a.wert }) : null
-                        ])
-                    ])
+                    el('span', { class: 'vk-beschriftung' }, [
+                        dienst ? el('img', { class: 'vk-symbol', attrs: { src: 'icons/social/' + dienst + '.svg', alt: '', width: 24, height: 24 } }) : null,
+                        el('span', { text: a.titel || 'Link' })
+                    ]),
+                    aeusserLink(nurHttps(a.link), a.wert || new URL(nurHttps(a.link)).hostname, 'vk-wert')
                 ]);
             }))
-        ]));
+        ]);
     }
+
+    function veroeffBlock() {
+        const veroeff = art('veroeffentlichung').filter((a) => nurHttps(a.link));
+        if (!veroeff.length) return null;
+        return el('section', { class: 'vk-gruppe' }, [
+            el(unter, { text: 'Veröffentlichungen' }),
+            el('ul', { class: 'vk-veroeff' }, veroeff.map((a) => el('li', {}, [
+                el('a', { class: 'vk-veroeff-link', attrs: { href: nurHttps(a.link), target: '_blank', rel: 'noopener noreferrer' } }, [
+                    bildPlatz(a, 'vk-vorschau'),
+                    el('span', { class: 'vk-veroeff-text' }, [
+                        el('strong', { text: a.titel || a.wert }),
+                        a.titel && a.wert ? el('span', { class: 'leise', text: a.wert }) : null
+                    ])
+                ])
+            ])))
+        ]);
+    }
+
+    // Blöcke in der Reihenfolge ihrer ersten Angabe
+    const gruppe = { email: 'kontakt', telefon: 'kontakt', social: 'social', veroeffentlichung: 'veroeff' };
+    const baue = { kontakt: kontaktBlock, social: socialBlock, veroeff: veroeffBlock };
+    const schon = new Set();
+    angaben.forEach((a) => {
+        if (a.art === 'text') { teile.push(textBlock(a)); return; }
+        const g = gruppe[a.art];
+        if (!g || schon.has(g)) return;
+        schon.add(g);
+        const block = baue[g]();
+        if (block) teile.push(block);
+    });
 
     if (optionen.kartenLink !== undefined) {
         teile.push(el('button', {
-            class: 'knopf vk-speichern', text: 'Kontakt speichern', attrs: { type: 'button' },
+            class: 'knopf knopf-bereich vk-speichern', text: 'Kontakt speichern', attrs: { type: 'button' },
             on: {
-                click: async () => {
-                    const k = await holeKontakt();
-                    if (!k) return;
-                    speichereDatei(vcard(angaben, k, optionen.kartenLink), 'visitenkarte.vcf');
+                click: () => {
+                    speichereDatei(vcard(angaben, optionen.kartenLink), 'visitenkarte.vcf');
                     status.textContent = 'Datei für das Adressbuch erstellt.';
                 }
             }
@@ -196,6 +200,8 @@ export function render(container, ctx = {}) {
     const kennung = String(teile[0] || '');
     const schluessel = String(teile[1] || '');
     const meldung = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' }, text: 'Lade …' });
+    // Farbe der Visitenkarte (Lavendel) auch für Besucher
+    container.setAttribute('data-bereich', 'visitenkarte');
     container.append(meldung);
 
     if (!KENNUNG.test(kennung) || !SCHLUESSEL.test(schluessel)) {
@@ -207,8 +213,13 @@ export function render(container, ctx = {}) {
     // Link der Karte für das Adressbuch: genau diese Seite
     const kartenLink = location.origin + location.pathname + '#/karte/' + kennung + '/' + schluessel;
 
-    frage('karte').then((d) => {
-        const angaben = d && Array.isArray(d.angaben) ? d.angaben : [];
+    frage('karte').then(async (d) => {
+        let angaben = d && Array.isArray(d.angaben) ? d.angaben : [];
+        // Altes Skript (vor 1.2.8) schickt E-Mail und Telefon leer mit „verdeckt“: dann einmal „kontakt“ dazu holen
+        if (angaben.some((a) => a.verdeckt)) {
+            const k = await frage('kontakt').then((x) => (x && Array.isArray(x.kontakt) ? x.kontakt : [])).catch(() => []);
+            angaben = angaben.map((a) => (a.verdeckt ? { ...a, wert: (k.find((x) => x.id === a.id) || {}).wert || '' } : a));
+        }
         leeren(container);
         if (!angaben.length) {
             container.append(el('h1', { text: 'Visitenkarte' }), el('p', { class: 'meldung', text: 'Auf dieser Karte steht noch nichts.' }));
@@ -217,7 +228,6 @@ export function render(container, ctx = {}) {
         container.append(zeichneKarte(angaben, {
             ueberschrift: 'h1',
             kartenLink,
-            kontaktHolen: async () => (await frage('kontakt')).kontakt,
             bildHolen: async (id) => bildAdresse(await frage('bild_karte', { id }))
         }));
     }).catch((e) => {

@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.2.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.2.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -199,7 +199,7 @@ unter „Info“ die Version prüfen.
   Repo-Bereiche: `index.html`, `manifest.webmanifest`, `sw.js`, `docs/`, `icons/`,
   `css/` (base, layout, components), `js/` (app, config, api, store, ui/, views/), `vendor/` (lokale Bibliotheken, siehe 4),
   `apps-script/` (Code aller Google-Skripte, je Bereich ein Ordner).
-- Hash-Routing: `#/tracking`, `#/doener`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einstellungen`, `#/info`, ab 10.3 `#/visitenkarte` (nur Kachel auf der Startseite, `nurKachel` in `BEREICHE`).
+- Hash-Routing: `#/tracking`, `#/doener`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einstellungen`, `#/info`, ab 10.3 `#/visitenkarte` (Kachel auf der Startseite, am PC auch in der Seitenleiste, am Handy nicht in der Leiste: `nurBreit` in `BEREICHE`, CSS `.reiter-nur-breit`).
   Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“)
   und `#/doener/<skript>` (öffentliche Döner-Bewertung, siehe 4 „Döner öffentlich“)
   und `#/karte/<skript>/<schluessel>` (Visitenkarte, nur lesen, ohne Reiterleiste und Kopf-Links, ab 10.2, siehe 4 „Visitenkarte“).
@@ -392,6 +392,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - Bereichsfarben: Tracking `#E07A5F`, Finanzen `#8DB580`, DSA `#B5838D`, Einkauf/Essen `#D4B483`,
     Besitz `#7FA7A0`, Uni `#C9784A`, Döner `#E2A23B` (frühere Farbe von ToDos, der Reiter ist am 29.10.2026 entfallen). Kein Blau.
     Damit gibt es wieder sieben Reiter, passend zum Icon.
+    Ausnahme Visitenkarte (Wunsch der Person, 4.11.2026): eigene Farbe Olivgrün `#A8AE6E` (`--farbe-visitenkarte`, Kontrast 7,3:1 zur Schrift), nur für die Kachel, den Reiter und die Karte, nicht im Icon.
+    Zweite Ausnahme: Die Symbole für Instagram, LinkedIn und Signal (`icons/social/`, selbst gezeichnet) haben ihre Markenfarben, auch Blau (Wunsch der Person, 4.11.2026).
   - Bereichsfarben auf hellem Grund nur als Fläche oder Marke, nicht als Schriftfarbe (zu wenig Kontrast nach WCAG AA).
   - Ausnahme (Wunsch der Person, 29.10.2026): Nach dem Speichern erscheint kurz ein Fenster mit grünem Haken (`--erfolg`).
     Die Tracking-Übersicht färbt Zellen mit eigenen Zellfarben (`--zelle-…` in `css/base.css`, hell und dunkel) nach Regeln
@@ -407,7 +409,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   | Einkauf und Essen | lesen, ändern | lesen, ändern | – |
   | Uni (alle Zeiten, auch Arbeit und Zug) | lesen, ändern | nur lesen | – |
   | DSA-Bögen | lesen, ändern | – | ein Bogen per Link, nur lesen |
-  | Visitenkarte | lesen, Links verwalten (eigenes Passwort `KARTE_PIN`); ändern nur im Sheet | – | eine Karte per Link, nur lesen; E-Mail und Telefon nach Tipp |
+  | Visitenkarte | lesen, Links verwalten (eigenes Passwort `KARTE_PIN`); ändern nur im Sheet | – | eine Karte per Link, nur lesen; E-Mail und Telefon gleich sichtbar (ab 1.2.8) |
   | Döner | lesen, bewerten; löschen nur im Sheet | wie alle | lesen, bewerten |
 - **Besitz: keine Daten öffentlich** (Wunsch der Person). Wie bei Finanzen: keine Gegenstände, Orte oder Preise im Repo.
   Auch die Namen bei „Ausgeliehen an“ stehen nur im Sheet „Leben“, nie im Repo, in Beispielen oder Pull-Request-Texten.
@@ -462,14 +464,15 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     „Neuen Link erstellen“ macht alten Link und alte QR-Codes ungültig. Die Script-Adresse steht im Link, weil Besucher nichts eingerichtet haben; ohne Schlüssel gibt sie nichts heraus.
   - **Eigenes Passwort `KARTE_PIN`** (Fund 4 der Prüfung, Entscheidung der Person): Das Skript kennt `APP_PIN` nicht, die App schickt ihm nur `KARTE_PIN` (`eigenesPasswort` in `SKRIPTE`). Grund: Seine Adresse geht an Fremde.
   - Blatt `angaben`: `id, art, titel, wert, link, bild, karten, reihenfolge, erstellt_am, geaendert_am, geloescht`. `art` = `name`, `status`, `email`, `telefon`, `social`, `veroeffentlichung`, `text`;
-    `titel` 60, `wert` 200, `link` nur `https://` (300), `bild` Drive-Link nur bei Veröffentlichungen, `karten` zum Beispiel `privat, aktivismus`. Höchstens 100 Angaben. Pflege nur im Sheet; fehlende `id` ergänzt das Skript.
+    `titel` 60, `wert` 200, `link` nur `https://` (300), `bild` Drive-Link bei Veröffentlichungen (Vorschaubild) und beim Status (Logo der Gruppe, ab 1.2.8), `karten` zum Beispiel `privat, aktivismus`. Höchstens 100 Angaben. Pflege nur im Sheet; fehlende `id` ergänzt das Skript.
     Blatt `links`: `id, karte, schluessel, erstellt_am, geaendert_am`.
   - **Öffentlich nur, was passt:** leere oder unbekannte `karten` = auf keiner Karte (Fund 2); E-Mail nur `name@domain`, Telefon nur Ziffern, `+`, Leerzeichen, `/`, `-` (Fund 3).
     Was nicht passt, steht in der Vorschau der Person unter „Erscheint auf keiner Karte“ mit Grund.
-  - **Aktionen:** mit `KARTE_PIN` `ping`, `angaben`, `link`, `link_weg`, `bild`; ohne Passwort nur mit Schlüssel `karte` (ohne E-Mail und Telefon), `kontakt` (E-Mail und Telefon, nach Tipp), `bild_karte` (Vorschaubild einer Angabe dieser Karte).
-    Ein gültiger Schlüssel geht immer durch (Fund 1); 20 falsche in 15 Minuten geben nur „gesperrt“. Obergrenze je Stunde für alle: 300 Karten, 60 Kontakte, 300 Bilder. Kein Captcha (fremde Dienste, Entscheidung der Person).
+  - **Reihenfolge** (ab 1.2.8): Name und Status stehen immer oben. Danach stehen die Blöcke (jeder Text einzeln, Kontakt, Social Media, Veröffentlichungen) dort, wo ihre erste Angabe nach `reihenfolge` steht. Text mit kleiner Zahl = oben, mit großer Zahl (z. B. 99) = unten.
+  - **Aktionen:** mit `KARTE_PIN` `ping`, `angaben`, `link`, `link_weg`, `bild`; ohne Passwort nur mit Schlüssel `karte` (ab 1.2.8 mit E-Mail und Telefon, ohne zweiten Tipp: Wunsch der Person, der Tipp schützte kaum), `kontakt` (nur noch für ältere App-Fassungen), `bild_karte` (Vorschaubild oder Logo einer Angabe dieser Karte).
+    Ein gültiger Schlüssel geht immer durch (Fund 1); 20 falsche in 15 Minuten geben nur „gesperrt“. Obergrenze je Stunde für alle: 300 Karten, 60 Kontakte, 600 Bilder (ab 1.2.8 wegen der Logos). Kein Captcha (fremde Dienste, Entscheidung der Person).
   - **App:** Besucher-Ansicht ohne Reiterleiste und Kopf-Links, im Gerät der Besucher nichts. „Kontakt speichern“ erzeugt im Gerät eine vCard mit dem Link der Karte.
-    Für die Person nur die Kachel `#/visitenkarte` (grau, nicht in der Leiste, Icon und Register bleiben): Umschalter, Vorschau, Link erstellen, kopieren, QR-Code (im Gerät, `vendor/qrcode.js`) zeigen und speichern, erneuern, nicht mehr teilen.
+    Für die Person `#/visitenkarte` als Kachel, am PC auch in der Seitenleiste (Olivgrün, Icon und Register bleiben): Umschalter, Vorschau, am PC der Link-Kasten rechts (ab 1200 px), Link erstellen, kopieren, QR-Code (im Gerät, `vendor/qrcode.js`) zeigen und speichern, erneuern, nicht mehr teilen.
   - Prüfungen: Plan (`pruefung/visitenkarte-plan-bericht.md`) und gebaut (`pruefung/etappe-10-visitenkarte-bericht.md`) in den Projektdateien, nichts offen.
 - **Einkauf, Sheet „Gemeinsam“** (Etappe 4). Alle Blätter haben zusätzlich `id, erstellt_am, geaendert_am, geloescht`; Löschen ist weich.
   | Blatt | Spalten (Grenzen) |
@@ -601,7 +604,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `LIZENZEN.md` (Lizenztexte von Chart.js, @kurkle/color, Feather-Zahnrad; neue fremde Teile hier eintragen), `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
-- `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `finanzen-sms.js` (Noch zuordnen, Vorschlag aus der SMS, ab 9.2), `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8), `karte.js` (Visitenkarte für Besucher und `zeichneKarte` für die Vorschau, ab 10.2), `visitenkarte.js` (Vorschau, Links und QR-Code für die Person, ab 10.3). `vendor/qrcode.js`: QR Code Generator 1.4.4. `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
+- `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `finanzen-sms.js` (Noch zuordnen, Vorschlag aus der SMS, ab 9.2), `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8), `karte.js` (Visitenkarte für Besucher und `zeichneKarte` für die Vorschau, ab 10.2), `visitenkarte.js` (Vorschau, Links und QR-Code für die Person, ab 10.3). `vendor/qrcode.js`: QR Code Generator 1.4.4. `icons/social/`: Symbole für Instagram, LinkedIn, Signal (ab 1.2.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper. `icons/reiter/visitenkarte.svg`: Kachel Visitenkarte (ab 10.3).
 - `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
@@ -832,3 +835,5 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.2.4** Schritt 10.3: Kachel „Visitenkarte“ auf der Startseite (`#/visitenkarte`, nicht in der Leiste): Umschalter Privat, Arbeit, Aktivismus mit Vorschau, Link erstellen, kopieren, als QR-Code zeigen und speichern, erneuern, nicht mehr teilen; Liste „Erscheint auf keiner Karte“. `vendor/qrcode.js`, Eintrag in `LIZENZEN.md`.
 - **1.2.5** Schritt 10.4: Etappe 10 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht, nichts zu bauen), Plan in STAND.md eingearbeitet (4 „Visitenkarte“), `docs/PLAN-ETAPPE-10.md` gelöscht.
 - **1.2.6** Nachbesserung: Hinweis zu hängenden GitHub-Pages-Läufen im Merkzettel (5); neue Version, damit Pages nach dem hängenden Lauf von 1.2.5 neu ausliefert.
+- **1.2.7** Nachbesserung Visitenkarte: Farbe Lavendel statt Grau (Kachel, Streifen oben an der Karte, Gruppen, Knöpfe), auch für Besucher.
+- **1.2.8** Nachbesserung Visitenkarte: Olivgrün statt Lavendel, Rahmen um die ganze Karte, E-Mail und Telefon gleich sichtbar (Skript `karte` neu), Reihenfolge gilt auch für Texte und Gruppen, bunte Symbole für Instagram, LinkedIn und Signal, Logo je Status, am PC Reiter in der Seitenleiste und Link-Kasten rechts.

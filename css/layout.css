@@ -110,6 +110,11 @@
 
 .inhalt:focus { outline: none; }
 
+/* Visitenkarte: am Handy nicht in der Reiterleiste, nur als Kachel auf der Startseite (Wunsch der Person, 4.11.2026) */
+@media (max-width: 767px) {
+    .reiter-nur-breit { display: none; }
+}
+
 @media (min-width: 768px) {
     body {
         display: grid;

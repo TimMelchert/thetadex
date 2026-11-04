@@ -1,4 +1,4 @@
-// Visitenkarte für die Person (Schritt 10.3): nur als Kachel auf der Startseite, Adresse #/visitenkarte.
+// Visitenkarte für die Person (Schritt 10.3): Kachel auf der Startseite, am PC auch in der Seitenleiste, Adresse #/visitenkarte.
 // Umschalter Privat | Arbeit | Aktivismus mit Vorschau, je Karte Link erstellen, kopieren, als QR-Code zeigen, erneuern, nicht mehr teilen.
 // Alles mit dem eigenen Passwort KARTE_PIN (js/api.js schickt es nur an das Skript „karte“).
 // Im Gerät: die gewählte Karte (thetadex_karte_wahl) und die selbst erstellten Schlüssel (thetadex_karte_links).
@@ -73,11 +73,17 @@ export function render(container) {
     container.append(
         el('h1', { class: 'bereich-titel', text: 'Visitenkarte' }),
         el('div', { class: 'ansichten', attrs: { role: 'group', 'aria-label': 'Karte' } }, knoepfe),
-        ladeStatus, linkBereich,
-        el('h2', { text: 'So sehen es Besucher' }),
-        el('p', { class: 'leise', text: 'Besucher sehen E-Mail und Telefon erst nach einem Tipp auf „zeigen“. Ändern geht im Sheet „Visitenkarte“, danach „Neu laden“.' }),
-        vorschau, hinweise,
-        el('button', { class: 'knopf knopf-zweit', text: 'Neu laden', attrs: { type: 'button' }, on: { click: laden } }),
+        ladeStatus,
+        // Schmal: Link-Kasten über der Vorschau. Breit (PC): Link-Kasten rechts in einer eigenen Spalte (Wunsch der Person, 4.11.2026).
+        el('div', { class: 'vk-seite' }, [
+            el('aside', { class: 'vk-seite-rechts', attrs: { 'aria-label': 'Link und QR-Code' } }, [linkBereich]),
+            el('div', { class: 'vk-seite-haupt' }, [
+                el('h2', { text: 'So sehen es Besucher' }),
+                el('p', { class: 'leise', text: 'Ändern geht im Sheet „Visitenkarte“, danach „Neu laden“.' }),
+                vorschau, hinweise,
+                el('button', { class: 'knopf knopf-zweit', text: 'Neu laden', attrs: { type: 'button' }, on: { click: laden } })
+            ])
+        ]),
         dialog
     );
 
@@ -155,13 +161,13 @@ export function render(container) {
         const reihe = el('div', { class: 'besitz-form-knoepfe' });
         if (!daten.geteilt[wahl]) {
             linkBereich.append(el('p', { text: 'Die Karte „' + titel + '“ hat noch keinen Link.' }));
-            reihe.append(el('button', { class: 'knopf', text: 'Link erstellen', attrs: { type: 'button' }, on: { click: () => link('link') } }));
+            reihe.append(el('button', { class: 'knopf knopf-bereich', text: 'Link erstellen', attrs: { type: 'button' }, on: { click: () => link('link') } }));
         } else if (adresse) {
             const feld = el('input', { attrs: { id: 'vk-link', type: 'text', readonly: true, value: adresse } });
             feld.addEventListener('focus', () => feld.select());
             linkBereich.append(el('label', { text: 'Link der Karte „' + titel + '“', attrs: { for: 'vk-link' } }), feld);
             reihe.append(
-                el('button', { class: 'knopf', text: 'QR-Code zeigen', attrs: { type: 'button' }, on: { click: () => zeigeQr(adresse) } }),
+                el('button', { class: 'knopf knopf-bereich', text: 'QR-Code zeigen', attrs: { type: 'button' }, on: { click: () => zeigeQr(adresse) } }),
                 el('button', {
                     class: 'knopf knopf-zweit', text: 'Link kopieren', attrs: { type: 'button' },
                     on: { click: async () => { try { await navigator.clipboard.writeText(adresse); ladeStatus.textContent = 'Link kopiert.'; } catch (e) { feld.focus(); ladeStatus.textContent = 'Bitte den Link markieren und kopieren.'; } } }

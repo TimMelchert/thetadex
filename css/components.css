@@ -1249,12 +1249,18 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 @media (min-width: 768px) {
     body[data-seite="karte"] { grid-template-columns: 1fr; }
 }
-.vk { padding: calc(1.5 * var(--abstand)); }
+.vk { padding: calc(1.5 * var(--abstand)); border: 4px solid var(--bereich); border-top-width: 8px; }
 .vk-name { margin: 0; font-size: 1.8rem; }
-.vk-status { margin: 4px 0 0; font-size: 1.1rem; font-weight: 600; }
+.vk-status { display: flex; align-items: center; gap: 10px; margin: 6px 0 0; font-size: 1.1rem; font-weight: 600; }
+/* Logo der Gruppe beim Status (Bild aus dem Drive der Person) */
+.vk-logo { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 6px; background: var(--logo-grund); }
+.vk-logo img { display: block; max-width: 100%; max-height: 100%; }
+/* Bunte Symbole der Dienste (Markenfarben, Wunsch der Person, 4.11.2026) */
+.vk-beschriftung { display: inline-flex; align-items: center; gap: 8px; }
+.vk-symbol { flex: 0 0 24px; width: 24px; height: 24px; }
 .vk-text { margin: 8px 0 0; }
 .vk-gruppe { margin-top: calc(1.5 * var(--abstand)); }
-.vk-gruppe > h2, .vk-gruppe > h3 { margin: 0 0 8px; font-size: 1rem; color: var(--schrift-leise); text-transform: uppercase; letter-spacing: 0.04em; }
+.vk-gruppe > h2, .vk-gruppe > h3, .vk-gruppe > h4 { padding-left: 8px; border-left: 4px solid var(--bereich); margin: 0 0 8px; font-size: 1rem; color: var(--schrift-leise); text-transform: uppercase; letter-spacing: 0.04em; }
 .vk-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .vk-liste li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-height: 44px; border-bottom: 1px solid var(--linie); }
 .vk-liste li:last-child { border-bottom: none; }
@@ -1272,6 +1278,13 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .vk-links label { display: block; margin-bottom: 6px; font-weight: 600; }
 .vk-links input { width: 100%; min-height: 44px; font: inherit; }
 .vk-links .besitz-form-knoepfe { flex-wrap: wrap; }
+.vk-seite-rechts .vk-links { margin-top: 0; }
+@media (min-width: 1200px) {
+    .inhalt:has(.vk-seite) { max-width: 1040px; }
+    .vk-seite { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--abstand); align-items: start; margin-top: var(--abstand); }
+    .vk-seite-rechts { grid-column: 2; grid-row: 1; position: sticky; top: var(--abstand); }
+    .vk-seite-haupt { grid-column: 1; grid-row: 1; }
+    .vk-seite-haupt > h2:first-child { margin-top: 0; }
+}
 .vk-qr { display: block; width: min(100%, 360px); height: auto; margin: 8px auto; image-rendering: pixelated; }
-[data-bereich="visitenkarte"] .ansicht[aria-pressed="true"] { background: var(--knopf-grund); color: var(--knopf-schrift); }
 .vk-links input { padding: 0 10px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); }

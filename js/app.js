@@ -49,16 +49,15 @@ ANSICHTEN.visitenkarte = visitenkarte;
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';
 function baueReiter(sichtbar) {
-    // Bereiche mit nurKachel (Visitenkarte) stehen nur auf der Startseite, nicht in der Leiste
-    const inLeiste = sichtbar.filter((b) => !b.nurKachel);
-    const schluessel = inLeiste.map((b) => b.id).join(',');
+    // Bereiche mit nurBreit (Visitenkarte) stehen am PC in der Seitenleiste, am Handy nur auf der Startseite (CSS .reiter-nur-breit)
+    const schluessel = sichtbar.map((b) => b.id).join(',');
     if (schluessel === leisteFuer) return;
     leisteFuer = schluessel;
     const leiste = document.getElementById('reiter');
     leeren(leiste);
-    inLeiste.forEach((b) => {
+    sichtbar.forEach((b) => {
         leiste.append(el('a', {
-            class: 'reiter-link',
+            class: b.nurBreit ? 'reiter-link reiter-nur-breit' : 'reiter-link',
             attrs: { href: '#/' + b.id, 'data-route': b.id, 'data-bereich': b.id }
         }, [
             el('span', { class: 'reiter-symbol', attrs: { 'data-symbol': b.id, 'aria-hidden': 'true' } }),
