@@ -25,6 +25,11 @@ function nurHttps(text) {
     return url && url.startsWith('https://') ? url : null;
 }
 
+// Adresse: Link zur Karte bei OpenStreetMap (öffnet erst beim Tipp, vorher geht nichts nach außen)
+function adressLink(wert) {
+    return 'https://www.openstreetmap.org/search?query=' + encodeURIComponent(wert);
+}
+
 function kontaktLink(a) {
     const wert = String(a.wert || '');
     if (a.art === 'email' && EMAIL.test(wert)) return 'mailto:' + wert;
@@ -44,9 +49,10 @@ function vText(t) {
 // Adressbuch-Datei (vCard 3.0) mit Name, Status, E-Mail, Telefon, dem Link der Karte und den Social-Media-Links
 export function vcard(angaben, kartenLink) {
     const name = (angaben.find((a) => a.art === 'name') || {}).wert || 'Kontakt';
-    const status = angaben.filter((a) => a.art === 'status').map((a) => a.wert).filter(Boolean);
+    const status = angaben.filter((a) => a.art === 'status').map((a) => [a.wert, a.zusatz].filter(Boolean).join(' ')).filter(Boolean);
     const zeilen = ['BEGIN:VCARD', 'VERSION:3.0', 'FN:' + vText(name), 'N:' + vText(name) + ';;;;'];
     if (status.length) zeilen.push('TITLE:' + vText(status[0]));
+    angaben.filter((a) => a.art === 'adresse' && a.wert).forEach((a) => zeilen.push('ADR:;;' + vText(a.wert) + ';;;;'));
     angaben.forEach((a) => {
         if (a.art === 'email' && EMAIL.test(a.wert || '')) zeilen.push('EMAIL;TYPE=INTERNET:' + a.wert);
         if (a.art === 'telefon' && TELEFON.test(a.wert || '')) zeilen.push('TEL:' + a.wert.replace(/[\s/]/g, ''));
@@ -118,7 +124,11 @@ export function zeichneKarte(angaben, optionen = {}) {
     teile.push(el(ebene, { class: 'vk-name', text: name ? name.wert || name.titel : 'Visitenkarte' }));
     art('status').forEach((a) => teile.push(el('p', { class: 'vk-status' }, [
         symbol(a) || bildPlatz(a, 'vk-logo'),
-        el('span', { text: a.wert || a.titel })
+        // „zusatz“ geht direkt nach dem Status weiter, aber nicht fett
+        el('span', {}, [
+            document.createTextNode(a.wert || a.titel),
+            a.zusatz ? el('span', { class: 'vk-zusatz', text: ' ' + a.zusatz }) : null
+        ])
     ])));
 
     function textBlock(a) {
@@ -128,12 +138,16 @@ export function zeichneKarte(angaben, optionen = {}) {
 
     function kontaktBlock() {
         const liste = el('ul', { class: 'vk-liste' });
-        angaben.filter((a) => a.art === 'email' || a.art === 'telefon').forEach((a) => {
-            const link = kontaktLink(a);
-            liste.append(el('li', {}, [
-                el('span', { class: 'vk-beschriftung', text: a.titel || (a.art === 'email' ? 'E-Mail' : 'Telefon') }),
-                link ? el('a', { class: 'vk-wert', text: a.wert, attrs: { href: link } }) : el('span', { class: 'leise', text: 'nicht verfügbar' })
-            ]));
+        angaben.filter((a) => a.art === 'email' || a.art === 'telefon' || a.art === 'adresse').forEach((a) => {
+            const beschriftung = a.titel || ({ email: 'E-Mail', telefon: 'Telefon', adresse: 'Adresse' })[a.art];
+            let wert;
+            if (a.art === 'adresse') {
+                wert = a.wert ? aeusserLink(adressLink(a.wert), a.wert, 'vk-wert') : el('span', { class: 'leise', text: 'nicht verfügbar' });
+            } else {
+                const link = kontaktLink(a);
+                wert = link ? el('a', { class: 'vk-wert', text: a.wert, attrs: { href: link } }) : el('span', { class: 'leise', text: 'nicht verfügbar' });
+            }
+            liste.append(el('li', {}, [el('span', { class: 'vk-beschriftung', text: beschriftung }), wert]));
         });
         return el('section', { class: 'vk-gruppe' }, [el(unter, { text: 'Kontakt' }), liste]);
     }
@@ -174,7 +188,7 @@ export function zeichneKarte(angaben, optionen = {}) {
     }
 
     // Blöcke in der Reihenfolge ihrer ersten Angabe
-    const gruppe = { email: 'kontakt', telefon: 'kontakt', social: 'social', veroeffentlichung: 'veroeff' };
+    const gruppe = { email: 'kontakt', telefon: 'kontakt', adresse: 'kontakt', social: 'social', veroeffentlichung: 'veroeff' };
     const baue = { kontakt: kontaktBlock, social: socialBlock, veroeff: veroeffBlock };
     const schon = new Set();
     angaben.forEach((a) => {

@@ -1251,9 +1251,10 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 }
 .vk { padding: calc(1.5 * var(--abstand)); border: 4px solid var(--bereich); border-top-width: 8px; }
 .vk-name { margin: 0; font-size: 1.8rem; }
+.vk-zusatz { font-weight: 400; }
 .vk-status { display: flex; align-items: center; gap: 10px; margin: 6px 0 0; font-size: 1.1rem; font-weight: 600; }
 /* Logo der Gruppe beim Status (Bild aus dem Drive der Person) */
-.vk-logo { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 6px; background: var(--logo-grund); }
+.vk-logo { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 6px; }
 .vk-logo img { display: block; max-width: 100%; max-height: 100%; }
 /* Bunte Symbole der Dienste (Markenfarben, Wunsch der Person, 4.11.2026) */
 .vk-beschriftung { display: inline-flex; align-items: center; gap: 8px; }
