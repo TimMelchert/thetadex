@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.2.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.2.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -575,6 +575,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Hilfsmodule** vor dem Neubauen suchen und wiederverwenden. Lies die Datei, bevor du sie benutzt. Rate keine Signaturen.
   Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`, `kalenderBeiKlick`), `js/ui/kalender.js` (`plusTage`, `wochenStart`, `monatsRaster`, `eintraegeAm`, `tageListe`, `kursSemester`, `istFrei`, `spuren`, `arbeitsMinuten`, `stundenText` …), `js/ui/auswahl.js` (`auswahlFeld`), `js/ui/overlay.js` (`zeigeGespeichert`), `js/ui/farben.js` (`farbRegeln`), `js/ui/aussehen.js` (`wendeAussehenAn`, `setzeAussehen`), `js/ui/bild.js` (`verkleinereBild`, `bildAdresse`), `js/ui/wuerfel.js` (`wurf`, `wuerfelKnopf`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
   `js/api.js` (`api(skript, action, daten)`, `apiOeffentlich(adresse, action, daten)` ohne Passwort, `ApiFehler` mit `code`).
+- **GitHub Pages hängt** (Erfahrung 4.11.2026): Bleibt „pages build and deployment“ auf „Queued“ oder bricht mit „Timeout reached“ ab, liegt es an GitHub, nicht am Code.
+  Erst „Re-run all jobs“; hilft das nicht, startet die nächste Änderung auf `main` einen neuen Lauf, der hängende wartende Läufe ersetzt.
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
@@ -829,3 +831,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.2.3** Schritt 10.2: Besucher-Ansicht `#/karte/<skript>/<schluessel>` (Name, Status, Kontakt erst nach Tipp, Social Media, Veröffentlichungen mit Vorschaubild, „Kontakt speichern“ als vCard mit dem Link der Karte), ohne Reiterleiste und Kopf-Links.
 - **1.2.4** Schritt 10.3: Kachel „Visitenkarte“ auf der Startseite (`#/visitenkarte`, nicht in der Leiste): Umschalter Privat, Arbeit, Aktivismus mit Vorschau, Link erstellen, kopieren, als QR-Code zeigen und speichern, erneuern, nicht mehr teilen; Liste „Erscheint auf keiner Karte“. `vendor/qrcode.js`, Eintrag in `LIZENZEN.md`.
 - **1.2.5** Schritt 10.4: Etappe 10 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht, nichts zu bauen), Plan in STAND.md eingearbeitet (4 „Visitenkarte“), `docs/PLAN-ETAPPE-10.md` gelöscht.
+- **1.2.6** Nachbesserung: Hinweis zu hängenden GitHub-Pages-Läufen im Merkzettel (5); neue Version, damit Pages nach dem hängenden Lauf von 1.2.5 neu ausliefert.
