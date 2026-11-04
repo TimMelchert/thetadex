@@ -114,7 +114,7 @@ export function zeichneKarte(angaben, optionen = {}) {
     }
 
     // Eingebautes Symbol aus Spalte „bild“ (zum Beispiel „hut“), Farbe wie die Schrift
-    const SYMBOLE = { hut: 'uni' };
+    const SYMBOLE = { hut: 'uni', stift: 'stift' };
     function symbol(a) {
         const s = SYMBOLE[a.symbol];
         return s ? el('span', { class: 'reiter-symbol vk-eigen-symbol', attrs: { 'data-symbol': s, 'aria-hidden': 'true' } }) : null;
