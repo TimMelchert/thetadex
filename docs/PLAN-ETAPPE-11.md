@@ -28,10 +28,10 @@ Was gleich bleibt:
    Ändert man die Zahl, rechnen sich alle Mengen um. Jede Menge bleibt danach einzeln änderbar. Gespeichert wird dabei nichts.
 6. **Bilder aus Google Drive:** mehrere Bilder je Rezept (höchstens 10), je als Drive-Link oder hochgeladen (wie bei Besitz).
    Lädt die Partnerin oder der Partner ein Bild hoch, liegt es im Drive der Person (bestätigt).
-10. **Umrechnen** rundet auf halbe Einheiten, mindestens 0,5 (bestätigt).
 7. **Nur mit Netz.** Rezepte werden nicht im Gerät gespeichert.
 8. **Keine Kategorien.** Die Suche reicht.
 9. **Formatierung:** nur Text mit Zeilenumbrüchen (keine fette Schrift).
+10. **Umrechnen** rundet auf halbe Einheiten, mindestens 0,5 (bestätigt).
 
 ## 3. Aufbau in der App
 
@@ -50,7 +50,7 @@ Was gleich bleibt:
 Beispiel: Rezept für 4 Personen mit 3 Zwiebeln, diesmal 2 Personen → 1,5 Zwiebeln. Hat man eine Menge von Hand geändert und ändert danach die Personen,
 wird sie wieder neu gerechnet (die Personen gelten für alle). Der Vorrat-Haken prüft gegen die umgerechnete Menge.
 
-**Rezept bearbeiten** (bisher „Gericht ändern“), von oben nach unten: Titel, Bilder (Drive-Link einfügen oder Bild hochladen, je Bild ×  zum Entfernen),
+**Rezept bearbeiten** (bisher „Gericht ändern“), von oben nach unten: Titel, Bilder (Drive-Link einfügen oder Bild hochladen, je Bild × zum Entfernen),
 für … Personen, ergibt, Rezepttext (großes Feld), Link, Zutaten mit Mengen (wie heute, auch „+ Neues Lebensmittel“), Speichern, Löschen.
 - **Nichts geht verloren:** Hat die Partnerin oder der Partner das Rezept inzwischen geändert, speichert das Skript nicht (Schutz über `geaendert_am`).
   Der Text bleibt im Fenster stehen, mit der Meldung „Inzwischen geändert. Text kopieren, neu laden, dann einfügen.“ Schlägt das Senden fehl, bleibt ebenfalls alles stehen.
