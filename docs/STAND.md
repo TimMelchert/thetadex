@@ -16,7 +16,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0.
 - Etappe 9 „Kontowecker“ ist fertig (1.11.2026): Kontowecker-SMS kommen von selbst ins Finanz-Sheet, Festlegungen in 4 („Kontowecker“).
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
-- Etappe 11 „Rezepte“ läuft (ab 7.11.2026), Plan in `docs/PLAN-ETAPPE-11.md`. Nächster Schritt: 11.1 (Gerichte als Umschalter bei Lebensmitteln), nach den Antworten der Person zum Plan.
+- Etappe 11 „Rezepte“ läuft (ab 7.11.2026), Plan in `docs/PLAN-ETAPPE-11.md`. Nächster Schritt: 11.1 (Umschalter „Einzeln | Rezepte“ bei Lebensmitteln).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -732,7 +732,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
 - **Etappe 9 „Kontowecker“ (1.1.x)** – fertig (1.11.2026). Kontowecker-SMS automatisch an das Finanz-Skript, im Reiter Finanzen „Noch zuordnen“ mit Vorschlag.
   Schritte: 9.0 Plan, 9.1 Skript nimmt SMS an, 9.2 Noch zuordnen (mit Nachbesserungen), 9.3 Abschluss mit Prüfung. Festlegungen in 4 („Kontowecker“).
 - **Etappe 10 „Visitenkarte“ (1.2.x)** – fertig (4.11.2026), Plan eingearbeitet (4 „Visitenkarte“). Schritte 10.0 Plan mit Prüfung, 10.1 Sheet und Skript `karte`, 10.2 Besucher-Ansicht, 10.3 Kachel mit Links und QR-Code, 10.4 Abschluss mit Prüfung (Pull Requests #73 bis #77).
-- **Etappe 11 „Rezepte“ (1.3.x)** – läuft, Plan in `docs/PLAN-ETAPPE-11.md`. Gerichte als Umschalter bei Lebensmitteln, neuer Unterreiter „Rezepte“ (Blatt `rezepte` im Sheet „Gemeinsam“, Partner*in darf lesen und ändern).
+- **Etappe 11 „Rezepte“ (1.3.x)** – läuft, Plan in `docs/PLAN-ETAPPE-11.md`. Gerichte werden Rezepte (Text, Personen mit Umrechnen, Bild aus Drive) und kommen als Umschalter „Einzeln | Rezepte“ zu den Lebensmitteln; Blatt `gerichte` bekommt neue Spalten, Partner*in darf lesen und ändern.
 - **Entfallen:** Startseite mit Heute-Übersicht (Entscheidung der Person, 1.11.2026).
 
 Prüfung gegen die Grundsätze (1.2):
@@ -843,4 +843,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.2.9** Nachbesserung Visitenkarte: `hut` in Spalte `bild` zeigt einen Studentenhut vor dem Text (Skript `karte` neu), Satz „So sehen es Besucher …“ über der Vorschau entfernt.
 - **1.2.10** Nachbesserung Visitenkarte: Logos ohne weißen Hintergrund, Spalte `zusatz` (Status teils nicht fett), Art `adresse`.
 - **1.2.11** Nachbesserung Visitenkarte: Symbol `stift` in Spalte `bild`, `zusatz` sieht aus wie die Beschriftung.
-- **Etappe 11** Rezepte. **1.3.0** Schritt 11.0: Plan `docs/PLAN-ETAPPE-11.md` (Gerichte als Umschalter bei Lebensmitteln, Unterreiter „Rezepte“ mit Blatt `rezepte`).
+- **Etappe 11** Rezepte. **1.3.0** Schritt 11.0: Plan `docs/PLAN-ETAPPE-11.md` (Gerichte werden Rezepte mit Text, Personen und Bild, Umschalter „Einzeln | Rezepte“ bei Lebensmitteln).
