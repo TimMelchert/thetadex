@@ -68,12 +68,13 @@ für … Personen, ergibt, Rezepttext (großes Feld), Link, Zutaten mit Mengen (
 | `ergibt` | Menge, zum Beispiel „1 Blech“ | nein | 40 Zeichen |
 | `bilder` | Liste der Kennungen von Bild-Dateien im Google Drive der Person (JSON, wie `bilder` bei Pen & Paper) | nein | höchstens 10, setzt das Skript |
 
-Die bisherige Spalte `notiz` (300 Zeichen) bleibt. Die App zeigt sie im Fenster über dem Rezepttext an, solange sie gefüllt ist; neu geschrieben wird nur noch `text`.
+Die bisherige Spalte `notiz` (300 Zeichen) bleibt. Die App zeigt sie im Fenster über dem Rezepttext an, solange sie gefüllt ist. Beim Bearbeiten steht sie oben im Rezepttext und wird beim Speichern dorthin verschoben (danach ist `notiz` leer).
 Höchstens 500 Rezepte.
 
 ## 5. Skript `gemeinsam` (Änderungen)
 
-- `gericht_speichern` nimmt zusätzlich `text`, `personen`, `ergibt` und die Bilder an: die Liste der behaltenen Kennungen, dazu neue Bilder als Drive-Link oder Kennung (`bild`) oder hochgeladen (`bild_daten`), eines je Anfrage.
+- `gericht_speichern` nimmt zusätzlich `text`, `personen`, `ergibt` und `bilder` (Liste der behaltenen Kennungen) an. Felder, die nicht mitkommen, bleiben unverändert.
+  Neue Bilder kommen über die Aktion **`rezept_bild`** dazu: als Drive-Link oder Kennung (`bild`) oder hochgeladen (`bild_daten`), eines je Anfrage, mit Schutz über `geaendert_am`.
 - **Langer Text:** neuer Helfer `bereinigeLang_` wie im Skript `dsa`: Zeilenumbrüche bleiben, Tabulatoren werden Leerzeichen, höchstens zwei Leerzeilen hintereinander,
   Länge begrenzt, vor ein führendes `=`, `+`, `-` oder `@` kommt ein Hochkomma (Schutz vor Formeln). Alle anderen Felder bleiben bei `bereinigeText_`.
 - **Bilder wie bei Besitz:** Hochgeladene Bilder (die App verkleinert vorher auf höchstens 1600 px, JPEG) legt das Skript in den privaten Drive-Ordner
@@ -98,7 +99,7 @@ Höchstens 500 Rezepte.
 | --- | --- | --- | --- |
 | 11.0 | 1.3.0 bis 1.3.2 | dieser Plan (1.3.1 und 1.3.2: Antworten der Person eingearbeitet) | unverändert |
 | 11.1 – erledigt | 1.3.3 | Umschalter „Einzeln \| Rezepte“ bei Lebensmitteln, Unterreiter „Gerichte“ entfällt, überall „Rezept“ statt „Gericht“ | unverändert |
-| 11.2 | 1.3.4 | Skript: neue Spalten, Langtext, Bilder (auch mehrere), Aktion `bild`. App: Rezepttext, Personen, ergibt, Umrechnen | **Von Hand:** `Code.gs` ersetzen, `einrichten` ausführen (Drive erlauben), neue Version bereitstellen |
+| 11.2 – erledigt | 1.3.4 | Skript: neue Spalten, Langtext, Bilder (auch mehrere), Aktion `bild`. App: Rezepttext, Personen, ergibt, Umrechnen | **Von Hand:** `Code.gs` ersetzen, `einrichten` ausführen (Drive erlauben), neue Version bereitstellen |
 | 11.3 | 1.3.5 | Bilder im Rezept: anzeigen, Drive-Link einfügen, hochladen, entfernen | unverändert (kann schon alles seit 11.2) |
 | 11.4 | 1.3.6 | Abschluss: kurze Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md einarbeiten, diese Datei löschen | unverändert |
 
