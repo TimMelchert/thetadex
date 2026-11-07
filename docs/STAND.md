@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -844,3 +844,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.2.10** Nachbesserung Visitenkarte: Logos ohne weißen Hintergrund, Spalte `zusatz` (Status teils nicht fett), Art `adresse`.
 - **1.2.11** Nachbesserung Visitenkarte: Symbol `stift` in Spalte `bild`, `zusatz` sieht aus wie die Beschriftung.
 - **Etappe 11** Rezepte. **1.3.0** Schritt 11.0: Plan `docs/PLAN-ETAPPE-11.md` (Gerichte werden Rezepte mit Text, Personen und Bild, Umschalter „Einzeln | Rezepte“ bei Lebensmitteln).
+- **1.3.1** Antworten zum Plan: Gerichte und Rezepte zusammengelegt, kein eigener Unterreiter, Personen umrechnen, ein Bild aus Drive je Rezept, nur mit Netz, keine Kategorien.
