@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -732,7 +732,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
 - **Etappe 9 „Kontowecker“ (1.1.x)** – fertig (1.11.2026). Kontowecker-SMS automatisch an das Finanz-Skript, im Reiter Finanzen „Noch zuordnen“ mit Vorschlag.
   Schritte: 9.0 Plan, 9.1 Skript nimmt SMS an, 9.2 Noch zuordnen (mit Nachbesserungen), 9.3 Abschluss mit Prüfung. Festlegungen in 4 („Kontowecker“).
 - **Etappe 10 „Visitenkarte“ (1.2.x)** – fertig (4.11.2026), Plan eingearbeitet (4 „Visitenkarte“). Schritte 10.0 Plan mit Prüfung, 10.1 Sheet und Skript `karte`, 10.2 Besucher-Ansicht, 10.3 Kachel mit Links und QR-Code, 10.4 Abschluss mit Prüfung (Pull Requests #73 bis #77).
-- **Etappe 11 „Rezepte“ (1.3.x)** – läuft, Plan in `docs/PLAN-ETAPPE-11.md`. Gerichte werden Rezepte (Text, Personen mit Umrechnen, Bild aus Drive) und kommen als Umschalter „Einzeln | Rezepte“ zu den Lebensmitteln; Blatt `gerichte` bekommt neue Spalten, Partner*in darf lesen und ändern.
+- **Etappe 11 „Rezepte“ (1.3.x)** – läuft, Plan in `docs/PLAN-ETAPPE-11.md`. Gerichte werden Rezepte (Text, Personen mit Umrechnen, Bilder aus Drive) und kommen als Umschalter „Einzeln | Rezepte“ zu den Lebensmitteln; Blatt `gerichte` bekommt neue Spalten, Partner*in darf lesen und ändern.
 - **Entfallen:** Startseite mit Heute-Übersicht (Entscheidung der Person, 1.11.2026).
 
 Prüfung gegen die Grundsätze (1.2):
@@ -845,3 +845,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.2.11** Nachbesserung Visitenkarte: Symbol `stift` in Spalte `bild`, `zusatz` sieht aus wie die Beschriftung.
 - **Etappe 11** Rezepte. **1.3.0** Schritt 11.0: Plan `docs/PLAN-ETAPPE-11.md` (Gerichte werden Rezepte mit Text, Personen und Bild, Umschalter „Einzeln | Rezepte“ bei Lebensmitteln).
 - **1.3.1** Antworten zum Plan: Gerichte und Rezepte zusammengelegt, kein eigener Unterreiter, Personen umrechnen, ein Bild aus Drive je Rezept, nur mit Netz, keine Kategorien.
+- **1.3.2** Weitere Antworten: bis 10 Bilder je Rezept (Spalte `bilder`), Runden auf halbe Einheiten und Bilder der Partnerin im Drive der Person bestätigt.
