@@ -1294,3 +1294,6 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 }
 .vk-qr { display: block; width: min(100%, 360px); height: auto; margin: 8px auto; image-rendering: pixelated; }
 .vk-links input { padding: 0 10px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); }
+/* Etappe 11.1: „Neu laden“ in der Leiste bei Rezepte */
+.einkauf-auswahl-leiste { align-items: center; }
+.einkauf-auswahl-leiste .knopf { margin-top: 0; }

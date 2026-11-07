@@ -97,7 +97,7 @@ Höchstens 500 Rezepte.
 | Schritt | Version | Was | Sheet und Skript |
 | --- | --- | --- | --- |
 | 11.0 | 1.3.0 bis 1.3.2 | dieser Plan (1.3.1 und 1.3.2: Antworten der Person eingearbeitet) | unverändert |
-| 11.1 | 1.3.3 | Umschalter „Einzeln \| Rezepte“ bei Lebensmitteln, Unterreiter „Gerichte“ entfällt, überall „Rezept“ statt „Gericht“ | unverändert |
+| 11.1 – erledigt | 1.3.3 | Umschalter „Einzeln \| Rezepte“ bei Lebensmitteln, Unterreiter „Gerichte“ entfällt, überall „Rezept“ statt „Gericht“ | unverändert |
 | 11.2 | 1.3.4 | Skript: neue Spalten, Langtext, Bilder (auch mehrere), Aktion `bild`. App: Rezepttext, Personen, ergibt, Umrechnen | **Von Hand:** `Code.gs` ersetzen, `einrichten` ausführen (Drive erlauben), neue Version bereitstellen |
 | 11.3 | 1.3.5 | Bilder im Rezept: anzeigen, Drive-Link einfügen, hochladen, entfernen | unverändert (kann schon alles seit 11.2) |
 | 11.4 | 1.3.6 | Abschluss: kurze Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md einarbeiten, diese Datei löschen | unverändert |
