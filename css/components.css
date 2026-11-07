@@ -1301,3 +1301,14 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .einkauf-rezept-angaben { margin: 0 0 6px; }
 .einkauf-rezepttext { line-height: 1.5; }
 .formular textarea.einkauf-rezepttext-feld { min-height: 12em; resize: vertical; }
+/* Etappe 11.3: Bilder im Rezept (Vorschau wie bei DSA, × zum Entfernen, groß über der Leiste) */
+.einkauf-bilder { margin: 8px 0 10px; }
+.einkauf-bild-feld { position: relative; min-width: 0; }
+.einkauf-bild-feld .dsa-ab-bild { width: 100%; min-width: 0; margin: 0; }
+.einkauf-bild-link { font-size: 0.85rem; cursor: default; }
+.formular .einkauf-bild-weg { position: absolute; top: 2px; right: 2px; min-width: 32px; min-height: 32px; margin: 0; border-radius: 50%; background: var(--hintergrund); color: var(--schrift); border: 1px solid var(--linie); }
+.einkauf-bild-gross { cursor: zoom-out; margin-bottom: 8px; }
+.einkauf-link-zeile { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: stretch; }
+.formular .einkauf-link-zeile .knopf { margin-top: 0; }
+.einkauf-link-zeile input { min-width: 0; }
+.formular input[type="file"] { max-width: 100%; }
