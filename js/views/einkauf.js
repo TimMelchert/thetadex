@@ -4,7 +4,8 @@
 // Ab 11.1 heißen Gerichte in der App „Rezepte“ und stehen bei Lebensmitteln hinter dem Umschalter „Einzeln | Rezepte“ (Wunsch der Person, 7.11.2026).
 // Im Sheet und im Skript bleibt es bei `gerichte`, `gericht_id` und `gericht_speichern`.
 // Ab 11.2: Rezepttext (Zeilenumbrüche bleiben), „für … Personen“, „ergibt“ und beim Auswählen „Personen diesmal“,
-// das alle Mengen umrechnet (auf halbe gerundet, mindestens 0,5). Gespeichert wird beim Umrechnen nichts.
+// das alle Mengen umrechnet (ab 1 auf halbe gerundet, darunter auf zwei Stellen, mindestens 0,01). Gespeichert wird beim Umrechnen nichts.
+// Ab 1.3.8: Mengen ab 0,01 mit bis zu zwei Stellen nach dem Komma (Wunsch der Person, 8.11.2026, für Gewürze und Esslöffel).
 // Ab 11.3: bis 10 Bilder je Rezept, hochgeladen (die App verkleinert sie) oder als Google-Drive-Link. Sie liegen im Drive
 // der Person (Ordner „Thetadex Rezepte“) und kommen nur mit Passwort über die Aktion `bild`. Nur im Arbeitsspeicher.
 // Ab 1.3.7: Ein Tipp auf den Titel klappt das Rezept in der Liste auf, noch ein Tipp klappt es zu (Wunsch der Person, 7.11.2026).
@@ -100,19 +101,25 @@ const norm = (t) => String(t == null ? '' : t).toLocaleLowerCase('de')
 // Ohne Punkte: ä = a (so findet „apf“ auch „Äpfel“)
 const ohnePunkte = (t) => String(t == null ? '' : t).toLocaleLowerCase('de').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss');
 const findet = (text, wort) => norm(text).includes(norm(wort)) || ohnePunkte(text).includes(ohnePunkte(wort));
-const zahlText = (n) => String(n).replace('.', ',');
+const zweiStellen = (n) => Math.round(n * 100) / 100;
+const zahlText = (n) => String(Number.isFinite(n) ? zweiStellen(n) : n).replace('.', ',');
+// Zahl mit höchstens zwei Stellen nach dem Komma
+const hatZweiStellen = (n) => Math.abs(Math.round(n * 100) - n * 100) < 1e-6;
 const mitEinheit = (n, lm) => zahlText(n) + (lm && lm.einheit ? ' ' + lm.einheit : '');
-// Anzahl in halben Schritten von 0,5 bis 9999
-const gueltigeAnzahl = (n) => Number.isFinite(n) && n >= 0.5 && n <= 9999 && Math.round(n * 2) === n * 2;
+// Anzahl oder Menge von 0,01 bis 9999, bis zu zwei Stellen nach dem Komma (ab 1.3.8, vorher halbe ab 0,5)
+const gueltigeAnzahl = (n) => Number.isFinite(n) && n >= 0.01 && n <= 9999 && hatZweiStellen(n);
 const leseZahl = (t) => Number(String(t).trim().replace(',', '.'));
 
-// Feld für eine Anzahl mit − und + (min = kleinster Wert beim Tippen auf −)
-function anzahlFeld(id, wert = 1, min = 0.5) {
+// Feld für eine Anzahl mit − und + (min = kleinster Wert beim Tippen auf −).
+// − und + ändern um 1. Würde − unter 0,01 gehen, halbiert es stattdessen (0,5 → 0,25 → 0,13 …).
+function anzahlFeld(id, wert = 1, min = 0.01) {
     const feld = el('input', { attrs: { id, type: 'text', inputmode: 'decimal', autocomplete: 'off', value: zahlText(wert) } });
     const schritt = (d) => {
         const n = leseZahl(feld.value);
-        const neu = Number.isFinite(n) ? Math.max(min, Math.round((n + d) * 2) / 2) : 1;
-        feld.value = zahlText(neu);
+        if (!Number.isFinite(n)) { feld.value = zahlText(1); return; }
+        let neu = zweiStellen(n + d);
+        if (neu < Math.max(min, 0.01)) neu = n > 0.01 ? zweiStellen(n / 2) : 0;
+        feld.value = zahlText(Math.min(9999, Math.max(min, neu)));
     };
     const box = el('div', { class: 'einkauf-anzahl' }, [
         el('button', { class: 'knopf knopf-zweit', text: '−', attrs: { type: 'button', 'aria-label': 'eins weniger' }, on: { click: () => schritt(-1) } }),
@@ -122,10 +129,12 @@ function anzahlFeld(id, wert = 1, min = 0.5) {
     return { box, feld };
 }
 
-// Rezept auf andere Personen umrechnen: gerundet auf halbe Einheiten, mindestens 0,5, höchstens 9999
+// Rezept auf andere Personen umrechnen: ab 1 auf halbe Einheiten gerundet (bestätigt), darunter auf zwei Stellen
+// (damit kleine Mengen wie 0,25 EL nicht zu 0,5 werden), mindestens 0,01, höchstens 9999
 export function umrechnen(menge, personen, diesmal) {
     if (!(personen > 0) || !(diesmal > 0)) return menge;
-    return Math.min(9999, Math.max(0.5, Math.round(menge * diesmal / personen * 2) / 2));
+    const roh = menge * diesmal / personen;
+    return Math.min(9999, Math.max(0.01, roh >= 1 ? Math.round(roh * 2) / 2 : zweiStellen(roh)));
 }
 const gueltigePersonen = (n) => Number.isInteger(n) && n >= 1 && n <= 99;
 
@@ -222,7 +231,7 @@ export function render(container, ctx) {
             for (const f of felder) {
                 const n = leseZahl(f.anzahl.feld.value);
                 if (!gueltigeAnzahl(n)) {
-                    status.textContent = f.lm.name + ': Menge bitte von 0,5 bis 9999 (halbe erlaubt).';
+                    status.textContent = f.lm.name + ': Menge bitte von 0,01 bis 9999 (bis zu zwei Stellen nach dem Komma).';
                     f.anzahl.feld.focus();
                     return;
                 }
@@ -337,8 +346,8 @@ export function render(container, ctx) {
                     z.ort.feld.focus();
                     return;
                 }
-                if (!(Number.isFinite(menge) && menge >= 0 && menge <= 9999 && Math.round(menge * 2) === menge * 2)) {
-                    status.textContent = 'Menge zuhause bitte von 0 bis 9999 (halbe erlaubt).';
+                if (!(Number.isFinite(menge) && menge >= 0 && menge <= 9999 && hatZweiStellen(menge))) {
+                    status.textContent = 'Menge zuhause bitte von 0 bis 9999 (bis zu zwei Stellen nach dem Komma).';
                     z.menge.feld.focus();
                     return;
                 }
@@ -566,7 +575,7 @@ export function render(container, ctx) {
             async function schicke(entfernen) {
                 const n = leseZahl(anzahl.feld.value);
                 if (!entfernen && !gueltigeAnzahl(n)) {
-                    status.textContent = 'Anzahl bitte von 0,5 bis 9999 (halbe erlaubt).';
+                    status.textContent = 'Anzahl bitte von 0,01 bis 9999 (bis zu zwei Stellen nach dem Komma).';
                     anzahl.feld.focus();
                     return;
                 }
@@ -813,7 +822,7 @@ export function render(container, ctx) {
                 if (!x.an()) continue;
                 const n = leseZahl(x.anzahl.feld.value);
                 if (!gueltigeAnzahl(n)) {
-                    status.textContent = x.lm.name + ': Menge bitte von 0,5 bis 9999 (halbe erlaubt).';
+                    status.textContent = x.lm.name + ': Menge bitte von 0,01 bis 9999 (bis zu zwei Stellen nach dem Komma).';
                     x.anzahl.feld.focus();
                     return;
                 }
@@ -1067,7 +1076,7 @@ export function render(container, ctx) {
             for (const [id, anzahl] of zutaten) {
                 const n = leseZahl(anzahl.feld.value);
                 if (!gueltigeAnzahl(n)) {
-                    status.textContent = 'Menge bitte von 0,5 bis 9999 (halbe erlaubt).';
+                    status.textContent = 'Menge bitte von 0,01 bis 9999 (bis zu zwei Stellen nach dem Komma).';
                     anzahl.feld.focus();
                     return;
                 }

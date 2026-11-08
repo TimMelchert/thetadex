@@ -35,6 +35,7 @@ var TEXT_SPALTEN_ = ["id", "name", "abteilung", "einheit", "notiz", "lebensmitte
 var MAX_ = { name: 60, abteilung: 40, einheit: 20, notiz_lm: 200, notiz_liste: 100, notiz_gericht: 300, link: 300, ort: 40,
   text_rezept: 20000, ergibt: 40 };
 var MAX_ZAHL_ = 9999;
+var MIN_MENGE_ = 0.01;          // kleinste Menge oder Anzahl (ab 1.3.8, vorher 0,5)
 var MAX_AUF_EINMAL_ = 100;     // höchstens so viele Einträge je Anfrage (auf_liste, abhaken)
 var MAX_ZUTATEN_ = 50;
 var MAX_REZEPTE_ = 500;        // höchstens so viele Rezepte insgesamt
@@ -283,13 +284,18 @@ function pruefeText_(roh, max, titel, pflicht) {
   return { wert: bereinigeText_(t, max) };
 }
 
-// Menge oder Anzahl: Zahl in halben Schritten von min bis 9999
+// Menge oder Anzahl: Zahl von min bis 9999 mit bis zu zwei Stellen nach dem Komma
+// (ab 1.3.8, vorher nur halbe; Wunsch der Person, 8.11.2026, für Gewürze und Esslöffel)
 function pruefeZahl_(roh, min, titel) {
   var n = Number(String(roh == null ? "" : roh).replace(",", "."));
-  if (String(roh == null ? "" : roh).trim() === "" || !isFinite(n) || n < min || n > MAX_ZAHL_ || Math.round(n * 2) !== n * 2) {
-    return { fehler: titel + " bitte als Zahl von " + String(min).replace(".", ",") + " bis " + MAX_ZAHL_ + " (halbe erlaubt)." };
+  if (String(roh == null ? "" : roh).trim() === "" || !isFinite(n) || n < min || n > MAX_ZAHL_ || Math.abs(Math.round(n * 100) - n * 100) > 1e-6) {
+    return { fehler: titel + " bitte als Zahl von " + String(min).replace(".", ",") + " bis " + MAX_ZAHL_ + " (bis zu zwei Stellen nach dem Komma)." };
   }
-  return { wert: n };
+  return { wert: zweiStellen_(n) };
+}
+
+function zweiStellen_(n) {
+  return Math.round(n * 100) / 100;
 }
 
 function zahl_(v) {
@@ -527,7 +533,7 @@ function aufListe_(data) {
     var e = liste[k] || {};
     var lid = String(e.lebensmittel_id || "");
     if (!lm[lid]) return { error: "fehlt", message: "Ein Lebensmittel gibt es nicht mehr. Bitte neu laden." };
-    var anzahl = pruefeZahl_(e.anzahl, 0.5, "Anzahl");
+    var anzahl = pruefeZahl_(e.anzahl, MIN_MENGE_, "Anzahl");
     if (anzahl.fehler) return { error: "eingabe", message: anzahl.fehler };
     var gid = String(e.gericht_id || "");
     if (gid && index_(g, gid) < 0) return { error: "fehlt", message: "Das Rezept gibt es nicht mehr. Bitte neu laden." };
@@ -544,7 +550,7 @@ function aufListe_(data) {
         && String(zelle_(z, t.sp, "lebensmittel_id")) === e.lid && String(zelle_(z, t.sp, "gericht_id")) === e.gid) vorhanden = i;
     });
     if (vorhanden >= 0) {
-      var werte = { anzahl: Math.min(MAX_ZAHL_, zahl_(zelle_(t.zeilen[vorhanden], t.sp, "anzahl")) + e.anzahl) };
+      var werte = { anzahl: Math.min(MAX_ZAHL_, zweiStellen_(zahl_(zelle_(t.zeilen[vorhanden], t.sp, "anzahl")) + e.anzahl)) };
       if (e.notiz) werte.notiz = e.notiz;
       aendere_(t, vorhanden, werte);
     } else {
@@ -564,7 +570,7 @@ function listeAendern_(data) {
   if (data.entfernen === true) {
     weg_(t, i);
   } else {
-    var anzahl = pruefeZahl_(data.anzahl, 0.5, "Anzahl");
+    var anzahl = pruefeZahl_(data.anzahl, MIN_MENGE_, "Anzahl");
     if (anzahl.fehler) return { error: "eingabe", message: anzahl.fehler };
     var notiz = pruefeText_(data.notiz, MAX_.notiz_liste, "Notiz", false);
     if (notiz.fehler) return { error: "eingabe", message: notiz.fehler };
@@ -595,7 +601,7 @@ function abhaken_(data) {
       if (bester < 0 || zahl_(zelle_(z, v.sp, "menge")) > zahl_(zelle_(v.zeilen[bester], v.sp, "menge"))) bester = k;
     });
     if (bester >= 0) {
-      var neu = zahl_(zelle_(v.zeilen[bester], v.sp, "menge")) + zahl_(zelle_(t.zeilen[i], t.sp, "anzahl"));
+      var neu = zweiStellen_(zahl_(zelle_(v.zeilen[bester], v.sp, "menge")) + zahl_(zelle_(t.zeilen[i], t.sp, "anzahl")));
       aendere_(v, bester, { menge: Math.min(MAX_ZAHL_, neu) });
     }
   });
@@ -643,7 +649,7 @@ function gerichtSpeichern_(data) {
     if (!lm[lid]) return { error: "fehlt", message: "Eine Zutat gibt es nicht mehr als Lebensmittel. Bitte neu laden." };
     if (schon[lid]) return { error: "eingabe", message: "Eine Zutat steht doppelt da." };
     schon[lid] = true;
-    var menge = pruefeZahl_(zut[k].menge, 0.5, "Menge");
+    var menge = pruefeZahl_(zut[k].menge, MIN_MENGE_, "Menge");
     if (menge.fehler) return { error: "eingabe", message: menge.fehler };
     sauber.push({ lebensmittel_id: lid, menge: menge.wert });
   }
