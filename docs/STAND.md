@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -16,7 +16,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0.
 - Etappe 9 „Kontowecker“ ist fertig (1.11.2026): Kontowecker-SMS kommen von selbst ins Finanz-Sheet, Festlegungen in 4 („Kontowecker“).
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
-- Etappe 11 „Rezepte“ läuft (ab 7.11.2026), Plan in `docs/PLAN-ETAPPE-11.md`. Nächster Schritt: 11.1 (Umschalter „Einzeln | Rezepte“ bei Lebensmitteln).
+- Etappe 11 „Rezepte“ läuft (ab 7.11.2026), Plan in `docs/PLAN-ETAPPE-11.md`. Nächster Schritt: 11.2 (Skript, Rezepttext, Personen umrechnen).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -360,6 +360,7 @@ unter „Info“ die Version prüfen.
   Projektdateien (`pruefung/`). Behebungen in 0.8.0 bis 0.8.4 (Pull Request #65), Einzelheiten in der Geschichte (8). Version 1.0.0.
 - Etappe 9 (fertig): Kontowecker-SMS über die Handy-App „SMS to URL Forwarder“ ins Blatt `SMS` des Finanz-Sheets, im Reiter Finanzen „Noch zuordnen“
   mit Vorschlag zum Bestätigen (Pull Requests #67 bis #70). Festlegungen in 4 („Kontowecker“).
+- Etappe 11 (läuft): 11.1 (1.3.3) Gerichte heißen in der App „Rezepte“ und stehen bei Lebensmitteln hinter dem Umschalter „Einzeln | Rezepte“; Unterreiter nur noch Einkaufsliste und Lebensmittel; Einkaufsliste „Nach Rezept“. Sheet und Skript unverändert (`gerichte`).
 
 ### 3.2 Offen
 
@@ -846,3 +847,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **Etappe 11** Rezepte. **1.3.0** Schritt 11.0: Plan `docs/PLAN-ETAPPE-11.md` (Gerichte werden Rezepte mit Text, Personen und Bild, Umschalter „Einzeln | Rezepte“ bei Lebensmitteln).
 - **1.3.1** Antworten zum Plan: Gerichte und Rezepte zusammengelegt, kein eigener Unterreiter, Personen umrechnen, ein Bild aus Drive je Rezept, nur mit Netz, keine Kategorien.
 - **1.3.2** Weitere Antworten: bis 10 Bilder je Rezept (Spalte `bilder`), Runden auf halbe Einheiten und Bilder der Partnerin im Drive der Person bestätigt.
+- **1.3.3** Schritt 11.1: Umschalter „Einzeln | Rezepte“ bei Lebensmitteln, Unterreiter „Gerichte“ entfällt, „Rezept“ statt „Gericht“ in der App.

@@ -1,6 +1,8 @@
 // Reiter Einkauf: Einkaufsliste nach Abteilung und Lebensmittel mit Suche (Schritt 4.1).
 // Gerichte (4.3): mit Zutaten und Mengen; ein Gericht wählen → Zutaten angehakt vorgeschlagen → auf die Liste.
 // Die Einkaufsliste gibt es auch nach Gericht (Wunsch der Person, 30.10.2026).
+// Ab 11.1 heißen Gerichte in der App „Rezepte“ und stehen bei Lebensmitteln hinter dem Umschalter „Einzeln | Rezepte“ (Wunsch der Person, 7.11.2026).
+// Im Sheet und im Skript bleibt es bei `gerichte`, `gericht_id` und `gericht_speichern`.
 // Vorrat (4.4, freiwillig): je Lebensmittel Mengen an Orten zuhause. Wo gepflegt, steht „zuhause: …“ dabei.
 // Lebensmittel ankreuzen → „Auf die Einkaufsliste“ → Mengen eintragen. Die Auswahl bleibt bei Suche erhalten.
 // Abgehakte Einträge bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird (Wunsch der Person, 30.10.2026).
@@ -49,6 +51,8 @@ const uhrzeit = (ms) => new Date(ms).toLocaleTimeString('de-DE', { hour: '2-digi
 let teil = 'lebensmittel';
 // Einkaufsliste nach Abteilung oder nach Gericht. Bleibt, solange die Seite offen ist.
 let listeAnsicht = 'abteilung';
+// Lebensmittel einzeln oder Rezepte (11.1). Bleibt, solange die Seite offen ist.
+let lmArt = 'einzeln';
 // Neu laden beim Zurückkehren in die App (nur, wenn der Reiter offen ist)
 let neuLadenBeiRueckkehr = null;
 document.addEventListener('visibilitychange', () => {
@@ -92,7 +96,8 @@ export function render(container, ctx) {
     const ladeStatus = el('p', { class: 'meldung besitz-lade', attrs: { role: 'status', 'aria-live': 'polite' } });
     const listeBox = el('div', { class: 'einkauf-teil', attrs: { id: 'einkauf-teil-liste', hidden: true } });
     const lmBox = el('div', { class: 'einkauf-teil', attrs: { id: 'einkauf-teil-lebensmittel', hidden: true } });
-    const gerichteBox = el('div', { class: 'einkauf-teil', attrs: { id: 'einkauf-teil-gerichte', hidden: true } });
+    const einzelBox = el('div', { attrs: { id: 'einkauf-einzeln' } });
+    const gerichteBox = el('div', { attrs: { id: 'einkauf-rezepte', hidden: true } });
     const dialog = el('dialog', { class: 'besitz-dialog', attrs: { 'aria-labelledby': 'einkauf-dialog-titel' } });
     dialog.addEventListener('click', (ev) => { if (ev.target === dialog) dialog.close(); });
     let sendet = false; // gegen doppeltes Senden durch mehrfaches Tippen
@@ -356,7 +361,7 @@ export function render(container, ctx) {
                 attrs: { type: 'button' }, on: { click: () => einkaufFertig() }
             }));
         }
-        const ansichten = [['abteilung', 'Nach Abteilung'], ['gericht', 'Nach Gericht']].map(([id, text]) => el('button', {
+        const ansichten = [['abteilung', 'Nach Abteilung'], ['gericht', 'Nach Rezept']].map(([id, text]) => el('button', {
             class: 'ansicht', text,
             attrs: { type: 'button', 'aria-pressed': listeAnsicht === id ? 'true' : 'false' },
             on: { click: () => { listeAnsicht = id; zeigeListe(); } }
@@ -410,7 +415,7 @@ export function render(container, ctx) {
             if (!posten.length) return;
             const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
             const weg = g ? el('button', {
-                class: 'knopf knopf-zweit einkauf-gericht-weg', text: 'Gericht von der Liste nehmen',
+                class: 'knopf knopf-zweit einkauf-gericht-weg', text: 'Rezept von der Liste nehmen',
                 attrs: { type: 'button' }, on: { click: () => gerichtVonListe(g, eintraege, weg, status) }
             }) : null;
             listeBox.append(el('section', { class: 'besitz-gruppe' }, [
@@ -555,7 +560,7 @@ export function render(container, ctx) {
     const passtAbteilung = (l) => !abteilungFilter.value
         || (abteilungFilter.value === OHNE_ABTEILUNG ? !l.abteilung : l.abteilung === abteilungFilter.value);
     const lmKnoepfe = el('div', { class: 'einkauf-knoepfe' }, [abteilungFilter, neuLm]);
-    lmBox.append(
+    einzelBox.append(
         el('div', { class: 'einkauf-auswahl-leiste' }, [aufListeKnopf, aufheben]),
         el('div', { class: 'formular besitz-suche einkauf-suchzeile' }, [
             el('div', {}, [el('label', { text: 'Suchen', attrs: { for: 'einkauf-suche' } }), suche]),
@@ -637,14 +642,16 @@ export function render(container, ctx) {
 
     // --- Gerichte (4.3) ---
     const gerichtSuche = el('input', {
-        attrs: { id: 'einkauf-gericht-suche', type: 'search', autocomplete: 'off', placeholder: 'Gericht suchen' },
+        attrs: { id: 'einkauf-gericht-suche', type: 'search', autocomplete: 'off', placeholder: 'Rezept suchen' },
         on: { input: () => zeigeGerichte() }
     });
     const gerichtTreffer = el('div');
+    // „Neu laden“ zieht bei „Rezepte“ hierher um (siehe zeigeTeil)
+    const rezeptKnoepfe = el('div', { class: 'einkauf-auswahl-leiste' }, [
+        el('button', { class: 'knopf knopf-bereich', text: '+ Neues Rezept', attrs: { type: 'button' }, on: { click: () => zeigeGerichtForm(null) } })
+    ]);
     gerichteBox.append(
-        el('div', { class: 'einkauf-auswahl-leiste' }, [
-            el('button', { class: 'knopf knopf-bereich', text: '+ Neues Gericht', attrs: { type: 'button' }, on: { click: () => zeigeGerichtForm(null) } })
-        ]),
+        rezeptKnoepfe,
         el('div', { class: 'formular besitz-suche' }, [el('label', { text: 'Suchen', attrs: { for: 'einkauf-gericht-suche' } }), gerichtSuche]),
         gerichtTreffer
     );
@@ -658,7 +665,7 @@ export function render(container, ctx) {
                 || g.zutaten.some((z) => { const l = lmVon(z.lebensmittel_id); return l && findet(l.name, wort); }))
             .sort((a, b) => vergleiche(a.name, b.name));
         if (!daten.gerichte.length) {
-            gerichtTreffer.append(el('p', { class: 'leise', text: 'Noch keine Gerichte. Tippe auf „+ Neues Gericht“.' }));
+            gerichtTreffer.append(el('p', { class: 'leise', text: 'Noch keine Rezepte. Tippe auf „+ Neues Rezept“.' }));
             return;
         }
         if (!liste.length) {
@@ -902,7 +909,7 @@ export function render(container, ctx) {
             zeigeAlles();
         }
 
-        oeffneDialog(g ? 'Gericht ändern' : 'Neues Gericht', [
+        oeffneDialog(g ? 'Rezept ändern' : 'Neues Rezept', [
             el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: absenden } }, [
                 el('label', { text: 'Name', attrs: { for: 'einkauf-gf-name' } }), name,
                 el('label', { text: 'Notiz', attrs: { for: 'einkauf-gf-notiz' } }), notiz,
@@ -921,7 +928,19 @@ export function render(container, ctx) {
     }
 
     // --- Unterreiter ---
-    const teile = [['liste', 'Einkaufsliste', listeBox], ['lebensmittel', 'Lebensmittel', lmBox], ['gerichte', 'Gerichte', gerichteBox]].map(([id, text, box]) => [
+    // Umschalter „Einzeln | Rezepte“ ganz oben bei Lebensmitteln (11.1). Die Auswahl angekreuzter Lebensmittel bleibt erhalten.
+    const artKnoepfe = [['einzeln', 'Einzeln', einzelBox], ['rezepte', 'Rezepte', gerichteBox]].map(([id, text, box]) => [
+        id,
+        el('button', { class: 'ansicht', text, attrs: { type: 'button', 'aria-controls': box.id }, on: { click: () => { lmArt = id; zeigeTeil(teil); } } }),
+        box
+    ]);
+    lmBox.append(
+        el('div', { class: 'ansichten einkauf-ansichten', attrs: { role: 'group', 'aria-label': 'Lebensmittel oder Rezepte' } }, artKnoepfe.map(([, knopf]) => knopf)),
+        einzelBox,
+        gerichteBox
+    );
+
+    const teile = [['liste', 'Einkaufsliste', listeBox], ['lebensmittel', 'Lebensmittel', lmBox]].map(([id, text, box]) => [
         id,
         el('button', { class: 'ansicht', text, attrs: { type: 'button', 'aria-controls': box.id }, on: { click: () => zeigeTeil(id) } }),
         box
@@ -933,7 +952,11 @@ export function render(container, ctx) {
             knopf.setAttribute('aria-pressed', k === id ? 'true' : 'false');
             box.hidden = k !== id;
         });
-        if (id === 'lebensmittel') lmKnoepfe.append(neuLaden);
+        artKnoepfe.forEach(([k, knopf, box]) => {
+            knopf.setAttribute('aria-pressed', k === lmArt ? 'true' : 'false');
+            box.hidden = k !== lmArt;
+        });
+        if (id === 'lebensmittel') (lmArt === 'rezepte' ? rezeptKnoepfe : lmKnoepfe).append(neuLaden);
         else container.insertBefore(neuLaden, dialog);
         zeigeAlles();
     }
@@ -1026,7 +1049,6 @@ export function render(container, ctx) {
         hakenStatus,
         listeBox,
         lmBox,
-        gerichteBox,
         neuLaden,
         dialog
     );
