@@ -7,6 +7,8 @@
 // das alle Mengen umrechnet (auf halbe gerundet, mindestens 0,5). Gespeichert wird beim Umrechnen nichts.
 // Ab 11.3: bis 10 Bilder je Rezept, hochgeladen (die App verkleinert sie) oder als Google-Drive-Link. Sie liegen im Drive
 // der Person (Ordner „Thetadex Rezepte“) und kommen nur mit Passwort über die Aktion `bild`. Nur im Arbeitsspeicher.
+// Ab 1.3.7: Ein Tipp auf den Titel klappt das Rezept in der Liste auf, noch ein Tipp klappt es zu (Wunsch der Person, 7.11.2026).
+// Nur „Bearbeiten“ öffnet ein Fenster.
 // Vorrat (4.4, freiwillig): je Lebensmittel Mengen an Orten zuhause. Wo gepflegt, steht „zuhause: …“ dabei.
 // Lebensmittel ankreuzen → „Auf die Einkaufsliste“ → Mengen eintragen. Die Auswahl bleibt bei Suche erhalten.
 // Abgehakte Einträge bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird (Wunsch der Person, 30.10.2026).
@@ -707,6 +709,9 @@ export function render(container, ctx) {
         on: { input: () => zeigeGerichte() }
     });
     const gerichtTreffer = el('div');
+    // Aufgeklapptes Rezept: { id, stand (geaendert_am), knoten }. Beim Neuzeichnen der Liste bleibt der Inhalt
+    // (Personen diesmal, Haken, Mengen) erhalten, solange das Rezept unverändert ist.
+    let offen = null;
     // „Neu laden“ zieht bei „Rezepte“ hierher um (siehe zeigeTeil)
     const rezeptKnoepfe = el('div', { class: 'einkauf-auswahl-leiste' }, [
         el('button', { class: 'knopf knopf-bereich', text: '+ Neues Rezept', attrs: { type: 'button' }, on: { click: () => zeigeGerichtForm(null) } })
@@ -735,21 +740,32 @@ export function render(container, ctx) {
         }
         gerichtTreffer.append(el('ul', { class: 'einkauf-liste' }, liste.map((g) => {
             const zahl = g.zutaten.filter((z) => lmVon(z.lebensmittel_id)).length;
-            return el('li', { class: 'einkauf-zeile einkauf-lm' }, [
+            const istOffen = !!offen && offen.id === g.id;
+            let inhalt = null;
+            if (istOffen) {
+                if (!offen.knoten || offen.stand !== g.geaendert_am) offen = { id: g.id, stand: g.geaendert_am, knoten: rezeptInhalt(g) };
+                inhalt = offen.knoten;
+            }
+            return el('li', { class: 'einkauf-zeile einkauf-lm einkauf-rezept' + (istOffen ? ' ist-offen' : '') }, [
                 el('button', {
-                    class: 'einkauf-lm-wahl', attrs: { type: 'button', 'aria-label': g.name + ' ansehen' },
-                    on: { click: () => zeigeGericht(g) }
+                    class: 'einkauf-lm-wahl', attrs: { type: 'button', 'aria-expanded': istOffen ? 'true' : 'false' },
+                    on: { click: () => { offen = istOffen ? null : { id: g.id }; zeigeGerichte(); } }
                 }, [
-                    el('span', { class: 'einkauf-lm-name', text: g.name }),
+                    el('span', { class: 'einkauf-lm-name' }, [
+                        el('span', { class: 'einkauf-pfeil', text: istOffen ? '▾ ' : '▸ ', attrs: { 'aria-hidden': 'true' } }),
+                        el('span', { text: g.name })
+                    ]),
                     el('span', { class: 'leise einkauf-klein', text: (zahl === 1 ? '1 Zutat' : zahl + ' Zutaten') + ((g.bilder || []).length ? ' · 📷' : '') })
-                ])
+                ]),
+                inhalt
             ]);
         })));
+        if (offen && !liste.some((g) => g.id === offen.id)) offen = null;
     }
 
-    // Ein Rezept ansehen: Text, „Personen diesmal“, alle Zutaten angehakt vorgeschlagen, Menge änderbar
-    // → „Auf die Liste“ (für dieses Rezept)
-    function zeigeGericht(g) {
+    // Inhalt eines aufgeklappten Rezepts: Bilder, Text, „Personen diesmal“, alle Zutaten angehakt vorgeschlagen,
+    // Menge änderbar → „Auf die Liste“ (für dieses Rezept)
+    function rezeptInhalt(g) {
         const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
         const zeilen = g.zutaten.map((z) => ({ z, lm: lmVon(z.lebensmittel_id) })).filter((x) => x.lm)
             .sort((a, b) => vergleiche(a.lm.name, b.lm.name))
@@ -810,7 +826,7 @@ export function render(container, ctx) {
             const antwort = await senden(status, [ok, bearbeiten], 'auf_liste', { eintraege });
             if (!antwort) return;
             setzeListe(antwort.liste);
-            dialog.close();
+            offen = null;
             zeigeGespeichert('Auf der Liste', g.name);
             zeigeAlles();
         }
@@ -830,7 +846,7 @@ export function render(container, ctx) {
                 gross.src = src;
                 gross.alt = 'Bild ' + (i + 1) + ' zu ' + g.name;
             }))) : null;
-        oeffneDialog(g.name, [
+        return el('div', { class: 'einkauf-rezept-inhalt' }, [
             fotos.length ? gross : null,
             bilderLeiste,
             angaben ? el('p', { class: 'leise einkauf-rezept-angaben', text: angaben }) : null,
@@ -846,7 +862,7 @@ export function render(container, ctx) {
                 el('div', { class: 'besitz-form-knoepfe' }, [zeilen.length ? ok : null, bearbeiten].filter(Boolean)),
                 status
             ])
-        ]);
+        ].filter(Boolean));
     }
 
     // Rezept anlegen oder ändern: Titel, Personen, ergibt, Rezepttext, Link und Zutaten
@@ -1091,8 +1107,10 @@ export function render(container, ctx) {
                 if (b.daten && behalten.length) bilder.set(behalten[behalten.length - 1], b.daten);
                 neueBilder.shift();
             }
+            dialog.close();
+            offen = { id: neu.id };   // gespeichertes Rezept aufgeklappt zeigen
+            gerichtSuche.value = '';
             zeigeAlles();
-            zeigeGericht(neu);
             zeigeGespeichert(warEs ? 'Geändert' : 'Gespeichert', neu.name);
         }
 
