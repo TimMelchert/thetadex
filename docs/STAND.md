@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -16,7 +16,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0.
 - Etappe 9 „Kontowecker“ ist fertig (1.11.2026): Kontowecker-SMS kommen von selbst ins Finanz-Sheet, Festlegungen in 4 („Kontowecker“).
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
-- Etappe 11 „Rezepte“ läuft (ab 7.11.2026), Plan in `docs/PLAN-ETAPPE-11.md`. Nächster Schritt: 11.4 (Abschluss: Prüfung, Plan in STAND.md einarbeiten).
+- Etappe 11 „Rezepte“ ist fertig (7.11.2026): Festlegungen in 4 („Einkauf, Sheet ‚Gemeinsam‘“, Abschnitt Rezepte). Nächste Etappe: offen.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -361,10 +361,11 @@ unter „Info“ die Version prüfen.
   Projektdateien (`pruefung/`). Behebungen in 0.8.0 bis 0.8.4 (Pull Request #65), Einzelheiten in der Geschichte (8). Version 1.0.0.
 - Etappe 9 (fertig): Kontowecker-SMS über die Handy-App „SMS to URL Forwarder“ ins Blatt `SMS` des Finanz-Sheets, im Reiter Finanzen „Noch zuordnen“
   mit Vorschlag zum Bestätigen (Pull Requests #67 bis #70). Festlegungen in 4 („Kontowecker“).
-- Etappe 11 (läuft): 11.1 (1.3.3) Gerichte heißen in der App „Rezepte“ und stehen bei Lebensmitteln hinter dem Umschalter „Einzeln | Rezepte“; Unterreiter nur noch Einkaufsliste und Lebensmittel; Einkaufsliste „Nach Rezept“. Sheet und Skript unverändert (`gerichte`).
+- Etappe 11 (fertig, Pull Requests #83 bis #87): 11.1 (1.3.3) Gerichte heißen in der App „Rezepte“ und stehen bei Lebensmitteln hinter dem Umschalter „Einzeln | Rezepte“; Unterreiter nur noch Einkaufsliste und Lebensmittel; Einkaufsliste „Nach Rezept“. Sheet und Skript unverändert (`gerichte`).
   11.2 (1.3.4): Skript `gemeinsam` mit neuen Spalten `text`, `personen`, `ergibt`, `bilder` im Blatt `gerichte`, Aktionen `rezept_bild` und `bild`,
   Ordner „Thetadex Rezepte“. App: Rezepttext, „für … Personen“, „ergibt“ und „Personen diesmal“ (rechnet Mengen um). Die alte Notiz wandert beim Bearbeiten in den Rezepttext.
   11.3 (1.3.5): Bilder im Rezept: Vorschau nebeneinander (Tipp zeigt groß), beim Bearbeiten hochladen (mehrere), Drive-Link einfügen, × entfernt (Datei bleibt im Drive). Skript unverändert.
+  11.4 (1.3.6): Abschluss, Prüfung Sicherheit und Datenschutz (Bericht `pruefung/rezepte-bericht.md` in den Projektdateien), Plan eingearbeitet.
 
 ### 3.2 Offen
 
@@ -501,6 +502,25 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - Abgehakte bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird; erst dann gehen sie ans Skript (Wunsch der Person, 30.10.2026).
   - Datenschutz: keine Preise, Läden oder Gesundheitsdaten. Über die Partnerin oder den Partner wird nichts gespeichert, auch nicht, wer etwas eingetragen hat.
     Das Sheet „Gemeinsam“ wird mit niemandem geteilt. Keine Lebensmittel, Gerichte oder Namen im Repo.
+  - **Rezepte** (Etappe 11, Wunsch der Person, 7.11.2026; Plan eingearbeitet in 11.4). Gerichte heißen in der App „Rezepte“. Im Sheet und im Skript bleibt es bei
+    `gerichte`, `gericht_id`, `gericht_speichern` und `gericht_loeschen` (Blätter und Spalten werden nie umbenannt).
+    - Kein eigener Unterreiter: Unterreiter sind Einkaufsliste · Lebensmittel. Ganz oben bei Lebensmitteln der Umschalter „Einzeln | Rezepte“;
+      die Auswahl angekreuzter Lebensmittel bleibt beim Umschalten erhalten. Die Einkaufsliste zeigt „Nach Abteilung | Nach Rezept“.
+    - Rezept-Liste: Suche in Titel, Text und Zutaten (ohne Groß- und Kleinschreibung), „+ Neues Rezept“, nur Titel A–Z (📷 = hat Bilder). Keine Kategorien.
+    - Rezept-Fenster von oben: Bilder nebeneinander (Tipp zeigt groß), „für 4 Personen · ergibt 1 Blech“, alte Notiz (falls noch da), Rezepttext mit Zeilenumbrüchen, Link,
+      „Personen diesmal“ (nur wenn Personen eingetragen), Zutaten mit Haken und Menge, „Auf die Liste“ und „Bearbeiten“.
+    - **Umrechnen:** neue Menge = gespeicherte Menge × Personen diesmal ÷ Personen im Rezept, gerundet auf halbe Einheiten, mindestens 0,5 (bestätigt).
+      Ändert man die Personen, rechnen alle Mengen neu (auch von Hand geänderte). Der Vorrat-Haken prüft gegen die neue Menge. Gespeichert wird dabei nichts.
+    - Bearbeiten: Titel, Bilder, für … Personen, ergibt, Rezepttext (nur Text mit Zeilenumbrüchen, keine fette Schrift), Link, Zutaten. Die alte Notiz steht beim Bearbeiten
+      oben im Rezepttext und wandert beim Speichern dorthin (`notiz` danach leer). Bei „Inzwischen geändert“ bleibt alles im Fenster:
+      „Inzwischen geändert. Text kopieren, neu laden, dann einfügen.“ Kennt das Skript die neuen Felder nicht (`alles` ohne `rezepte_felder`), zeigt das Formular einen Hinweis und das alte Feld Notiz.
+    - **Bilder:** bis 10 je Rezept, hochgeladen (die App verkleinert auf höchstens 1600 px, JPEG) oder als Google-Drive-Link (nur drive.google.com oder docs.google.com).
+      Hochgeladene liegen im privaten Drive-Ordner „Thetadex Rezepte“ der Person (Skripteigenschaft `BILD_ORDNER`), auch wenn die Partnerin oder der Partner hochlädt (bestätigt).
+      × nimmt ein Bild vom Rezept, die Datei bleibt im Drive. Neue Bilder gehen nach dem Speichern einzeln über `rezept_bild` hoch; schlägt eins fehl, bleiben die übrigen im Fenster.
+      Lesen über `bild` nur für Bilder, die bei einem nicht gelöschten Rezept stehen. Über `gericht_speichern` kann keine neue Kennung dazukommen (nur behaltene).
+    - Nur mit Netz: Rezepte und Bilder nur im Arbeitsspeicher; die Einkaufsliste im Gerät hat nur den Namen des Rezepts.
+    - Skript: Felder, die eine Anfrage nicht mitschickt (`notiz`, `text`, `personen`, `ergibt`, `bilder`), bleiben unverändert. Langer Text über `bereinigeLang_`
+      (Zeilenumbrüche bleiben, höchstens zwei Leerzeilen, Formel-Schutz). Zu langer Text wird abgelehnt, nicht gekürzt. Höchstens 500 Rezepte.
 - **Uni, Sheet „Gemeinsam“** (Etappe 5, Plan eingearbeitet am 31.10.2026). Alle Daten-Blätter haben zusätzlich `id, erstellt_am, geaendert_am, geloescht`;
   Löschen ist weich. Daten und Uhrzeiten stehen als Text (`JJJJ-MM-TT`, `HH:MM`, `TEXT_SPALTEN_`); hat das Sheet doch ein Datum daraus gemacht, wandelt das Skript es zurück.
   - `semester`: `name` (40, nicht doppelt), `beginn`, `ende` (höchstens ein Jahr), `vorlesung_beginn`, `vorlesung_ende` (im Semester).
@@ -613,7 +633,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `finanzen-sms.js` (Noch zuordnen, Vorschlag aus der SMS, ab 9.2), `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8), `karte.js` (Visitenkarte für Besucher und `zeichneKarte` für die Vorschau, ab 10.2), `visitenkarte.js` (Vorschau, Links und QR-Code für die Person, ab 10.3). `vendor/qrcode.js`: QR Code Generator 1.4.4. `icons/social/`: Symbole für Instagram, LinkedIn, Signal (ab 1.2.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper. `icons/reiter/visitenkarte.svg`: Kachel Visitenkarte (ab 10.3).
-- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-11.md`).
+- `docs/`: `STAND.md` (diese Datei); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`),
@@ -737,7 +757,7 @@ Die Etappen bauen nacheinander auf. Nichts davon ist dringend (Person, 29.10.202
 - **Etappe 9 „Kontowecker“ (1.1.x)** – fertig (1.11.2026). Kontowecker-SMS automatisch an das Finanz-Skript, im Reiter Finanzen „Noch zuordnen“ mit Vorschlag.
   Schritte: 9.0 Plan, 9.1 Skript nimmt SMS an, 9.2 Noch zuordnen (mit Nachbesserungen), 9.3 Abschluss mit Prüfung. Festlegungen in 4 („Kontowecker“).
 - **Etappe 10 „Visitenkarte“ (1.2.x)** – fertig (4.11.2026), Plan eingearbeitet (4 „Visitenkarte“). Schritte 10.0 Plan mit Prüfung, 10.1 Sheet und Skript `karte`, 10.2 Besucher-Ansicht, 10.3 Kachel mit Links und QR-Code, 10.4 Abschluss mit Prüfung (Pull Requests #73 bis #77).
-- **Etappe 11 „Rezepte“ (1.3.x)** – läuft, Plan in `docs/PLAN-ETAPPE-11.md`. Gerichte werden Rezepte (Text, Personen mit Umrechnen, Bilder aus Drive) und kommen als Umschalter „Einzeln | Rezepte“ zu den Lebensmitteln; Blatt `gerichte` bekommt neue Spalten, Partner*in darf lesen und ändern.
+- **Etappe 11 „Rezepte“ (1.3.x)** – fertig (7.11.2026), Plan eingearbeitet (4 „Einkauf“, Abschnitt Rezepte). Schritte 11.0 Plan, 11.1 Umschalter, 11.2 Skript mit Rezepttext und Personen, 11.3 Bilder, 11.4 Abschluss mit Prüfung (Pull Requests #83 bis #87).
 - **Entfallen:** Startseite mit Heute-Übersicht (Entscheidung der Person, 1.11.2026).
 
 Prüfung gegen die Grundsätze (1.2):
@@ -854,3 +874,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.3** Schritt 11.1: Umschalter „Einzeln | Rezepte“ bei Lebensmitteln, Unterreiter „Gerichte“ entfällt, „Rezept“ statt „Gericht“ in der App.
 - **1.3.4** Schritt 11.2: Skript `gemeinsam` mit Rezepttext, Personen, „ergibt“ und Bildern (Spalten, `rezept_bild`, `bild`, Ordner „Thetadex Rezepte“); App mit Rezepttext und „Personen diesmal“.
 - **1.3.5** Schritt 11.3: Bilder im Rezept anzeigen, hochladen, als Drive-Link einfügen und entfernen.
+- **1.3.6** Schritt 11.4: Etappe 11 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md eingearbeitet (4 „Einkauf“, Rezepte), `docs/PLAN-ETAPPE-11.md` gelöscht.
