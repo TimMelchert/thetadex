@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -16,7 +16,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0.
 - Etappe 9 „Kontowecker“ ist fertig (1.11.2026): Kontowecker-SMS kommen von selbst ins Finanz-Sheet, Festlegungen in 4 („Kontowecker“).
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
-- Etappe 11 „Rezepte“ läuft (ab 7.11.2026), Plan in `docs/PLAN-ETAPPE-11.md`. Nächster Schritt: 11.3 (Bilder im Rezept).
+- Etappe 11 „Rezepte“ läuft (ab 7.11.2026), Plan in `docs/PLAN-ETAPPE-11.md`. Nächster Schritt: 11.4 (Abschluss: Prüfung, Plan in STAND.md einarbeiten).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -364,6 +364,7 @@ unter „Info“ die Version prüfen.
 - Etappe 11 (läuft): 11.1 (1.3.3) Gerichte heißen in der App „Rezepte“ und stehen bei Lebensmitteln hinter dem Umschalter „Einzeln | Rezepte“; Unterreiter nur noch Einkaufsliste und Lebensmittel; Einkaufsliste „Nach Rezept“. Sheet und Skript unverändert (`gerichte`).
   11.2 (1.3.4): Skript `gemeinsam` mit neuen Spalten `text`, `personen`, `ergibt`, `bilder` im Blatt `gerichte`, Aktionen `rezept_bild` und `bild`,
   Ordner „Thetadex Rezepte“. App: Rezepttext, „für … Personen“, „ergibt“ und „Personen diesmal“ (rechnet Mengen um). Die alte Notiz wandert beim Bearbeiten in den Rezepttext.
+  11.3 (1.3.5): Bilder im Rezept: Vorschau nebeneinander (Tipp zeigt groß), beim Bearbeiten hochladen (mehrere), Drive-Link einfügen, × entfernt (Datei bleibt im Drive). Skript unverändert.
 
 ### 3.2 Offen
 
@@ -852,3 +853,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.2** Weitere Antworten: bis 10 Bilder je Rezept (Spalte `bilder`), Runden auf halbe Einheiten und Bilder der Partnerin im Drive der Person bestätigt.
 - **1.3.3** Schritt 11.1: Umschalter „Einzeln | Rezepte“ bei Lebensmitteln, Unterreiter „Gerichte“ entfällt, „Rezept“ statt „Gericht“ in der App.
 - **1.3.4** Schritt 11.2: Skript `gemeinsam` mit Rezepttext, Personen, „ergibt“ und Bildern (Spalten, `rezept_bild`, `bild`, Ordner „Thetadex Rezepte“); App mit Rezepttext und „Personen diesmal“.
+- **1.3.5** Schritt 11.3: Bilder im Rezept anzeigen, hochladen, als Drive-Link einfügen und entfernen.

@@ -5,6 +5,8 @@
 // Im Sheet und im Skript bleibt es bei `gerichte`, `gericht_id` und `gericht_speichern`.
 // Ab 11.2: Rezepttext (Zeilenumbrüche bleiben), „für … Personen“, „ergibt“ und beim Auswählen „Personen diesmal“,
 // das alle Mengen umrechnet (auf halbe gerundet, mindestens 0,5). Gespeichert wird beim Umrechnen nichts.
+// Ab 11.3: bis 10 Bilder je Rezept, hochgeladen (die App verkleinert sie) oder als Google-Drive-Link. Sie liegen im Drive
+// der Person (Ordner „Thetadex Rezepte“) und kommen nur mit Passwort über die Aktion `bild`. Nur im Arbeitsspeicher.
 // Vorrat (4.4, freiwillig): je Lebensmittel Mengen an Orten zuhause. Wo gepflegt, steht „zuhause: …“ dabei.
 // Lebensmittel ankreuzen → „Auf die Einkaufsliste“ → Mengen eintragen. Die Auswahl bleibt bei Suche erhalten.
 // Abgehakte Einträge bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird (Wunsch der Person, 30.10.2026).
@@ -18,6 +20,7 @@ import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
+import { verkleinereBild, bildAdresse } from '../ui/bild.js';
 
 // Zuletzt geladene Daten { lebensmittel, liste, gerichte, vorrat }, im Arbeitsspeicher
 let daten = null;
@@ -25,6 +28,29 @@ let daten = null;
 const haken = () => lesen('einkauf_haken', []) || [];
 // Nach „Einkauf fertig“: ids, die das Skript noch nicht bestätigt hat. Liegen auch im Gerät.
 const offeneHaken = () => lesen('einkauf_offen', []) || [];
+// Schon geladene Bilder der Rezepte (Drive-Kennung → data:-Bild), nur im Arbeitsspeicher
+const bilder = new Map();
+const MAX_BILDER = 10;
+async function holeBild(id) {
+    if (bilder.has(id)) return bilder.get(id);
+    const adresse = bildAdresse(await api('gemeinsam', 'bild', { bild: id }));
+    if (!adresse) throw new Error('Unbekannte Bildart.');
+    bilder.set(id, adresse);
+    return adresse;
+}
+// Ein Vorschaubild als Knopf. src = schon bekanntes Bild (zum Beispiel gerade gewählt), sonst lädt es über holeBild.
+function vorschauBild(id, src, label, beiTipp) {
+    const bild = el('img', { attrs: { alt: label, hidden: true } });
+    const text = el('span', { class: 'leise', text: '…' });
+    const knopf = el('button', {
+        class: 'dsa-ab-bild', attrs: { type: 'button', 'aria-label': label },
+        on: { click: () => { if (!bild.hidden) beiTipp(bild.src); } }
+    }, [bild, text]);
+    const zeige = (adresse) => { bild.src = adresse; bild.hidden = false; text.remove(); };
+    if (src) zeige(src);
+    else holeBild(id).then(zeige).catch(() => { text.textContent = '⚠'; text.title = 'Bild nicht geladen'; });
+    return knopf;
+}
 // Angekreuzte Lebensmittel (ids) für „Auf die Einkaufsliste“. Nur im Arbeitsspeicher, bleibt bei Suche erhalten.
 const auswahl = new Set();
 // Die Einkaufsliste im Gerät: offene Einträge mit den Namen, die sie zum Anzeigen braucht
@@ -715,7 +741,7 @@ export function render(container, ctx) {
                     on: { click: () => zeigeGericht(g) }
                 }, [
                     el('span', { class: 'einkauf-lm-name', text: g.name }),
-                    el('span', { class: 'leise einkauf-klein', text: zahl === 1 ? '1 Zutat' : zahl + ' Zutaten' })
+                    el('span', { class: 'leise einkauf-klein', text: (zahl === 1 ? '1 Zutat' : zahl + ' Zutaten') + ((g.bilder || []).length ? ' · 📷' : '') })
                 ])
             ]);
         })));
@@ -794,7 +820,19 @@ export function render(container, ctx) {
         const diesmal = g.personen && zeilen.length
             ? personenFeld('einkauf-g-personen', g.personen, (n) => zeilen.forEach((x) => x.umrechnenAuf(g.personen, n)))
             : null;
+        // Bilder nebeneinander; Tipp zeigt das Bild groß darüber, nochmal Tipp macht es wieder klein
+        const fotos = Array.isArray(g.bilder) ? g.bilder : [];
+        const gross = el('img', { class: 'besitz-dialog-bild einkauf-bild-gross', attrs: { alt: '', hidden: true } });
+        gross.addEventListener('click', () => { gross.hidden = true; });
+        const bilderLeiste = fotos.length ? el('div', { class: 'dsa-ab-bilder einkauf-bilder' }, fotos.map((id, i) =>
+            vorschauBild(id, null, 'Bild ' + (i + 1) + ' zu ' + g.name + ' groß zeigen', (src) => {
+                gross.hidden = !gross.hidden && gross.src === src;
+                gross.src = src;
+                gross.alt = 'Bild ' + (i + 1) + ' zu ' + g.name;
+            }))) : null;
         oeffneDialog(g.name, [
+            fotos.length ? gross : null,
+            bilderLeiste,
             angaben ? el('p', { class: 'leise einkauf-rezept-angaben', text: angaben }) : null,
             g.notiz ? el('p', { class: 'einkauf-notiz', text: g.notiz }) : null,
             g.text ? el('p', { class: 'einkauf-notiz einkauf-rezepttext', text: g.text }) : null,
@@ -825,6 +863,66 @@ export function render(container, ctx) {
         const text = el('textarea', { class: 'einkauf-rezepttext-feld', attrs: { id: 'einkauf-gf-text', maxlength: 20000, rows: 10, placeholder: 'freiwillig, Zubereitung Schritt für Schritt' } });
         // Die alte Notiz wandert beim ersten Bearbeiten in den Rezepttext (sie steht dann oben), damit nichts verloren geht
         text.value = g ? [g.notiz, g.text].filter(Boolean).join('\n\n') : '';
+
+        // Bilder: behalten = gespeicherte Kennungen, die bleiben; neu = gewählte (data:-Bild) oder Drive-Links, die nach dem Speichern hochgehen
+        let behalten = g && Array.isArray(g.bilder) ? [...g.bilder] : [];
+        let neueBilder = [];   // { daten, name } oder { link }
+        const bilderBox = el('div', { class: 'dsa-ab-bilder einkauf-bilder' });
+        const bildStatus = el('p', { class: 'leise besitz-hinweis', attrs: { role: 'status', 'aria-live': 'polite' } });
+        const bildDatei = el('input', { attrs: { id: 'einkauf-gf-bild', type: 'file', accept: 'image/*', multiple: true }, on: { change: () => bilderGewaehlt() } });
+        const bildLink = el('input', { attrs: { id: 'einkauf-gf-bild-link', type: 'url', inputmode: 'url', autocomplete: 'off', spellcheck: 'false', placeholder: 'https://drive.google.com/…' } });
+        const linkDazu = el('button', { class: 'knopf knopf-zweit', text: 'Link dazu', attrs: { type: 'button' }, on: { click: () => bildLinkDazu() } });
+        bildLink.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); bildLinkDazu(); } });
+        const platz = () => MAX_BILDER - behalten.length - neueBilder.length;
+        function zeigeBilder() {
+            leeren(bilderBox);
+            const weg = (label, tun) => el('button', { class: 'form-zu einkauf-bild-weg', text: '×', attrs: { type: 'button', 'aria-label': label }, on: { click: tun } });
+            behalten.forEach((id, i) => bilderBox.append(el('div', { class: 'einkauf-bild-feld' }, [
+                vorschauBild(id, null, 'Bild ' + (i + 1), () => {}),
+                weg('Bild ' + (i + 1) + ' entfernen', () => { behalten = behalten.filter((x) => x !== id); zeigeBilder(); })
+            ])));
+            neueBilder.forEach((b, i) => bilderBox.append(el('div', { class: 'einkauf-bild-feld' }, [
+                b.daten ? vorschauBild('', b.daten, 'Neues Bild ' + (i + 1), () => {})
+                    : el('span', { class: 'dsa-ab-bild einkauf-bild-link leise', text: 'Drive-Link' }),
+                weg('Neues Bild ' + (i + 1) + ' entfernen', () => { neueBilder = neueBilder.filter((x) => x !== b); zeigeBilder(); })
+            ])));
+            bilderBox.hidden = !behalten.length && !neueBilder.length;
+            const voll = platz() <= 0;
+            bildDatei.disabled = voll;
+            bildLink.disabled = voll;
+            linkDazu.disabled = voll;
+            bildStatus.textContent = voll ? 'Höchstens ' + MAX_BILDER + ' Bilder je Rezept.'
+                : neueBilder.length ? 'Neue Bilder gehen beim Speichern hoch. Entfernte bleiben im Drive-Ordner „Thetadex Rezepte“.' : '';
+        }
+        async function bilderGewaehlt() {
+            const dateien = [...(bildDatei.files || [])];
+            bildDatei.value = '';
+            for (const datei of dateien) {
+                if (platz() <= 0) break;
+                try {
+                    bildStatus.textContent = 'Bild wird verkleinert …';
+                    const daten = await verkleinereBild(datei);
+                    neueBilder.push({ daten, name: String(datei.name || 'Bild').replace(/\.[^.]*$/, '').slice(0, 60) });
+                } catch (e) {
+                    zeigeBilder();
+                    bildStatus.textContent = e.message;
+                    return;
+                }
+            }
+            zeigeBilder();
+        }
+        function bildLinkDazu() {
+            const wert = bildLink.value.trim();
+            if (!wert || platz() <= 0) return;
+            if (!/^https:\/\/(drive|docs)\.google\.com\//i.test(wert)) {
+                bildStatus.textContent = 'Bitte einen Google-Drive-Link einfügen (in Drive „Link kopieren“).';
+                return;
+            }
+            neueBilder.push({ link: wert });
+            bildLink.value = '';
+            zeigeBilder();
+        }
+        zeigeBilder();
         const link = el('input', { attrs: { id: 'einkauf-gf-link', type: 'url', inputmode: 'url', maxlength: 300, autocomplete: 'off', placeholder: 'freiwillig, https://…', value: g ? g.link : '' } });
         // Zutaten: lebensmittel_id → Feld für die Menge
         const zutaten = new Map();
@@ -959,15 +1057,43 @@ export function render(container, ctx) {
                 }
                 werte.zutaten.push({ lebensmittel_id: id, menge: n });
             }
+            if (neueFelder && g) werte.bilder = behalten;
             const antwort = await senden(status, knoepfe, 'gericht_speichern', g ? { ...werte, id: g.id, geaendert_am: g.geaendert_am } : werte,
                 'Inzwischen geändert. Text kopieren, neu laden, dann einfügen.');
             if (!antwort) return;
-            const neu = antwort.gericht;
-            const i = daten.gerichte.findIndex((x) => x.id === neu.id);
-            if (i >= 0) daten.gerichte[i] = neu; else daten.gerichte.push(neu);
+            let neu = antwort.gericht;
+            const merke = () => {
+                const i = daten.gerichte.findIndex((x) => x.id === neu.id);
+                if (i >= 0) daten.gerichte[i] = neu; else daten.gerichte.push(neu);
+            };
+            merke();
+            const warEs = g;
+            g = neu;   // ab jetzt gilt das gespeicherte Rezept (für einen zweiten Versuch mit den restlichen Bildern)
+            behalten = Array.isArray(neu.bilder) ? [...neu.bilder] : [];
+            // Neue Bilder einzeln nacheinander anhängen. Schlägt eins fehl, bleibt das Fenster mit den übrigen offen.
+            while (neueFelder && neueBilder.length) {
+                const b = neueBilder[0];
+                status.textContent = 'Rezept gespeichert. Bild wird gesendet (noch ' + neueBilder.length + ') …';
+                const werteBild = { id: neu.id, geaendert_am: neu.geaendert_am };
+                if (b.daten) { werteBild.bild_daten = b.daten.replace(/^data:image\/jpeg;base64,/, ''); werteBild.name = b.name; } else werteBild.bild = b.link;
+                const a = await senden(status, knoepfe, 'rezept_bild', werteBild);
+                if (!a) {
+                    status.textContent = 'Rezept gespeichert, aber ein Bild nicht: ' + status.textContent.replace(/^NICHT gespeichert: /, '') + ' Bitte nochmal „Speichern“ tippen.';
+                    zeigeBilder();
+                    zeigeAlles();
+                    return;
+                }
+                neu = a.gericht;
+                merke();
+                g = neu;
+                behalten = Array.isArray(neu.bilder) ? [...neu.bilder] : [];
+                // Hochgeladenes Bild gleich merken, dann muss es nicht neu geladen werden
+                if (b.daten && behalten.length) bilder.set(behalten[behalten.length - 1], b.daten);
+                neueBilder.shift();
+            }
             zeigeAlles();
             zeigeGericht(neu);
-            zeigeGespeichert(g ? 'Geändert' : 'Gespeichert', neu.name);
+            zeigeGespeichert(warEs ? 'Geändert' : 'Gespeichert', neu.name);
         }
 
         // Löschen ist weich. Lebensmittel bleiben; Einträge auf der Liste stehen danach unter „Einzeln“.
@@ -986,6 +1112,12 @@ export function render(container, ctx) {
             el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: absenden } }, [
                 el('label', { text: neueFelder ? 'Titel' : 'Name', attrs: { for: 'einkauf-gf-name' } }), name,
                 ...(neueFelder ? [
+                    el('h3', { text: 'Bilder' }),
+                    bilderBox,
+                    el('label', { text: 'Bild wählen oder aufnehmen (mehrere gehen)', attrs: { for: 'einkauf-gf-bild' } }), bildDatei,
+                    el('label', { text: 'oder Google-Drive-Link', attrs: { for: 'einkauf-gf-bild-link' } }),
+                    el('div', { class: 'einkauf-link-zeile' }, [bildLink, linkDazu]),
+                    bildStatus,
                     el('label', { text: 'Für wie viele Personen', attrs: { for: 'einkauf-gf-personen' } }), personen,
                     el('label', { text: 'Ergibt', attrs: { for: 'einkauf-gf-ergibt' } }), ergibt,
                     el('label', { text: 'Rezepttext', attrs: { for: 'einkauf-gf-text' } }), text
