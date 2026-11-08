@@ -1297,3 +1297,7 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 /* Etappe 11.1: „Neu laden“ in der Leiste bei Rezepte */
 .einkauf-auswahl-leiste { align-items: center; }
 .einkauf-auswahl-leiste .knopf { margin-top: 0; }
+/* Etappe 11.2: Rezepttext, Angaben „für … Personen · ergibt …“ */
+.einkauf-rezept-angaben { margin: 0 0 6px; }
+.einkauf-rezepttext { line-height: 1.5; }
+.formular textarea.einkauf-rezepttext-feld { min-height: 12em; resize: vertical; }

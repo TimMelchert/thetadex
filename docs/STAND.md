@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -16,7 +16,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 8 „Prüfen und Version 1.0.0“ ist fertig (1.11.2026): Berichte in den Projektdateien (`pruefung/`), Version 1.0.0.
 - Etappe 9 „Kontowecker“ ist fertig (1.11.2026): Kontowecker-SMS kommen von selbst ins Finanz-Sheet, Festlegungen in 4 („Kontowecker“).
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
-- Etappe 11 „Rezepte“ läuft (ab 7.11.2026), Plan in `docs/PLAN-ETAPPE-11.md`. Nächster Schritt: 11.2 (Skript, Rezepttext, Personen umrechnen).
+- Etappe 11 „Rezepte“ läuft (ab 7.11.2026), Plan in `docs/PLAN-ETAPPE-11.md`. Nächster Schritt: 11.3 (Bilder im Rezept).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte · Anhang A CLAUDE.md · Anhang B Projektanweisungen
@@ -301,6 +301,7 @@ unter „Info“ die Version prüfen.
   Zwei Passwörter (`APP_PIN` = Rolle `person`, `PARTNER_PIN` = Rolle `partner`, mindestens 12 Zeichen); das Skript prüft je Aktion, was die Rolle darf.
   Aktionen: `ping` (mit Rolle), `alles`, `lebensmittel_speichern`, `lebensmittel_loeschen`, `auf_liste`, `liste_aendern`, `abhaken` (erhöht gepflegten Vorrat),
   `gericht_speichern`, `gericht_loeschen`, `vorrat_speichern`, `vorrat_loeschen`. Funktion `einrichten`.
+  Ab 1.3.4 (Rezepte): `rezept_bild` (ein Bild anhängen) und `bild` (Bild lesen, nur von Rezepten); `alles` meldet `rezepte_felder: true`.
   Reiter Einkauf (4.1): Unterreiter „Einkaufsliste“ (nach Abteilung, großer Haken) und „Lebensmittel“ (Suche, antippen → Anzahl → auf die Liste, neu anlegen aus der Suche).
   Ohne Netz (4.2): Einkaufsliste im Gerät (`thetadex_einkaufsliste`), Abhaken geht immer, wartende Haken in `thetadex_einkauf_offen`,
   gesendet beim Öffnen, beim Zurückkehren in die App und bei „wieder online“.
@@ -361,6 +362,8 @@ unter „Info“ die Version prüfen.
 - Etappe 9 (fertig): Kontowecker-SMS über die Handy-App „SMS to URL Forwarder“ ins Blatt `SMS` des Finanz-Sheets, im Reiter Finanzen „Noch zuordnen“
   mit Vorschlag zum Bestätigen (Pull Requests #67 bis #70). Festlegungen in 4 („Kontowecker“).
 - Etappe 11 (läuft): 11.1 (1.3.3) Gerichte heißen in der App „Rezepte“ und stehen bei Lebensmitteln hinter dem Umschalter „Einzeln | Rezepte“; Unterreiter nur noch Einkaufsliste und Lebensmittel; Einkaufsliste „Nach Rezept“. Sheet und Skript unverändert (`gerichte`).
+  11.2 (1.3.4): Skript `gemeinsam` mit neuen Spalten `text`, `personen`, `ergibt`, `bilder` im Blatt `gerichte`, Aktionen `rezept_bild` und `bild`,
+  Ordner „Thetadex Rezepte“. App: Rezepttext, „für … Personen“, „ergibt“ und „Personen diesmal“ (rechnet Mengen um). Die alte Notiz wandert beim Bearbeiten in den Rezepttext.
 
 ### 3.2 Offen
 
@@ -482,7 +485,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   | --- | --- |
   | `lebensmittel` | `name` (Pflicht, 60, kein zweites Mal gleich), `abteilung` (40), `einheit` (20), `notiz` (200) |
   | `einkaufsliste` | `lebensmittel_id`, `anzahl` (0,5 bis 9999, halbe erlaubt), `gericht_id` (leer = einzeln), `notiz` (100), `abgehakt_am` (setzt das Skript) |
-  | `gerichte` | `name` (Pflicht, 60), `notiz` (300), `link` (nur `https://`, 300) |
+  | `gerichte` (= Rezepte) | `name` (Pflicht, 60), `notiz` (300, alt, wird nicht mehr neu geschrieben), `link` (nur `https://`, 300); ab 1.3.4 `text` (20.000, Zeilenumbrüche bleiben), `personen` (ganze Zahl 1 bis 99 oder leer), `ergibt` (40), `bilder` (JSON-Liste von Drive-Kennungen, höchstens 10); höchstens 500 Rezepte |
   | `zutaten` | `gericht_id`, `lebensmittel_id`, `menge` (wie `anzahl`); höchstens 50 je Gericht |
   | `vorrat` | `lebensmittel_id`, `ort` (Pflicht, 40), `menge` (0 bis 9999); eine Zeile je Lebensmittel und Ort, keine Zeile = nicht gepflegt |
   - Zwei Passwörter: `APP_PIN` (Rolle `person`) und `PARTNER_PIN` (Rolle `partner`, mindestens 12 Zeichen, anders als `APP_PIN`), gemeinsame Sperre
@@ -586,7 +589,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
-- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `karte` statt `APP_PIN` nur `KARTE_PIN` (eigenes Passwort, mindestens 12 Zeichen, ab 10.1; die App speichert es als `thetadex_karte_passwort` und schickt es nur an `karte`); im Skript `finanzen` zusätzlich `SMS_SCHLUESSEL` (nur für die Aktion `sms`, legt die Funktion `smsSchluesselErzeugen` an, ab 9.1); in den Skripten `leben` und `dsa` legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
+- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `karte` statt `APP_PIN` nur `KARTE_PIN` (eigenes Passwort, mindestens 12 Zeichen, ab 10.1; die App speichert es als `thetadex_karte_passwort` und schickt es nur an `karte`); im Skript `finanzen` zusätzlich `SMS_SCHLUESSEL` (nur für die Aktion `sms`, legt die Funktion `smsSchluesselErzeugen` an, ab 9.1); in den Skripten `leben`, `dsa` und `gemeinsam` (ab 1.3.4) legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
 - **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen, zuletzt bekannte Kontostände, die Wahl beim Aussehen (`thetadex_aussehen`),
   die offene Einkaufsliste (`thetadex_einkaufsliste`, nur Einträge mit Namen, Abteilung, Einheit), abgehakte Einträge vor „Einkauf fertig“ (`thetadex_einkauf_haken`)
   und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3), der gewählte Bogen bei Pen & Paper (`thetadex_dsa_bogen`, nur die Kennung, ab 0.6.1), die selbst erstellten Links zum Teilen (`thetadex_dsa_links`, Bogen-Kennung → Schlüssel, ab 0.6.6), die gewählte Ansicht bei Pen & Paper (`thetadex_dsa_modus`, ab 0.6.8), bei der Visitenkarte das eigene Passwort (`thetadex_karte_passwort`, ab 10.1), die selbst erstellten Schlüssel (`thetadex_karte_links`, Karte → Schlüssel) und die gewählte Karte (`thetadex_karte_wahl`, ab 10.3).
@@ -848,3 +851,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.1** Antworten zum Plan: Gerichte und Rezepte zusammengelegt, kein eigener Unterreiter, Personen umrechnen, ein Bild aus Drive je Rezept, nur mit Netz, keine Kategorien.
 - **1.3.2** Weitere Antworten: bis 10 Bilder je Rezept (Spalte `bilder`), Runden auf halbe Einheiten und Bilder der Partnerin im Drive der Person bestätigt.
 - **1.3.3** Schritt 11.1: Umschalter „Einzeln | Rezepte“ bei Lebensmitteln, Unterreiter „Gerichte“ entfällt, „Rezept“ statt „Gericht“ in der App.
+- **1.3.4** Schritt 11.2: Skript `gemeinsam` mit Rezepttext, Personen, „ergibt“ und Bildern (Spalten, `rezept_bild`, `bild`, Ordner „Thetadex Rezepte“); App mit Rezepttext und „Personen diesmal“.

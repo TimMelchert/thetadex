@@ -5,6 +5,9 @@
 // Uni: semester, module, kurse, termine, uni_einstellungen.
 // Zwei Passwörter in den Skripteigenschaften: APP_PIN (Person) und PARTNER_PIN (Partner*in).
 // Kein Passwort steht hier. Über die Partnerin oder den Partner wird nichts gespeichert.
+// Rezepte (ab 1.3.4): Das Blatt „gerichte“ hält die Rezepte (Name bleibt, Blätter werden nie umbenannt),
+// neu mit Rezepttext, Personen, „ergibt“ und Bildern. Hochgeladene Bilder liegen im privaten Drive-Ordner
+// „Thetadex Rezepte“ der Person (Kennung in der Skripteigenschaft BILD_ORDNER). Nichts wird geteilt.
 // Siehe docs/STAND.md 4 „Einkauf, Sheet ‚Gemeinsam‘“ und „Uni, Sheet ‚Gemeinsam‘“.
 // =====================================================
 
@@ -12,7 +15,8 @@ var STANDARD_ = ["id", "erstellt_am", "geaendert_am", "geloescht"];
 var BLAETTER_ = {
   lebensmittel: ["id", "name", "abteilung", "einheit", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
   einkaufsliste: ["id", "lebensmittel_id", "anzahl", "gericht_id", "notiz", "abgehakt_am", "erstellt_am", "geaendert_am", "geloescht"],
-  gerichte: ["id", "name", "notiz", "link", "erstellt_am", "geaendert_am", "geloescht"],
+  // gerichte = Rezepte. bilder: JSON-Liste von Drive-Kennungen (ab 1.3.4)
+  gerichte: ["id", "name", "notiz", "link", "erstellt_am", "geaendert_am", "geloescht", "text", "personen", "ergibt", "bilder"],
   zutaten: ["id", "gericht_id", "lebensmittel_id", "menge", "erstellt_am", "geaendert_am", "geloescht"],
   vorrat: ["id", "lebensmittel_id", "ort", "menge", "erstellt_am", "geaendert_am", "geloescht"],
   semester: ["id", "name", "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "erstellt_am", "geaendert_am", "geloescht"],
@@ -27,11 +31,18 @@ var BLAETTER_ = {
 var TEXT_SPALTEN_ = ["id", "name", "abteilung", "einheit", "notiz", "lebensmittel_id", "gericht_id", "link", "ort",
   "semester_id", "modul_id", "stunde_id", "titel", "art", "kuerzel", "bereich", "status",
   "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "von", "bis",
-  "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht", "leistung"];
-var MAX_ = { name: 60, abteilung: 40, einheit: 20, notiz_lm: 200, notiz_liste: 100, notiz_gericht: 300, link: 300, ort: 40 };
+  "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht", "leistung", "text", "ergibt", "bilder"];
+var MAX_ = { name: 60, abteilung: 40, einheit: 20, notiz_lm: 200, notiz_liste: 100, notiz_gericht: 300, link: 300, ort: 40,
+  text_rezept: 20000, ergibt: 40 };
 var MAX_ZAHL_ = 9999;
 var MAX_AUF_EINMAL_ = 100;     // höchstens so viele Einträge je Anfrage (auf_liste, abhaken)
 var MAX_ZUTATEN_ = 50;
+var MAX_REZEPTE_ = 500;        // höchstens so viele Rezepte insgesamt
+var MAX_PERSONEN_ = 99;
+var MAX_REZEPT_BILDER_ = 10;   // Bilder je Rezept
+var BILD_ORDNER_NAME_ = "Thetadex Rezepte";   // privater Ordner im Drive für hochgeladene Bilder
+var MAX_BILD_TEXT_ = 4000000;  // Höchstlänge eines hochgeladenen Bildes als Text (etwa 3 MB)
+var MAX_BILD_SENDEN_ = 1500000;   // größere Bilder schickt das Skript als Vorschau (Bytes)
 var MIN_PIN_ = 12;             // ein kürzeres Passwort wird nicht angenommen
 // Uni (Etappe 5)
 var UNI_MAX_ = { semester: 40, titel: 80, ort: 60, notiz: 200, modul: 80, kuerzel: 20, bereich: 40, kurs: 80, dozent: 60, leistung: 80 };
@@ -44,10 +55,10 @@ var ECTS_ZIEL_ = 120;          // Vorgabe für uni_einstellungen, ändern im She
 
 // Was jede Rolle darf. Das Skript prüft das bei jeder Aktion, nicht die App.
 // Uni (Etappe 5): Partner*in darf nur lesen.
-var LESEN_ = ["ping", "alles", "uni"];
+var LESEN_ = ["ping", "alles", "uni", "bild"];
 var UNI_SCHREIBEN_ = ["uni_speichern", "uni_loeschen"];
 var EINKAUF_SCHREIBEN_ = ["lebensmittel_speichern", "lebensmittel_loeschen", "auf_liste", "liste_aendern", "abhaken",
-  "gericht_speichern", "gericht_loeschen", "vorrat_speichern", "vorrat_loeschen"];
+  "gericht_speichern", "gericht_loeschen", "rezept_bild", "vorrat_speichern", "vorrat_loeschen"];
 var ERLAUBT_ = {
   person: LESEN_.concat(EINKAUF_SCHREIBEN_, UNI_SCHREIBEN_),
   partner: LESEN_.concat(EINKAUF_SCHREIBEN_)
@@ -88,6 +99,9 @@ function einrichten() {
     ue.appendRow(["ects_ziel", ECTS_ZIEL_]);
     Logger.log("Blatt 'uni_einstellungen': ects_ziel = " + ECTS_ZIEL_ + " angelegt.");
   }
+  // Drive-Ordner für Bilder der Rezepte (beim ersten Mal fragt Google nach der Erlaubnis für Drive)
+  var ordner = bildOrdner_();
+  Logger.log("Ordner für Bilder der Rezepte: '" + ordner.getName() + "'.");
 
   var props = PropertiesService.getScriptProperties();
   if (!props.getProperty("APP_PIN")) Logger.log("ACHTUNG: Skripteigenschaft APP_PIN fehlt.");
@@ -96,6 +110,18 @@ function einrichten() {
   else if (partner.length < MIN_PIN_) Logger.log("ACHTUNG: PARTNER_PIN ist kürzer als " + MIN_PIN_ + " Zeichen und wird nicht angenommen.");
   else if (partner === props.getProperty("APP_PIN")) Logger.log("ACHTUNG: PARTNER_PIN ist gleich APP_PIN. Bitte ein anderes Passwort wählen.");
   Logger.log("Fertig.");
+}
+
+// Der private Ordner für hochgeladene Bilder. Seine Kennung steht in den Skripteigenschaften (BILD_ORDNER).
+function bildOrdner_() {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty("BILD_ORDNER");
+  if (id) {
+    try { return DriveApp.getFolderById(id); } catch (e) { /* gelöscht: neu anlegen */ }
+  }
+  var ordner = DriveApp.createFolder(BILD_ORDNER_NAME_);
+  props.setProperty("BILD_ORDNER", ordner.getId());
+  return ordner;
 }
 
 // --- 2. HILFSFUNKTIONEN ---
@@ -131,6 +157,15 @@ function pruefePin_(pin) {
 // Zeilenumbrüche weg, Länge begrenzt, keine Formeln (=, +, -, @ am Anfang)
 function bereinigeText_(text, maxLaenge) {
   var t = String(text == null ? "" : text).replace(/[\r\n\t]+/g, " ").trim();
+  if (t.length > maxLaenge) t = t.substring(0, maxLaenge);
+  if (/^[=+\-@]/.test(t)) t = "'" + t;
+  return t;
+}
+
+// Wie bereinigeText_, aber Zeilenumbrüche bleiben (für den Rezepttext).
+// Tabulatoren werden Leerzeichen, höchstens zwei Leerzeilen hintereinander.
+function bereinigeLang_(text, maxLaenge) {
+  var t = String(text == null ? "" : text).replace(/\r\n?/g, "\n").replace(/\t/g, " ").replace(/\n{3,}/g, "\n\n").trim();
   if (t.length > maxLaenge) t = t.substring(0, maxLaenge);
   if (/^[=+\-@]/.test(t)) t = "'" + t;
   return t;
@@ -296,6 +331,7 @@ function doPost(e) {
 
   try {
     if (aktion === "ping") return jsonOut_({ ok: true, rolle: rolle });
+    if (aktion === "bild") return jsonOut_(bildLesen_(data));
     if (aktion === "alles" || aktion === "uni") {
       var d = aktion === "uni" ? uni_() : alles_();
       d.rolle = rolle;
@@ -316,6 +352,7 @@ function doPost(e) {
         abhaken: abhaken_,
         gericht_speichern: gerichtSpeichern_,
         gericht_loeschen: gerichtLoeschen_,
+        rezept_bild: rezeptBild_,
         vorrat_speichern: vorratSpeichern_,
         vorrat_loeschen: vorratLoeschen_,
         uni_speichern: uniSpeichern_,
@@ -394,6 +431,10 @@ function alleGerichte_() {
       name: text_(z, g.sp, "name"),
       notiz: text_(z, g.sp, "notiz"),
       link: text_(z, g.sp, "link"),
+      text: text_(z, g.sp, "text"),
+      personen: personenAus_(zelle_(z, g.sp, "personen")),
+      ergibt: text_(z, g.sp, "ergibt"),
+      bilder: bilderListe_(zelle_(z, g.sp, "bilder")),
       zutaten: zutaten[id] || [],
       geaendert_am: stempel_(zelle_(z, g.sp, "geaendert_am"))
     };
@@ -407,7 +448,8 @@ function alles_() {
     lebensmittel: lm.zeilen.filter(function (z) { return aktiv_(lm, z); }).map(function (z) { return lebensmittelAus_(lm, z); }),
     liste: offeneListe_(),
     gerichte: alleGerichte_(),
-    vorrat: alleVorraete_()
+    vorrat: alleVorraete_(),
+    rezepte_felder: true   // zeigt der App: Dieses Skript kennt Rezepttext, Personen, ergibt und Bilder (ab 1.3.4)
   };
 }
 
@@ -488,7 +530,7 @@ function aufListe_(data) {
     var anzahl = pruefeZahl_(e.anzahl, 0.5, "Anzahl");
     if (anzahl.fehler) return { error: "eingabe", message: anzahl.fehler };
     var gid = String(e.gericht_id || "");
-    if (gid && index_(g, gid) < 0) return { error: "fehlt", message: "Das Gericht gibt es nicht mehr. Bitte neu laden." };
+    if (gid && index_(g, gid) < 0) return { error: "fehlt", message: "Das Rezept gibt es nicht mehr. Bitte neu laden." };
     var notiz = pruefeText_(e.notiz, MAX_.notiz_liste, "Notiz", false);
     if (notiz.fehler) return { error: "eingabe", message: notiz.fehler };
     sauber.push({ lid: lid, anzahl: anzahl.wert, gid: gid, notiz: notiz.wert });
@@ -560,16 +602,36 @@ function abhaken_(data) {
   return { abgehakt: abgehakt, liste: offeneListe_(t), vorrat: alleVorraete_(v) };
 }
 
-// --- 7. GERICHTE ---
+// --- 7. REZEPTE (Blatt „gerichte“) ---
 
-// Gericht mit allen Zutaten auf einmal. Beim Ändern werden die alten Zutaten ersetzt.
+// Personen aus dem Sheet: ganze Zahl 1 bis 99, sonst leer (keine Angabe)
+function personenAus_(v) {
+  var n = Number(v);
+  return String(v).trim() !== "" && isFinite(n) && n >= 1 && n <= MAX_PERSONEN_ && Math.round(n) === n ? n : "";
+}
+
+// Rezept mit allen Zutaten auf einmal. Beim Ändern werden die alten Zutaten ersetzt.
+// Felder, die die Anfrage nicht mitschickt (notiz, text, personen, ergibt, bilder), bleiben unverändert,
+// damit eine ältere App nichts überschreibt. „bilder“ ist die Liste der behaltenen Bilder; neue kommen über rezept_bild.
 function gerichtSpeichern_(data) {
   var name = pruefeText_(data.name, MAX_.name, "einen Namen", true);
   var notiz = pruefeText_(data.notiz, MAX_.notiz_gericht, "Notiz", false);
   var link = pruefeText_(data.link, MAX_.link, "Link", false);
-  var fehler = [name, notiz, link].filter(function (p) { return p.fehler; })[0];
+  var ergibt = pruefeText_(data.ergibt, MAX_.ergibt, "„ergibt“", false);
+  var fehler = [name, notiz, link, ergibt].filter(function (p) { return p.fehler; })[0];
   if (fehler) return { error: "eingabe", message: fehler.fehler };
   if (link.wert && !/^https:\/\//i.test(link.wert)) return { error: "eingabe", message: "Der Link muss mit https:// beginnen." };
+  var text = bereinigeLang_(data.text, MAX_.text_rezept + 1);
+  if (text.replace(/^'/, "").length > MAX_.text_rezept) return { error: "eingabe", message: "Der Rezepttext ist zu lang (höchstens " + MAX_.text_rezept + " Zeichen)." };
+  var personen = "";
+  var pRoh = String(data.personen == null ? "" : data.personen).trim();
+  if (pRoh !== "") {
+    personen = Number(pRoh);
+    if (!isFinite(personen) || personen < 1 || personen > MAX_PERSONEN_ || Math.round(personen) !== personen) {
+      return { error: "eingabe", message: "Personen bitte als ganze Zahl von 1 bis " + MAX_PERSONEN_ + "." };
+    }
+  }
+  if (data.bilder != null && !Array.isArray(data.bilder)) return { error: "eingabe", message: "Ungültige Bilder." };
 
   var zut = Array.isArray(data.zutaten) ? data.zutaten : [];
   if (zut.length > MAX_ZUTATEN_) return { error: "eingabe", message: "Höchstens " + MAX_ZUTATEN_ + " Zutaten." };
@@ -588,15 +650,29 @@ function gerichtSpeichern_(data) {
 
   var g = tabelle_("gerichte");
   var id = String(data.id || "");
-  var werte = { name: name.wert, notiz: notiz.wert, link: link.wert };
+  var werte = { name: name.wert, link: link.wert };
+  if ("notiz" in data) werte.notiz = notiz.wert;
+  if ("text" in data) werte.text = text;
+  if ("personen" in data) werte.personen = personen;
+  if ("ergibt" in data) werte.ergibt = ergibt.wert;
   var i;
   if (!id) {
+    var anzahl = g.zeilen.filter(function (z) { return aktiv_(g, z); }).length;
+    if (anzahl >= MAX_REZEPTE_) return { error: "eingabe", message: "Höchstens " + MAX_REZEPTE_ + " Rezepte." };
     i = neu_(g, werte);
     id = String(g.zeilen[i][g.sp.id]);
   } else {
     i = index_(g, id);
-    if (i < 0) return { error: "fehlt", message: "Dieses Gericht gibt es nicht mehr. Bitte neu laden." };
+    if (i < 0) return { error: "fehlt", message: "Dieses Rezept gibt es nicht mehr. Bitte neu laden." };
     if (veraltet_(g, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Handy). Bitte neu laden." };
+    if (data.bilder != null) {
+      // Nur Bilder behalten, die schon beim Rezept stehen. So kommt keine fremde Datei aus dem Drive dazu.
+      var alt = bilderListe_(g.zeilen[i][g.sp.bilder]);
+      var behalten = data.bilder.map(function (x) { return String(x); }).filter(function (x, k, liste) {
+        return alt.indexOf(x) >= 0 && liste.indexOf(x) === k;
+      });
+      werte.bilder = behalten.length ? JSON.stringify(behalten) : "";
+    }
     aendere_(g, i, werte);
   }
   var zt = tabelle_("zutaten");
@@ -612,7 +688,7 @@ function gerichtSpeichern_(data) {
 function gerichtLoeschen_(data) {
   var g = tabelle_("gerichte");
   var i = index_(g, data.id);
-  if (i < 0) return { error: "fehlt", message: "Dieses Gericht gibt es nicht mehr. Bitte neu laden." };
+  if (i < 0) return { error: "fehlt", message: "Dieses Rezept gibt es nicht mehr. Bitte neu laden." };
   if (veraltet_(g, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Handy). Bitte neu laden." };
   var id = String(data.id);
   weg_(g, i);
@@ -621,6 +697,89 @@ function gerichtLoeschen_(data) {
     if (aktiv_(zt, z) && String(zelle_(z, zt.sp, "gericht_id")) === id) weg_(zt, k);
   });
   return { ok: true };
+}
+
+// Bilder eines Rezepts: JSON-Liste von Drive-Kennungen
+function bilderListe_(v) {
+  var liste;
+  try { liste = JSON.parse(String(v == null || v === "" ? "[]" : v)); } catch (e) { liste = []; }
+  return Array.isArray(liste) ? liste.map(function (x) { return String(x); }).filter(function (x) { return /^[A-Za-z0-9_-]{20,}$/.test(x); }) : [];
+}
+
+// Ein neues Bild beim Rezept hinten anhängen: hochgeladen (bild_daten) oder als Drive-Link (bild).
+// Schutz über geaendert_am wie beim Speichern. Liefert das Rezept mit neuem geaendert_am.
+function rezeptBild_(data) {
+  var g = tabelle_("gerichte");
+  var i = index_(g, data.id);
+  if (i < 0) return { error: "fehlt", message: "Dieses Rezept gibt es nicht mehr. Bitte neu laden." };
+  if (veraltet_(g, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Handy). Bitte neu laden." };
+  var bilder = bilderListe_(g.zeilen[i][g.sp.bilder]);
+  if (bilder.length >= MAX_REZEPT_BILDER_) return { error: "eingabe", message: "Höchstens " + MAX_REZEPT_BILDER_ + " Bilder je Rezept." };
+  if (!data.bild_daten && !String(data.bild == null ? "" : data.bild).trim()) return { error: "eingabe", message: "Bitte ein Bild wählen oder einen Drive-Link einfügen." };
+  var b = bildAus_({ bild_daten: data.bild_daten, bild: data.bild, name: text_(g.zeilen[i], g.sp, "name") || "Rezept" });
+  if (b.fehler) return { error: "eingabe", message: b.fehler };
+  if (bilder.indexOf(b.id) >= 0) return { error: "eingabe", message: "Dieses Bild steht schon beim Rezept." };
+  bilder.push(b.id);
+  aendere_(g, i, { bilder: JSON.stringify(bilder) });
+  var id = String(data.id);
+  return { gericht: alleGerichte_().filter(function (x) { return x.id === id; })[0] };
+}
+
+// --- 7a. BILDER ---
+
+// Kennung einer Drive-Datei aus einem Link („…/file/d/<id>/…“, „…?id=<id>“) oder die Kennung selbst
+function driveKennung_(text) {
+  var t = String(text == null ? "" : text).trim();
+  var m = /\/d\/([A-Za-z0-9_-]{20,})/.exec(t) || /[?&]id=([A-Za-z0-9_-]{20,})/.exec(t) || /^([A-Za-z0-9_-]{20,})$/.exec(t);
+  return m ? m[1] : "";
+}
+
+// Prüft ein neues Bild und liefert { id } oder { fehler }. Hochgeladene Bilder kommen in den Ordner „Thetadex Rezepte“.
+function bildAus_(data) {
+  if (data.bild_daten) {
+    var text = String(data.bild_daten);
+    if (text.length > MAX_BILD_TEXT_) return { fehler: "Das Bild ist zu groß." };
+    var bytes;
+    try { bytes = Utilities.base64Decode(text); } catch (e) { return { fehler: "Das Bild ist beschädigt." }; }
+    // Nur JPEG oder PNG (an den ersten Bytes erkannt, nicht am Namen)
+    var jpeg = bytes.length > 3 && (bytes[0] & 255) === 0xFF && (bytes[1] & 255) === 0xD8;
+    var png = bytes.length > 4 && (bytes[0] & 255) === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
+    if (!jpeg && !png) return { fehler: "Bitte ein Bild (JPEG oder PNG) wählen." };
+    var name = bereinigeText_(data.name, 60) || "Rezept";
+    var datei = bildOrdner_().createFile(Utilities.newBlob(bytes, jpeg ? "image/jpeg" : "image/png", name + (jpeg ? ".jpg" : ".png")));
+    return { id: datei.getId() };
+  }
+  var id = driveKennung_(data.bild);
+  if (!id) return { fehler: "Der Drive-Link sieht nicht richtig aus. Bitte in Drive „Link kopieren“ nutzen." };
+  try {
+    var f = DriveApp.getFileById(id);
+    if (!/^image\//.test(f.getMimeType())) return { fehler: "Der Drive-Link zeigt nicht auf ein Bild." };
+  } catch (e) {
+    return { fehler: "Das Bild im Drive wurde nicht gefunden." };
+  }
+  return { id: id };
+}
+
+// Liefert ein Bild als Text. Nur Bilder, die bei einem (nicht gelöschten) Rezept stehen,
+// damit niemand über das Skript beliebige Dateien aus dem Drive lesen kann.
+function bildLesen_(data) {
+  var id = driveKennung_(data.bild);
+  if (!id) return { error: "eingabe", message: "Unbekanntes Bild." };
+  var g = tabelle_("gerichte");
+  var bekannt = g.zeilen.some(function (z) {
+    return aktiv_(g, z) && bilderListe_(zelle_(z, g.sp, "bilder")).indexOf(id) >= 0;
+  });
+  if (!bekannt) return { error: "eingabe", message: "Unbekanntes Bild." };
+  var blob;
+  try {
+    var f = DriveApp.getFileById(id);
+    if (!/^image\//.test(f.getMimeType())) return { error: "eingabe", message: "Die Datei ist kein Bild." };
+    blob = f.getSize() > MAX_BILD_SENDEN_ ? f.getThumbnail() : f.getBlob();
+  } catch (e) {
+    return { error: "fehlt", message: "Das Bild ist nicht mehr im Drive." };
+  }
+  if (!blob) return { error: "gross", message: "Das Bild ist zu groß für eine Vorschau. Bitte kleiner hochladen." };
+  return { typ: blob.getContentType(), daten: Utilities.base64Encode(blob.getBytes()) };
 }
 
 // --- 8. VORRAT ---
