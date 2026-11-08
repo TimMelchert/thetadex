@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -367,6 +367,7 @@ unter „Info“ die Version prüfen.
   11.3 (1.3.5): Bilder im Rezept: Vorschau nebeneinander (Tipp zeigt groß), beim Bearbeiten hochladen (mehrere), Drive-Link einfügen, × entfernt (Datei bleibt im Drive). Skript unverändert.
   11.4 (1.3.6): Abschluss, Prüfung Sicherheit und Datenschutz (Bericht `pruefung/rezepte-bericht.md` in den Projektdateien), Plan eingearbeitet.
   Nachbesserung 1.3.7: Rezepte klappen in der Liste auf statt im Fenster (Wunsch der Person, war beim Planen untergegangen).
+  Nachbesserung 1.3.8: Mengen ab 0,01 mit zwei Stellen nach dem Komma (Gewürze, Esslöffel), in Rezepten, auf der Liste und im Vorrat. Skript `gemeinsam` geändert.
 
 ### 3.2 Offen
 
@@ -487,7 +488,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   | Blatt | Spalten (Grenzen) |
   | --- | --- |
   | `lebensmittel` | `name` (Pflicht, 60, kein zweites Mal gleich), `abteilung` (40), `einheit` (20), `notiz` (200) |
-  | `einkaufsliste` | `lebensmittel_id`, `anzahl` (0,5 bis 9999, halbe erlaubt), `gericht_id` (leer = einzeln), `notiz` (100), `abgehakt_am` (setzt das Skript) |
+  | `einkaufsliste` | `lebensmittel_id`, `anzahl` (0,01 bis 9999, bis zu zwei Stellen nach dem Komma; bis 1.3.7 halbe ab 0,5), `gericht_id` (leer = einzeln), `notiz` (100), `abgehakt_am` (setzt das Skript) |
   | `gerichte` (= Rezepte) | `name` (Pflicht, 60), `notiz` (300, alt, wird nicht mehr neu geschrieben), `link` (nur `https://`, 300); ab 1.3.4 `text` (20.000, Zeilenumbrüche bleiben), `personen` (ganze Zahl 1 bis 99 oder leer), `ergibt` (40), `bilder` (JSON-Liste von Drive-Kennungen, höchstens 10); höchstens 500 Rezepte |
   | `zutaten` | `gericht_id`, `lebensmittel_id`, `menge` (wie `anzahl`); höchstens 50 je Gericht |
   | `vorrat` | `lebensmittel_id`, `ort` (Pflicht, 40), `menge` (0 bis 9999); eine Zeile je Lebensmittel und Ort, keine Zeile = nicht gepflegt |
@@ -512,7 +513,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
       Nur „Bearbeiten“ öffnet ein Fenster. Nach dem Speichern ist das Rezept aufgeklappt, nach „Auf die Liste“ wieder zu.
     - Aufgeklapptes Rezept von oben: Bilder nebeneinander (Tipp zeigt groß), „für 4 Personen · ergibt 1 Blech“, alte Notiz (falls noch da), Rezepttext mit Zeilenumbrüchen, Link,
       „Personen diesmal“ (nur wenn Personen eingetragen), Zutaten mit Haken und Menge, „Auf die Liste“ und „Bearbeiten“.
-    - **Umrechnen:** neue Menge = gespeicherte Menge × Personen diesmal ÷ Personen im Rezept, gerundet auf halbe Einheiten, mindestens 0,5 (bestätigt).
+    - **Umrechnen:** neue Menge = gespeicherte Menge × Personen diesmal ÷ Personen im Rezept, ab 1 gerundet auf halbe Einheiten (bestätigt), darunter auf zwei Stellen, mindestens 0,01 (ab 1.3.8).
       Ändert man die Personen, rechnen alle Mengen neu (auch von Hand geänderte). Der Vorrat-Haken prüft gegen die neue Menge. Gespeichert wird dabei nichts.
     - Bearbeiten: Titel, Bilder, für … Personen, ergibt, Rezepttext (nur Text mit Zeilenumbrüchen, keine fette Schrift), Link, Zutaten. Die alte Notiz steht beim Bearbeiten
       oben im Rezepttext und wandert beim Speichern dorthin (`notiz` danach leer). Bei „Inzwischen geändert“ bleibt alles im Fenster:
@@ -879,3 +880,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.5** Schritt 11.3: Bilder im Rezept anzeigen, hochladen, als Drive-Link einfügen und entfernen.
 - **1.3.6** Schritt 11.4: Etappe 11 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md eingearbeitet (4 „Einkauf“, Rezepte), `docs/PLAN-ETAPPE-11.md` gelöscht.
 - **1.3.7** Nachbesserung Rezepte: Ein Tipp auf den Titel klappt das Rezept in der Liste auf (statt Fenster).
+- **1.3.8** Nachbesserung Rezepte: Mengen ab 0,01 mit bis zu zwei Stellen nach dem Komma (vorher halbe ab 0,5), Skript `gemeinsam` geändert.
