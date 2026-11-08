@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -366,6 +366,7 @@ unter „Info“ die Version prüfen.
   Ordner „Thetadex Rezepte“. App: Rezepttext, „für … Personen“, „ergibt“ und „Personen diesmal“ (rechnet Mengen um). Die alte Notiz wandert beim Bearbeiten in den Rezepttext.
   11.3 (1.3.5): Bilder im Rezept: Vorschau nebeneinander (Tipp zeigt groß), beim Bearbeiten hochladen (mehrere), Drive-Link einfügen, × entfernt (Datei bleibt im Drive). Skript unverändert.
   11.4 (1.3.6): Abschluss, Prüfung Sicherheit und Datenschutz (Bericht `pruefung/rezepte-bericht.md` in den Projektdateien), Plan eingearbeitet.
+  Nachbesserung 1.3.7: Rezepte klappen in der Liste auf statt im Fenster (Wunsch der Person, war beim Planen untergegangen).
 
 ### 3.2 Offen
 
@@ -507,7 +508,9 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     - Kein eigener Unterreiter: Unterreiter sind Einkaufsliste · Lebensmittel. Ganz oben bei Lebensmitteln der Umschalter „Einzeln | Rezepte“;
       die Auswahl angekreuzter Lebensmittel bleibt beim Umschalten erhalten. Die Einkaufsliste zeigt „Nach Abteilung | Nach Rezept“.
     - Rezept-Liste: Suche in Titel, Text und Zutaten (ohne Groß- und Kleinschreibung), „+ Neues Rezept“, nur Titel A–Z (📷 = hat Bilder). Keine Kategorien.
-    - Rezept-Fenster von oben: Bilder nebeneinander (Tipp zeigt groß), „für 4 Personen · ergibt 1 Blech“, alte Notiz (falls noch da), Rezepttext mit Zeilenumbrüchen, Link,
+    - **Aufklappen** (1.3.7, Wunsch der Person vom 7.11.2026): Ein Tipp auf den Titel klappt das Rezept in der Liste auf, noch ein Tipp klappt es zu; immer nur eins offen.
+      Nur „Bearbeiten“ öffnet ein Fenster. Nach dem Speichern ist das Rezept aufgeklappt, nach „Auf die Liste“ wieder zu.
+    - Aufgeklapptes Rezept von oben: Bilder nebeneinander (Tipp zeigt groß), „für 4 Personen · ergibt 1 Blech“, alte Notiz (falls noch da), Rezepttext mit Zeilenumbrüchen, Link,
       „Personen diesmal“ (nur wenn Personen eingetragen), Zutaten mit Haken und Menge, „Auf die Liste“ und „Bearbeiten“.
     - **Umrechnen:** neue Menge = gespeicherte Menge × Personen diesmal ÷ Personen im Rezept, gerundet auf halbe Einheiten, mindestens 0,5 (bestätigt).
       Ändert man die Personen, rechnen alle Mengen neu (auch von Hand geänderte). Der Vorrat-Haken prüft gegen die neue Menge. Gespeichert wird dabei nichts.
@@ -875,3 +878,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.4** Schritt 11.2: Skript `gemeinsam` mit Rezepttext, Personen, „ergibt“ und Bildern (Spalten, `rezept_bild`, `bild`, Ordner „Thetadex Rezepte“); App mit Rezepttext und „Personen diesmal“.
 - **1.3.5** Schritt 11.3: Bilder im Rezept anzeigen, hochladen, als Drive-Link einfügen und entfernen.
 - **1.3.6** Schritt 11.4: Etappe 11 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md eingearbeitet (4 „Einkauf“, Rezepte), `docs/PLAN-ETAPPE-11.md` gelöscht.
+- **1.3.7** Nachbesserung Rezepte: Ein Tipp auf den Titel klappt das Rezept in der Liste auf (statt Fenster).
