@@ -540,7 +540,7 @@
 .formular .finanz-umbuchung .knopf { margin-top: 6px; align-self: stretch; }
 
 @media (min-width: 768px) {
-    .finanz-konten { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .finanz-konten { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 
 /* Tracking-Übersicht: Tabelle mit farbigen Zellen, Kopf und Datum bleiben beim Scrollen stehen */
