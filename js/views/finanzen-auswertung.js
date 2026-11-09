@@ -1,5 +1,6 @@
-// Finanzen → Auswertung: Monats- oder Jahresbilanz, Ringe für Ausgaben und Einnahmen, Säulen mit Budget-Linie,
-// Budget-Balken, Netto-Kacheln mit Haken für Rückzahlungen, Jahrestabelle und Bafög.
+// Finanzen → Auswertung: Monats- oder Jahresbilanz, Vergleich (Vormonat, Durchschnitt, Vorjahr), Ringe für Ausgaben und Einnahmen,
+// Säulen mit Budget-Linie, Kategorien gegen Vorjahr, Budget-Balken, Netto-Kacheln mit Haken für Rückzahlungen,
+// Jahresverlauf (Säulen und Linie), Jahrestabelle mit Summe, Durchschnitt, Budget und Sparquote, Bafög zum Aufklappen.
 // Die Kategorien kommen allgemein vom Skript (Aktion „analyse“, Feld „kategorien“), keine Namen im Code.
 // Chart.js liegt als lokale Datei in vendor/ und wird erst hier geladen (docs/STAND.md, Abschnitt 4).
 
@@ -14,6 +15,23 @@ const FARBEN = ['#E07A5F', '#8DB580', '#E2A23B', '#B5838D', '#7FA7A0', '#C9784A'
 const euro = (v) => (Number(v) || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 const norm = (t) => String(t == null ? '' : t).trim().toLowerCase();
 const monatNr = (name) => MONATE.findIndex((m) => m.slice(0, 3).toLowerCase() === norm(name).slice(0, 3)) + 1;
+// Fortlaufende Nummer eines Monats (Januar 2026 kommt direkt nach Dezember 2025)
+const zeitIndex = (m) => Number(m.jahr) * 12 + monatNr(m.monat) - 1;
+const hatDaten = (m) => Math.abs(Number(m.ausgabenGesamt) || 0) + Math.abs(Number(m.einnahmenGesamt) || 0) > 0.005;
+// Anteil der Einnahmen, der übrig bleibt (Bilanz geteilt durch Einnahmen)
+const sparquote = (bilanz, einnahmen) => (Number(einnahmen) > 0.005 ? Math.round((Number(bilanz) / Number(einnahmen)) * 100) + ' %' : '–');
+const plusMinus = (v) => (v >= 1 ? 'finanz-plus' : v <= -1 ? 'finanz-minus' : '');
+
+// Ausgaben je Kategorie: netto, wo es eine Netto-Spalte gibt, sonst brutto (gleich für Säulen und Vorjahr)
+function ausgabenJeKategorie(kat) {
+    const netto = (kat && kat.netto) || {};
+    const aus = {};
+    for (const [n, v] of Object.entries((kat && kat.aus) || {})) {
+        const nettoName = Object.keys(netto).find((x) => norm(x) === norm(n));
+        aus[n] = Math.abs((nettoName !== undefined ? netto[nettoName] : v) || 0);
+    }
+    return aus;
+}
 
 // Chart.js einmal nachladen (klassisches Skript aus vendor/, setzt window.Chart)
 let chartLaden = null;
@@ -29,6 +47,17 @@ function ladeChart() {
         });
     }
     return chartLaden;
+}
+
+// Chart.js laden und die Farben des Aussehens (hell oder dunkel) übernehmen
+async function chartBereit() {
+    const Chart = await ladeChart();
+    const stil = getComputedStyle(document.documentElement);
+    Chart.defaults.color = stil.getPropertyValue('--schrift-leise').trim() || '#5C5853';
+    Chart.defaults.borderColor = stil.getPropertyValue('--linie').trim() || '#D9D6D0';
+    Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+    Chart.defaults.locale = 'de-DE';  // Zahlen an den Achsen mit Punkt und Komma wie im Deutschen
+    return { Chart, farbe: (name, ersatz) => stil.getPropertyValue(name).trim() || ersatz };
 }
 
 // Summe aller Monate eines Jahres, auch in den Kategorien
@@ -68,7 +97,21 @@ export function auswertung(box, einstellungen) {
     const kacheln = el('div', { class: 'finanz-netto' });
     const jahrWahl = el('select', { attrs: { id: 'finanz-tabellenjahr', 'aria-label': 'Jahr der Tabelle' }, on: { change: () => { tabellenJahr = Number(jahrWahl.value); zeigeTabelle(); } } });
     const tabelle = el('tbody');
+    const tabelleFuss = el('tfoot');
     const bafoeg = el('dl', { class: 'finanz-konten finanz-bafoeg' });
+    const vergleichTitel = el('figcaption', { text: 'Vergleich' });
+    const vergleichBox = el('div', { class: 'finanz-tabelle-box' });
+    const vorjahrCanvas = el('canvas', { attrs: { 'aria-label': 'Ausgaben je Kategorie gegen Vorjahr', role: 'img' } });
+    const vorjahrTitel = el('figcaption', { text: 'Kategorien gegen Vorjahr' });
+    const vorjahrHinweis = el('p', { class: 'leise klein' });
+    const vorjahrFigur = el('figure', { class: 'karte finanz-ring' }, [
+        vorjahrTitel, el('div', { class: 'finanz-diagramm finanz-diagramm-breit' }, [vorjahrCanvas]), vorjahrHinweis
+    ]);
+    const jahrCanvas = el('canvas', { attrs: { 'aria-label': 'Einnahmen und Ausgaben je Monat mit Bilanz seit Januar', role: 'img' } });
+    const jahrHinweis = el('p', { class: 'leise klein' });
+    const jahrFigur = el('figure', { class: 'karte finanz-ring' }, [
+        el('figcaption', { text: 'Verlauf im Jahr' }), el('div', { class: 'finanz-diagramm finanz-diagramm-breit' }, [jahrCanvas]), jahrHinweis
+    ]);
 
     leeren(box);
     box.append(
@@ -76,6 +119,7 @@ export function auswertung(box, einstellungen) {
             el('p', { class: 'finanz-gesamt' }, [bilanzWert, bilanzTitel]),
             el('div', { class: 'finanz-monat-zeile' }, [monatWahl])
         ]),
+        el('figure', { class: 'karte finanz-ring' }, [vergleichTitel, vergleichBox]),
         el('div', { class: 'finanz-ringe' }, [
             el('figure', { class: 'karte finanz-ring' }, [el('figcaption', { text: 'Ausgaben' }), el('div', { class: 'finanz-diagramm' }, [ringAus])]),
             el('figure', { class: 'karte finanz-ring' }, [el('figcaption', { text: 'Einnahmen' }), el('div', { class: 'finanz-diagramm' }, [ringEin])])
@@ -83,18 +127,20 @@ export function auswertung(box, einstellungen) {
         el('figure', { class: 'karte finanz-ring' }, [
             el('figcaption', { text: 'Ausgaben netto' }), el('div', { class: 'finanz-diagramm finanz-diagramm-breit' }, [saeulen]), saeulenHinweis
         ]),
+        vorjahrFigur,
         el('div', { class: 'karte' }, [
             el('p', { class: 'finanz-budget-kopf' }, [budgetTitel, budgetText]),
             el('div', { class: 'finanz-budget' }, [budgetFuell])
         ]),
         kacheln,
         el('div', { class: 'finanz-tabelle-kopf' }, [el('h2', { text: 'Jahresübersicht' }), jahrWahl]),
+        jahrFigur,
         el('div', { class: 'finanz-tabelle-box' }, [el('table', { class: 'finanz-tabelle' }, [
-            el('thead', {}, [el('tr', {}, ['Monat', 'Ausgaben', 'Einnahmen', 'Bilanz'].map((t) => el('th', { text: t, attrs: { scope: 'col' } })))]),
-            tabelle
+            el('thead', {}, [el('tr', {}, ['Monat', 'Ausgaben', 'Einnahmen', 'Bilanz', 'Budget', 'Sparquote'].map((t) => el('th', { text: t, attrs: { scope: 'col' } })))]),
+            tabelle,
+            tabelleFuss
         ])]),
-        el('h2', { text: 'Bafög' }),
-        el('div', { class: 'karte' }, [bafoeg]),
+        el('details', { class: 'karte finanz-aufklapp' }, [el('summary', { text: 'Bafög' }), bafoeg]),
         el('button', { class: 'knopf knopf-zweit finanz-neu', text: 'Neu laden', attrs: { type: 'button' }, on: { click: () => laden() } }),
         status
     );
@@ -106,7 +152,7 @@ export function auswertung(box, einstellungen) {
         const monate = daten.monate || [];
         if (wahl && wahl.startsWith('J|')) {
             const jahr = Number(wahl.slice(2));
-            return jahresSumme(monate.filter((m) => m.jahr === jahr), jahr);
+            return jahresSumme(monate.filter((m) => m.jahr === jahr && (hatDaten(m) || istAktuell(m))), jahr);
         }
         return monate.find((m) => schluessel(m) === wahl) || daten;
     }
@@ -135,14 +181,18 @@ export function auswertung(box, einstellungen) {
 
     function zeigeTabelle() {
         leeren(tabelle);
-        for (const m of (daten.monate || []).filter((x) => x.jahr === tabellenJahr)) {
+        leeren(tabelleFuss);
+        const imJahr = (daten.monate || []).filter((x) => x.jahr === tabellenJahr);
+        for (const m of imJahr) {
             const s = schluessel(m);
             const waehlbar = [...monatWahl.options].some((o) => o.value === s);
             const zeile = el('tr', { class: (waehlbar ? 'klickbar' : '') + (s === wahl ? ' gewaehlt' : '') }, [
                 el('th', { text: m.monat, attrs: { scope: 'row' } }),
                 el('td', { text: euro(m.ausgabenGesamt) }),
                 el('td', { text: euro(m.einnahmenGesamt) }),
-                el('td', { class: m.bilanz >= 1 ? 'finanz-plus' : m.bilanz <= -1 ? 'finanz-minus' : '', text: euro(m.bilanz) })
+                el('td', { class: plusMinus(m.bilanz), text: euro(m.bilanz) }),
+                el('td', { text: euro(m.budgetMonat) }),
+                el('td', { text: hatDaten(m) ? sparquote(m.bilanz, m.einnahmenGesamt) : '–' })
             ]);
             if (waehlbar) {
                 zeile.tabIndex = 0;
@@ -152,6 +202,141 @@ export function auswertung(box, einstellungen) {
             }
             tabelle.append(zeile);
         }
+
+        // Summe und Durchschnitt nur über Monate mit Buchungen (und den aktuellen Monat)
+        const mitDaten = imJahr.filter((m) => hatDaten(m) || istAktuell(m));
+        if (mitDaten.length) {
+            const s = jahresSumme(mitDaten, tabellenJahr);
+            const n = mitDaten.length;
+            const fussZeile = (titel, teiler) => el('tr', { class: 'finanz-summe' }, [
+                el('th', { text: titel, attrs: { scope: 'row' } }),
+                el('td', { text: euro((s.ausgabenGesamt || 0) / teiler) }),
+                el('td', { text: euro((s.einnahmenGesamt || 0) / teiler) }),
+                el('td', { class: plusMinus((s.bilanz || 0) / teiler), text: euro((s.bilanz || 0) / teiler) }),
+                el('td', { text: euro((s.budgetMonat || 0) / teiler) }),
+                el('td', { text: sparquote(s.bilanz, s.einnahmenGesamt) })
+            ]);
+            tabelleFuss.append(fussZeile('Summe', 1), fussZeile('Ø pro Monat', n));
+        }
+        zeigeJahrDiagramm(mitDaten.slice().sort((a, b) => monatNr(a.monat) - monatNr(b.monat)));
+    }
+
+    // Verlauf im Jahr: Säulen für Einnahmen und Ausgaben je Monat, Linie für die Bilanz seit Januar (aufsummiert)
+    async function zeigeJahrDiagramm(liste) {
+        let c;
+        try {
+            c = await chartBereit();
+        } catch (e) {
+            status.textContent = e.message;
+            return;
+        }
+        if (charts.jahr) charts.jahr.destroy();
+        let summe = 0;
+        const kumuliert = liste.map((m) => Math.round((summe += Number(m.bilanz) || 0) * 100) / 100);
+        charts.jahr = new c.Chart(jahrCanvas, {
+            data: {
+                labels: liste.map((m) => String(m.monat).slice(0, 3)),
+                datasets: [
+                    { type: 'line', label: 'Bilanz seit Januar', data: kumuliert, borderColor: c.farbe('--schrift', '#1C1B19'), backgroundColor: c.farbe('--schrift', '#1C1B19'), borderWidth: 2, pointRadius: 3, fill: false },
+                    { type: 'bar', label: 'Einnahmen', data: liste.map((m) => Number(m.einnahmenGesamt) || 0), backgroundColor: c.farbe('--knopf-gruen', '#2E7D32'), borderWidth: 0 },
+                    { type: 'bar', label: 'Ausgaben', data: liste.map((m) => Math.abs(Number(m.ausgabenGesamt) || 0)), backgroundColor: c.farbe('--knopf-rot', '#B3261E'), borderWidth: 0 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, padding: 8 } } },
+                scales: { x: { grid: { display: false } } }
+            }
+        });
+        jahrHinweis.textContent = liste.length
+            ? 'Linie = Bilanz seit Januar: ' + euro(kumuliert[kumuliert.length - 1]) + ' (Ende ' + liste[liste.length - 1].monat + ').'
+            : 'Für dieses Jahr gibt es noch keine Buchungen.';
+    }
+
+    // Vergleichswerte: beim Monat Vormonat, Durchschnitt der 12 Monate davor und Vorjahresmonat;
+    // beim Jahr dasselbe Stück des Vorjahres (zum Beispiel Januar bis November).
+    function vergleichsWerte(w) {
+        const monate = daten.monate || [];
+        if (w.istJahr) {
+            const eigene = monate.filter((m) => m.jahr === w.jahr && (hatDaten(m) || istAktuell(m)));
+            const bis = Math.max(0, ...eigene.map((m) => monatNr(m.monat)));
+            const teil = bis >= 1 && bis < 12 ? ' (Jan–' + MONATE[bis - 1].slice(0, 3) + ')' : '';
+            const vor = monate.filter((m) => m.jahr === w.jahr - 1 && monatNr(m.monat) <= (bis || 12) && hatDaten(m));
+            const vorjahr = vor.length ? [String(w.jahr - 1), jahresSumme(vor, w.jahr - 1)] : null;
+            const n = eigene.length || 1;
+            const schnitt = { ausgabenGesamt: (w.ausgabenGesamt || 0) / n, einnahmenGesamt: (w.einnahmenGesamt || 0) / n, bilanz: (w.bilanz || 0) / n };
+            return { spalten: [[String(w.jahr), w], ...(vorjahr ? [vorjahr] : []), ['Ø Monat', schnitt]], vorjahr, teil };
+        }
+        const i = zeitIndex(w);
+        const finde = (k) => monate.find((m) => zeitIndex(m) === k && hatDaten(m));
+        const vormonat = finde(i - 1);
+        const davor = monate.filter((m) => hatDaten(m) && zeitIndex(m) < i && zeitIndex(m) >= i - 12);
+        const spalten = [[String(w.monat), w]];
+        if (vormonat) spalten.push([String(vormonat.monat), vormonat]);
+        if (davor.length) {
+            const s = jahresSumme(davor, 0);
+            spalten.push(['Ø ' + davor.length + ' Mon.', { ausgabenGesamt: s.ausgabenGesamt / davor.length, einnahmenGesamt: s.einnahmenGesamt / davor.length, bilanz: s.bilanz / davor.length }]);
+        }
+        const vj = finde(i - 12);
+        return { spalten, vorjahr: vj ? [vj.monat + ' ' + vj.jahr, vj] : null, teil: '' };
+    }
+
+    function zeigeVergleich(v, w) {
+        leeren(vergleichBox);
+        vergleichTitel.textContent = w.istJahr ? 'Vergleich mit dem Vorjahr' + v.teil : 'Vergleich mit den Monaten davor';
+        if (v.spalten.length < 2) {
+            vergleichBox.append(el('p', { class: 'leise klein', text: 'Noch keine Werte zum Vergleichen.' }));
+            return;
+        }
+        const zeilen = [['Ausgaben', 'ausgabenGesamt'], ['Einnahmen', 'einnahmenGesamt'], ['Bilanz', 'bilanz']];
+        vergleichBox.append(el('table', { class: 'finanz-tabelle finanz-vergleich' }, [
+            el('thead', {}, [el('tr', {}, [el('th', { text: '', attrs: { scope: 'col' } }), ...v.spalten.map(([t]) => el('th', { text: t, attrs: { scope: 'col' } }))])]),
+            el('tbody', {}, zeilen.map(([titel, feld]) => el('tr', {}, [
+                el('th', { text: titel, attrs: { scope: 'row' } }),
+                ...v.spalten.map(([, werte]) => {
+                    const zahl = Number(werte[feld]) || 0;
+                    return el('td', { class: feld === 'bilanz' ? plusMinus(zahl) : '', text: euro(feld === 'ausgabenGesamt' ? Math.abs(zahl) : zahl) });
+                })
+            ])))
+        ]));
+    }
+
+    // Kategorien gegen Vorjahr: Ausgaben je Kategorie jetzt und im selben Zeitraum ein Jahr davor
+    async function zeigeVorjahr(v, w) {
+        vorjahrFigur.hidden = !v.vorjahr;
+        if (charts.vorjahr) { charts.vorjahr.destroy(); charts.vorjahr = null; }
+        if (!v.vorjahr) return;
+        let c;
+        try {
+            c = await chartBereit();
+        } catch (e) {
+            status.textContent = e.message;
+            return;
+        }
+        const jetzt = ausgabenJeKategorie(w.kategorien);
+        const vorher = ausgabenJeKategorie(v.vorjahr[1].kategorien);
+        const namen = [...new Set([...Object.keys(jetzt), ...Object.keys(vorher)])]
+            .filter((n) => (jetzt[n] || 0) > 0.1 || (vorher[n] || 0) > 0.1)
+            .sort((a, b) => (jetzt[b] || 0) - (jetzt[a] || 0));
+        const titelJetzt = w.istJahr ? v.spalten[0][0] : w.monat + ' ' + w.jahr;
+        vorjahrTitel.textContent = 'Kategorien: ' + titelJetzt + ' gegen ' + v.vorjahr[0] + v.teil;
+        if (charts.vorjahr) charts.vorjahr.destroy();
+        charts.vorjahr = new c.Chart(vorjahrCanvas, {
+            type: 'bar',
+            data: {
+                labels: namen,
+                datasets: [
+                    { label: titelJetzt, data: namen.map((n) => jetzt[n] || 0), backgroundColor: c.farbe('--farbe-finanzen', '#8DB580'), borderWidth: 0 },
+                    { label: v.vorjahr[0], data: namen.map((n) => vorher[n] || 0), backgroundColor: c.farbe('--schrift-leise', '#5C5853'), borderWidth: 0 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, padding: 8 } } },
+                scales: { x: { ticks: { font: { size: 10 }, maxRotation: 60 }, grid: { display: false } }, y: { beginAtZero: true } }
+            }
+        });
+        vorjahrHinweis.textContent = 'Ausgaben netto, größte Kategorie zuerst.';
     }
 
     // Netto-Kacheln. Für Kategorien mit Rückzahlungen (Blatt „Einstellungen“): Haken je Person und Rest.
@@ -199,16 +384,13 @@ export function auswertung(box, einstellungen) {
 
     async function zeigeDiagramme(w) {
         let Chart;
+        let stilFarbe;
         try {
-            Chart = await ladeChart();
+            ({ Chart, farbe: stilFarbe } = await chartBereit());
         } catch (e) {
             status.textContent = e.message;
             return;
         }
-        const stil = getComputedStyle(document.documentElement);
-        Chart.defaults.color = stil.getPropertyValue('--schrift-leise').trim() || '#5C5853';
-        Chart.defaults.borderColor = stil.getPropertyValue('--linie').trim() || '#D9D6D0';
-        Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
 
         const kat = w.kategorien || { aus: {}, ein: {}, netto: {} };
         // Farbe je Kategorie fest nach ihrer Stelle in der Ausgaben-Liste, damit Ring und Säulen gleich aussehen
@@ -232,19 +414,15 @@ export function auswertung(box, einstellungen) {
         charts.ein = ring(ringEin, charts.ein, Object.entries(kat.ein || {}).filter(([, v]) => Math.abs(v) > 0.1).map(([n, v], i) => [n, Math.abs(v), FARBEN[(i + 7) % FARBEN.length]]));
 
         // Säulen: netto, wo es eine Netto-Spalte gibt, sonst brutto
-        const nettoNamen = Object.keys(kat.netto || {}).map(norm);
-        const saeulenDaten = ausNamen.map((n, i) => {
-            const nettoName = Object.keys(kat.netto || {}).find((x) => norm(x) === norm(n));
-            const v = nettoNamen.includes(norm(n)) ? kat.netto[nettoName] : kat.aus[n];
-            return [n, Math.abs(v || 0), farbe(n, i)];
-        }).filter((x) => x[1] > 0.1);
+        const ausgaben = ausgabenJeKategorie(kat);
+        const saeulenDaten = ausNamen.map((n, i) => [n, ausgaben[n] || 0, farbe(n, i)]).filter((x) => x[1] > 0.1);
         const budget = Number(w.budgetMonat) || 0;
         if (charts.saeulen) charts.saeulen.destroy();
         const datasets = [{ type: 'bar', label: 'Ausgaben', data: saeulenDaten.map((x) => x[1]), backgroundColor: saeulenDaten.map((x) => x[2]), borderWidth: 0 }];
         if (budget > 0) {
             datasets.push({
                 type: 'line', label: 'Budget', data: saeulenDaten.map(() => budget),
-                borderColor: stil.getPropertyValue('--knopf-rot').trim() || '#B3261E', borderDash: [6, 4], borderWidth: 2, pointRadius: 0, fill: false
+                borderColor: stilFarbe('--knopf-rot', '#B3261E'), borderDash: [6, 4], borderWidth: 2, pointRadius: 0, fill: false
             });
         }
         charts.saeulen = new Chart(saeulen, {
@@ -274,6 +452,9 @@ export function auswertung(box, einstellungen) {
         budgetText.textContent = Math.round(netto) + ' / ' + Math.round(budget) + ' €';
 
         zeigeKacheln(w);
+        const vergleich = vergleichsWerte(w);
+        zeigeVergleich(vergleich, w);
+        zeigeVorjahr(vergleich, w);
         zeigeTabelle();
 
         leeren(bafoeg);

@@ -312,7 +312,8 @@
     border-radius: var(--rund);
 }
 
-.vergleich-gruppe > summary {
+.vergleich-gruppe > summary,
+.finanz-aufklapp > summary {
     min-height: 44px;
     display: flex;
     align-items: center;
@@ -413,13 +414,16 @@
 
 /* Aufklappbare Gruppen: kleines gelbes Dreieck, zeigt nach unten, wenn offen */
 .vergleich-gruppe > summary,
-.doener-krit-gruppe > summary { list-style: none; gap: 10px; }
+.doener-krit-gruppe > summary,
+.finanz-aufklapp > summary { list-style: none; gap: 10px; }
 
 .vergleich-gruppe > summary::-webkit-details-marker,
-.doener-krit-gruppe > summary::-webkit-details-marker { display: none; }
+.doener-krit-gruppe > summary::-webkit-details-marker,
+.finanz-aufklapp > summary::-webkit-details-marker { display: none; }
 
 .vergleich-gruppe > summary::before,
-.doener-krit-gruppe > summary::before {
+.doener-krit-gruppe > summary::before,
+.finanz-aufklapp > summary::before {
     content: "";
     flex: 0 0 auto;
     width: 0;
@@ -431,11 +435,13 @@
 }
 
 .vergleich-gruppe[open] > summary::before,
-.doener-krit-gruppe[open] > summary::before { transform: rotate(90deg); }
+.doener-krit-gruppe[open] > summary::before,
+.finanz-aufklapp[open] > summary::before { transform: rotate(90deg); }
 
 @media (prefers-reduced-motion: reduce) {
     .vergleich-gruppe > summary::before,
-    .doener-krit-gruppe > summary::before { transition: none; }
+    .doener-krit-gruppe > summary::before,
+    .finanz-aufklapp > summary::before { transition: none; }
 }
 
 /* Tracking: Felder je Gruppe in einem Raster (Handy 2 Spalten, PC 3) */
@@ -634,6 +640,11 @@ input[type="date"] { cursor: pointer; }
 .finanz-tabelle .finanz-plus { color: var(--plus-schrift); }
 .finanz-tabelle .finanz-minus { color: var(--minus-schrift); }
 .finanz-neu { margin-top: var(--abstand); }
+.finanz-tabelle tfoot th, .finanz-tabelle tfoot td { font-weight: 700; }
+.finanz-tabelle tfoot tr:first-child th, .finanz-tabelle tfoot tr:first-child td { border-top: 2px solid var(--schrift-leise); }
+.finanz-aufklapp { margin-top: var(--abstand); }
+.finanz-vergleich th, .finanz-vergleich td { padding: 8px 3px; }
+.finanz-aufklapp[open] > summary { margin-bottom: 8px; }
 
 @media (min-width: 768px) {
     .finanz-ringe { grid-template-columns: 1fr 1fr; }
