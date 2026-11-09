@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -368,6 +368,7 @@ unter „Info“ die Version prüfen.
   11.4 (1.3.6): Abschluss, Prüfung Sicherheit und Datenschutz (Bericht `pruefung/rezepte-bericht.md` in den Projektdateien), Plan eingearbeitet.
   Nachbesserung 1.3.7: Rezepte klappen in der Liste auf statt im Fenster (Wunsch der Person, war beim Planen untergegangen).
   Nachbesserung 1.3.8: Mengen ab 0,01 mit zwei Stellen nach dem Komma (Gewürze, Esslöffel), in Rezepten, auf der Liste und im Vorrat. Skript `gemeinsam` geändert.
+  Nachbesserung 1.3.9: Lebensmittel „Einzeln“ nach Abteilung gruppiert wie die Einkaufsliste (A–Z, ohne Abteilung zuletzt).
 
 ### 3.2 Offen
 
@@ -881,3 +882,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.6** Schritt 11.4: Etappe 11 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md eingearbeitet (4 „Einkauf“, Rezepte), `docs/PLAN-ETAPPE-11.md` gelöscht.
 - **1.3.7** Nachbesserung Rezepte: Ein Tipp auf den Titel klappt das Rezept in der Liste auf (statt Fenster).
 - **1.3.8** Nachbesserung Rezepte: Mengen ab 0,01 mit bis zu zwei Stellen nach dem Komma (vorher halbe ab 0,5), Skript `gemeinsam` geändert.
+- **1.3.9** Nachbesserung: Lebensmittel „Einzeln“ nach Abteilung gruppiert (Wunsch der Person, 9.11.2026).
