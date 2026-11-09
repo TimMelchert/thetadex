@@ -674,7 +674,17 @@ export function render(container, ctx) {
                 el('ul', { class: 'einkauf-liste' }, orte.get(o).map(lmZeile))
             ])));
         } else if (treffer.length) {
-            lmTreffer.append(el('ul', { class: 'einkauf-liste' }, treffer.map(lmZeile)));
+            // Nach Abteilung gruppiert wie die Einkaufsliste: A–Z, ohne Abteilung zuletzt (Wunsch der Person, 9.11.2026)
+            const abteilungen = new Map();
+            treffer.forEach((l) => {
+                const abt = l.abteilung || '';
+                if (!abteilungen.has(abt)) abteilungen.set(abt, []);
+                abteilungen.get(abt).push(l);
+            });
+            [...abteilungen.keys()].sort((a, b) => (!a) - (!b) || vergleiche(a, b)).forEach((abt) => lmTreffer.append(el('section', { class: 'besitz-gruppe' }, [
+                el('h2', { class: 'besitz-ort' }, [el('span', { text: abt || 'Ohne Abteilung' }), el('span', { class: 'besitz-zahl', text: String(abteilungen.get(abt).length) })]),
+                el('ul', { class: 'einkauf-liste' }, abteilungen.get(abt).map((l) => lmZeile(l, true)))
+            ])));
         } else if (abteilungFilter.value && !wort) {
             lmTreffer.append(el('p', { class: 'leise', text: nurZuhause.checked ? 'Aus dieser Abteilung ist zuhause nichts eingetragen.' : 'In dieser Abteilung ist nichts.' }));
         } else if (nurZuhause.checked && !wort) {
@@ -691,9 +701,9 @@ export function render(container, ctx) {
         }
     }
 
-    function lmZeile(l) {
+    function lmZeile(l, ohneAbteilung = false) {
         const zahl = aufListe(l.id);
-        const zusatz = [l.abteilung, zahl ? 'auf der Liste: ' + mitEinheit(zahl, l) : '', zuhauseText(l.id)].filter(Boolean).join(' · ');
+        const zusatz = [ohneAbteilung ? '' : l.abteilung, zahl ? 'auf der Liste: ' + mitEinheit(zahl, l) : '', zuhauseText(l.id)].filter(Boolean).join(' · ');
         const an = auswahl.has(l.id);
         return el('li', { class: 'einkauf-zeile einkauf-lm' }, [
             el('button', {
