@@ -10,6 +10,8 @@
 // der Person (Ordner „Thetadex Rezepte“) und kommen nur mit Passwort über die Aktion `bild`. Nur im Arbeitsspeicher.
 // Ab 1.3.7: Ein Tipp auf den Titel klappt das Rezept in der Liste auf, noch ein Tipp klappt es zu (Wunsch der Person, 7.11.2026).
 // Nur „Bearbeiten“ öffnet ein Fenster.
+// Ab 1.3.10: Packung je Lebensmittel (zum Beispiel 1 kg). Hat ein Lebensmittel eine Packung, steht die Menge im Rezept in g oder ml;
+// auf die Einkaufsliste kommt die Zahl der Packungen (1500 g bei 1 kg → 1,5), die Liste zeigt beides (Wunsch der Person, 9.11.2026).
 // Vorrat (4.4, freiwillig): je Lebensmittel Mengen an Orten zuhause. Wo gepflegt, steht „zuhause: …“ dabei.
 // Lebensmittel ankreuzen → „Auf die Einkaufsliste“ → Mengen eintragen. Die Auswahl bleibt bei Suche erhalten.
 // Abgehakte Einträge bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird (Wunsch der Person, 30.10.2026).
@@ -105,7 +107,26 @@ const zweiStellen = (n) => Math.round(n * 100) / 100;
 const zahlText = (n) => String(Number.isFinite(n) ? zweiStellen(n) : n).replace('.', ',');
 // Zahl mit höchstens zwei Stellen nach dem Komma
 const hatZweiStellen = (n) => Math.abs(Math.round(n * 100) - n * 100) < 1e-6;
-const mitEinheit = (n, lm) => zahlText(n) + (lm && lm.einheit ? ' ' + lm.einheit : '');
+// Packung eines Lebensmittels („1000 g“, „750 ml“, auch „1 kg“ oder „0,75 l“ beim Eintippen) → { zahl, einheit, text } oder null
+function packungAus(text) {
+    const m = /^(\d+(?:[.,]\d+)?)\s*(g|kg|ml|l)$/i.exec(String(text || '').trim());
+    if (!m) return null;
+    const e = m[2].toLowerCase();
+    const zahl = Math.round(Number(m[1].replace(',', '.')) * (e === 'kg' || e === 'l' ? 1000 : 1) * 100) / 100;
+    if (!(zahl >= 0.01 && zahl <= 100000)) return null;
+    const einheit = e === 'kg' || e === 'g' ? 'g' : 'ml';
+    return { zahl, einheit, text: String(zahl) + ' ' + einheit };
+}
+const packungVon = (lm) => (lm ? packungAus(lm.packung) : null);
+const mitEinheit = (n, lm) => {
+    const pk = packungVon(lm);
+    return zahlText(n) + (lm && lm.einheit ? ' ' + lm.einheit : (pk ? ' Pck.' : '')) + (pk ? ' (' + zahlText(Math.round(n * pk.zahl * 100) / 100) + ' ' + pk.einheit + ')' : '');
+};
+// Packungen aus g oder ml: auf zwei Stellen, mindestens 0,01
+const packungen = (menge, pk) => Math.max(0.01, Math.round(menge / pk.zahl * 100) / 100);
+// g oder ml umrechnen: ab 10 auf ganze gerundet, darunter auf zwei Stellen
+const rundeGramm = (n) => Math.max(0.01, n >= 10 ? Math.round(n) : Math.round(n * 100) / 100);
+const gueltigeGramm = (n) => Number.isFinite(n) && n >= 0.01 && n <= 100000 && hatZweiStellen(n);
 // Anzahl oder Menge von 0,01 bis 9999, bis zu zwei Stellen nach dem Komma (ab 1.3.8, vorher halbe ab 0,5)
 const gueltigeAnzahl = (n) => Number.isFinite(n) && n >= 0.01 && n <= 9999 && hatZweiStellen(n);
 const leseZahl = (t) => Number(String(t).trim().replace(',', '.'));
@@ -270,6 +291,7 @@ export function render(container, ctx) {
         const abteilung = auswahlFeld({ id: 'einkauf-lm-abteilung', maxlength: 40, placeholder: 'freiwillig, wählen oder eintippen' });
         const einheit = auswahlFeld({ id: 'einkauf-lm-einheit', maxlength: 20, placeholder: 'freiwillig, zum Beispiel Packung' });
         const notiz = el('input', { attrs: { id: 'einkauf-lm-notiz', type: 'text', maxlength: 200, autocomplete: 'off', placeholder: 'freiwillig' } });
+        const packungFeld = el('input', { attrs: { id: 'einkauf-lm-packung', type: 'text', maxlength: 20, autocomplete: 'off', placeholder: 'freiwillig, zum Beispiel 1 kg oder 500 ml', value: lm && lm.packung ? lm.packung : '' } });
         const alle = daten ? daten.lebensmittel : [];
         abteilung.setzeEintraege(alle.map((l) => l.abteilung).filter(Boolean));
         einheit.setzeEintraege(['Stück', 'Packung', ...alle.map((l) => l.einheit).filter(Boolean)]);
@@ -338,6 +360,15 @@ export function render(container, ctx) {
         async function absenden(ev) {
             ev.preventDefault();
             const werte = { name: nameFeld.value.trim(), abteilung: abteilung.feld.value.trim(), einheit: einheit.feld.value.trim(), notiz: notiz.value.trim() };
+            if (daten.packungFelder) {
+                const t = packungFeld.value.trim();
+                if (t && !packungAus(t)) {
+                    status.textContent = 'Packung bitte als Zahl mit g, kg, ml oder l, zum Beispiel 1 kg oder 500 g.';
+                    packungFeld.focus();
+                    return;
+                }
+                werte.packung = t ? packungAus(t).text : '';
+            }
             for (const z of vorratZeilen) {
                 if (z.weg) continue;
                 const menge = leseZahl(z.menge.feld.value);
@@ -403,6 +434,8 @@ export function render(container, ctx) {
                 el('label', { text: 'Name', attrs: { for: 'einkauf-lm-name' } }), nameFeld,
                 el('label', { text: 'Abteilung im Laden', attrs: { for: 'einkauf-lm-abteilung' } }), abteilung.box,
                 el('label', { text: 'Einheit', attrs: { for: 'einkauf-lm-einheit' } }), einheit.box,
+                daten.packungFelder ? el('label', { text: 'Packung (Inhalt)', attrs: { for: 'einkauf-lm-packung' } }) : null,
+                daten.packungFelder ? packungFeld : null,
                 el('label', { text: 'Notiz', attrs: { for: 'einkauf-lm-notiz' } }), notiz,
                 el('h3', { text: 'Zuhause (freiwillig)' }),
                 el('p', { class: 'leise besitz-hinweis', text: 'Wie viel davon zuhause ist und wo. Ohne Ort wird der Vorrat nicht gepflegt.' }),
@@ -465,7 +498,7 @@ export function render(container, ctx) {
                     el('span', { text: abt || 'Ohne Abteilung' }),
                     el('span', { class: 'besitz-zahl', text: String(posten.length) })
                 ]),
-                el('ul', { class: 'einkauf-liste' }, posten.map(listenZeile))
+                el('ul', { class: 'einkauf-liste' }, posten.map((x) => listenZeile(x)))
             ]));
         });
     }
@@ -792,7 +825,26 @@ export function render(container, ctx) {
                 // Zuhause genug da (nur wenn der Vorrat gepflegt ist): nicht angehakt vorgeschlagen
                 const gepflegt = vorratVon(lm.id).length > 0;
                 let an = !(gepflegt && zuhause(lm.id) >= z.menge);
-                const anzahl = anzahlFeld('einkauf-g-' + i, z.menge);
+                // Mit Packung: das Feld zeigt g oder ml, auf die Liste kommen Packungen
+                const pk = packungVon(lm);
+                const basis = pk ? (z.rezept_menge !== '' && z.rezept_menge != null ? z.rezept_menge : rundeGramm(z.menge * pk.zahl)) : z.menge;
+                const anzahl = anzahlFeld('einkauf-g-' + i, basis);
+                const pckText = el('span', { class: 'leise einkauf-klein' });
+                const zeigePck = () => {
+                    const n = leseZahl(anzahl.feld.value);
+                    pckText.textContent = pk && gueltigeGramm(n) ? '= ' + zahlText(packungen(n, pk)) + ' ' + (lm.einheit || 'Pck.') + ' (Packung ' + zahlText(pk.zahl) + ' ' + pk.einheit + ')' : '';
+                };
+                if (pk) {
+                    anzahl.feld.addEventListener('input', zeigePck);
+                    anzahl.box.addEventListener('click', zeigePck);
+                    zeigePck();
+                }
+                // Menge für die Einkaufsliste (Packungen oder Einheit des Lebensmittels) aus dem Feld, oder NaN
+                const listenMenge = () => {
+                    const n = leseZahl(anzahl.feld.value);
+                    if (!pk) return n;
+                    return gueltigeGramm(n) ? packungen(n, pk) : NaN;
+                };
                 const knopf = el('button', {
                     class: 'einkauf-haken' + (an ? ' ist-an' : ''), text: '',
                     attrs: { type: 'button', 'aria-pressed': an ? 'true' : 'false', 'aria-label': lm.name + ' mitnehmen' },
@@ -805,20 +857,25 @@ export function render(container, ctx) {
                 }
                 // Personen diesmal geändert: Menge neu rechnen; der Vorrat-Haken prüft gegen die neue Menge
                 function umrechnenAuf(personen, diesmal) {
-                    const neu = umrechnen(z.menge, personen, diesmal);
-                    anzahl.feld.value = zahlText(neu);
-                    if (gepflegt) setzeAn(!(zuhause(lm.id) >= neu));
+                    if (pk) {
+                        anzahl.feld.value = zahlText(rundeGramm(basis * diesmal / personen));
+                        zeigePck();
+                    } else {
+                        anzahl.feld.value = zahlText(umrechnen(z.menge, personen, diesmal));
+                    }
+                    if (gepflegt) setzeAn(!(zuhause(lm.id) >= listenMenge()));
                 }
                 const schon = aufListe(lm.id);
                 return {
-                    lm, anzahl, an: () => an, umrechnenAuf,
+                    lm, anzahl, an: () => an, umrechnenAuf, listenMenge,
                     zeile: el('li', { class: 'einkauf-zutat' }, [
                         knopf,
                         el('div', { class: 'einkauf-text' }, [
-                            el('label', { class: 'einkauf-lm-name', text: lm.name + (lm.einheit ? ' (' + lm.einheit + ')' : ''), attrs: { for: 'einkauf-g-' + i } }),
+                            el('label', { class: 'einkauf-lm-name', text: lm.name + (pk ? ' (' + pk.einheit + ')' : (lm.einheit ? ' (' + lm.einheit + ')' : '')), attrs: { for: 'einkauf-g-' + i } }),
                             schon ? el('span', { class: 'leise einkauf-klein', text: 'auf der Liste: ' + mitEinheit(schon, lm) }) : null,
                             zuhauseText(lm.id) ? el('span', { class: 'leise einkauf-klein', text: zuhauseText(lm.id) }) : null,
-                            anzahl.box
+                            anzahl.box,
+                            pk ? pckText : null
                         ])
                     ])
                 };
@@ -830,9 +887,9 @@ export function render(container, ctx) {
             const eintraege = [];
             for (const x of zeilen) {
                 if (!x.an()) continue;
-                const n = leseZahl(x.anzahl.feld.value);
+                const n = x.listenMenge();
                 if (!gueltigeAnzahl(n)) {
-                    status.textContent = x.lm.name + ': Menge bitte von 0,01 bis 9999 (bis zu zwei Stellen nach dem Komma).';
+                    status.textContent = x.lm.name + (packungVon(x.lm) ? ': Menge bitte von 0,01 bis 100000 (g oder ml).' : ': Menge bitte von 0,01 bis 9999 (bis zu zwei Stellen nach dem Komma).');
                     x.anzahl.feld.focus();
                     return;
                 }
@@ -963,24 +1020,46 @@ export function render(container, ctx) {
         const zutaten = new Map();
         const zutatenListe = el('ul', { class: 'einkauf-liste' });
         let nr = 0;
-        function zutatDazu(lm, menge = 1) {
+        // Je Zutat links die Menge, rechts (ab 1.3.10) die Packung des Lebensmittels. Mit Packung ist links g oder ml gemeint.
+        function zutatDazu(lm, menge = 1, z = null) {
             if (zutaten.has(lm.id)) return;
             const id = 'einkauf-gf-z' + (nr++);
-            const anzahl = anzahlFeld(id, menge);
+            const pk0 = daten.packungFelder ? packungVon(lm) : null;
+            // Gespeicherte Zutat mit Packung: g oder ml aus rezept_menge, bei älteren Zutaten aus Packungen umgerechnet
+            const start = pk0 && z ? (z.rezept_menge !== '' && z.rezept_menge != null ? z.rezept_menge : rundeGramm(z.menge * pk0.zahl)) : menge;
+            const anzahl = anzahlFeld(id, start);
+            const packung = el('input', { class: 'einkauf-packung', attrs: { id: id + '-pck', type: 'text', maxlength: 20, autocomplete: 'off', placeholder: 'z. B. 1 kg', value: lm.packung || '' } });
+            const mengeLabel = el('label', { class: 'leise einkauf-klein', attrs: { for: id } });
+            const hinweis = el('span', { class: 'leise einkauf-klein' });
+            function zeigeEinheit() {
+                const pk = packungAus(packung.value);
+                mengeLabel.textContent = 'Menge' + (pk ? ' (' + pk.einheit + ')' : (lm.einheit ? ' (' + lm.einheit + ')' : ''));
+                const n = leseZahl(anzahl.feld.value);
+                hinweis.textContent = packung.value.trim() && !pk ? 'Packung bitte mit g, kg, ml oder l.'
+                    : pk && gueltigeGramm(n) ? '= ' + zahlText(packungen(n, pk)) + ' ' + (lm.einheit || 'Pck.') : '';
+            }
+            packung.addEventListener('input', zeigeEinheit);
+            anzahl.feld.addEventListener('input', zeigeEinheit);
+            anzahl.box.addEventListener('click', zeigeEinheit);
+            zeigeEinheit();
             const zeile = el('li', { class: 'einkauf-zutat' }, [
                 el('div', { class: 'einkauf-text' }, [
-                    el('label', { class: 'einkauf-lm-name', text: lm.name + (lm.einheit ? ' (' + lm.einheit + ')' : ''), attrs: { for: id } }),
-                    anzahl.box
+                    el('span', { class: 'einkauf-lm-name', text: lm.name }),
+                    daten.packungFelder ? el('div', { class: 'einkauf-zutat-mengen' }, [
+                        el('div', {}, [mengeLabel, anzahl.box]),
+                        el('div', {}, [el('label', { class: 'leise einkauf-klein', text: 'Packung', attrs: { for: id + '-pck' } }), packung])
+                    ]) : el('div', {}, [mengeLabel, anzahl.box]),
+                    daten.packungFelder ? hinweis : null
                 ]),
                 el('button', {
                     class: 'form-zu', text: '×', attrs: { type: 'button', 'aria-label': lm.name + ' entfernen' },
                     on: { click: () => { zutaten.delete(lm.id); zeile.remove(); } }
                 })
             ]);
-            zutaten.set(lm.id, anzahl);
+            zutaten.set(lm.id, { anzahl, packung });
             zutatenListe.append(zeile);
         }
-        if (g) g.zutaten.forEach((z) => { const l = lmVon(z.lebensmittel_id); if (l) zutatDazu(l, z.menge); });
+        if (g) g.zutaten.forEach((z) => { const l = lmVon(z.lebensmittel_id); if (l) zutatDazu(l, z.menge, z); });
 
         const zSuche = el('input', { attrs: { id: 'einkauf-gf-suche', type: 'search', autocomplete: 'off', placeholder: 'Lebensmittel suchen' }, on: { input: () => zeigeVorschlaege() } });
         const vorschlaege = el('div', { class: 'einkauf-vorschlaege' });
@@ -1083,20 +1162,43 @@ export function render(container, ctx) {
                 link.focus();
                 return;
             }
-            for (const [id, anzahl] of zutaten) {
+            for (const [id, { anzahl, packung }] of zutaten) {
                 const n = leseZahl(anzahl.feld.value);
-                if (!gueltigeAnzahl(n)) {
-                    status.textContent = 'Menge bitte von 0,01 bis 9999 (bis zu zwei Stellen nach dem Komma).';
+                const lmName = (lmVon(id) || {}).name || 'Zutat';
+                if (!daten.packungFelder) {
+                    if (!gueltigeAnzahl(n)) {
+                        status.textContent = lmName + ': Menge bitte von 0,01 bis 9999 (bis zu zwei Stellen nach dem Komma).';
+                        anzahl.feld.focus();
+                        return;
+                    }
+                    werte.zutaten.push({ lebensmittel_id: id, menge: n });
+                    continue;
+                }
+                const t = packung.value.trim();
+                const pk = packungAus(t);
+                if (t && !pk) {
+                    status.textContent = lmName + ': Packung bitte als Zahl mit g, kg, ml oder l, zum Beispiel 1 kg oder 500 g.';
+                    packung.focus();
+                    return;
+                }
+                if (pk ? !gueltigeGramm(n) || packungen(n, pk) > 9999 : !gueltigeAnzahl(n)) {
+                    status.textContent = lmName + (pk ? ': Menge bitte von 0,01 bis 100000 (' + pk.einheit + ').' : ': Menge bitte von 0,01 bis 9999 (bis zu zwei Stellen nach dem Komma).');
                     anzahl.feld.focus();
                     return;
                 }
-                werte.zutaten.push({ lebensmittel_id: id, menge: n });
+                werte.zutaten.push(pk ? { lebensmittel_id: id, menge: packungen(n, pk), rezept_menge: n, packung: pk.text }
+                    : { lebensmittel_id: id, menge: n, rezept_menge: '', packung: '' });
             }
             if (neueFelder && g) werte.bilder = behalten;
             const antwort = await senden(status, knoepfe, 'gericht_speichern', g ? { ...werte, id: g.id, geaendert_am: g.geaendert_am } : werte,
                 'Inzwischen geändert. Text kopieren, neu laden, dann einfügen.');
             if (!antwort) return;
             let neu = antwort.gericht;
+            // Packungen, die das Skript beim Lebensmittel geändert hat
+            (Array.isArray(antwort.lebensmittel) ? antwort.lebensmittel : []).forEach((l) => {
+                const k = daten.lebensmittel.findIndex((x) => x.id === l.id);
+                if (k >= 0) daten.lebensmittel[k] = l;
+            });
             const merke = () => {
                 const i = daten.gerichte.findIndex((x) => x.id === neu.id);
                 if (i >= 0) daten.gerichte[i] = neu; else daten.gerichte.push(neu);
@@ -1266,7 +1368,8 @@ export function render(container, ctx) {
                 liste: [],
                 gerichte: Array.isArray(d.gerichte) ? d.gerichte : [],
                 vorrat: Array.isArray(d.vorrat) ? d.vorrat : [],
-                rezepteFelder: d.rezepte_felder === true   // Skript ab 1.3.4
+                rezepteFelder: d.rezepte_felder === true,   // Skript ab 1.3.4
+                packungFelder: d.packung_felder === true   // Skript ab 1.3.10
             };
             setzeListe(d.liste);
             ladeStatus.textContent = '';

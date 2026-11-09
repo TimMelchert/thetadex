@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.10** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -369,6 +369,7 @@ unter „Info“ die Version prüfen.
   Nachbesserung 1.3.7: Rezepte klappen in der Liste auf statt im Fenster (Wunsch der Person, war beim Planen untergegangen).
   Nachbesserung 1.3.8: Mengen ab 0,01 mit zwei Stellen nach dem Komma (Gewürze, Esslöffel), in Rezepten, auf der Liste und im Vorrat. Skript `gemeinsam` geändert.
   Nachbesserung 1.3.9: Lebensmittel „Einzeln“ nach Abteilung gruppiert wie die Einkaufsliste (A–Z, ohne Abteilung zuletzt).
+  Nachbesserung 1.3.10: Packung je Lebensmittel und Menge im Rezept in g oder ml (Spalten `packung`, `rezept_menge`). Skript `gemeinsam` geändert.
 
 ### 3.2 Offen
 
@@ -488,10 +489,10 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Einkauf, Sheet „Gemeinsam“** (Etappe 4). Alle Blätter haben zusätzlich `id, erstellt_am, geaendert_am, geloescht`; Löschen ist weich.
   | Blatt | Spalten (Grenzen) |
   | --- | --- |
-  | `lebensmittel` | `name` (Pflicht, 60, kein zweites Mal gleich), `abteilung` (40), `einheit` (20), `notiz` (200) |
+  | `lebensmittel` | `name` (Pflicht, 60, kein zweites Mal gleich), `abteilung` (40), `einheit` (20), `notiz` (200); ab 1.3.10 `packung` (Inhalt einer Packung als Text in g oder ml, zum Beispiel „1000 g“; Eingabe auch in kg oder l) |
   | `einkaufsliste` | `lebensmittel_id`, `anzahl` (0,01 bis 9999, bis zu zwei Stellen nach dem Komma; bis 1.3.7 halbe ab 0,5), `gericht_id` (leer = einzeln), `notiz` (100), `abgehakt_am` (setzt das Skript) |
   | `gerichte` (= Rezepte) | `name` (Pflicht, 60), `notiz` (300, alt, wird nicht mehr neu geschrieben), `link` (nur `https://`, 300); ab 1.3.4 `text` (20.000, Zeilenumbrüche bleiben), `personen` (ganze Zahl 1 bis 99 oder leer), `ergibt` (40), `bilder` (JSON-Liste von Drive-Kennungen, höchstens 10); höchstens 500 Rezepte |
-  | `zutaten` | `gericht_id`, `lebensmittel_id`, `menge` (wie `anzahl`); höchstens 50 je Gericht |
+  | `zutaten` | `gericht_id`, `lebensmittel_id`, `menge` (wie `anzahl`, bei Packung = Zahl der Packungen); ab 1.3.10 `rezept_menge` (g oder ml im Rezept, 0,01 bis 100.000, leer = keine); höchstens 50 je Gericht |
   | `vorrat` | `lebensmittel_id`, `ort` (Pflicht, 40), `menge` (0 bis 9999); eine Zeile je Lebensmittel und Ort, keine Zeile = nicht gepflegt |
   - Zwei Passwörter: `APP_PIN` (Rolle `person`) und `PARTNER_PIN` (Rolle `partner`, mindestens 12 Zeichen, anders als `APP_PIN`), gemeinsame Sperre
     nach 5 Fehlversuchen. Das Skript prüft je Aktion, was die Rolle darf (`ERLAUBT_`); in Einkauf dürfen beide alles. `PARTNER_PIN` kennt nur `gemeinsam`.
@@ -523,6 +524,9 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
       Hochgeladene liegen im privaten Drive-Ordner „Thetadex Rezepte“ der Person (Skripteigenschaft `BILD_ORDNER`), auch wenn die Partnerin oder der Partner hochlädt (bestätigt).
       × nimmt ein Bild vom Rezept, die Datei bleibt im Drive. Neue Bilder gehen nach dem Speichern einzeln über `rezept_bild` hoch; schlägt eins fehl, bleiben die übrigen im Fenster.
       Lesen über `bild` nur für Bilder, die bei einem nicht gelöschten Rezept stehen. Über `gericht_speichern` kann keine neue Kennung dazukommen (nur behaltene).
+    - **Packung** (1.3.10, Wunsch der Person, 9.11.2026): Ein Lebensmittel kann eine Packung haben (zum Beispiel 1 kg). Im Rezept steht dann links die Menge in g oder ml,
+      rechts die Packung (ändert sie beim Lebensmittel). Auf die Einkaufsliste kommt die Zahl der Packungen (1500 g bei 1 kg → 1,5), die Liste zeigt „1,5 Packung (1500 g)“.
+      Vorrat zählt in Packungen. Umrechnen in g oder ml: ab 10 auf ganze, darunter auf zwei Stellen.
     - Nur mit Netz: Rezepte und Bilder nur im Arbeitsspeicher; die Einkaufsliste im Gerät hat nur den Namen des Rezepts.
     - Skript: Felder, die eine Anfrage nicht mitschickt (`notiz`, `text`, `personen`, `ergibt`, `bilder`), bleiben unverändert. Langer Text über `bereinigeLang_`
       (Zeilenumbrüche bleiben, höchstens zwei Leerzeilen, Formel-Schutz). Zu langer Text wird abgelehnt, nicht gekürzt. Höchstens 500 Rezepte.
@@ -883,3 +887,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.7** Nachbesserung Rezepte: Ein Tipp auf den Titel klappt das Rezept in der Liste auf (statt Fenster).
 - **1.3.8** Nachbesserung Rezepte: Mengen ab 0,01 mit bis zu zwei Stellen nach dem Komma (vorher halbe ab 0,5), Skript `gemeinsam` geändert.
 - **1.3.9** Nachbesserung: Lebensmittel „Einzeln“ nach Abteilung gruppiert (Wunsch der Person, 9.11.2026).
+- **1.3.10** Nachbesserung: Packung je Lebensmittel, Menge im Rezept in g oder ml, Einkaufsliste zeigt Packungen und g (Spalten `packung`, `rezept_menge`). Dazu: Auf der Einkaufsliste fehlte bei jedem zweiten Eintrag einer Abteilung „für …“.

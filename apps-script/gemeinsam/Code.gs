@@ -13,11 +13,13 @@
 
 var STANDARD_ = ["id", "erstellt_am", "geaendert_am", "geloescht"];
 var BLAETTER_ = {
-  lebensmittel: ["id", "name", "abteilung", "einheit", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
+  // packung (ab 1.3.10): Inhalt einer Packung als Text, zum Beispiel „1000 g“ oder „500 ml“
+  lebensmittel: ["id", "name", "abteilung", "einheit", "notiz", "erstellt_am", "geaendert_am", "geloescht", "packung"],
   einkaufsliste: ["id", "lebensmittel_id", "anzahl", "gericht_id", "notiz", "abgehakt_am", "erstellt_am", "geaendert_am", "geloescht"],
   // gerichte = Rezepte. bilder: JSON-Liste von Drive-Kennungen (ab 1.3.4)
   gerichte: ["id", "name", "notiz", "link", "erstellt_am", "geaendert_am", "geloescht", "text", "personen", "ergibt", "bilder"],
-  zutaten: ["id", "gericht_id", "lebensmittel_id", "menge", "erstellt_am", "geaendert_am", "geloescht"],
+  // menge = Packungen (oder Einheit des Lebensmittels) für die Einkaufsliste; rezept_menge (ab 1.3.10) = g oder ml im Rezept
+  zutaten: ["id", "gericht_id", "lebensmittel_id", "menge", "erstellt_am", "geaendert_am", "geloescht", "rezept_menge"],
   vorrat: ["id", "lebensmittel_id", "ort", "menge", "erstellt_am", "geaendert_am", "geloescht"],
   semester: ["id", "name", "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "erstellt_am", "geaendert_am", "geloescht"],
   // termine: einmalig, mehrtägig, jede Woche an „tage“ (zum Beispiel 1,3 = Mo und Mi) von beginn bis ende,
@@ -31,10 +33,11 @@ var BLAETTER_ = {
 var TEXT_SPALTEN_ = ["id", "name", "abteilung", "einheit", "notiz", "lebensmittel_id", "gericht_id", "link", "ort",
   "semester_id", "modul_id", "stunde_id", "titel", "art", "kuerzel", "bereich", "status",
   "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "von", "bis",
-  "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht", "leistung", "text", "ergibt", "bilder"];
+  "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht", "leistung", "text", "ergibt", "bilder", "packung"];
 var MAX_ = { name: 60, abteilung: 40, einheit: 20, notiz_lm: 200, notiz_liste: 100, notiz_gericht: 300, link: 300, ort: 40,
   text_rezept: 20000, ergibt: 40 };
 var MAX_ZAHL_ = 9999;
+var MAX_PACKUNG_ = 100000;      // höchstens 100 kg oder 100 l je Packung, auch Grenze für rezept_menge (g oder ml)
 var MIN_MENGE_ = 0.01;          // kleinste Menge oder Anzahl (ab 1.3.8, vorher 0,5)
 var MAX_AUF_EINMAL_ = 100;     // höchstens so viele Einträge je Anfrage (auf_liste, abhaken)
 var MAX_ZUTATEN_ = 50;
@@ -298,6 +301,20 @@ function zweiStellen_(n) {
   return Math.round(n * 100) / 100;
 }
 
+// Packung: leer oder Zahl mit g, kg, ml oder l (zum Beispiel „1 kg“, „500 g“, „0,75 l“).
+// Gespeichert wird immer in g oder ml: „1000 g“, „750 ml“. Liefert { wert } oder { fehler }.
+function pruefePackung_(roh) {
+  var t = String(roh == null ? "" : roh).trim().toLowerCase().replace(",", ".");
+  if (!t) return { wert: "" };
+  var m = /^(\d+(?:\.\d+)?)\s*(g|kg|ml|l)$/.exec(t);
+  var fehler = { fehler: "Packung bitte als Zahl mit g, kg, ml oder l, zum Beispiel 1 kg oder 500 g." };
+  if (!m) return fehler;
+  var n = Number(m[1]) * (m[2] === "kg" || m[2] === "l" ? 1000 : 1);
+  n = zweiStellen_(n);
+  if (!isFinite(n) || n < MIN_MENGE_ || n > MAX_PACKUNG_) return fehler;
+  return { wert: String(n) + " " + (m[2] === "kg" || m[2] === "g" ? "g" : "ml") };
+}
+
 function zahl_(v) {
   var n = Number(v);
   return isFinite(n) ? n : 0;
@@ -382,6 +399,7 @@ function lebensmittelAus_(t, z) {
     abteilung: text_(z, t.sp, "abteilung"),
     einheit: text_(z, t.sp, "einheit"),
     notiz: text_(z, t.sp, "notiz"),
+    packung: text_(z, t.sp, "packung"),
     geaendert_am: stempel_(zelle_(z, t.sp, "geaendert_am"))
   };
 }
@@ -425,9 +443,11 @@ function alleGerichte_() {
   zt.zeilen.forEach(function (z) {
     if (!aktiv_(zt, z)) return;
     var gid = String(zelle_(z, zt.sp, "gericht_id"));
+    var rm = zelle_(z, zt.sp, "rezept_menge");
     (zutaten[gid] = zutaten[gid] || []).push({
       lebensmittel_id: String(zelle_(z, zt.sp, "lebensmittel_id")),
-      menge: zahl_(zelle_(z, zt.sp, "menge"))
+      menge: zahl_(zelle_(z, zt.sp, "menge")),
+      rezept_menge: String(rm).trim() === "" ? "" : zahl_(rm)
     });
   });
   return g.zeilen.filter(function (z) { return aktiv_(g, z); }).map(function (z) {
@@ -455,7 +475,8 @@ function alles_() {
     liste: offeneListe_(),
     gerichte: alleGerichte_(),
     vorrat: alleVorraete_(),
-    rezepte_felder: true   // zeigt der App: Dieses Skript kennt Rezepttext, Personen, ergibt und Bilder (ab 1.3.4)
+    rezepte_felder: true,  // zeigt der App: Dieses Skript kennt Rezepttext, Personen, ergibt und Bilder (ab 1.3.4)
+    packung_felder: true   // und Packung und Menge im Rezept in g oder ml (ab 1.3.10)
   };
 }
 
@@ -467,7 +488,8 @@ function lebensmittelSpeichern_(data) {
   var abt = pruefeText_(data.abteilung, MAX_.abteilung, "Abteilung", false);
   var einheit = pruefeText_(data.einheit, MAX_.einheit, "Einheit", false);
   var notiz = pruefeText_(data.notiz, MAX_.notiz_lm, "Notiz", false);
-  var fehler = [name, abt, einheit, notiz].filter(function (p) { return p.fehler; })[0];
+  var packung = pruefePackung_(data.packung);
+  var fehler = [name, abt, einheit, notiz, packung].filter(function (p) { return p.fehler; })[0];
   if (fehler) return { error: "eingabe", message: fehler.fehler };
 
   var t = tabelle_("lebensmittel");
@@ -479,6 +501,7 @@ function lebensmittelSpeichern_(data) {
   if (doppelt) return { error: "doppelt", message: "Ein Lebensmittel mit diesem Namen gibt es schon." };
 
   var werte = { name: name.wert, abteilung: abt.wert, einheit: einheit.wert, notiz: notiz.wert };
+  if ("packung" in data) werte.packung = packung.wert;   // eine ältere App schickt keine Packung: dann bleibt sie
   var i;
   if (!id) {
     i = neu_(t, werte);
@@ -651,7 +674,21 @@ function gerichtSpeichern_(data) {
     schon[lid] = true;
     var menge = pruefeZahl_(zut[k].menge, MIN_MENGE_, "Menge");
     if (menge.fehler) return { error: "eingabe", message: menge.fehler };
-    sauber.push({ lebensmittel_id: lid, menge: menge.wert });
+    // Menge im Rezept in g oder ml (freiwillig) und die Packung des Lebensmittels (freiwillig, ab 1.3.10)
+    var rm = "";
+    if (zut[k].rezept_menge != null && String(zut[k].rezept_menge).trim() !== "") {
+      var r = Number(String(zut[k].rezept_menge).replace(",", "."));
+      if (!isFinite(r) || r < MIN_MENGE_ || r > MAX_PACKUNG_ || Math.abs(Math.round(r * 100) - r * 100) > 1e-6) {
+        return { error: "eingabe", message: "Menge im Rezept bitte von 0,01 bis " + MAX_PACKUNG_ + " (g oder ml)." };
+      }
+      rm = zweiStellen_(r);
+    }
+    var pk = null;
+    if ("packung" in (zut[k] || {})) {
+      pk = pruefePackung_(zut[k].packung);
+      if (pk.fehler) return { error: "eingabe", message: pk.fehler };
+    }
+    sauber.push({ lebensmittel_id: lid, menge: menge.wert, rezept_menge: rm, packung: pk ? pk.wert : null });
   }
 
   var g = tabelle_("gerichte");
@@ -685,9 +722,19 @@ function gerichtSpeichern_(data) {
   zt.zeilen.forEach(function (z, k) {
     if (aktiv_(zt, z) && String(zelle_(z, zt.sp, "gericht_id")) === id) weg_(zt, k);
   });
-  sauber.forEach(function (s) { neu_(zt, { gericht_id: id, lebensmittel_id: s.lebensmittel_id, menge: s.menge }); });
+  sauber.forEach(function (s) { neu_(zt, { gericht_id: id, lebensmittel_id: s.lebensmittel_id, menge: s.menge, rezept_menge: s.rezept_menge }); });
+  // Packung beim Lebensmittel setzen, wenn sie im Rezept geändert wurde. Die App bekommt die geänderten Lebensmittel zurück.
+  var lmt = null, geaendert = [];
+  sauber.forEach(function (s) {
+    if (s.packung === null) return;
+    lmt = lmt || tabelle_("lebensmittel");
+    var k = index_(lmt, s.lebensmittel_id);
+    if (k < 0 || text_(lmt.zeilen[k], lmt.sp, "packung") === s.packung) return;
+    aendere_(lmt, k, { packung: s.packung });
+    geaendert.push(lebensmittelAus_(lmt, lmt.zeilen[k]));
+  });
   var gericht = alleGerichte_().filter(function (x) { return x.id === id; })[0];
-  return { gericht: gericht };
+  return { gericht: gericht, lebensmittel: geaendert };
 }
 
 // Weich löschen mit seinen Zutaten. Lebensmittel bleiben. Offene Einträge auf der Liste bleiben (dann „einzeln“).
