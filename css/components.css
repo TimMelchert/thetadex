@@ -1317,3 +1317,11 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .einkauf-rezept-inhalt { flex: 1 1 100%; min-width: 0; padding-top: 6px; border-top: 1px solid var(--linie); }
 .einkauf-rezept-inhalt .formular { margin-top: 4px; }
 .einkauf-pfeil { display: inline-block; width: 1.1em; }
+/* 1.3.10: im Rezept links Menge, rechts Packung */
+.einkauf-zutat-mengen { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 8px; align-items: end; }
+.einkauf-zutat-mengen > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.einkauf-zutat-mengen .einkauf-anzahl { min-width: 0; }
+.einkauf-zutat-mengen .einkauf-anzahl input { min-width: 0; width: 100%; flex: 1 1 auto; }
+.einkauf-zutat-mengen .einkauf-anzahl .knopf { min-width: 36px; padding: 0 8px; }
+.formular .einkauf-zutat-mengen label { margin-top: 0; }
+.einkauf-packung { min-width: 0; width: 100%; }
