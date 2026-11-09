@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.11** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.12** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -281,6 +281,7 @@ unter „Info“ die Version prüfen.
   - Finanzen: Aktionen `stats`, `analyse` (ab 2.4 mit `kategorien` je Monat: `aus`, `ein`, `netto`), `buchen`, `einstellungen` (ab 2.2: Zwecke, Kategorien, Rückzahlungen, Eigenanteile
     aus Blatt `Einstellungen`, Spalten `liste, name, kategorie, betrag, zweck`). Funktion `einrichten` legt das Blatt an.
     Ab 9.1: Aktion `sms` (ohne Passwort, nur mit `SMS_SCHLUESSEL`, legt eine SMS im Blatt `SMS` als „offen“ ab, antwortet nur `ok`); `einrichten` legt auch das Blatt `SMS` an.
+    Ab 1.3.12 liefert `analyse` auch `zweckAusgaben` (je Monat Ausgaben der festen Zwecke, für die Fixkosten) und `rueckzahlungen` aus Konto, Paypal, Kreditkarte und Portemonnaie, nur für die Zwecke und Kategorien der Liste `rueckzahlung` (vorher nur Konto und nur Abos/Wohnen). Umbuchungen (Kategorie `Transfer`) zählen nicht, `GETEILT` halb.
     Ab 9.2: `smsListe` (offene SMS), `smsErledigt` (`id`, verwerfen), `buchen` mit `sms_id` (bucht und setzt die SMS im selben Lauf auf „gebucht“; ist sie schon erledigt, Fehler `erledigt`). Nach der Zuordnung löscht das Skript Text und Absender. `einstellungen` liefert dazu `smsWoerter` (Liste `sms`: `name` = Suchwort, `zweck`, `kategorie`).
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
@@ -373,8 +374,8 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos.
-- **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen.
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.12 neue Fassung (Fixkosten, Rückzahlungen aus allen Konten) einfügen und bereitstellen.
+- **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Ab 1.3.12 zeigt die Auswertung daraus die Fixkosten (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist).
 
 ---
 
@@ -890,3 +891,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.9** Nachbesserung: Lebensmittel „Einzeln“ nach Abteilung gruppiert (Wunsch der Person, 9.11.2026).
 - **1.3.10** Nachbesserung: Packung je Lebensmittel, Menge im Rezept in g oder ml, Einkaufsliste zeigt Packungen und g (Spalten `packung`, `rezept_menge`). Dazu: Auf der Einkaufsliste fehlte bei jedem zweiten Eintrag einer Abteilung „für …“.
 - **1.3.11** Finanzen → Auswertung (A2, A3): Vergleich mit Vormonat, Durchschnitt der 12 Monate davor und Vorjahr; Kategorien gegen Vorjahr; Jahresverlauf (Säulen Ein/Aus, Linie Bilanz seit Januar); Jahrestabelle mit Budget, Sparquote, Summe und Ø; „Ganzes Jahr“ zählt das Budget nur für Monate mit Buchungen; Bafög zum Aufklappen.
+- **1.3.12** Finanzen → Auswertung (A1): oben Eingenommen und Ausgegeben unter der Bilanz, Budget „… von … verbraucht, … übrig“ mit Satz, was „verbraucht“ ist; Fixkosten unter dem Budget (Skript `finanzen` neu); Säulen ohne Budget-Linie und wie „Monatsnetto“ (ein Plus in einer Netto-Spalte zählt als 0).
