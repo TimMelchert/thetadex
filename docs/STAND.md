@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.10** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.11** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -383,6 +383,7 @@ unter „Info“ die Version prüfen.
 Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von den Grundsätzen (1.2) stehen hier mit Grund.
 
 - **Repo öffentlich** auf GitHub Pages, damit keine Kosten entstehen. Deshalb gelten die Regeln „Script-Adressen“ und „Persönliches“ in 1.5.
+- **Finanzen: Die Rechnung bleibt im Sheet** (Entscheidung der Person, 9.11.2026). Summen je Monat und Kategorie kommen aus den Formeln im Blatt `Analyse Monate`, damit das Sheet auch ohne App funktioniert. Die App rechnet nur aus diesen Summen weiter (Vergleich, Summe, Durchschnitt, Sparquote); kein Rechnen aus den einzelnen Buchungen. Prüfbericht und Plan der Schritte A1–A5: Projektdateien `pruefung/finanz-auswertung-bericht.md`.
 - **Finanzen: keine Finanzdaten öffentlich** (Wunsch der Person, 29.10.2026). Das Finanz-Skript darf ins Repo, weil es keine Daten,
   Beträge oder Geheimnisse enthält. Beträge, Kontostände, Buchungen und Namen erscheinen nie im Repo, auch nicht in Kommentaren,
   Beispielen oder Pull-Request-Texten.
@@ -888,3 +889,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.8** Nachbesserung Rezepte: Mengen ab 0,01 mit bis zu zwei Stellen nach dem Komma (vorher halbe ab 0,5), Skript `gemeinsam` geändert.
 - **1.3.9** Nachbesserung: Lebensmittel „Einzeln“ nach Abteilung gruppiert (Wunsch der Person, 9.11.2026).
 - **1.3.10** Nachbesserung: Packung je Lebensmittel, Menge im Rezept in g oder ml, Einkaufsliste zeigt Packungen und g (Spalten `packung`, `rezept_menge`). Dazu: Auf der Einkaufsliste fehlte bei jedem zweiten Eintrag einer Abteilung „für …“.
+- **1.3.11** Finanzen → Auswertung (A2, A3): Vergleich mit Vormonat, Durchschnitt der 12 Monate davor und Vorjahr; Kategorien gegen Vorjahr; Jahresverlauf (Säulen Ein/Aus, Linie Bilanz seit Januar); Jahrestabelle mit Budget, Sparquote, Summe und Ø; „Ganzes Jahr“ zählt das Budget nur für Monate mit Buchungen; Bafög zum Aufklappen.
