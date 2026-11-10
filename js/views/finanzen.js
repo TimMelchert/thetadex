@@ -11,10 +11,11 @@ import { auswertung } from './finanzen-auswertung.js';
 import { smsBereich } from './finanzen-sms.js';
 
 // Konten wie im Finanz-Skript (KONTEN_). [Wert fürs Skript, Name in der Auswahl, Schlüssel in den Ständen, kurzer Name]
+// Kreditkarte gibt es seit 9.11.2026 nicht mehr (Wunsch der Person): nicht mehr in den Ständen und beim Buchen.
+// Das Blatt im Sheet bleibt mit den alten Buchungen stehen und zählt in „Analyse Monate“ weiter mit.
 const KONTEN = [
     ['Konto', 'Konto (EC)', 'konto', 'Konto'],
     ['Paypal', 'PayPal', 'paypal', 'PayPal'],
-    ['Kreditkarte', 'Kreditkarte', 'kreditkarte', 'Kreditkarte'],
     ['Portemonnaie', 'Portemonnaie (Bar)', 'portemonnaie', 'Bar'],
     ['Muenzglas', 'Münzglas', 'muenzglas', 'Münzen'],
     ['Pfandbons', 'Pfandbons', 'pfandbons', 'Pfand']

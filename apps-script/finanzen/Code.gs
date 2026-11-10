@@ -222,39 +222,58 @@ function getAnalyseData() {
     };
   }
 
-  // Oberste Ebene = aktueller Monat (wie bisher), dazu alle Monate und die Rückzahlungen
+  // Oberste Ebene = aktueller Monat (wie bisher), dazu alle Monate, Rückzahlungen und bezahlte Zwecke (Fixkosten)
+  const zwecke = getZweckSummen_();
   return Object.assign({}, aktuell, {
     jahresUebersicht: jahresUebersicht,
     tabellenJahr: tabellenJahr,
     monate: monate,
-    rueckzahlungen: getRueckzahlungen_(),
+    rueckzahlungen: zwecke.rueckzahlungen,
+    zweckAusgaben: zwecke.ausgaben,
     bafoeg: bafoegData,
     fehlendeSpalten: fehlend
   });
 }
 
-// Summe aller Einnahmen mit Kategorie Abos/Wohnen im Blatt "Konto",
-// sortiert nach Monat und Zweck. Daraus entstehen in der Seite die grünen Haken.
-// Aufbau: { "2026-10": { "<zweck>|wohnen": 12.5, ... }, ... }
-function getRueckzahlungen_() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Konto");
-  var out = {};
-  if (!sheet) return out;
-  var last = sheet.getLastRow();
-  if (last < 8) return out;
-
-  var rows = sheet.getRange(8, 1, last - 7, 6).getValues(); // A=Datum, C=Zweck, D=Kategorie, E=Einnahme
-  rows.forEach(function (r) {
-    var datum = r[0];
-    if (!(datum instanceof Date)) return;
-    var kat = String(r[3]).trim().toLowerCase();
-    var ein = Number(r[4]) || 0;
-    if (ein <= 0 || (kat !== "abos" && kat !== "wohnen")) return;
-
-    var monatKey = datum.getFullYear() + "-" + (datum.getMonth() + 1);
-    var key = String(r[2]).trim().toLowerCase() + "|" + kat;
-    if (!out[monatKey]) out[monatKey] = {};
-    out[monatKey][key] = (out[monatKey][key] || 0) + ein;
+// Summen je Monat und Zweck aus den Blättern Konto, Paypal, Kreditkarte und Portemonnaie (nur lesen).
+// Umbuchungen (Kategorie "Transfer") zählen nicht. Geteilte Ausgaben ("GETEILT") zählen halb, wie im Blatt "Analyse Monate".
+// Daraus entstehen in der Seite die grünen Haken (Rückzahlungen) und die bezahlten Fixkosten.
+// Nur Zwecke aus dem Blatt "Einstellungen": Rückzahlungen (Liste "rueckzahlung") und feste Zwecke (Liste "zweck" mit Betrag).
+// Aufbau: rueckzahlungen { "2026-10": { "<zweck>|<kategorie>": 12.5 } }, ausgaben { "2026-10": { "<zweck>": 30 } }
+function getZweckSummen_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var out = { rueckzahlungen: {}, ausgaben: {} };
+  var einst = einstellungenLesen_();
+  if (einst.error) return out;
+  var rueck = {}, fest = {};
+  einst.rueckzahlungen.forEach(function (r) { rueck[String(r.zweck).trim().toLowerCase() + "|" + String(r.kategorie).trim().toLowerCase()] = true; });
+  einst.zwecke.forEach(function (z) { if (z.betrag) fest[String(z.name).trim().toLowerCase()] = true; });
+  ["Konto", "Paypal", "Kreditkarte", "Portemonnaie"].forEach(function (name) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) return;
+    var last = sheet.getLastRow();
+    if (last < 8) return;
+    var splitSpalte = name === "Portemonnaie" ? 9 : 8; // J bzw. I
+    var rows = sheet.getRange(8, 1, last - 7, 10).getValues(); // A=Datum, C=Zweck, D=Kategorie, E=Einnahme, F=Ausgabe
+    rows.forEach(function (r) {
+      var datum = r[0];
+      if (!(datum instanceof Date)) return;
+      var zweck = String(r[2]).trim().toLowerCase();
+      var kat = String(r[3]).trim().toLowerCase();
+      if (!zweck || kat === "transfer") return;
+      var monatKey = datum.getFullYear() + "-" + (datum.getMonth() + 1);
+      var ein = Number(r[4]) || 0;
+      var aus = Number(r[5]) || 0;
+      if (String(r[splitSpalte]).trim().toUpperCase() === "GETEILT") aus = aus / 2;
+      if (ein > 0 && rueck[zweck + "|" + kat]) {
+        var m = out.rueckzahlungen[monatKey] || (out.rueckzahlungen[monatKey] = {});
+        m[zweck + "|" + kat] = (m[zweck + "|" + kat] || 0) + ein;
+      }
+      if (aus > 0 && fest[zweck]) {
+        var a = out.ausgaben[monatKey] || (out.ausgaben[monatKey] = {});
+        a[zweck] = Math.round(((a[zweck] || 0) + aus) * 100) / 100;
+      }
+    });
   });
   return out;
 }

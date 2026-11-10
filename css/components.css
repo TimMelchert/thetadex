@@ -540,7 +540,7 @@
 .formular .finanz-umbuchung .knopf { margin-top: 6px; align-self: stretch; }
 
 @media (min-width: 768px) {
-    .finanz-konten { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .finanz-konten { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 
 /* Tracking-Übersicht: Tabelle mit farbigen Zellen, Kopf und Datum bleiben beim Scrollen stehen */
@@ -644,6 +644,10 @@ input[type="date"] { cursor: pointer; }
 .finanz-tabelle tfoot tr:first-child th, .finanz-tabelle tfoot tr:first-child td { border-top: 2px solid var(--schrift-leise); }
 .finanz-aufklapp { margin-top: var(--abstand); }
 .finanz-vergleich th, .finanz-vergleich td { padding: 8px 3px; }
+.finanz-konten.finanz-kopfzahlen { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 12px; }
+.finanz-budget-rest { margin: 6px 0 0; }
+.finanz-fix { margin-top: 8px; }
+.finanz-fix > summary { font-size: 0.95rem; font-weight: 600; }
 .finanz-aufklapp[open] > summary { margin-bottom: 8px; }
 
 @media (min-width: 768px) {

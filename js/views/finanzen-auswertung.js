@@ -1,5 +1,5 @@
-// Finanzen → Auswertung: Monats- oder Jahresbilanz, Vergleich (Vormonat, Durchschnitt, Vorjahr), Ringe für Ausgaben und Einnahmen,
-// Säulen mit Budget-Linie, Kategorien gegen Vorjahr, Budget-Balken, Netto-Kacheln mit Haken für Rückzahlungen,
+// Finanzen → Auswertung: Monats- oder Jahresbilanz mit Einnahmen und Ausgaben, Vergleich (Vormonat, Durchschnitt, Vorjahr), Ringe für Ausgaben und Einnahmen,
+// Säulen nach Rückzahlungen, Kategorien gegen Vorjahr, Budget-Balken mit Fixkosten, Netto-Kacheln mit Haken für Rückzahlungen,
 // Jahresverlauf (Säulen und Linie), Jahrestabelle mit Summe, Durchschnitt, Budget und Sparquote, Bafög zum Aufklappen.
 // Die Kategorien kommen allgemein vom Skript (Aktion „analyse“, Feld „kategorien“), keine Namen im Code.
 // Chart.js liegt als lokale Datei in vendor/ und wird erst hier geladen (docs/STAND.md, Abschnitt 4).
@@ -22,13 +22,14 @@ const hatDaten = (m) => Math.abs(Number(m.ausgabenGesamt) || 0) + Math.abs(Numbe
 const sparquote = (bilanz, einnahmen) => (Number(einnahmen) > 0.005 ? Math.round((Number(bilanz) / Number(einnahmen)) * 100) + ' %' : '–');
 const plusMinus = (v) => (v >= 1 ? 'finanz-plus' : v <= -1 ? 'finanz-minus' : '');
 
-// Ausgaben je Kategorie: netto, wo es eine Netto-Spalte gibt, sonst brutto (gleich für Säulen und Vorjahr)
+// Ausgaben je Kategorie: nach Rückzahlungen, wo es eine Netto-Spalte gibt, sonst brutto (gleich für Säulen und Vorjahr).
+// Wie „Monatsnetto“ im Sheet: Ein Plus in einer Netto-Spalte (mehr zurück als ausgegeben) zählt als 0, nicht als Ausgabe.
 function ausgabenJeKategorie(kat) {
     const netto = (kat && kat.netto) || {};
     const aus = {};
     for (const [n, v] of Object.entries((kat && kat.aus) || {})) {
         const nettoName = Object.keys(netto).find((x) => norm(x) === norm(n));
-        aus[n] = Math.abs((nettoName !== undefined ? netto[nettoName] : v) || 0);
+        aus[n] = nettoName !== undefined ? Math.max(0, -(Number(netto[nettoName]) || 0)) : Math.abs(Number(v) || 0);
     }
     return aus;
 }
@@ -87,13 +88,17 @@ export function auswertung(box, einstellungen) {
     const monatWahl = el('select', { attrs: { id: 'finanz-monat', 'aria-label': 'Monat wählen' }, on: { change: () => { wahl = monatWahl.value; zeige(); } } });
     const bilanzTitel = el('span', { class: 'leise' });
     const bilanzWert = el('span', { class: 'finanz-gesamt-wert' });
+    const kopfEin = el('dd');
+    const kopfAus = el('dd');
+    const fixBox = el('details', { class: 'finanz-aufklapp finanz-fix' });
     const ringAus = el('canvas', { attrs: { 'aria-label': 'Ausgaben nach Kategorie', role: 'img' } });
     const ringEin = el('canvas', { attrs: { 'aria-label': 'Einnahmen nach Kategorie', role: 'img' } });
-    const saeulen = el('canvas', { attrs: { 'aria-label': 'Ausgaben netto nach Kategorie mit Budget', role: 'img' } });
+    const saeulen = el('canvas', { attrs: { 'aria-label': 'Ausgaben nach Rückzahlungen je Kategorie', role: 'img' } });
     const saeulenHinweis = el('p', { class: 'leise klein' });
     const budgetText = el('span');
     const budgetTitel = el('span');
     const budgetFuell = el('div', { class: 'finanz-budget-fuell' });
+    const budgetRest = el('p', { class: 'leise klein finanz-budget-rest' });
     const kacheln = el('div', { class: 'finanz-netto' });
     const jahrWahl = el('select', { attrs: { id: 'finanz-tabellenjahr', 'aria-label': 'Jahr der Tabelle' }, on: { change: () => { tabellenJahr = Number(jahrWahl.value); zeigeTabelle(); } } });
     const tabelle = el('tbody');
@@ -117,6 +122,10 @@ export function auswertung(box, einstellungen) {
     box.append(
         el('div', { class: 'karte finanz-staende' }, [
             el('p', { class: 'finanz-gesamt' }, [bilanzWert, bilanzTitel]),
+            el('dl', { class: 'finanz-konten finanz-kopfzahlen' }, [
+                el('div', {}, [el('dt', { text: 'Eingenommen' }), kopfEin]),
+                el('div', {}, [el('dt', { text: 'Ausgegeben' }), kopfAus])
+            ]),
             el('div', { class: 'finanz-monat-zeile' }, [monatWahl])
         ]),
         el('figure', { class: 'karte finanz-ring' }, [vergleichTitel, vergleichBox]),
@@ -130,7 +139,9 @@ export function auswertung(box, einstellungen) {
         vorjahrFigur,
         el('div', { class: 'karte' }, [
             el('p', { class: 'finanz-budget-kopf' }, [budgetTitel, budgetText]),
-            el('div', { class: 'finanz-budget' }, [budgetFuell])
+            el('div', { class: 'finanz-budget' }, [budgetFuell]),
+            budgetRest,
+            fixBox
         ]),
         kacheln,
         el('div', { class: 'finanz-tabelle-kopf' }, [el('h2', { text: 'Jahresübersicht' }), jahrWahl]),
@@ -339,6 +350,37 @@ export function auswertung(box, einstellungen) {
         vorjahrHinweis.textContent = 'Ausgaben netto, größte Kategorie zuerst.';
     }
 
+    // Fixkosten: Zwecke mit Betrag im Blatt „Einstellungen“ (Spalte „betrag“). Bezahlt = Ausgaben mit diesem Zweck im Monat.
+    function zeigeFixkosten(w) {
+        leeren(fixBox);
+        const e = einstellungen() || {};
+        const fest = (Array.isArray(e.zwecke) ? e.zwecke : []).filter((z) => Number(z.betrag) > 0);
+        fixBox.hidden = !fest.length;
+        if (!fest.length) return;
+        if (!daten.zweckAusgaben) {
+            fixBox.append(el('summary', { text: 'Fixkosten' }),
+                el('p', { class: 'leise klein', text: 'Für die Fixkosten bitte die neue Code.gs im Finanz-Skript bereitstellen.' }));
+            return;
+        }
+        const monate = w.istJahr ? (daten.monate || []).filter((m) => m.jahr === w.jahr && (hatDaten(m) || istAktuell(m))) : [w];
+        const bezahlt = (name) => monate.reduce((s, m) => s + (Number((daten.zweckAusgaben[m.jahr + '-' + monatNr(m.monat)] || {})[norm(name)]) || 0), 0);
+        const zeilen = fest.map((z) => ({ name: z.name, soll: Number(z.betrag) * monate.length, ist: bezahlt(z.name) }));
+        const summeIst = zeilen.reduce((s, z) => s + z.ist, 0);
+        const summeSoll = zeilen.reduce((s, z) => s + z.soll, 0);
+        const anzahl = zeilen.filter((z) => z.ist > 0.005).length;
+        fixBox.append(el('summary', { text: 'Fixkosten: ' + (w.istJahr ? '' : anzahl + ' von ' + zeilen.length + ' bezahlt, ') + euro(summeIst) + ' von ' + euro(summeSoll) }));
+        const liste = el('ul', { class: 'finanz-haken' });
+        for (const z of zeilen) {
+            const ok = z.ist > 0.005;
+            liste.append(el('li', { class: ok ? 'ok' : '' }, [
+                el('span', { class: 'finanz-haken-box', text: ok ? '✓' : '', attrs: { 'aria-hidden': 'true' } }),
+                el('span', { text: z.name + (ok ? '' : ' (offen)') }),
+                el('span', { class: 'finanz-haken-betrag', text: euro(z.ist) + ' / ' + euro(z.soll) })
+            ]));
+        }
+        fixBox.append(liste);
+    }
+
     // Netto-Kacheln. Für Kategorien mit Rückzahlungen (Blatt „Einstellungen“): Haken je Person und Rest.
     function zeigeKacheln(w) {
         leeren(kacheln);
@@ -384,9 +426,8 @@ export function auswertung(box, einstellungen) {
 
     async function zeigeDiagramme(w) {
         let Chart;
-        let stilFarbe;
         try {
-            ({ Chart, farbe: stilFarbe } = await chartBereit());
+            ({ Chart } = await chartBereit());
         } catch (e) {
             status.textContent = e.message;
             return;
@@ -416,15 +457,8 @@ export function auswertung(box, einstellungen) {
         // Säulen: netto, wo es eine Netto-Spalte gibt, sonst brutto
         const ausgaben = ausgabenJeKategorie(kat);
         const saeulenDaten = ausNamen.map((n, i) => [n, ausgaben[n] || 0, farbe(n, i)]).filter((x) => x[1] > 0.1);
-        const budget = Number(w.budgetMonat) || 0;
         if (charts.saeulen) charts.saeulen.destroy();
         const datasets = [{ type: 'bar', label: 'Ausgaben', data: saeulenDaten.map((x) => x[1]), backgroundColor: saeulenDaten.map((x) => x[2]), borderWidth: 0 }];
-        if (budget > 0) {
-            datasets.push({
-                type: 'line', label: 'Budget', data: saeulenDaten.map(() => budget),
-                borderColor: stilFarbe('--knopf-rot', '#B3261E'), borderDash: [6, 4], borderWidth: 2, pointRadius: 0, fill: false
-            });
-        }
         charts.saeulen = new Chart(saeulen, {
             data: { labels: saeulenDaten.map((x) => x[0]), datasets },
             options: {
@@ -433,23 +467,35 @@ export function auswertung(box, einstellungen) {
                 scales: { x: { ticks: { font: { size: 10 }, maxRotation: 60 }, grid: { display: false } }, y: { beginAtZero: true } }
             }
         });
-        saeulenHinweis.textContent = budget > 0 ? 'Gestrichelte Linie = Budget (' + euro(budget) + ')' : 'Kein Budget eingetragen (Spalte „Budget-Monat“).';
+        saeulenHinweis.textContent = 'Ausgaben nach Rückzahlungen. Zusammen ergeben sie „verbraucht“ beim Budget.';
     }
 
     function zeige() {
         const w = werte();
         bilanzTitel.textContent = w.istJahr ? 'Jahresbilanz' : 'Monatsbilanz';
         bilanzWert.textContent = euro(w.bilanz);
-        bilanzWert.classList.toggle('finanz-plus', Number(w.bilanz) > 0);
-        bilanzWert.classList.toggle('finanz-minus', Number(w.bilanz) < 0);
+        bilanzWert.classList.toggle('finanz-plus', plusMinus(Number(w.bilanz)) === 'finanz-plus');
+        bilanzWert.classList.toggle('finanz-minus', plusMinus(Number(w.bilanz)) === 'finanz-minus');
+        kopfEin.textContent = euro(w.einnahmenGesamt);
+        kopfAus.textContent = euro(Math.abs(Number(w.ausgabenGesamt) || 0));
 
+        // Budget: verbraucht = Ausgaben nach Rückzahlungen (Spalte „Monatsnetto“), nicht Einnahmen minus Ausgaben
         const netto = Number(w.nettoGesamt) || 0;
         const budget = Number(w.budgetMonat) || 0;
         const prozent = budget > 0 ? Math.min((netto / budget) * 100, 100) : 0;
         budgetFuell.style.width = Math.max(0, prozent) + '%';
         budgetFuell.classList.toggle('warnung', prozent >= 80);
         budgetTitel.textContent = w.istJahr ? 'Budget (Summe Jahr)' : 'Monatsbudget';
-        budgetText.textContent = Math.round(netto) + ' / ' + Math.round(budget) + ' €';
+        if (budget > 0) {
+            budgetText.textContent = euro(netto) + ' von ' + euro(budget);
+            const rest = Math.round((budget - netto) * 100) / 100;
+            budgetRest.textContent = (rest >= 0 ? euro(rest) + ' übrig' : euro(-rest) + ' über dem Budget')
+                + '. Verbraucht = Ausgaben nach Rückzahlungen, ohne Einnahmen.';
+        } else {
+            budgetText.textContent = euro(netto) + ' verbraucht';
+            budgetRest.textContent = 'Kein Budget eingetragen (Spalte „Budget-Monat“).';
+        }
+        zeigeFixkosten(w);
 
         zeigeKacheln(w);
         const vergleich = vergleichsWerte(w);
