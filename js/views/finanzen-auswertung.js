@@ -1,5 +1,5 @@
 // Finanzen → Auswertung: Monats- oder Jahresbilanz mit Einnahmen und Ausgaben, Vergleich (Vormonat, Durchschnitt, Vorjahr), Ringe für Ausgaben und Einnahmen,
-// Säulen nach Rückzahlungen, Kategorien gegen Vorjahr, Budget-Balken mit Fixkosten, Netto-Kacheln mit Haken für Rückzahlungen,
+// Säulen nach Rückzahlungen, Kategorien gegen Vorjahr, Budget-Balken mit festen Ausgaben und Einnahmen, Netto-Kacheln mit Haken für Rückzahlungen,
 // Jahresverlauf (Säulen und Linie), Jahrestabelle mit Summe, Durchschnitt, Budget und Sparquote, Bafög zum Aufklappen.
 // Die Kategorien kommen allgemein vom Skript (Aktion „analyse“, Feld „kategorien“), keine Namen im Code.
 // Chart.js liegt als lokale Datei in vendor/ und wird erst hier geladen (docs/STAND.md, Abschnitt 4).
@@ -90,7 +90,7 @@ export function auswertung(box, einstellungen) {
     const bilanzWert = el('span', { class: 'finanz-gesamt-wert' });
     const kopfEin = el('dd');
     const kopfAus = el('dd');
-    const fixBox = el('details', { class: 'finanz-aufklapp finanz-fix' });
+    const fixBox = el('div');  // feste Ausgaben und feste Einnahmen, je zum Aufklappen
     const ringAus = el('canvas', { attrs: { 'aria-label': 'Ausgaben nach Kategorie', role: 'img' } });
     const ringEin = el('canvas', { attrs: { 'aria-label': 'Einnahmen nach Kategorie', role: 'img' } });
     const saeulen = el('canvas', { attrs: { 'aria-label': 'Ausgaben nach Rückzahlungen je Kategorie', role: 'img' } });
@@ -350,35 +350,53 @@ export function auswertung(box, einstellungen) {
         vorjahrHinweis.textContent = 'Ausgaben netto, größte Kategorie zuerst.';
     }
 
-    // Fixkosten: Zwecke mit Betrag im Blatt „Einstellungen“ (Spalte „betrag“). Bezahlt = Ausgaben mit diesem Zweck im Monat.
+    // Feste Ausgaben und feste Einnahmen: Zwecke mit Betrag im Blatt „Einstellungen“ (Spalte „betrag“).
+    // Einnahme ist ein Zweck, dessen Kategorie es nur bei den Einnahmen gibt (zum Beispiel Job) oder der bisher nur Einnahmen hatte.
+    // Bezahlt bzw. eingegangen = im Monat gibt es eine Buchung mit diesem Zweck.
     function zeigeFixkosten(w) {
         leeren(fixBox);
         const e = einstellungen() || {};
         const fest = (Array.isArray(e.zwecke) ? e.zwecke : []).filter((z) => Number(z.betrag) > 0);
         fixBox.hidden = !fest.length;
         if (!fest.length) return;
-        if (!daten.zweckAusgaben) {
-            fixBox.append(el('summary', { text: 'Fixkosten' }),
-                el('p', { class: 'leise klein', text: 'Für die Fixkosten bitte die neue Code.gs im Finanz-Skript bereitstellen.' }));
+        if (!daten.zweckAusgaben || !daten.zweckEinnahmen) {
+            fixBox.append(el('details', { class: 'finanz-aufklapp finanz-fix' }, [el('summary', { text: 'Feste Ausgaben und Einnahmen' }),
+                el('p', { class: 'leise klein', text: 'Dafür bitte die neue Code.gs im Finanz-Skript bereitstellen (Neue Version).' })]));
             return;
         }
-        const monate = w.istJahr ? (daten.monate || []).filter((m) => m.jahr === w.jahr && (hatDaten(m) || istAktuell(m))) : [w];
-        const bezahlt = (name) => monate.reduce((s, m) => s + (Number((daten.zweckAusgaben[m.jahr + '-' + monatNr(m.monat)] || {})[norm(name)]) || 0), 0);
-        const zeilen = fest.map((z) => ({ name: z.name, soll: Number(z.betrag) * monate.length, ist: bezahlt(z.name) }));
-        const summeIst = zeilen.reduce((s, z) => s + z.ist, 0);
-        const summeSoll = zeilen.reduce((s, z) => s + z.soll, 0);
-        const anzahl = zeilen.filter((z) => z.ist > 0.005).length;
-        fixBox.append(el('summary', { text: 'Fixkosten: ' + (w.istJahr ? '' : anzahl + ' von ' + zeilen.length + ' bezahlt, ') + euro(summeIst) + ' von ' + euro(summeSoll) }));
-        const liste = el('ul', { class: 'finanz-haken' });
-        for (const z of zeilen) {
-            const ok = z.ist > 0.005;
-            liste.append(el('li', { class: ok ? 'ok' : '' }, [
-                el('span', { class: 'finanz-haken-box', text: ok ? '✓' : '', attrs: { 'aria-hidden': 'true' } }),
-                el('span', { text: z.name + (ok ? '' : ' (offen)') }),
-                el('span', { class: 'finanz-haken-betrag', text: euro(z.ist) + ' / ' + euro(z.soll) })
-            ]));
+        const katAus = new Set(), katEin = new Set();
+        for (const m of daten.monate || []) {
+            Object.keys((m.kategorien || {}).aus || {}).forEach((k) => katAus.add(norm(k)));
+            Object.keys((m.kategorien || {}).ein || {}).forEach((k) => katEin.add(norm(k)));
         }
-        fixBox.append(liste);
+        const jemals = (quelle, name) => Object.values(quelle).some((mon) => Number(mon[norm(name)]) > 0);
+        const istEinnahme = (z) => (katEin.has(norm(z.kategorie)) && !katAus.has(norm(z.kategorie)))
+            || (jemals(daten.zweckEinnahmen, z.name) && !jemals(daten.zweckAusgaben, z.name));
+        const monate = w.istJahr ? (daten.monate || []).filter((m) => m.jahr === w.jahr && (hatDaten(m) || istAktuell(m))) : [w];
+        const summe = (quelle, name) => monate.reduce((s, m) => s + (Number((quelle[m.jahr + '-' + monatNr(m.monat)] || {})[norm(name)]) || 0), 0);
+
+        const gruppe = (titel, wort, liste, quelle) => {
+            if (!liste.length) return;
+            const zeilen = liste.map((z) => ({ name: z.name, soll: Number(z.betrag) * monate.length, ist: summe(quelle, z.name) }));
+            const summeIst = zeilen.reduce((s, z) => s + z.ist, 0);
+            const summeSoll = zeilen.reduce((s, z) => s + z.soll, 0);
+            const anzahl = zeilen.filter((z) => z.ist > 0.005).length;
+            const ul = el('ul', { class: 'finanz-haken' });
+            for (const z of zeilen) {
+                const ok = z.ist > 0.005;
+                ul.append(el('li', { class: ok ? 'ok' : '' }, [
+                    el('span', { class: 'finanz-haken-box', text: ok ? '✓' : '', attrs: { 'aria-hidden': 'true' } }),
+                    el('span', { text: z.name + (ok ? '' : ' (offen)') }),
+                    el('span', { class: 'finanz-haken-betrag', text: euro(z.ist) + ' / ' + euro(z.soll) })
+                ]));
+            }
+            fixBox.append(el('details', { class: 'finanz-aufklapp finanz-fix' }, [
+                el('summary', { text: titel + ': ' + (w.istJahr ? '' : anzahl + ' von ' + zeilen.length + ' ' + wort + ', ') + euro(summeIst) + ' von ' + euro(summeSoll) }),
+                ul
+            ]));
+        };
+        gruppe('Feste Ausgaben', 'bezahlt', fest.filter((z) => !istEinnahme(z)), daten.zweckAusgaben);
+        gruppe('Feste Einnahmen', 'eingegangen', fest.filter(istEinnahme), daten.zweckEinnahmen);
     }
 
     // Netto-Kacheln. Für Kategorien mit Rückzahlungen (Blatt „Einstellungen“): Haken je Person und Rest.

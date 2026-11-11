@@ -230,6 +230,7 @@ function getAnalyseData() {
     monate: monate,
     rueckzahlungen: zwecke.rueckzahlungen,
     zweckAusgaben: zwecke.ausgaben,
+    zweckEinnahmen: zwecke.einnahmen,
     bafoeg: bafoegData,
     fehlendeSpalten: fehlend
   });
@@ -239,10 +240,10 @@ function getAnalyseData() {
 // Umbuchungen (Kategorie "Transfer") zählen nicht. Geteilte Ausgaben ("GETEILT") zählen halb, wie im Blatt "Analyse Monate".
 // Daraus entstehen in der Seite die grünen Haken (Rückzahlungen) und die bezahlten Fixkosten.
 // Nur Zwecke aus dem Blatt "Einstellungen": Rückzahlungen (Liste "rueckzahlung") und feste Zwecke (Liste "zweck" mit Betrag).
-// Aufbau: rueckzahlungen { "2026-10": { "<zweck>|<kategorie>": 12.5 } }, ausgaben { "2026-10": { "<zweck>": 30 } }
+// Aufbau: rueckzahlungen { "2026-10": { "<zweck>|<kategorie>": 12.5 } }, ausgaben und einnahmen { "2026-10": { "<zweck>": 30 } }
 function getZweckSummen_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var out = { rueckzahlungen: {}, ausgaben: {} };
+  var out = { rueckzahlungen: {}, ausgaben: {}, einnahmen: {} };
   var einst = einstellungenLesen_();
   if (einst.error) return out;
   var rueck = {}, fest = {};
@@ -272,6 +273,10 @@ function getZweckSummen_() {
       if (aus > 0 && fest[zweck]) {
         var a = out.ausgaben[monatKey] || (out.ausgaben[monatKey] = {});
         a[zweck] = Math.round(((a[zweck] || 0) + aus) * 100) / 100;
+      }
+      if (ein > 0 && fest[zweck]) {
+        var e = out.einnahmen[monatKey] || (out.einnahmen[monatKey] = {});
+        e[zweck] = Math.round(((e[zweck] || 0) + ein) * 100) / 100;
       }
     });
   });

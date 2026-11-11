@@ -1,6 +1,6 @@
 // Thetadex Service Worker
 // VERSION muss exakt gleich sein wie in js/config.js (bei jeder Änderung beide hochzählen).
-const VERSION = '1.3.13';
+const VERSION = '1.3.14';
 const CACHE_NAME = 'thetadex-' + VERSION;
 
 // App-Hülle: alle Dateien, die die App zum Starten braucht. Neue Dateien hier eintragen.
