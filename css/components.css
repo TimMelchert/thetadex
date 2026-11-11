@@ -1353,7 +1353,11 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 /* Reihenfolge im Laden: kleine ↑ ↓ an der Abteilungs-Überschrift */
 .besitz-ort .einkauf-reihe-name { flex: 1 1 auto; min-width: 0; }
 .einkauf-reihe-pfeile { display: flex; gap: 4px; flex: 0 0 auto; align-self: center; }
-.einkauf-reihe-pfeil { min-width: 36px; min-height: 36px; padding: 0; border: 1px solid var(--linie); border-radius: 8px; background: transparent; color: var(--schrift); font: inherit; font-size: 1rem; line-height: 1; cursor: pointer; opacity: .75; }
+.einkauf-reihe-pfeil { position: relative; width: 36px; height: 36px; padding: 0; border: 1px solid var(--linie); border-radius: 8px; background: transparent; cursor: pointer; opacity: .75; }
+/* Pfeil als ^ oder v, mit CSS gezeichnet (sieht auf allen Geräten gleich aus) */
+.einkauf-reihe-pfeil::before { content: ''; position: absolute; left: 50%; top: 50%; width: 9px; height: 9px; border-left: 2px solid var(--schrift); border-top: 2px solid var(--schrift); }
+.einkauf-reihe-pfeil.ist-hoch::before { transform: translate(-50%, -25%) rotate(45deg); }
+.einkauf-reihe-pfeil.ist-runter::before { transform: translate(-50%, -75%) rotate(225deg); }
 .einkauf-reihe-pfeil:hover, .einkauf-reihe-pfeil:focus-visible { opacity: 1; }
 .einkauf-reihe-pfeil:disabled { opacity: .25; cursor: default; }
 .einkauf-reihe-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 4px; min-height: 0; }
