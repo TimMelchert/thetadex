@@ -78,6 +78,7 @@ function doPost(e) {
     if (data.action === "stats")   return jsonOut_(getStats());
     if (data.action === "einstellungen") return jsonOut_(einstellungenLesen_());
     if (data.action === "analyse") return jsonOut_(getAnalyseData());
+    if (data.action === "buchungen") return jsonOut_(buchungenLesen_(data));
     if (data.action === "smsListe") return jsonOut_(smsListe_());
     if (data.action === "smsErledigt") return jsonOut_(mitSperre_(function () { return smsErledigt_(data.id); }));
 
@@ -281,6 +282,52 @@ function getZweckSummen_() {
     });
   });
   return out;
+}
+
+// Buchungen eines Monats oder Jahres aus dem Hilfsblatt "Alle Buchungen" (nur lesen), für "Letzte Buchungen"
+// und "Größte Ausgaben" in der Auswertung. Ohne Umbuchungen (Kategorie "Transfer"). "aus" ist der eigene Anteil
+// (GETEILT halb), wie in "Analyse Monate". Spalten werden über ihre Namen in Zeile 1 gesucht.
+function buchungenLesen_(data) {
+  var jahr = Number(data.jahr);
+  if (!(jahr >= 2000 && jahr <= 2100) || Math.floor(jahr) !== jahr) return { error: "eingabe", message: "Jahr ungültig" };
+  var monat = data.monat ? String(data.monat) : "";
+  if (monat && MONATE_.indexOf(monat) === -1) return { error: "eingabe", message: "Monat ungültig" };
+
+  var blatt = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alle Buchungen");
+  if (!blatt) return { error: "blatt", message: "Blatt 'Alle Buchungen' fehlt (siehe Anleitung in den Projektdateien)." };
+  var last = blatt.getLastRow();
+  if (last < 2) return { buchungen: [] };
+  var werte = blatt.getRange(1, 1, last, blatt.getLastColumn()).getValues();
+  var kopf = werte[0].map(function (h) { return String(h).trim().toLowerCase(); });
+  var sp = {};
+  ["konto", "datum", "monat", "zweck", "kategorie", "einnahme", "ausgabe anteil", "geteilt", "jahr"].forEach(function (n) { sp[n] = kopf.indexOf(n); });
+  if (sp.datum === -1 || sp.monat === -1 || sp.jahr === -1 || sp.kategorie === -1) {
+    return { error: "blatt", message: "Im Blatt 'Alle Buchungen' fehlen Spalten in Zeile 1 (Datum, Monat, Kategorie, Jahr)." };
+  }
+  var zelle = function (z, n) { return sp[n] === -1 ? "" : z[sp[n]]; };
+  var tz = Session.getScriptTimeZone();
+  var aus = [];
+  for (var i = 1; i < werte.length && aus.length < 2000; i++) {
+    var z = werte[i];
+    if (Number(zelle(z, "jahr")) !== jahr) continue;
+    if (monat && String(zelle(z, "monat")).trim() !== monat) continue;
+    var kat = String(zelle(z, "kategorie")).trim();
+    if (kat.toLowerCase() === "transfer") continue;
+    var ein = Number(zelle(z, "einnahme")) || 0;
+    var ausg = Number(zelle(z, "ausgabe anteil")) || 0;
+    if (!ein && !ausg) continue;
+    var d = zelle(z, "datum");
+    aus.push({
+      datum: d instanceof Date ? Utilities.formatDate(d, tz, "yyyy-MM-dd") : String(d),
+      konto: String(zelle(z, "konto")),
+      zweck: String(zelle(z, "zweck")),
+      kategorie: kat,
+      ein: Math.round(ein * 100) / 100,
+      aus: Math.round(ausg * 100) / 100,
+      geteilt: String(zelle(z, "geteilt")).trim().toUpperCase() === "GETEILT"
+    });
+  }
+  return { buchungen: aus };
 }
 
 // --- 4. BUCHUNGEN ---

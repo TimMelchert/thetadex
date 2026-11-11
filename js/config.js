@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '1.3.14';
+export const VERSION = '1.3.15';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {

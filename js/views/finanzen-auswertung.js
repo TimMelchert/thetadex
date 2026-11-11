@@ -1,5 +1,6 @@
 // Finanzen → Auswertung: Monats- oder Jahresbilanz mit Einnahmen und Ausgaben, Vergleich (Vormonat, Durchschnitt, Vorjahr), Ringe für Ausgaben und Einnahmen,
-// Säulen nach Rückzahlungen, Kategorien gegen Vorjahr, Budget-Balken mit festen Ausgaben und Einnahmen, Netto-Kacheln mit Haken für Rückzahlungen,
+// Säulen nach Rückzahlungen, Kategorien gegen Vorjahr, Budget-Balken mit festen Ausgaben und Einnahmen, Netto-Kacheln,
+// größte Ausgaben und letzte Buchungen (Aktion „buchungen“, nur bei Bedarf geladen), mit Haken für Rückzahlungen,
 // Jahresverlauf (Säulen und Linie), Jahrestabelle mit Summe, Durchschnitt, Budget und Sparquote, Bafög zum Aufklappen.
 // Die Kategorien kommen allgemein vom Skript (Aktion „analyse“, Feld „kategorien“), keine Namen im Code.
 // Chart.js liegt als lokale Datei in vendor/ und wird erst hier geladen (docs/STAND.md, Abschnitt 4).
@@ -82,6 +83,11 @@ export function auswertung(box, einstellungen) {
     let daten = null;
     let wahl = null;        // „M|2026|Oktober“ oder „J|2026“
     let tabellenJahr = null;
+    let buchCache = {};       // geladene Buchungen je Monat oder Jahr (nur im Speicher, nie im Gerät)
+    let buchSchluessel = null;
+    let buchListe = [];
+    let buchIstJahr = false;
+    let alleZeigen = false;
     const charts = {};
 
     const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
@@ -100,6 +106,12 @@ export function auswertung(box, einstellungen) {
     const budgetFuell = el('div', { class: 'finanz-budget-fuell' });
     const budgetRest = el('p', { class: 'leise klein finanz-budget-rest' });
     const kacheln = el('div', { class: 'finanz-netto' });
+    const groessteTitel = el('figcaption', { text: 'Größte Ausgaben' });
+    const groessteListe = el('ul', { class: 'finanz-buchliste' });
+    const buchHinweis = el('p', { class: 'leise klein' });
+    const letzteListe = el('ul', { class: 'finanz-buchliste' });
+    const alleKnopf = el('button', { class: 'knopf knopf-zweit finanz-alle', attrs: { type: 'button' }, on: { click: () => { alleZeigen = true; zeigeBuchungenListe(); } } });
+    const letzteFigur = el('figure', { class: 'karte finanz-ring' }, [el('figcaption', { text: 'Letzte Buchungen' }), letzteListe, alleKnopf]);
     const jahrWahl = el('select', { attrs: { id: 'finanz-tabellenjahr', 'aria-label': 'Jahr der Tabelle' }, on: { change: () => { tabellenJahr = Number(jahrWahl.value); zeigeTabelle(); } } });
     const tabelle = el('tbody');
     const tabelleFuss = el('tfoot');
@@ -144,6 +156,7 @@ export function auswertung(box, einstellungen) {
             fixBox
         ]),
         kacheln,
+        el('div', { class: 'finanz-ringe' }, [el('figure', { class: 'karte finanz-ring' }, [groessteTitel, groessteListe, buchHinweis]), letzteFigur]),
         el('div', { class: 'finanz-tabelle-kopf' }, [el('h2', { text: 'Jahresübersicht' }), jahrWahl]),
         jahrFigur,
         el('div', { class: 'finanz-tabelle-box' }, [el('table', { class: 'finanz-tabelle' }, [
@@ -399,6 +412,64 @@ export function auswertung(box, einstellungen) {
         gruppe('Feste Einnahmen', 'eingegangen', fest.filter(istEinnahme), daten.zweckEinnahmen);
     }
 
+    // Größte Ausgaben und letzte Buchungen: erst laden, wenn ein Monat oder Jahr gezeigt wird
+    async function zeigeBuchungen(w) {
+        const jahr = Number(w.jahr);
+        const monat = MONATE[monatNr(w.monat) - 1];
+        const key = w.istJahr ? 'J|' + jahr : 'M|' + jahr + '|' + monat;
+        buchSchluessel = key;
+        buchIstJahr = !!w.istJahr;
+        alleZeigen = false;
+        letzteFigur.hidden = buchIstJahr;
+        groessteTitel.textContent = buchIstJahr ? 'Größte Ausgaben im Jahr' : 'Größte Ausgaben im Monat';
+        if (!buchCache[key]) {
+            leeren(groessteListe);
+            leeren(letzteListe);
+            alleKnopf.hidden = true;
+            buchHinweis.textContent = 'Buchungen werden geladen …';
+            try {
+                const antwort = await api('finanzen', 'buchungen', buchIstJahr ? { jahr } : { jahr, monat });
+                buchCache[key] = Array.isArray(antwort.buchungen) ? antwort.buchungen : [];
+            } catch (e) {
+                if (buchSchluessel === key) {
+                    buchHinweis.textContent = e.code === 'aktion'
+                        ? 'Für die Buchungen bitte die neue Code.gs im Finanz-Skript bereitstellen (Neue Version).'
+                        : 'Buchungen: ' + e.message;
+                }
+                return;
+            }
+        }
+        if (buchSchluessel !== key) return;
+        buchListe = buchCache[key];
+        zeigeBuchungenListe();
+    }
+
+    function buchZeile(b) {
+        const betrag = b.aus > 0 ? -b.aus : b.ein;
+        const teile = String(b.datum).split('-');
+        return el('li', {}, [
+            el('span', { class: 'finanz-buch-datum', text: teile.length === 3 ? teile[2] + '.' + teile[1] + '.' : String(b.datum) }),
+            el('span', { class: 'finanz-buch-text' }, [
+                el('span', { class: 'finanz-buch-zweck', text: b.zweck || b.kategorie || '–' }),
+                el('span', { class: 'leise klein', text: [b.kategorie, b.konto, b.geteilt ? 'geteilt (halb)' : ''].filter(Boolean).join(' · ') })
+            ]),
+            el('span', { class: 'finanz-buch-betrag ' + (betrag < 0 ? 'finanz-minus' : 'finanz-plus'), text: euro(betrag) })
+        ]);
+    }
+
+    function zeigeBuchungenListe() {
+        leeren(groessteListe);
+        leeren(letzteListe);
+        const groesste = buchListe.filter((b) => b.aus > 0).sort((a, b) => b.aus - a.aus).slice(0, buchIstJahr ? 10 : 5);
+        groesste.forEach((b) => groessteListe.append(buchZeile(b)));
+        buchHinweis.textContent = groesste.length ? 'Dein Anteil, geteilte Ausgaben zählen halb.' : 'Keine Ausgaben.';
+        const neueste = buchListe.slice().sort((a, b) => String(b.datum).localeCompare(String(a.datum)));
+        (alleZeigen ? neueste : neueste.slice(0, 10)).forEach((b) => letzteListe.append(buchZeile(b)));
+        if (!neueste.length) letzteListe.append(el('li', { class: 'leise', text: 'Keine Buchungen.' }));
+        alleKnopf.hidden = alleZeigen || neueste.length <= 10;
+        alleKnopf.textContent = 'Alle ' + neueste.length + ' zeigen';
+    }
+
     // Netto-Kacheln. Für Kategorien mit Rückzahlungen (Blatt „Einstellungen“): Haken je Person und Rest.
     function zeigeKacheln(w) {
         leeren(kacheln);
@@ -516,6 +587,7 @@ export function auswertung(box, einstellungen) {
         zeigeFixkosten(w);
 
         zeigeKacheln(w);
+        zeigeBuchungen(w);
         const vergleich = vergleichsWerte(w);
         zeigeVergleich(vergleich, w);
         zeigeVorjahr(vergleich, w);
@@ -537,6 +609,7 @@ export function auswertung(box, einstellungen) {
         status.textContent = 'Auswertung wird geladen …';
         try {
             daten = await api('finanzen', 'analyse');
+            buchCache = {};
             if (!daten.monate) daten.monate = [];
             baueAuswahl();
             zeige();
