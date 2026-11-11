@@ -1,5 +1,6 @@
 // Finanzen → Auswertung: Monats- oder Jahresbilanz mit Einnahmen und Ausgaben, Vergleich (Vormonat, Durchschnitt, Vorjahr), Ringe für Ausgaben und Einnahmen,
-// Säulen nach Rückzahlungen, Kategorien gegen Vorjahr, Budget-Balken mit Fixkosten, Netto-Kacheln mit Haken für Rückzahlungen,
+// Säulen nach Rückzahlungen, Kategorien gegen Vorjahr, Budget-Balken mit festen Ausgaben und Einnahmen, Netto-Kacheln,
+// größte Ausgaben und letzte Buchungen (Aktion „buchungen“, nur bei Bedarf geladen), Vermögensverlauf, mit Haken für Rückzahlungen,
 // Jahresverlauf (Säulen und Linie), Jahrestabelle mit Summe, Durchschnitt, Budget und Sparquote, Bafög zum Aufklappen.
 // Die Kategorien kommen allgemein vom Skript (Aktion „analyse“, Feld „kategorien“), keine Namen im Code.
 // Chart.js liegt als lokale Datei in vendor/ und wird erst hier geladen (docs/STAND.md, Abschnitt 4).
@@ -82,6 +83,11 @@ export function auswertung(box, einstellungen) {
     let daten = null;
     let wahl = null;        // „M|2026|Oktober“ oder „J|2026“
     let tabellenJahr = null;
+    let buchCache = {};       // geladene Buchungen je Monat oder Jahr (nur im Speicher, nie im Gerät)
+    let buchSchluessel = null;
+    let buchListe = [];
+    let buchIstJahr = false;
+    let alleZeigen = false;
     const charts = {};
 
     const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
@@ -90,7 +96,7 @@ export function auswertung(box, einstellungen) {
     const bilanzWert = el('span', { class: 'finanz-gesamt-wert' });
     const kopfEin = el('dd');
     const kopfAus = el('dd');
-    const fixBox = el('details', { class: 'finanz-aufklapp finanz-fix' });
+    const fixBox = el('div');  // feste Ausgaben und feste Einnahmen, je zum Aufklappen
     const ringAus = el('canvas', { attrs: { 'aria-label': 'Ausgaben nach Kategorie', role: 'img' } });
     const ringEin = el('canvas', { attrs: { 'aria-label': 'Einnahmen nach Kategorie', role: 'img' } });
     const saeulen = el('canvas', { attrs: { 'aria-label': 'Ausgaben nach Rückzahlungen je Kategorie', role: 'img' } });
@@ -100,6 +106,12 @@ export function auswertung(box, einstellungen) {
     const budgetFuell = el('div', { class: 'finanz-budget-fuell' });
     const budgetRest = el('p', { class: 'leise klein finanz-budget-rest' });
     const kacheln = el('div', { class: 'finanz-netto' });
+    const groessteTitel = el('figcaption', { text: 'Größte Ausgaben' });
+    const groessteListe = el('ul', { class: 'finanz-buchliste' });
+    const buchHinweis = el('p', { class: 'leise klein' });
+    const letzteListe = el('ul', { class: 'finanz-buchliste' });
+    const alleKnopf = el('button', { class: 'knopf knopf-zweit finanz-alle', attrs: { type: 'button' }, on: { click: () => { alleZeigen = true; zeigeBuchungenListe(); } } });
+    const letzteFigur = el('figure', { class: 'karte finanz-ring' }, [el('figcaption', { text: 'Letzte Buchungen' }), letzteListe, alleKnopf]);
     const jahrWahl = el('select', { attrs: { id: 'finanz-tabellenjahr', 'aria-label': 'Jahr der Tabelle' }, on: { change: () => { tabellenJahr = Number(jahrWahl.value); zeigeTabelle(); } } });
     const tabelle = el('tbody');
     const tabelleFuss = el('tfoot');
@@ -114,6 +126,11 @@ export function auswertung(box, einstellungen) {
     ]);
     const jahrCanvas = el('canvas', { attrs: { 'aria-label': 'Einnahmen und Ausgaben je Monat mit Bilanz seit Januar', role: 'img' } });
     const jahrHinweis = el('p', { class: 'leise klein' });
+    const vermoegenCanvas = el('canvas', { attrs: { 'aria-label': 'Vermögen am Ende jedes Monats', role: 'img' } });
+    const vermoegenHinweis = el('p', { class: 'leise klein' });
+    const vermoegenFigur = el('figure', { class: 'karte finanz-ring' }, [
+        el('figcaption', { text: 'Vermögen am Monatsende' }), el('div', { class: 'finanz-diagramm finanz-diagramm-breit' }, [vermoegenCanvas]), vermoegenHinweis
+    ]);
     const jahrFigur = el('figure', { class: 'karte finanz-ring' }, [
         el('figcaption', { text: 'Verlauf im Jahr' }), el('div', { class: 'finanz-diagramm finanz-diagramm-breit' }, [jahrCanvas]), jahrHinweis
     ]);
@@ -144,8 +161,10 @@ export function auswertung(box, einstellungen) {
             fixBox
         ]),
         kacheln,
+        el('div', { class: 'finanz-ringe' }, [el('figure', { class: 'karte finanz-ring' }, [groessteTitel, groessteListe, buchHinweis]), letzteFigur]),
         el('div', { class: 'finanz-tabelle-kopf' }, [el('h2', { text: 'Jahresübersicht' }), jahrWahl]),
         jahrFigur,
+        vermoegenFigur,
         el('div', { class: 'finanz-tabelle-box' }, [el('table', { class: 'finanz-tabelle' }, [
             el('thead', {}, [el('tr', {}, ['Monat', 'Ausgaben', 'Einnahmen', 'Bilanz', 'Budget', 'Sparquote'].map((t) => el('th', { text: t, attrs: { scope: 'col' } })))]),
             tabelle,
@@ -264,6 +283,43 @@ export function auswertung(box, einstellungen) {
             : 'Für dieses Jahr gibt es noch keine Buchungen.';
     }
 
+    // Vermögensverlauf: Stand aller Konten am Ende jedes Monats (vom Skript rückwärts vom heutigen Stand gerechnet)
+    async function zeigeVermoegen() {
+        const v = daten.vermoegen;
+        const verlauf = v && Array.isArray(v.verlauf) ? v.verlauf : [];
+        vermoegenFigur.hidden = !v;
+        if (!v) return;
+        if (charts.vermoegen) { charts.vermoegen.destroy(); charts.vermoegen = null; }
+        if (!verlauf.length) {
+            vermoegenHinweis.textContent = 'Noch keine Werte.';
+            return;
+        }
+        let c;
+        try {
+            c = await chartBereit();
+        } catch (e) {
+            status.textContent = e.message;
+            return;
+        }
+        if (charts.vermoegen) charts.vermoegen.destroy();
+        charts.vermoegen = new c.Chart(vermoegenCanvas, {
+            type: 'line',
+            data: {
+                labels: verlauf.map((p) => MONATE[p.monat - 1].slice(0, 3) + ' ' + String(p.jahr).slice(2)),
+                datasets: [{ label: 'Vermögen', data: verlauf.map((p) => p.wert), borderColor: c.farbe('--farbe-finanzen', '#8DB580'),
+                    backgroundColor: c.farbe('--farbe-finanzen', '#8DB580'), borderWidth: 2, pointRadius: verlauf.length > 36 ? 0 : 2, fill: false, tension: 0.2 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } } }
+            }
+        });
+        const letzter = verlauf[verlauf.length - 1];
+        vermoegenHinweis.textContent = 'Heute: ' + euro(letzter.wert) + ' (wie „Vermögen aktuell“ beim Buchen).'
+            + (v.fehlend && v.fehlend.length ? ' Nicht gefunden: Spalte „Haben aktuell“ in ' + v.fehlend.join(', ') + '.' : '');
+    }
+
     // Vergleichswerte: beim Monat Vormonat, Durchschnitt der 12 Monate davor und Vorjahresmonat;
     // beim Jahr dasselbe Stück des Vorjahres (zum Beispiel Januar bis November).
     function vergleichsWerte(w) {
@@ -350,35 +406,111 @@ export function auswertung(box, einstellungen) {
         vorjahrHinweis.textContent = 'Ausgaben netto, größte Kategorie zuerst.';
     }
 
-    // Fixkosten: Zwecke mit Betrag im Blatt „Einstellungen“ (Spalte „betrag“). Bezahlt = Ausgaben mit diesem Zweck im Monat.
+    // Feste Ausgaben und feste Einnahmen: Zwecke mit Betrag im Blatt „Einstellungen“ (Spalte „betrag“).
+    // Einnahme ist ein Zweck, dessen Kategorie es nur bei den Einnahmen gibt (zum Beispiel Job) oder der bisher nur Einnahmen hatte.
+    // Bezahlt bzw. eingegangen = im Monat gibt es eine Buchung mit diesem Zweck.
     function zeigeFixkosten(w) {
         leeren(fixBox);
         const e = einstellungen() || {};
         const fest = (Array.isArray(e.zwecke) ? e.zwecke : []).filter((z) => Number(z.betrag) > 0);
         fixBox.hidden = !fest.length;
         if (!fest.length) return;
-        if (!daten.zweckAusgaben) {
-            fixBox.append(el('summary', { text: 'Fixkosten' }),
-                el('p', { class: 'leise klein', text: 'Für die Fixkosten bitte die neue Code.gs im Finanz-Skript bereitstellen.' }));
+        if (!daten.zweckAusgaben || !daten.zweckEinnahmen) {
+            fixBox.append(el('details', { class: 'finanz-aufklapp finanz-fix' }, [el('summary', { text: 'Feste Ausgaben und Einnahmen' }),
+                el('p', { class: 'leise klein', text: 'Dafür bitte die neue Code.gs im Finanz-Skript bereitstellen (Neue Version).' })]));
             return;
         }
-        const monate = w.istJahr ? (daten.monate || []).filter((m) => m.jahr === w.jahr && (hatDaten(m) || istAktuell(m))) : [w];
-        const bezahlt = (name) => monate.reduce((s, m) => s + (Number((daten.zweckAusgaben[m.jahr + '-' + monatNr(m.monat)] || {})[norm(name)]) || 0), 0);
-        const zeilen = fest.map((z) => ({ name: z.name, soll: Number(z.betrag) * monate.length, ist: bezahlt(z.name) }));
-        const summeIst = zeilen.reduce((s, z) => s + z.ist, 0);
-        const summeSoll = zeilen.reduce((s, z) => s + z.soll, 0);
-        const anzahl = zeilen.filter((z) => z.ist > 0.005).length;
-        fixBox.append(el('summary', { text: 'Fixkosten: ' + (w.istJahr ? '' : anzahl + ' von ' + zeilen.length + ' bezahlt, ') + euro(summeIst) + ' von ' + euro(summeSoll) }));
-        const liste = el('ul', { class: 'finanz-haken' });
-        for (const z of zeilen) {
-            const ok = z.ist > 0.005;
-            liste.append(el('li', { class: ok ? 'ok' : '' }, [
-                el('span', { class: 'finanz-haken-box', text: ok ? '✓' : '', attrs: { 'aria-hidden': 'true' } }),
-                el('span', { text: z.name + (ok ? '' : ' (offen)') }),
-                el('span', { class: 'finanz-haken-betrag', text: euro(z.ist) + ' / ' + euro(z.soll) })
-            ]));
+        const katAus = new Set(), katEin = new Set();
+        for (const m of daten.monate || []) {
+            Object.keys((m.kategorien || {}).aus || {}).forEach((k) => katAus.add(norm(k)));
+            Object.keys((m.kategorien || {}).ein || {}).forEach((k) => katEin.add(norm(k)));
         }
-        fixBox.append(liste);
+        const jemals = (quelle, name) => Object.values(quelle).some((mon) => Number(mon[norm(name)]) > 0);
+        const istEinnahme = (z) => (katEin.has(norm(z.kategorie)) && !katAus.has(norm(z.kategorie)))
+            || (jemals(daten.zweckEinnahmen, z.name) && !jemals(daten.zweckAusgaben, z.name));
+        const monate = w.istJahr ? (daten.monate || []).filter((m) => m.jahr === w.jahr && (hatDaten(m) || istAktuell(m))) : [w];
+        const summe = (quelle, name) => monate.reduce((s, m) => s + (Number((quelle[m.jahr + '-' + monatNr(m.monat)] || {})[norm(name)]) || 0), 0);
+
+        const gruppe = (titel, wort, liste, quelle) => {
+            if (!liste.length) return;
+            const zeilen = liste.map((z) => ({ name: z.name, soll: Number(z.betrag) * monate.length, ist: summe(quelle, z.name) }));
+            const summeIst = zeilen.reduce((s, z) => s + z.ist, 0);
+            const summeSoll = zeilen.reduce((s, z) => s + z.soll, 0);
+            const anzahl = zeilen.filter((z) => z.ist > 0.005).length;
+            const ul = el('ul', { class: 'finanz-haken' });
+            for (const z of zeilen) {
+                const ok = z.ist > 0.005;
+                ul.append(el('li', { class: ok ? 'ok' : '' }, [
+                    el('span', { class: 'finanz-haken-box', text: ok ? '✓' : '', attrs: { 'aria-hidden': 'true' } }),
+                    el('span', { text: z.name + (ok ? '' : ' (offen)') }),
+                    el('span', { class: 'finanz-haken-betrag', text: euro(z.ist) + ' / ' + euro(z.soll) })
+                ]));
+            }
+            fixBox.append(el('details', { class: 'finanz-aufklapp finanz-fix' }, [
+                el('summary', { text: titel + ': ' + (w.istJahr ? '' : anzahl + ' von ' + zeilen.length + ' ' + wort + ', ') + euro(summeIst) + ' von ' + euro(summeSoll) }),
+                ul
+            ]));
+        };
+        gruppe('Feste Ausgaben', 'bezahlt', fest.filter((z) => !istEinnahme(z)), daten.zweckAusgaben);
+        gruppe('Feste Einnahmen', 'eingegangen', fest.filter(istEinnahme), daten.zweckEinnahmen);
+    }
+
+    // Größte Ausgaben und letzte Buchungen: erst laden, wenn ein Monat oder Jahr gezeigt wird
+    async function zeigeBuchungen(w) {
+        const jahr = Number(w.jahr);
+        const monat = MONATE[monatNr(w.monat) - 1];
+        const key = w.istJahr ? 'J|' + jahr : 'M|' + jahr + '|' + monat;
+        buchSchluessel = key;
+        buchIstJahr = !!w.istJahr;
+        alleZeigen = false;
+        letzteFigur.hidden = buchIstJahr;
+        groessteTitel.textContent = buchIstJahr ? 'Größte Ausgaben im Jahr' : 'Größte Ausgaben im Monat';
+        if (!buchCache[key]) {
+            leeren(groessteListe);
+            leeren(letzteListe);
+            alleKnopf.hidden = true;
+            buchHinweis.textContent = 'Buchungen werden geladen …';
+            try {
+                const antwort = await api('finanzen', 'buchungen', buchIstJahr ? { jahr } : { jahr, monat });
+                buchCache[key] = Array.isArray(antwort.buchungen) ? antwort.buchungen : [];
+            } catch (e) {
+                if (buchSchluessel === key) {
+                    buchHinweis.textContent = e.code === 'aktion'
+                        ? 'Für die Buchungen bitte die neue Code.gs im Finanz-Skript bereitstellen (Neue Version).'
+                        : 'Buchungen: ' + e.message;
+                }
+                return;
+            }
+        }
+        if (buchSchluessel !== key) return;
+        buchListe = buchCache[key];
+        zeigeBuchungenListe();
+    }
+
+    function buchZeile(b) {
+        const betrag = b.aus > 0 ? -b.aus : b.ein;
+        const teile = String(b.datum).split('-');
+        return el('li', {}, [
+            el('span', { class: 'finanz-buch-datum', text: teile.length === 3 ? teile[2] + '.' + teile[1] + '.' : String(b.datum) }),
+            el('span', { class: 'finanz-buch-text' }, [
+                el('span', { class: 'finanz-buch-zweck', text: b.zweck || b.kategorie || '–' }),
+                el('span', { class: 'leise klein', text: [b.kategorie, b.konto, b.geteilt ? 'geteilt (halb)' : ''].filter(Boolean).join(' · ') })
+            ]),
+            el('span', { class: 'finanz-buch-betrag ' + (betrag < 0 ? 'finanz-minus' : 'finanz-plus'), text: euro(betrag) })
+        ]);
+    }
+
+    function zeigeBuchungenListe() {
+        leeren(groessteListe);
+        leeren(letzteListe);
+        const groesste = buchListe.filter((b) => b.aus > 0).sort((a, b) => b.aus - a.aus).slice(0, buchIstJahr ? 10 : 5);
+        groesste.forEach((b) => groessteListe.append(buchZeile(b)));
+        buchHinweis.textContent = groesste.length ? 'Dein Anteil, geteilte Ausgaben zählen halb.' : 'Keine Ausgaben.';
+        const neueste = buchListe.slice().sort((a, b) => String(b.datum).localeCompare(String(a.datum)));
+        (alleZeigen ? neueste : neueste.slice(0, 10)).forEach((b) => letzteListe.append(buchZeile(b)));
+        if (!neueste.length) letzteListe.append(el('li', { class: 'leise', text: 'Keine Buchungen.' }));
+        alleKnopf.hidden = alleZeigen || neueste.length <= 10;
+        alleKnopf.textContent = 'Alle ' + neueste.length + ' zeigen';
     }
 
     // Netto-Kacheln. Für Kategorien mit Rückzahlungen (Blatt „Einstellungen“): Haken je Person und Rest.
@@ -498,6 +630,7 @@ export function auswertung(box, einstellungen) {
         zeigeFixkosten(w);
 
         zeigeKacheln(w);
+        zeigeBuchungen(w);
         const vergleich = vergleichsWerte(w);
         zeigeVergleich(vergleich, w);
         zeigeVorjahr(vergleich, w);
@@ -519,9 +652,11 @@ export function auswertung(box, einstellungen) {
         status.textContent = 'Auswertung wird geladen …';
         try {
             daten = await api('finanzen', 'analyse');
+            buchCache = {};
             if (!daten.monate) daten.monate = [];
             baueAuswahl();
             zeige();
+            zeigeVermoegen();
             if (!daten.kategorien) status.textContent = 'Das Finanz-Skript ist noch die alte Fassung: Bitte die neue Code.gs bereitstellen, dann erscheinen die Kategorien.';
         } catch (e) {
             status.textContent = 'Laden fehlgeschlagen: ' + e.message;

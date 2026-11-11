@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.13** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.16** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -254,6 +254,7 @@ unter „Info“ die Version prüfen.
 
 - **Bestehende Sheets** (Tracking, Finanzen) behalten ihren Aufbau. Neu kommt je ein Blatt `Einstellungen` dazu
   (Tracking: Felder mit Gruppe, Art und Vorgabewert; Finanzen: Zwecke, Kategorien, Rückzahlungs-Personen, ab 9.2 Suchwörter für Kontowecker-SMS).
+  Das Finanz-Sheet hat ab 11.11.2026 das Hilfsblatt `Alle Buchungen` (eine Formel holt Konto, PayPal, Kreditkarte, Portemonnaie zusammen; Spalten `Konto, Datum, Monat, Zweck, Kategorie, Einnahme, Ausgabe, Geteilt, Jahr, Ausgabe Anteil`). Die Spalten `-Out` und `-In` in `Analyse Monate` rechnen seitdem mit kurzen `SUMMEWENNS` daraus. Die Netto-Spalten und `Monatsnetto` bleiben wie vorher (Entscheidung der Person: alte Verrechnung gilt rückblickend weiter). Namen in Zeile 6 und 7 von `Analyse Monate` nie ändern, die App liest Zeile 7.
   Das Finanz-Sheet hat ab 9.1 zusätzlich das Blatt `SMS` (Kopfzeile 1: `id, empfangen_am, gesendet_am, absender, text, pruefsumme, status, erledigt_am`).
 - **Neues Sheet** für die neuen Reiter: Kopfzeile in Zeile 1 (klein, ohne Umlaute). Alle Daten-Blätter haben zusätzlich
   `id, erstellt_am, geaendert_am, geloescht`. Die genauen Spalten legt der Plan der jeweiligen Etappe fest. Geplante Blätter:
@@ -281,7 +282,9 @@ unter „Info“ die Version prüfen.
   - Finanzen: Aktionen `stats`, `analyse` (ab 2.4 mit `kategorien` je Monat: `aus`, `ein`, `netto`), `buchen`, `einstellungen` (ab 2.2: Zwecke, Kategorien, Rückzahlungen, Eigenanteile
     aus Blatt `Einstellungen`, Spalten `liste, name, kategorie, betrag, zweck`). Funktion `einrichten` legt das Blatt an.
     Ab 9.1: Aktion `sms` (ohne Passwort, nur mit `SMS_SCHLUESSEL`, legt eine SMS im Blatt `SMS` als „offen“ ab, antwortet nur `ok`); `einrichten` legt auch das Blatt `SMS` an.
-    Ab 1.3.12 liefert `analyse` auch `zweckAusgaben` (je Monat Ausgaben der festen Zwecke, für die Fixkosten) und `rueckzahlungen` aus Konto, Paypal, Kreditkarte und Portemonnaie, nur für die Zwecke und Kategorien der Liste `rueckzahlung` (vorher nur Konto und nur Abos/Wohnen). Umbuchungen (Kategorie `Transfer`) zählen nicht, `GETEILT` halb.
+    Ab 1.3.12 liefert `analyse` auch `zweckAusgaben` (je Monat Ausgaben der festen Zwecke) und ab 1.3.14 `zweckEinnahmen` (je Monat Einnahmen der festen Zwecke, zum Beispiel Gehalt) und `rueckzahlungen` aus Konto, Paypal, Kreditkarte und Portemonnaie, nur für die Zwecke und Kategorien der Liste `rueckzahlung` (vorher nur Konto und nur Abos/Wohnen). Umbuchungen (Kategorie `Transfer`) zählen nicht, `GETEILT` halb.
+    Ab 1.3.15: `buchungen` (`jahr`, optional `monat`): Buchungen aus dem Hilfsblatt `Alle Buchungen` (nur lesen, ohne `Transfer`, `aus` = eigener Anteil), für „Größte Ausgaben“ und „Letzte Buchungen“ in der Auswertung. Die App lädt sie erst beim Anzeigen und hält sie nur im Speicher.
+    Ab 1.3.16 liefert `analyse` auch `vermoegen` (`verlauf`: Vermögen am Ende jedes Monats, rückwärts vom Gesamtstand in `Übersicht` gerechnet mit der Spalte `Haben aktuell` (Kopfzeile 7) jedes Konto-Blatts; `fehlend`: Blätter ohne diese Spalte).
     Ab 9.2: `smsListe` (offene SMS), `smsErledigt` (`id`, verwerfen), `buchen` mit `sms_id` (bucht und setzt die SMS im selben Lauf auf „gebucht“; ist sie schon erledigt, Fehler `erledigt`). Nach der Zuordnung löscht das Skript Text und Absender. `einstellungen` liefert dazu `smsWoerter` (Liste `sms`: `name` = Suchwort, `zweck`, `kategorie`).
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
@@ -374,8 +377,8 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.12 neue Fassung (Fixkosten, Rückzahlungen aus allen Konten) einfügen und bereitstellen.
-- **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Ab 1.3.12 zeigt die Auswertung daraus die Fixkosten (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist).
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen.
+- **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Die Auswertung zeigt daraus „Feste Ausgaben“ (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist) und ab 1.3.14 „Feste Einnahmen“ (Zweck, dessen Kategorie es nur bei den Einnahmen gibt, zum Beispiel Job).
 
 ---
 
@@ -894,3 +897,6 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.11** Finanzen → Auswertung (A2, A3): Vergleich mit Vormonat, Durchschnitt der 12 Monate davor und Vorjahr; Kategorien gegen Vorjahr; Jahresverlauf (Säulen Ein/Aus, Linie Bilanz seit Januar); Jahrestabelle mit Budget, Sparquote, Summe und Ø; „Ganzes Jahr“ zählt das Budget nur für Monate mit Buchungen; Bafög zum Aufklappen.
 - **1.3.12** Finanzen → Auswertung (A1): oben Eingenommen und Ausgegeben unter der Bilanz, Budget „… von … verbraucht, … übrig“ mit Satz, was „verbraucht“ ist; Fixkosten unter dem Budget (Skript `finanzen` neu); Säulen ohne Budget-Linie und wie „Monatsnetto“ (ein Plus in einer Netto-Spalte zählt als 0).
 - **1.3.13** Nachbesserung: Kreditkarte nicht mehr bei den Kontoständen und beim Buchen (am PC fünf Stände nebeneinander).
+- **1.3.14** Nachbesserung: „Fixkosten“ getrennt in „Feste Ausgaben“ (bezahlt) und „Feste Einnahmen“ (eingegangen, zum Beispiel Gehalt), Skript `finanzen` liefert `zweckEinnahmen`.
+- **1.3.15** Finanzen → Auswertung (A4): Größte Ausgaben (Monat 5, Jahr 10) und Letzte Buchungen (10, „Alle zeigen“) aus dem Blatt `Alle Buchungen`, Skript-Aktion `buchungen`.
+- **1.3.16** Finanzen → Auswertung (A5): Vermögen am Monatsende als Linie über die ganze Zeit (Skript `finanzen`, `vermoegen` in `analyse`).

@@ -78,6 +78,7 @@ function doPost(e) {
     if (data.action === "stats")   return jsonOut_(getStats());
     if (data.action === "einstellungen") return jsonOut_(einstellungenLesen_());
     if (data.action === "analyse") return jsonOut_(getAnalyseData());
+    if (data.action === "buchungen") return jsonOut_(buchungenLesen_(data));
     if (data.action === "smsListe") return jsonOut_(smsListe_());
     if (data.action === "smsErledigt") return jsonOut_(mitSperre_(function () { return smsErledigt_(data.id); }));
 
@@ -230,6 +231,8 @@ function getAnalyseData() {
     monate: monate,
     rueckzahlungen: zwecke.rueckzahlungen,
     zweckAusgaben: zwecke.ausgaben,
+    zweckEinnahmen: zwecke.einnahmen,
+    vermoegen: getVermoegensVerlauf_(),
     bafoeg: bafoegData,
     fehlendeSpalten: fehlend
   });
@@ -239,10 +242,10 @@ function getAnalyseData() {
 // Umbuchungen (Kategorie "Transfer") zählen nicht. Geteilte Ausgaben ("GETEILT") zählen halb, wie im Blatt "Analyse Monate".
 // Daraus entstehen in der Seite die grünen Haken (Rückzahlungen) und die bezahlten Fixkosten.
 // Nur Zwecke aus dem Blatt "Einstellungen": Rückzahlungen (Liste "rueckzahlung") und feste Zwecke (Liste "zweck" mit Betrag).
-// Aufbau: rueckzahlungen { "2026-10": { "<zweck>|<kategorie>": 12.5 } }, ausgaben { "2026-10": { "<zweck>": 30 } }
+// Aufbau: rueckzahlungen { "2026-10": { "<zweck>|<kategorie>": 12.5 } }, ausgaben und einnahmen { "2026-10": { "<zweck>": 30 } }
 function getZweckSummen_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var out = { rueckzahlungen: {}, ausgaben: {} };
+  var out = { rueckzahlungen: {}, ausgaben: {}, einnahmen: {} };
   var einst = einstellungenLesen_();
   if (einst.error) return out;
   var rueck = {}, fest = {};
@@ -273,9 +276,113 @@ function getZweckSummen_() {
         var a = out.ausgaben[monatKey] || (out.ausgaben[monatKey] = {});
         a[zweck] = Math.round(((a[zweck] || 0) + aus) * 100) / 100;
       }
+      if (ein > 0 && fest[zweck]) {
+        var e = out.einnahmen[monatKey] || (out.einnahmen[monatKey] = {});
+        e[zweck] = Math.round(((e[zweck] || 0) + ein) * 100) / 100;
+      }
     });
   });
   return out;
+}
+
+// Vermögen am Ende jedes Monats (für den Vermögensverlauf in der Auswertung, nur lesen).
+// Rechnet rückwärts vom heutigen Gesamtstand (Blatt "Übersicht", wie getStats): Vermögen Ende Monat =
+// Gesamt heute minus alle Änderungen danach. Die Änderung je Zeile steht in jedem Konto-Blatt in der Spalte
+// "Haben aktuell" (Kopfzeile 7). So braucht das Skript keine Startbeträge, und Umbuchungen heben sich auf.
+// Aufbau: { verlauf: [{ jahr: 2026, monat: 11, wert: 123.45 }, ...], fehlend: ["<Blatt>"] }
+function getVermoegensVerlauf_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var gesamt = Number(getStats().gesamt);
+  if (!isFinite(gesamt)) return { verlauf: [], fehlend: ["Übersicht"] };
+  var aenderung = {};  // "2026-11" -> Summe der Änderungen im Monat
+  var fehlend = [];
+  var erster = null;
+  var heute = new Date();
+  KONTEN_.forEach(function (name) {
+    var blatt = ss.getSheetByName(name);
+    if (!blatt) { fehlend.push(name); return; }
+    var last = blatt.getLastRow();
+    if (last < 8) return;
+    var kopf = blatt.getRange(7, 1, 1, blatt.getLastColumn()).getValues()[0]
+      .map(function (h) { return String(h).trim().toLowerCase(); });
+    var sp = kopf.indexOf("haben aktuell");
+    if (sp === -1) { fehlend.push(name); return; }
+    var datum = blatt.getRange(8, 1, last - 7, 1).getValues();
+    var wert = blatt.getRange(8, sp + 1, last - 7, 1).getValues();
+    for (var i = 0; i < datum.length; i++) {
+      var d = datumAus_(datum[i][0]);
+      var v = Number(wert[i][0]);
+      if (!d || !isFinite(v) || !v) continue;
+      var key = d.getFullYear() * 12 + d.getMonth();
+      aenderung[key] = (aenderung[key] || 0) + v;
+      if (d <= heute && (erster === null || key < erster)) erster = key;
+    }
+  });
+  if (erster === null) return { verlauf: [], fehlend: fehlend };
+  var jetzt = heute.getFullYear() * 12 + heute.getMonth();
+  // Änderungen nach dem letzten Monat (zum Beispiel Datum in der Zukunft) gleich abziehen
+  var stand = gesamt;
+  Object.keys(aenderung).forEach(function (k) { if (Number(k) > jetzt) stand -= aenderung[k]; });
+  var verlauf = [];
+  for (var m = jetzt; m >= erster; m--) {
+    verlauf.push({ jahr: Math.floor(m / 12), monat: (m % 12) + 1, wert: Math.round(stand * 100) / 100 });
+    stand -= aenderung[m] || 0;
+  }
+  verlauf.reverse();
+  return { verlauf: verlauf, fehlend: fehlend };
+}
+
+// Datum aus einer Zelle: echtes Datum oder Text wie "09.07.2018"
+function datumAus_(z) {
+  if (z instanceof Date) return z;
+  var t = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(String(z).trim());
+  return t ? new Date(Number(t[3]), Number(t[2]) - 1, Number(t[1])) : null;
+}
+
+// Buchungen eines Monats oder Jahres aus dem Hilfsblatt "Alle Buchungen" (nur lesen), für "Letzte Buchungen"
+// und "Größte Ausgaben" in der Auswertung. Ohne Umbuchungen (Kategorie "Transfer"). "aus" ist der eigene Anteil
+// (GETEILT halb), wie in "Analyse Monate". Spalten werden über ihre Namen in Zeile 1 gesucht.
+function buchungenLesen_(data) {
+  var jahr = Number(data.jahr);
+  if (!(jahr >= 2000 && jahr <= 2100) || Math.floor(jahr) !== jahr) return { error: "eingabe", message: "Jahr ungültig" };
+  var monat = data.monat ? String(data.monat) : "";
+  if (monat && MONATE_.indexOf(monat) === -1) return { error: "eingabe", message: "Monat ungültig" };
+
+  var blatt = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Alle Buchungen");
+  if (!blatt) return { error: "blatt", message: "Blatt 'Alle Buchungen' fehlt (siehe Anleitung in den Projektdateien)." };
+  var last = blatt.getLastRow();
+  if (last < 2) return { buchungen: [] };
+  var werte = blatt.getRange(1, 1, last, blatt.getLastColumn()).getValues();
+  var kopf = werte[0].map(function (h) { return String(h).trim().toLowerCase(); });
+  var sp = {};
+  ["konto", "datum", "monat", "zweck", "kategorie", "einnahme", "ausgabe anteil", "geteilt", "jahr"].forEach(function (n) { sp[n] = kopf.indexOf(n); });
+  if (sp.datum === -1 || sp.monat === -1 || sp.jahr === -1 || sp.kategorie === -1) {
+    return { error: "blatt", message: "Im Blatt 'Alle Buchungen' fehlen Spalten in Zeile 1 (Datum, Monat, Kategorie, Jahr)." };
+  }
+  var zelle = function (z, n) { return sp[n] === -1 ? "" : z[sp[n]]; };
+  var tz = Session.getScriptTimeZone();
+  var aus = [];
+  for (var i = 1; i < werte.length && aus.length < 2000; i++) {
+    var z = werte[i];
+    if (Number(zelle(z, "jahr")) !== jahr) continue;
+    if (monat && String(zelle(z, "monat")).trim() !== monat) continue;
+    var kat = String(zelle(z, "kategorie")).trim();
+    if (kat.toLowerCase() === "transfer") continue;
+    var ein = Number(zelle(z, "einnahme")) || 0;
+    var ausg = Number(zelle(z, "ausgabe anteil")) || 0;
+    if (!ein && !ausg) continue;
+    var d = zelle(z, "datum");
+    aus.push({
+      datum: d instanceof Date ? Utilities.formatDate(d, tz, "yyyy-MM-dd") : String(d),
+      konto: String(zelle(z, "konto")),
+      zweck: String(zelle(z, "zweck")),
+      kategorie: kat,
+      ein: Math.round(ein * 100) / 100,
+      aus: Math.round(ausg * 100) / 100,
+      geteilt: String(zelle(z, "geteilt")).trim().toUpperCase() === "GETEILT"
+    });
+  }
+  return { buchungen: aus };
 }
 
 // --- 4. BUCHUNGEN ---
