@@ -1349,3 +1349,12 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .einkauf-zutat-mengen .einkauf-anzahl .knopf { min-width: 36px; padding: 0 8px; }
 .formular .einkauf-zutat-mengen label { margin-top: 0; }
 .einkauf-packung { min-width: 0; width: 100%; }
+/* 1.3.17: Reihenfolge der Abteilungen im Laden */
+/* Reihenfolge im Laden: kleine ↑ ↓ an der Abteilungs-Überschrift */
+.besitz-ort .einkauf-reihe-name { flex: 1 1 auto; min-width: 0; }
+.einkauf-reihe-pfeile { display: flex; gap: 4px; flex: 0 0 auto; align-self: center; }
+.einkauf-reihe-pfeil { min-width: 36px; min-height: 36px; padding: 0; border: 1px solid var(--linie); border-radius: 8px; background: transparent; color: var(--schrift); font: inherit; font-size: 1rem; line-height: 1; cursor: pointer; opacity: .75; }
+.einkauf-reihe-pfeil:hover, .einkauf-reihe-pfeil:focus-visible { opacity: 1; }
+.einkauf-reihe-pfeil:disabled { opacity: .25; cursor: default; }
+.einkauf-reihe-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 4px; min-height: 0; }
+.einkauf-reihe-status .knopf { margin-top: 0; }

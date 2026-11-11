@@ -27,7 +27,9 @@ var BLAETTER_ = {
   termine: ["id", "titel", "art", "beginn", "ende", "von", "bis", "ort", "modul_id", "stunde_id", "notiz", "erstellt_am", "geaendert_am", "geloescht", "tage", "kurs_id", "bestanden", "leistung"],
   module: ["id", "name", "kuerzel", "bereich", "ects", "status", "semester_id", "notiz", "erstellt_am", "geaendert_am", "geloescht", "pflicht"],
   kurse: ["id", "modul_id", "name", "ects", "semester_id", "tag", "von", "bis", "ort", "dozent", "pruefungsleistung", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
-  uni_einstellungen: ["name", "wert"]   // ohne Standardspalten, eine Zeile je Wert (ects_ziel)
+  uni_einstellungen: ["name", "wert"],  // ohne Standardspalten, eine Zeile je Wert (ects_ziel)
+  // Reihenfolge der Abteilungen im Laden (ab 1.3.17): ohne Standardspalten, eine Zeile je Abteilung, oben = zuerst
+  laden_reihenfolge: ["abteilung"]
 };
 // Spalten, die im Sheet reiner Text bleiben (kein Datum, keine Zahl)
 var TEXT_SPALTEN_ = ["id", "name", "abteilung", "einheit", "notiz", "lebensmittel_id", "gericht_id", "link", "ort",
@@ -62,7 +64,7 @@ var ECTS_ZIEL_ = 120;          // Vorgabe für uni_einstellungen, ändern im She
 var LESEN_ = ["ping", "alles", "uni", "bild"];
 var UNI_SCHREIBEN_ = ["uni_speichern", "uni_loeschen"];
 var EINKAUF_SCHREIBEN_ = ["lebensmittel_speichern", "lebensmittel_loeschen", "auf_liste", "liste_aendern", "abhaken",
-  "gericht_speichern", "gericht_loeschen", "rezept_bild", "vorrat_speichern", "vorrat_loeschen"];
+  "gericht_speichern", "gericht_loeschen", "rezept_bild", "vorrat_speichern", "vorrat_loeschen", "reihenfolge_speichern"];
 var ERLAUBT_ = {
   person: LESEN_.concat(EINKAUF_SCHREIBEN_, UNI_SCHREIBEN_),
   partner: LESEN_.concat(EINKAUF_SCHREIBEN_)
@@ -378,6 +380,7 @@ function doPost(e) {
         rezept_bild: rezeptBild_,
         vorrat_speichern: vorratSpeichern_,
         vorrat_loeschen: vorratLoeschen_,
+        reihenfolge_speichern: reihenfolgeSpeichern_,
         uni_speichern: uniSpeichern_,
         uni_loeschen: uniLoeschen_
       }[aktion];
@@ -476,8 +479,36 @@ function alles_() {
     gerichte: alleGerichte_(),
     vorrat: alleVorraete_(),
     rezepte_felder: true,  // zeigt der App: Dieses Skript kennt Rezepttext, Personen, ergibt und Bilder (ab 1.3.4)
-    packung_felder: true   // und Packung und Menge im Rezept in g oder ml (ab 1.3.10)
+    packung_felder: true,  // und Packung und Menge im Rezept in g oder ml (ab 1.3.10)
+    reihenfolge: ladenReihenfolge_()   // Abteilungen in der Reihenfolge im Laden (ab 1.3.17)
   };
+}
+
+// Reihenfolge der Abteilungen im Laden: Liste der Namen, oben im Blatt = zuerst
+function ladenReihenfolge_() {
+  var t = tabelle_("laden_reihenfolge");
+  return t.zeilen.map(function (z) { return text_(z, t.sp, "abteilung").trim(); }).filter(Boolean);
+}
+
+// Ersetzt die ganze Reihenfolge (die App schickt immer die vollständige Liste). Gleiche Namen nur einmal.
+var MAX_ABTEILUNGEN_ = 100;
+function reihenfolgeSpeichern_(data) {
+  var roh = Array.isArray(data.abteilungen) ? data.abteilungen : null;
+  if (!roh) return { error: "eingabe", message: "Ungültige Reihenfolge." };
+  if (roh.length > MAX_ABTEILUNGEN_) return { error: "eingabe", message: "Höchstens " + MAX_ABTEILUNGEN_ + " Abteilungen." };
+  var sauber = [], schon = {};
+  for (var k = 0; k < roh.length; k++) {
+    var p = pruefeText_(roh[k], MAX_.abteilung, "Abteilung", true);
+    if (p.fehler) return { error: "eingabe", message: p.fehler };
+    var klein = ohneSchutz_(p.wert).toLowerCase();
+    if (schon[klein]) continue;
+    schon[klein] = true;
+    sauber.push(p.wert);
+  }
+  var t = tabelle_("laden_reihenfolge");
+  if (t.zeilen.length) t.sheet.getRange(2, 1, t.zeilen.length, t.breite).clearContent();
+  if (sauber.length) t.sheet.getRange(2, t.sp.abteilung + 1, sauber.length, 1).setValues(sauber.map(function (a) { return [a]; }));
+  return { reihenfolge: ladenReihenfolge_() };
 }
 
 // --- 5. LEBENSMITTEL ---

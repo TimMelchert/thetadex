@@ -12,6 +12,7 @@
 // Nur „Bearbeiten“ öffnet ein Fenster.
 // Ab 1.3.10: Packung je Lebensmittel (zum Beispiel 1 kg). Hat ein Lebensmittel eine Packung, steht die Menge im Rezept in g oder ml;
 // auf die Einkaufsliste kommt die Zahl der Packungen (1500 g bei 1 kg → 1,5), die Liste zeigt beides (Wunsch der Person, 9.11.2026).
+// Ab 1.3.17: Abteilungen in der Reihenfolge im Laden (Blatt `laden_reihenfolge`, für beide änderbar; Wunsch der Person, 12.11.2026).
 // Vorrat (4.4, freiwillig): je Lebensmittel Mengen an Orten zuhause. Wo gepflegt, steht „zuhause: …“ dabei.
 // Lebensmittel ankreuzen → „Auf die Einkaufsliste“ → Mengen eintragen. Die Auswahl bleibt bei Suche erhalten.
 // Abgehakte Einträge bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird (Wunsch der Person, 30.10.2026).
@@ -67,7 +68,8 @@ function merkeListe() {
         stand: Date.now(),
         liste: daten.liste,
         lebensmittel: daten.lebensmittel.filter((l) => lmIds.has(l.id)).map(({ id, name, abteilung, einheit }) => ({ id, name, abteilung, einheit })),
-        gerichte: daten.gerichte.filter((g) => gIds.has(g.id)).map(({ id, name }) => ({ id, name }))
+        gerichte: daten.gerichte.filter((g) => gIds.has(g.id)).map(({ id, name }) => ({ id, name })),
+        reihenfolge: daten.reihenfolge || []
     });
 }
 // Neue Liste vom Skript: Einträge nach „Einkauf fertig“, die noch nicht gesendet sind, bleiben ausgeblendet.
@@ -97,6 +99,15 @@ window.addEventListener('online', () => {
 });
 
 const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
+// Abteilungen sortieren: erst in der Reihenfolge im Laden, dann die übrigen A–Z, ohne Abteilung zuletzt
+function vergleicheAbteilung(a, b) {
+    if (!a || !b) return (!a) - (!b);
+    const reihe = (daten && daten.reihenfolge || []).map((x) => x.toLowerCase());
+    const ia = reihe.indexOf(a.toLowerCase());
+    const ib = reihe.indexOf(b.toLowerCase());
+    if (ia >= 0 || ib >= 0) return (ia < 0 ? 1e6 : ia) - (ib < 0 ? 1e6 : ib);
+    return vergleiche(a, b);
+}
 // Für die Suche: klein, ä = ae, ö = oe, ü = ue, ß = ss
 const norm = (t) => String(t == null ? '' : t).toLocaleLowerCase('de')
     .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
@@ -472,6 +483,8 @@ export function render(container, ctx) {
             on: { click: () => { listeAnsicht = id; zeigeListe(); } }
         }));
         listeBox.append(el('div', { class: 'ansichten einkauf-ansichten', attrs: { role: 'group', 'aria-label': 'Einkaufsliste ordnen' } }, ansichten));
+        const reiheAendern = listeAnsicht === 'abteilung' && Array.isArray(daten.reihenfolge) && daten.reihenfolgeDa;
+        if (reiheAendern) listeBox.append(reiheStatus);
         if (listeAnsicht === 'gericht') {
             zeigeNachGericht();
             return;
@@ -490,17 +503,82 @@ export function render(container, ctx) {
             abteilungen.get(abt).push({ lm, eintraege });
         });
         // Abteilungen A–Z, ohne Abteilung zuletzt
-        const reihe = [...abteilungen.keys()].sort((a, b) => (!a) - (!b) || vergleiche(a, b));
+        const reihe = [...abteilungen.keys()].sort(vergleicheAbteilung);
+        // Mit kleinen ↑ und ↓ an der Überschrift: Abteilung einen Platz verschieben (nicht bei „Ohne Abteilung“, die bleibt zuletzt)
+        const benannt = reihe.filter(Boolean);
         reihe.forEach((abt) => {
             const posten = abteilungen.get(abt).sort((a, b) => vergleiche(a.lm.name, b.lm.name));
+            const i = benannt.indexOf(abt);
+            const pfeile = reiheAendern && abt && benannt.length > 1 ? el('span', { class: 'einkauf-reihe-pfeile' }, [
+                pfeil(abt, -1, i === 0, benannt),
+                pfeil(abt, 1, i === benannt.length - 1, benannt)
+            ]) : null;
             listeBox.append(el('section', { class: 'besitz-gruppe' }, [
                 el('h2', { class: 'besitz-ort' }, [
-                    el('span', { text: abt || 'Ohne Abteilung' }),
+                    el('span', { class: 'einkauf-reihe-name', text: abt || 'Ohne Abteilung' }),
+                    pfeile,
                     el('span', { class: 'besitz-zahl', text: String(posten.length) })
-                ]),
+                ].filter(Boolean)),
                 el('ul', { class: 'einkauf-liste' }, posten.map((x) => listenZeile(x)))
             ]));
         });
+    }
+
+    // Reihenfolge der Abteilungen im Laden: kleine ↑ und ↓ an jeder Überschrift der Einkaufsliste.
+    // Verschieben wirkt sofort, gespeichert wird kurz nach dem letzten Tippen (ganze Liste, Blatt `laden_reihenfolge`).
+    // Gilt für beide Zugänge und alle Geräte. Klappt das Speichern nicht, bleibt die Reihenfolge stehen, und „Nochmal speichern“ erscheint.
+    const reiheText = el('span');
+    const reiheNochmal = el('button', { class: 'knopf knopf-zweit', text: 'Nochmal speichern', attrs: { type: 'button', hidden: true }, on: { click: () => speichereReihe() } });
+    const reiheStatus = el('p', { class: 'meldung einkauf-reihe-status', attrs: { role: 'status', 'aria-live': 'polite' } }, [reiheText, reiheNochmal]);
+    let reiheTimer = 0;
+    let reiheFertigTimer = 0;
+    function pfeil(abt, d, aus, benannt) {
+        return el('button', {
+            class: 'einkauf-reihe-pfeil', text: d < 0 ? '↑' : '↓',
+            attrs: { type: 'button', 'aria-label': abt + (d < 0 ? ' im Laden früher' : ' im Laden später'), disabled: aus, 'data-abt': abt, 'data-d': String(d) },
+            on: { click: () => schiebeAbteilung(abt, d, benannt) }
+        });
+    }
+    // Alle bekannten Abteilungen in der jetzigen Reihenfolge (auch die, die gerade nicht auf der Liste stehen)
+    function alleAbteilungen() {
+        const namen = [];
+        [...(daten.reihenfolge || []), ...daten.lebensmittel.map((l) => l.abteilung)].forEach((a) => {
+            if (a && !namen.some((n) => n.toLowerCase() === a.toLowerCase())) namen.push(a);
+        });
+        return namen.sort(vergleicheAbteilung);
+    }
+    // Abteilung an der Nachbar-Abteilung auf der Liste vorbei schieben
+    function schiebeAbteilung(abt, d, benannt) {
+        const nachbar = benannt[benannt.indexOf(abt) + d];
+        if (!nachbar) return;
+        const klein = (x) => x.toLowerCase();
+        const alle = alleAbteilungen().filter((x) => klein(x) !== klein(abt));
+        const j = alle.findIndex((x) => klein(x) === klein(nachbar));
+        alle.splice(d < 0 ? j : j + 1, 0, abt);
+        daten.reihenfolge = alle;
+        zeigeAlles();
+        // Den Finger am gleichen Pfeil lassen; ist er jetzt aus (ganz oben oder unten), den anderen nehmen
+        const knoepfe = [...listeBox.querySelectorAll('.einkauf-reihe-pfeil')].filter((k) => k.dataset.abt === abt);
+        const ziel = knoepfe.find((k) => k.dataset.d === String(d) && !k.disabled) || knoepfe.find((k) => !k.disabled);
+        if (ziel) ziel.focus();
+        clearTimeout(reiheTimer);
+        clearTimeout(reiheFertigTimer);
+        reiheNochmal.hidden = true;
+        reiheText.textContent = 'Wird gleich gespeichert …';
+        reiheTimer = setTimeout(speichereReihe, 900);
+    }
+    async function speichereReihe() {
+        clearTimeout(reiheTimer);
+        if (sendet) { reiheTimer = setTimeout(speichereReihe, 600); return; }
+        const reihe = (daten.reihenfolge || []).slice();
+        reiheNochmal.hidden = true;
+        const antwort = await senden(reiheText, [reiheNochmal], 'reihenfolge_speichern', { abteilungen: reihe });
+        if (!antwort) { reiheNochmal.hidden = false; return; }
+        // Inzwischen weiter geschoben? Dann gilt die neue Reihenfolge, sie wird gleich gespeichert.
+        if ((daten.reihenfolge || []).join('\n') === reihe.join('\n') && Array.isArray(antwort.reihenfolge)) daten.reihenfolge = antwort.reihenfolge;
+        merkeListe();
+        if (reiheText.textContent === '') reiheText.textContent = 'Reihenfolge gespeichert.';
+        reiheFertigTimer = setTimeout(() => { if (reiheText.textContent === 'Reihenfolge gespeichert.') reiheText.textContent = ''; }, 3000);
     }
 
     // Je Gericht eine Gruppe mit seinen Zutaten, dazu „Einzeln“ für alles ohne (oder mit gelöschtem) Gericht.
@@ -655,7 +733,7 @@ export function render(container, ctx) {
     });
     function fuelleAbteilungen() {
         const alt = abteilungFilter.value;
-        const alle = [...new Set(daten.lebensmittel.map((l) => l.abteilung).filter(Boolean))].sort(vergleiche);
+        const alle = [...new Set(daten.lebensmittel.map((l) => l.abteilung).filter(Boolean))].sort(vergleicheAbteilung);
         const werte = [['', 'Alle Abteilungen'], ...alle.map((a) => [a, a])];
         if (daten.lebensmittel.some((l) => !l.abteilung)) werte.push([OHNE_ABTEILUNG, 'Ohne Abteilung']);
         leeren(abteilungFilter);
@@ -714,7 +792,7 @@ export function render(container, ctx) {
                 if (!abteilungen.has(abt)) abteilungen.set(abt, []);
                 abteilungen.get(abt).push(l);
             });
-            [...abteilungen.keys()].sort((a, b) => (!a) - (!b) || vergleiche(a, b)).forEach((abt) => lmTreffer.append(el('section', { class: 'besitz-gruppe' }, [
+            [...abteilungen.keys()].sort(vergleicheAbteilung).forEach((abt) => lmTreffer.append(el('section', { class: 'besitz-gruppe' }, [
                 el('h2', { class: 'besitz-ort' }, [el('span', { text: abt || 'Ohne Abteilung' }), el('span', { class: 'besitz-zahl', text: String(abteilungen.get(abt).length) })]),
                 el('ul', { class: 'einkauf-liste' }, abteilungen.get(abt).map((l) => lmZeile(l, true)))
             ])));
@@ -1369,7 +1447,9 @@ export function render(container, ctx) {
                 gerichte: Array.isArray(d.gerichte) ? d.gerichte : [],
                 vorrat: Array.isArray(d.vorrat) ? d.vorrat : [],
                 rezepteFelder: d.rezepte_felder === true,   // Skript ab 1.3.4
-                packungFelder: d.packung_felder === true   // Skript ab 1.3.10
+                packungFelder: d.packung_felder === true,   // Skript ab 1.3.10
+                reihenfolge: Array.isArray(d.reihenfolge) ? d.reihenfolge.filter((x) => typeof x === 'string') : [],
+                reihenfolgeDa: Array.isArray(d.reihenfolge)   // Skript ab 1.3.17
             };
             setzeListe(d.liste);
             ladeStatus.textContent = '';
@@ -1378,7 +1458,7 @@ export function render(container, ctx) {
             // Ohne Netz: die Einkaufsliste aus dem Gerät zeigen
             const im = lesen('einkaufsliste', null);
             if (!daten && im && Array.isArray(im.liste)) {
-                daten = { lebensmittel: im.lebensmittel || [], liste: [], gerichte: im.gerichte || [], vorrat: [] };
+                daten = { lebensmittel: im.lebensmittel || [], liste: [], gerichte: im.gerichte || [], vorrat: [], reihenfolge: Array.isArray(im.reihenfolge) ? im.reihenfolge : [] };
                 const warten = new Set(offeneHaken());
                 daten.liste = im.liste.filter((x) => !warten.has(x.id));
             }
