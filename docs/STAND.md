@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.16** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.17** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -261,7 +261,7 @@ unter „Info“ die Version prüfen.
   | Sheet | Blätter |
   | --- | --- |
   | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026) |
-  | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt und seit 0.7.3 nicht mehr im Skript; das Blatt darf die Person löschen) |
+  | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, ab 1.3.17 `laden_reihenfolge` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt und seit 0.7.3 nicht mehr im Skript; das Blatt darf die Person löschen) |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
   | DSA | `boegen` (ein Bogen je Zeile), `eintraege` (eine Zeile je Vorteil, Talent, Zauber, Waffe, Gegenstand), `verlauf` (Geld, AP, AsP, LeP), `abenteuer`, `sessions`; Spalten in 4 „Pen & Paper, Sheet ‚DSA‘“ |
@@ -374,6 +374,7 @@ unter „Info“ die Version prüfen.
   Nachbesserung 1.3.8: Mengen ab 0,01 mit zwei Stellen nach dem Komma (Gewürze, Esslöffel), in Rezepten, auf der Liste und im Vorrat. Skript `gemeinsam` geändert.
   Nachbesserung 1.3.9: Lebensmittel „Einzeln“ nach Abteilung gruppiert wie die Einkaufsliste (A–Z, ohne Abteilung zuletzt).
   Nachbesserung 1.3.10: Packung je Lebensmittel und Menge im Rezept in g oder ml (Spalten `packung`, `rezept_menge`). Skript `gemeinsam` geändert.
+  Nachbesserung 1.3.17: Abteilungen in der Reihenfolge im Laden (Blatt `laden_reihenfolge`, Aktion `reihenfolge_speichern`). Skript `gemeinsam` geändert.
 
 ### 3.2 Offen
 
@@ -500,6 +501,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   | `gerichte` (= Rezepte) | `name` (Pflicht, 60), `notiz` (300, alt, wird nicht mehr neu geschrieben), `link` (nur `https://`, 300); ab 1.3.4 `text` (20.000, Zeilenumbrüche bleiben), `personen` (ganze Zahl 1 bis 99 oder leer), `ergibt` (40), `bilder` (JSON-Liste von Drive-Kennungen, höchstens 10); höchstens 500 Rezepte |
   | `zutaten` | `gericht_id`, `lebensmittel_id`, `menge` (wie `anzahl`, bei Packung = Zahl der Packungen); ab 1.3.10 `rezept_menge` (g oder ml im Rezept, 0,01 bis 100.000, leer = keine); höchstens 50 je Gericht |
   | `vorrat` | `lebensmittel_id`, `ort` (Pflicht, 40), `menge` (0 bis 9999); eine Zeile je Lebensmittel und Ort, keine Zeile = nicht gepflegt |
+  | `laden_reihenfolge` (ab 1.3.17, ohne Standardspalten) | `abteilung` (40); eine Zeile je Abteilung, oben = im Laden zuerst; `reihenfolge_speichern` ersetzt die ganze Liste (höchstens 100), auch im Sheet sortierbar |
   - Zwei Passwörter: `APP_PIN` (Rolle `person`) und `PARTNER_PIN` (Rolle `partner`, mindestens 12 Zeichen, anders als `APP_PIN`), gemeinsame Sperre
     nach 5 Fehlversuchen. Das Skript prüft je Aktion, was die Rolle darf (`ERLAUBT_`); in Einkauf dürfen beide alles. `PARTNER_PIN` kennt nur `gemeinsam`.
     Passwort ändern: neues `PARTNER_PIN` in den Skripteigenschaften, das alte gilt sofort nicht mehr.
@@ -507,7 +509,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - **Abhaken erhöht den Vorrat** (Entscheidung der Person, 30.10.2026), wenn er gepflegt ist, an dem Ort mit der größten Menge. Doppelt abhaken schadet nicht.
   - **Zutaten mit genug Vorrat** sind bei einem Gericht nicht angehakt (Entscheidung der Person, 30.10.2026).
   - Ein Lebensmittel löschen nimmt es auch von der offenen Liste, aus Gerichten und aus dem Vorrat. Ein Gericht löschen lässt die Lebensmittel stehen.
-  - Abteilungen sortiert A–Z, ohne Abteilung zuletzt (eine feste Laden-Reihenfolge kann später kommen). Kein „Ziehen nach unten“:
+  - Abteilungen in der **Reihenfolge im Laden** (ab 1.3.17, Wunsch der Person, 12.11.2026): Knopf „↕ Reihenfolge im Laden“ auf der Einkaufsliste „Nach Abteilung“, je Abteilung ↑ und ↓, gilt für beide Zugänge und auch bei Lebensmittel „Einzeln“. Nicht eingeordnete Abteilungen danach A–Z, ohne Abteilung zuletzt. Kein „Ziehen nach unten“:
     Die Daten laden beim Öffnen, beim Zurückkehren in die App und mit „Neu laden“. Kein Knopf „Zufälliges Gericht“ (Entscheidung der Person).
   - Abgehakte bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird; erst dann gehen sie ans Skript (Wunsch der Person, 30.10.2026).
   - Datenschutz: keine Preise, Läden oder Gesundheitsdaten. Über die Partnerin oder den Partner wird nichts gespeichert, auch nicht, wer etwas eingetragen hat.
@@ -900,3 +902,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.14** Nachbesserung: „Fixkosten“ getrennt in „Feste Ausgaben“ (bezahlt) und „Feste Einnahmen“ (eingegangen, zum Beispiel Gehalt), Skript `finanzen` liefert `zweckEinnahmen`.
 - **1.3.15** Finanzen → Auswertung (A4): Größte Ausgaben (Monat 5, Jahr 10) und Letzte Buchungen (10, „Alle zeigen“) aus dem Blatt `Alle Buchungen`, Skript-Aktion `buchungen`.
 - **1.3.16** Finanzen → Auswertung (A5): Vermögen am Monatsende als Linie über die ganze Zeit (Skript `finanzen`, `vermoegen` in `analyse`).
+- **1.3.17** Einkauf: Abteilungen in der Reihenfolge im Laden (Blatt `laden_reihenfolge`), auf der Einkaufsliste und bei Lebensmittel „Einzeln“.
