@@ -254,6 +254,7 @@ unter „Info“ die Version prüfen.
 
 - **Bestehende Sheets** (Tracking, Finanzen) behalten ihren Aufbau. Neu kommt je ein Blatt `Einstellungen` dazu
   (Tracking: Felder mit Gruppe, Art und Vorgabewert; Finanzen: Zwecke, Kategorien, Rückzahlungs-Personen, ab 9.2 Suchwörter für Kontowecker-SMS).
+  Das Finanz-Sheet hat ab 11.11.2026 das Hilfsblatt `Alle Buchungen` (eine Formel holt Konto, PayPal, Kreditkarte, Portemonnaie zusammen; Spalten `Konto, Datum, Monat, Zweck, Kategorie, Einnahme, Ausgabe, Geteilt, Jahr, Ausgabe Anteil`). Die Spalten `-Out` und `-In` in `Analyse Monate` rechnen seitdem mit kurzen `SUMMEWENNS` daraus. Die Netto-Spalten und `Monatsnetto` bleiben wie vorher (Entscheidung der Person: alte Verrechnung gilt rückblickend weiter). Namen in Zeile 6 und 7 von `Analyse Monate` nie ändern, die App liest Zeile 7.
   Das Finanz-Sheet hat ab 9.1 zusätzlich das Blatt `SMS` (Kopfzeile 1: `id, empfangen_am, gesendet_am, absender, text, pruefsumme, status, erledigt_am`).
 - **Neues Sheet** für die neuen Reiter: Kopfzeile in Zeile 1 (klein, ohne Umlaute). Alle Daten-Blätter haben zusätzlich
   `id, erstellt_am, geaendert_am, geloescht`. Die genauen Spalten legt der Plan der jeweiligen Etappe fest. Geplante Blätter:
