@@ -483,9 +483,8 @@ export function render(container, ctx) {
             on: { click: () => { listeAnsicht = id; zeigeListe(); } }
         }));
         listeBox.append(el('div', { class: 'ansichten einkauf-ansichten', attrs: { role: 'group', 'aria-label': 'Einkaufsliste ordnen' } }, ansichten));
-        if (listeAnsicht === 'abteilung' && Array.isArray(daten.reihenfolge) && daten.reihenfolgeDa) {
-            listeBox.append(el('button', { class: 'knopf knopf-zweit einkauf-reihenfolge', text: '↕ Reihenfolge im Laden', attrs: { type: 'button' }, on: { click: () => zeigeReihenfolge() } }));
-        }
+        const reiheAendern = listeAnsicht === 'abteilung' && Array.isArray(daten.reihenfolge) && daten.reihenfolgeDa;
+        if (reiheAendern) listeBox.append(reiheStatus);
         if (listeAnsicht === 'gericht') {
             zeigeNachGericht();
             return;
@@ -505,62 +504,81 @@ export function render(container, ctx) {
         });
         // Abteilungen A–Z, ohne Abteilung zuletzt
         const reihe = [...abteilungen.keys()].sort(vergleicheAbteilung);
+        // Mit kleinen ↑ und ↓ an der Überschrift: Abteilung einen Platz verschieben (nicht bei „Ohne Abteilung“, die bleibt zuletzt)
+        const benannt = reihe.filter(Boolean);
         reihe.forEach((abt) => {
             const posten = abteilungen.get(abt).sort((a, b) => vergleiche(a.lm.name, b.lm.name));
+            const i = benannt.indexOf(abt);
+            const pfeile = reiheAendern && abt && benannt.length > 1 ? el('span', { class: 'einkauf-reihe-pfeile' }, [
+                pfeil(abt, -1, i === 0, benannt),
+                pfeil(abt, 1, i === benannt.length - 1, benannt)
+            ]) : null;
             listeBox.append(el('section', { class: 'besitz-gruppe' }, [
                 el('h2', { class: 'besitz-ort' }, [
-                    el('span', { text: abt || 'Ohne Abteilung' }),
+                    el('span', { class: 'einkauf-reihe-name', text: abt || 'Ohne Abteilung' }),
+                    pfeile,
                     el('span', { class: 'besitz-zahl', text: String(posten.length) })
-                ]),
+                ].filter(Boolean)),
                 el('ul', { class: 'einkauf-liste' }, posten.map((x) => listenZeile(x)))
             ]));
         });
     }
 
-    // Reihenfolge der Abteilungen im Laden: ↑ und ↓ je Abteilung, Speichern schickt die ganze Liste.
-    // Gilt für beide Zugänge und alle Geräte (Blatt `laden_reihenfolge`).
-    function zeigeReihenfolge() {
-        const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
+    // Reihenfolge der Abteilungen im Laden: kleine ↑ und ↓ an jeder Überschrift der Einkaufsliste.
+    // Verschieben wirkt sofort, gespeichert wird kurz nach dem letzten Tippen (ganze Liste, Blatt `laden_reihenfolge`).
+    // Gilt für beide Zugänge und alle Geräte. Klappt das Speichern nicht, bleibt die Reihenfolge stehen, und „Nochmal speichern“ erscheint.
+    const reiheText = el('span');
+    const reiheNochmal = el('button', { class: 'knopf knopf-zweit', text: 'Nochmal speichern', attrs: { type: 'button', hidden: true }, on: { click: () => speichereReihe() } });
+    const reiheStatus = el('p', { class: 'meldung einkauf-reihe-status', attrs: { role: 'status', 'aria-live': 'polite' } }, [reiheText, reiheNochmal]);
+    let reiheTimer = 0;
+    let reiheFertigTimer = 0;
+    function pfeil(abt, d, aus, benannt) {
+        return el('button', {
+            class: 'einkauf-reihe-pfeil', text: d < 0 ? '↑' : '↓',
+            attrs: { type: 'button', 'aria-label': abt + (d < 0 ? ' im Laden früher' : ' im Laden später'), disabled: aus, 'data-abt': abt, 'data-d': String(d) },
+            on: { click: () => schiebeAbteilung(abt, d, benannt) }
+        });
+    }
+    // Alle bekannten Abteilungen in der jetzigen Reihenfolge (auch die, die gerade nicht auf der Liste stehen)
+    function alleAbteilungen() {
         const namen = [];
         [...(daten.reihenfolge || []), ...daten.lebensmittel.map((l) => l.abteilung)].forEach((a) => {
             if (a && !namen.some((n) => n.toLowerCase() === a.toLowerCase())) namen.push(a);
         });
-        const reihe = namen.sort(vergleicheAbteilung);
-        const liste = el('ol', { class: 'einkauf-reihenfolge-liste' });
-        function zeichne(fokus) {
-            leeren(liste);
-            reihe.forEach((a, i) => {
-                const hoch = el('button', { class: 'knopf knopf-zweit', text: '↑', attrs: { type: 'button', 'aria-label': a + ' nach oben', disabled: i === 0 }, on: { click: () => schiebe(i, -1) } });
-                const runter = el('button', { class: 'knopf knopf-zweit', text: '↓', attrs: { type: 'button', 'aria-label': a + ' nach unten', disabled: i === reihe.length - 1 }, on: { click: () => schiebe(i, 1) } });
-                liste.append(el('li', { class: 'einkauf-zeile einkauf-reihenfolge-zeile' }, [
-                    el('span', { class: 'einkauf-lm-name', text: (i + 1) + '. ' + a }),
-                    el('span', { class: 'einkauf-reihenfolge-knoepfe' }, [hoch, runter])
-                ]));
-                if (fokus && fokus.i === i) (fokus.d < 0 ? (i === 0 ? runter : hoch) : (i === reihe.length - 1 ? hoch : runter)).focus();
-            });
-        }
-        function schiebe(i, d) {
-            const j = i + d;
-            if (j < 0 || j >= reihe.length) return;
-            [reihe[i], reihe[j]] = [reihe[j], reihe[i]];
-            zeichne({ i: j, d });
-        }
-        zeichne();
-        const ok = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'button' }, on: { click: async () => {
-            const antwort = await senden(status, [ok], 'reihenfolge_speichern', { abteilungen: reihe });
-            if (!antwort) return;
-            daten.reihenfolge = Array.isArray(antwort.reihenfolge) ? antwort.reihenfolge : reihe;
-            merkeListe();
-            dialog.close();
-            zeigeGespeichert('Gespeichert', 'Reihenfolge im Laden');
-            zeigeAlles();
-        } } });
-        oeffneDialog('Reihenfolge im Laden', [
-            el('p', { class: 'leise besitz-hinweis', text: 'Oben steht, was im Laden zuerst kommt. Neue Abteilungen stehen unten, bis du sie einordnest. „Ohne Abteilung“ kommt immer zuletzt.' }),
-            reihe.length ? liste : el('p', { class: 'leise', text: 'Noch keine Abteilungen. Trage sie bei den Lebensmitteln ein.' }),
-            el('div', { class: 'besitz-form-knoepfe' }, [reihe.length ? ok : null].filter(Boolean)),
-            status
-        ]);
+        return namen.sort(vergleicheAbteilung);
+    }
+    // Abteilung an der Nachbar-Abteilung auf der Liste vorbei schieben
+    function schiebeAbteilung(abt, d, benannt) {
+        const nachbar = benannt[benannt.indexOf(abt) + d];
+        if (!nachbar) return;
+        const klein = (x) => x.toLowerCase();
+        const alle = alleAbteilungen().filter((x) => klein(x) !== klein(abt));
+        const j = alle.findIndex((x) => klein(x) === klein(nachbar));
+        alle.splice(d < 0 ? j : j + 1, 0, abt);
+        daten.reihenfolge = alle;
+        zeigeAlles();
+        // Den Finger am gleichen Pfeil lassen; ist er jetzt aus (ganz oben oder unten), den anderen nehmen
+        const knoepfe = [...listeBox.querySelectorAll('.einkauf-reihe-pfeil')].filter((k) => k.dataset.abt === abt);
+        const ziel = knoepfe.find((k) => k.dataset.d === String(d) && !k.disabled) || knoepfe.find((k) => !k.disabled);
+        if (ziel) ziel.focus();
+        clearTimeout(reiheTimer);
+        clearTimeout(reiheFertigTimer);
+        reiheNochmal.hidden = true;
+        reiheText.textContent = 'Wird gleich gespeichert …';
+        reiheTimer = setTimeout(speichereReihe, 900);
+    }
+    async function speichereReihe() {
+        clearTimeout(reiheTimer);
+        if (sendet) { reiheTimer = setTimeout(speichereReihe, 600); return; }
+        const reihe = (daten.reihenfolge || []).slice();
+        reiheNochmal.hidden = true;
+        const antwort = await senden(reiheText, [reiheNochmal], 'reihenfolge_speichern', { abteilungen: reihe });
+        if (!antwort) { reiheNochmal.hidden = false; return; }
+        // Inzwischen weiter geschoben? Dann gilt die neue Reihenfolge, sie wird gleich gespeichert.
+        if ((daten.reihenfolge || []).join('\n') === reihe.join('\n') && Array.isArray(antwort.reihenfolge)) daten.reihenfolge = antwort.reihenfolge;
+        merkeListe();
+        if (reiheText.textContent === '') reiheText.textContent = 'Reihenfolge gespeichert.';
+        reiheFertigTimer = setTimeout(() => { if (reiheText.textContent === 'Reihenfolge gespeichert.') reiheText.textContent = ''; }, 3000);
     }
 
     // Je Gericht eine Gruppe mit seinen Zutaten, dazu „Einzeln“ für alles ohne (oder mit gelöschtem) Gericht.
