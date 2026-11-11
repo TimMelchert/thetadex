@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.15** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.16** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -284,6 +284,7 @@ unter „Info“ die Version prüfen.
     Ab 9.1: Aktion `sms` (ohne Passwort, nur mit `SMS_SCHLUESSEL`, legt eine SMS im Blatt `SMS` als „offen“ ab, antwortet nur `ok`); `einrichten` legt auch das Blatt `SMS` an.
     Ab 1.3.12 liefert `analyse` auch `zweckAusgaben` (je Monat Ausgaben der festen Zwecke) und ab 1.3.14 `zweckEinnahmen` (je Monat Einnahmen der festen Zwecke, zum Beispiel Gehalt) und `rueckzahlungen` aus Konto, Paypal, Kreditkarte und Portemonnaie, nur für die Zwecke und Kategorien der Liste `rueckzahlung` (vorher nur Konto und nur Abos/Wohnen). Umbuchungen (Kategorie `Transfer`) zählen nicht, `GETEILT` halb.
     Ab 1.3.15: `buchungen` (`jahr`, optional `monat`): Buchungen aus dem Hilfsblatt `Alle Buchungen` (nur lesen, ohne `Transfer`, `aus` = eigener Anteil), für „Größte Ausgaben“ und „Letzte Buchungen“ in der Auswertung. Die App lädt sie erst beim Anzeigen und hält sie nur im Speicher.
+    Ab 1.3.16 liefert `analyse` auch `vermoegen` (`verlauf`: Vermögen am Ende jedes Monats, rückwärts vom Gesamtstand in `Übersicht` gerechnet mit der Spalte `Haben aktuell` (Kopfzeile 7) jedes Konto-Blatts; `fehlend`: Blätter ohne diese Spalte).
     Ab 9.2: `smsListe` (offene SMS), `smsErledigt` (`id`, verwerfen), `buchen` mit `sms_id` (bucht und setzt die SMS im selben Lauf auf „gebucht“; ist sie schon erledigt, Fehler `erledigt`). Nach der Zuordnung löscht das Skript Text und Absender. `einstellungen` liefert dazu `smsWoerter` (Liste `sms`: `name` = Suchwort, `zweck`, `kategorie`).
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
@@ -376,7 +377,7 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.15 neue Fassung (feste Einnahmen, Aktion `buchungen`) einfügen und als neue Version bereitstellen.
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen.
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Die Auswertung zeigt daraus „Feste Ausgaben“ (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist) und ab 1.3.14 „Feste Einnahmen“ (Zweck, dessen Kategorie es nur bei den Einnahmen gibt, zum Beispiel Job).
 
 ---
@@ -898,3 +899,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.13** Nachbesserung: Kreditkarte nicht mehr bei den Kontoständen und beim Buchen (am PC fünf Stände nebeneinander).
 - **1.3.14** Nachbesserung: „Fixkosten“ getrennt in „Feste Ausgaben“ (bezahlt) und „Feste Einnahmen“ (eingegangen, zum Beispiel Gehalt), Skript `finanzen` liefert `zweckEinnahmen`.
 - **1.3.15** Finanzen → Auswertung (A4): Größte Ausgaben (Monat 5, Jahr 10) und Letzte Buchungen (10, „Alle zeigen“) aus dem Blatt `Alle Buchungen`, Skript-Aktion `buchungen`.
+- **1.3.16** Finanzen → Auswertung (A5): Vermögen am Monatsende als Linie über die ganze Zeit (Skript `finanzen`, `vermoegen` in `analyse`).

@@ -232,6 +232,7 @@ function getAnalyseData() {
     rueckzahlungen: zwecke.rueckzahlungen,
     zweckAusgaben: zwecke.ausgaben,
     zweckEinnahmen: zwecke.einnahmen,
+    vermoegen: getVermoegensVerlauf_(),
     bafoeg: bafoegData,
     fehlendeSpalten: fehlend
   });
@@ -282,6 +283,60 @@ function getZweckSummen_() {
     });
   });
   return out;
+}
+
+// Vermögen am Ende jedes Monats (für den Vermögensverlauf in der Auswertung, nur lesen).
+// Rechnet rückwärts vom heutigen Gesamtstand (Blatt "Übersicht", wie getStats): Vermögen Ende Monat =
+// Gesamt heute minus alle Änderungen danach. Die Änderung je Zeile steht in jedem Konto-Blatt in der Spalte
+// "Haben aktuell" (Kopfzeile 7). So braucht das Skript keine Startbeträge, und Umbuchungen heben sich auf.
+// Aufbau: { verlauf: [{ jahr: 2026, monat: 11, wert: 123.45 }, ...], fehlend: ["<Blatt>"] }
+function getVermoegensVerlauf_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var gesamt = Number(getStats().gesamt);
+  if (!isFinite(gesamt)) return { verlauf: [], fehlend: ["Übersicht"] };
+  var aenderung = {};  // "2026-11" -> Summe der Änderungen im Monat
+  var fehlend = [];
+  var erster = null;
+  var heute = new Date();
+  KONTEN_.forEach(function (name) {
+    var blatt = ss.getSheetByName(name);
+    if (!blatt) { fehlend.push(name); return; }
+    var last = blatt.getLastRow();
+    if (last < 8) return;
+    var kopf = blatt.getRange(7, 1, 1, blatt.getLastColumn()).getValues()[0]
+      .map(function (h) { return String(h).trim().toLowerCase(); });
+    var sp = kopf.indexOf("haben aktuell");
+    if (sp === -1) { fehlend.push(name); return; }
+    var datum = blatt.getRange(8, 1, last - 7, 1).getValues();
+    var wert = blatt.getRange(8, sp + 1, last - 7, 1).getValues();
+    for (var i = 0; i < datum.length; i++) {
+      var d = datumAus_(datum[i][0]);
+      var v = Number(wert[i][0]);
+      if (!d || !isFinite(v) || !v) continue;
+      var key = d.getFullYear() * 12 + d.getMonth();
+      aenderung[key] = (aenderung[key] || 0) + v;
+      if (d <= heute && (erster === null || key < erster)) erster = key;
+    }
+  });
+  if (erster === null) return { verlauf: [], fehlend: fehlend };
+  var jetzt = heute.getFullYear() * 12 + heute.getMonth();
+  // Änderungen nach dem letzten Monat (zum Beispiel Datum in der Zukunft) gleich abziehen
+  var stand = gesamt;
+  Object.keys(aenderung).forEach(function (k) { if (Number(k) > jetzt) stand -= aenderung[k]; });
+  var verlauf = [];
+  for (var m = jetzt; m >= erster; m--) {
+    verlauf.push({ jahr: Math.floor(m / 12), monat: (m % 12) + 1, wert: Math.round(stand * 100) / 100 });
+    stand -= aenderung[m] || 0;
+  }
+  verlauf.reverse();
+  return { verlauf: verlauf, fehlend: fehlend };
+}
+
+// Datum aus einer Zelle: echtes Datum oder Text wie "09.07.2018"
+function datumAus_(z) {
+  if (z instanceof Date) return z;
+  var t = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(String(z).trim());
+  return t ? new Date(Number(t[3]), Number(t[2]) - 1, Number(t[1])) : null;
 }
 
 // Buchungen eines Monats oder Jahres aus dem Hilfsblatt "Alle Buchungen" (nur lesen), für "Letzte Buchungen"

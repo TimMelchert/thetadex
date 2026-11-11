@@ -1,6 +1,6 @@
 // Finanzen → Auswertung: Monats- oder Jahresbilanz mit Einnahmen und Ausgaben, Vergleich (Vormonat, Durchschnitt, Vorjahr), Ringe für Ausgaben und Einnahmen,
 // Säulen nach Rückzahlungen, Kategorien gegen Vorjahr, Budget-Balken mit festen Ausgaben und Einnahmen, Netto-Kacheln,
-// größte Ausgaben und letzte Buchungen (Aktion „buchungen“, nur bei Bedarf geladen), mit Haken für Rückzahlungen,
+// größte Ausgaben und letzte Buchungen (Aktion „buchungen“, nur bei Bedarf geladen), Vermögensverlauf, mit Haken für Rückzahlungen,
 // Jahresverlauf (Säulen und Linie), Jahrestabelle mit Summe, Durchschnitt, Budget und Sparquote, Bafög zum Aufklappen.
 // Die Kategorien kommen allgemein vom Skript (Aktion „analyse“, Feld „kategorien“), keine Namen im Code.
 // Chart.js liegt als lokale Datei in vendor/ und wird erst hier geladen (docs/STAND.md, Abschnitt 4).
@@ -126,6 +126,11 @@ export function auswertung(box, einstellungen) {
     ]);
     const jahrCanvas = el('canvas', { attrs: { 'aria-label': 'Einnahmen und Ausgaben je Monat mit Bilanz seit Januar', role: 'img' } });
     const jahrHinweis = el('p', { class: 'leise klein' });
+    const vermoegenCanvas = el('canvas', { attrs: { 'aria-label': 'Vermögen am Ende jedes Monats', role: 'img' } });
+    const vermoegenHinweis = el('p', { class: 'leise klein' });
+    const vermoegenFigur = el('figure', { class: 'karte finanz-ring' }, [
+        el('figcaption', { text: 'Vermögen am Monatsende' }), el('div', { class: 'finanz-diagramm finanz-diagramm-breit' }, [vermoegenCanvas]), vermoegenHinweis
+    ]);
     const jahrFigur = el('figure', { class: 'karte finanz-ring' }, [
         el('figcaption', { text: 'Verlauf im Jahr' }), el('div', { class: 'finanz-diagramm finanz-diagramm-breit' }, [jahrCanvas]), jahrHinweis
     ]);
@@ -159,6 +164,7 @@ export function auswertung(box, einstellungen) {
         el('div', { class: 'finanz-ringe' }, [el('figure', { class: 'karte finanz-ring' }, [groessteTitel, groessteListe, buchHinweis]), letzteFigur]),
         el('div', { class: 'finanz-tabelle-kopf' }, [el('h2', { text: 'Jahresübersicht' }), jahrWahl]),
         jahrFigur,
+        vermoegenFigur,
         el('div', { class: 'finanz-tabelle-box' }, [el('table', { class: 'finanz-tabelle' }, [
             el('thead', {}, [el('tr', {}, ['Monat', 'Ausgaben', 'Einnahmen', 'Bilanz', 'Budget', 'Sparquote'].map((t) => el('th', { text: t, attrs: { scope: 'col' } })))]),
             tabelle,
@@ -275,6 +281,43 @@ export function auswertung(box, einstellungen) {
         jahrHinweis.textContent = liste.length
             ? 'Linie = Bilanz seit Januar: ' + euro(kumuliert[kumuliert.length - 1]) + ' (Ende ' + liste[liste.length - 1].monat + ').'
             : 'Für dieses Jahr gibt es noch keine Buchungen.';
+    }
+
+    // Vermögensverlauf: Stand aller Konten am Ende jedes Monats (vom Skript rückwärts vom heutigen Stand gerechnet)
+    async function zeigeVermoegen() {
+        const v = daten.vermoegen;
+        const verlauf = v && Array.isArray(v.verlauf) ? v.verlauf : [];
+        vermoegenFigur.hidden = !v;
+        if (!v) return;
+        if (charts.vermoegen) { charts.vermoegen.destroy(); charts.vermoegen = null; }
+        if (!verlauf.length) {
+            vermoegenHinweis.textContent = 'Noch keine Werte.';
+            return;
+        }
+        let c;
+        try {
+            c = await chartBereit();
+        } catch (e) {
+            status.textContent = e.message;
+            return;
+        }
+        if (charts.vermoegen) charts.vermoegen.destroy();
+        charts.vermoegen = new c.Chart(vermoegenCanvas, {
+            type: 'line',
+            data: {
+                labels: verlauf.map((p) => MONATE[p.monat - 1].slice(0, 3) + ' ' + String(p.jahr).slice(2)),
+                datasets: [{ label: 'Vermögen', data: verlauf.map((p) => p.wert), borderColor: c.farbe('--farbe-finanzen', '#8DB580'),
+                    backgroundColor: c.farbe('--farbe-finanzen', '#8DB580'), borderWidth: 2, pointRadius: verlauf.length > 36 ? 0 : 2, fill: false, tension: 0.2 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } } }
+            }
+        });
+        const letzter = verlauf[verlauf.length - 1];
+        vermoegenHinweis.textContent = 'Heute: ' + euro(letzter.wert) + ' (wie „Vermögen aktuell“ beim Buchen).'
+            + (v.fehlend && v.fehlend.length ? ' Nicht gefunden: Spalte „Haben aktuell“ in ' + v.fehlend.join(', ') + '.' : '');
     }
 
     // Vergleichswerte: beim Monat Vormonat, Durchschnitt der 12 Monate davor und Vorjahresmonat;
@@ -613,6 +656,7 @@ export function auswertung(box, einstellungen) {
             if (!daten.monate) daten.monate = [];
             baueAuswahl();
             zeige();
+            zeigeVermoegen();
             if (!daten.kategorien) status.textContent = 'Das Finanz-Skript ist noch die alte Fassung: Bitte die neue Code.gs bereitstellen, dann erscheinen die Kategorien.';
         } catch (e) {
             status.textContent = 'Laden fehlgeschlagen: ' + e.message;
