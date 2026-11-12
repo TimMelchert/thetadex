@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.17** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.18** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -375,6 +375,7 @@ unter „Info“ die Version prüfen.
   Nachbesserung 1.3.9: Lebensmittel „Einzeln“ nach Abteilung gruppiert wie die Einkaufsliste (A–Z, ohne Abteilung zuletzt).
   Nachbesserung 1.3.10: Packung je Lebensmittel und Menge im Rezept in g oder ml (Spalten `packung`, `rezept_menge`). Skript `gemeinsam` geändert.
   Nachbesserung 1.3.17: Abteilungen in der Reihenfolge im Laden (Blatt `laden_reihenfolge`, Aktion `reihenfolge_speichern`). Skript `gemeinsam` geändert.
+  Nachbesserung 1.3.18: Pfeile ^ und v für die Reihenfolge im Laden, auch bei Lebensmittel „Einzeln“. Nur App.
 
 ### 3.2 Offen
 
@@ -509,7 +510,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - **Abhaken erhöht den Vorrat** (Entscheidung der Person, 30.10.2026), wenn er gepflegt ist, an dem Ort mit der größten Menge. Doppelt abhaken schadet nicht.
   - **Zutaten mit genug Vorrat** sind bei einem Gericht nicht angehakt (Entscheidung der Person, 30.10.2026).
   - Ein Lebensmittel löschen nimmt es auch von der offenen Liste, aus Gerichten und aus dem Vorrat. Ein Gericht löschen lässt die Lebensmittel stehen.
-  - Abteilungen in der **Reihenfolge im Laden** (ab 1.3.17, Wunsch der Person, 12.11.2026): kleine ↑ und ↓ an jeder Abteilungs-Überschrift der Einkaufsliste „Nach Abteilung“ (kein eigener Knopf, kein Fenster; Entscheidung der Person). Verschieben wirkt sofort, gespeichert wird kurz nach dem letzten Tippen; klappt es nicht, bleibt die Reihenfolge stehen und „Nochmal speichern“ erscheint. Gilt für beide Zugänge und auch bei Lebensmittel „Einzeln“. Nicht eingeordnete Abteilungen danach A–Z, ohne Abteilung zuletzt. Kein „Ziehen nach unten“:
+  - Abteilungen in der **Reihenfolge im Laden** (ab 1.3.17, Wunsch der Person, 12.11.2026): kleine Pfeile ^ und v (mit CSS gezeichnet) an jeder Abteilungs-Überschrift der Einkaufsliste „Nach Abteilung“ und ab 1.3.18 auch bei Lebensmittel „Einzeln“ (kein eigener Knopf, kein Fenster; Entscheidung der Person). Ein Pfeil schiebt an der nächsten sichtbaren Abteilung vorbei. Verschieben wirkt sofort, gespeichert wird kurz nach dem letzten Tippen; klappt es nicht, bleibt die Reihenfolge stehen und „Nochmal speichern“ erscheint. Gilt für beide Zugänge und auch bei Lebensmittel „Einzeln“. Nicht eingeordnete Abteilungen danach A–Z, ohne Abteilung zuletzt. Kein „Ziehen nach unten“:
     Die Daten laden beim Öffnen, beim Zurückkehren in die App und mit „Neu laden“. Kein Knopf „Zufälliges Gericht“ (Entscheidung der Person).
   - Abgehakte bleiben grau und durchgestrichen stehen, bis „Einkauf fertig“ getippt wird; erst dann gehen sie ans Skript (Wunsch der Person, 30.10.2026).
   - Datenschutz: keine Preise, Läden oder Gesundheitsdaten. Über die Partnerin oder den Partner wird nichts gespeichert, auch nicht, wer etwas eingetragen hat.
@@ -903,3 +904,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.15** Finanzen → Auswertung (A4): Größte Ausgaben (Monat 5, Jahr 10) und Letzte Buchungen (10, „Alle zeigen“) aus dem Blatt `Alle Buchungen`, Skript-Aktion `buchungen`.
 - **1.3.16** Finanzen → Auswertung (A5): Vermögen am Monatsende als Linie über die ganze Zeit (Skript `finanzen`, `vermoegen` in `analyse`).
 - **1.3.17** Einkauf: Abteilungen in der Reihenfolge im Laden (Blatt `laden_reihenfolge`), auf der Einkaufsliste und bei Lebensmittel „Einzeln“.
+- **1.3.18** Einkauf: Pfeile für die Reihenfolge im Laden als ^ und v, jetzt auch bei Lebensmittel „Einzeln“.
