@@ -784,7 +784,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .besitz-angaben dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
 
 /* Besitz 3.6: Übersicht */
-.besitz-zahlen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: var(--abstand); }
+.besitz-zahlen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: var(--abstand); }
 .besitz-zahl-kachel { display: flex; flex-direction: column; align-items: center; padding: 12px 6px; background: var(--kachel); border-radius: var(--rund); border-top: 6px solid var(--bereich); }
 .besitz-zahl-wert { font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .besitz-zahl-kachel .leise { font-size: 0.85rem; }
@@ -1362,3 +1362,11 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .einkauf-reihe-pfeil:disabled { opacity: .25; cursor: default; }
 .einkauf-reihe-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 4px; min-height: 0; }
 .einkauf-reihe-status .knopf { margin-top: 0; }
+
+/* Besitz: Unterorte (bis drei Ebenen) und Ausmisten */
+.besitz-unterort { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 14px 0 0; padding-left: 10px; border-left: 3px solid var(--bereich); font-size: 1rem; }
+.besitz-zaehlung .besitz-ebene-1 th { padding-left: 22px; }
+.besitz-zaehlung .besitz-ebene-2 th { padding-left: 40px; }
+.besitz-zaehlung .besitz-ebene-1 .besitz-oeffnen, .besitz-zaehlung .besitz-ebene-2 .besitz-oeffnen { font-weight: 400; }
+.besitz-ausmisten { border-style: dashed; }
+@media (max-width: 479px) { .besitz-zahlen { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
