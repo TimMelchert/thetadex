@@ -608,6 +608,7 @@ input[type="date"] { cursor: pointer; }
 
 /* Finanzen → Auswertung */
 .finanz-monat-zeile { display: flex; justify-content: center; }
+.finanz-monat-oben { margin-bottom: 12px; }
 .finanz-monat-zeile select { min-height: 44px; padding: 8px 12px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; }
 .finanz-ringe { display: grid; grid-template-columns: 1fr; gap: 0 12px; }
 .finanz-ring { margin: var(--abstand) 0 0; }
