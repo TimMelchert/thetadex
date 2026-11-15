@@ -684,11 +684,11 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .besitz-tabelle { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
 /* Gleiche Spaltenbreiten in allen Orten (PC): Name, Kategorie, Anzahl, Kaufpreis, Kaufdatum */
 @media (min-width: 768px) {
-    .besitz-tabelle thead th:nth-child(1) { width: 34%; }
-    .besitz-tabelle thead th:nth-child(2) { width: 24%; }
-    .besitz-tabelle thead th:nth-child(3) { width: 10%; }
-    .besitz-tabelle thead th:nth-child(4) { width: 16%; }
-    .besitz-tabelle thead th:nth-child(5) { width: 16%; }
+    .besitz-tabelle thead th:nth-child(1) { width: 54%; }
+    .besitz-tabelle thead th:nth-child(2) { width: 12%; }
+    .besitz-tabelle thead th:nth-child(3) { width: 17%; }
+    .besitz-tabelle thead th:nth-child(4) { width: 17%; }
+    .besitz-stueck { display: none; }
     /* Jede Sache als Block mit buntem Strich links, wie die Karten am Handy */
     .besitz-tabelle { border-collapse: separate; border-spacing: 0 6px; }
     .besitz-tabelle tbody th, .besitz-tabelle tbody td { background: var(--kachel); border-bottom: none; padding: 10px 8px; }
@@ -707,12 +707,12 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 @media (max-width: 767px) {
     .besitz-tabelle thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     .besitz-tabelle, .besitz-tabelle tbody, .besitz-tabelle tr, .besitz-tabelle th, .besitz-tabelle td { display: block; }
-    .besitz-tabelle tr { margin: 10px 0; padding: 12px var(--abstand); background: var(--kachel); border-radius: var(--rund); border-left: 6px solid var(--bereich); }
+    .besitz-tabelle tr { margin: 6px 0; padding: 8px 12px; background: var(--kachel); border-radius: var(--rund); border-left: 6px solid var(--bereich); }
     .besitz-tabelle th, .besitz-tabelle td { padding: 2px 0; border: none; }
-    .besitz-tabelle .besitz-name { font-size: 1.05rem; margin-bottom: 4px; }
-    .besitz-tabelle td { display: flex; justify-content: space-between; gap: 10px; }
-    .besitz-tabelle td:empty { display: none; }
-    .besitz-tabelle td::before { content: attr(data-label); color: var(--schrift-leise); }
+    .besitz-tabelle .besitz-name { font-size: 1rem; }
+    /* Kachel kompakt (Wunsch der Person, 15.11.2026): Name, rechts die Anzahl; alles andere im Fenster mit allen Angaben */
+    .besitz-tabelle td { display: none; }
+    .besitz-stueck { flex: 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--schrift-leise); }
 }
 
 /* Besitz: Suche, Filter, Sortieren, Ändern */
@@ -747,7 +747,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .besitz-nur-kontext .besitz-oeffnen, .besitz-nur-kontext td { color: var(--schrift-leise); }
 
 @media (max-width: 767px) {
-    .besitz-tabelle tr.besitz-kind { margin: -4px 0 10px 28px; padding: 8px 12px; border-left-width: 3px; }
+    .besitz-tabelle tr.besitz-kind { margin: -2px 0 6px 28px; padding: 6px 12px; border-left-width: 3px; }
     .besitz-kind .besitz-name { padding-left: 0; }
     .besitz-kind-pfeil { margin-left: 0; }
 }
@@ -1370,3 +1370,7 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .besitz-zaehlung .besitz-ebene-1 .besitz-oeffnen, .besitz-zaehlung .besitz-ebene-2 .besitz-oeffnen { font-weight: 400; }
 .besitz-ausmisten { border-style: dashed; }
 @media (max-width: 479px) { .besitz-zahlen { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Besitz: Name und Anzahl in einer Zeile */
+.besitz-namezeile { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.besitz-namezeile > :first-child { flex: 1 1 auto; min-width: 0; }

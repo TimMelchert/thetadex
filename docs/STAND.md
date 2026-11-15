@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.20** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.21** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -443,6 +443,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Ein Oberort zeigt auch alles in seinen Unterorten. Liste je Raum mit kleineren Überschriften je Unterort; Übersicht „Je Ort“ eingerückt.
   Ausmisten (ab 1.3.20): Spalte `ausmisten`, leer = nein, sonst `offen`, `verkaufen`, `verschenken`, `entsorgen` (prüft das Skript). Filter „Ausmisten“, Kachel und Tabelle in der Übersicht.
   Zubehör nur eine Ebene. Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer mit Zubehör oder mit dem Haken „Auch Sachen mit Anzahl 0 zeigen“.
+  Liste kompakt (ab 1.3.21, Wunsch der Person): am Handy nur Name, rechts die Anzahl und die Zeile mit Zubehör, Bild, ausgeliehen, ausmisten; am PC Spalten Name, Anzahl, Kaufpreis, Kaufdatum.
   Tipp auf eine Sache zeigt erst ihre Daten mit Bild, „Bearbeiten“ öffnet das Formular. Nach dem Speichern schließt es sich, der Ort bleibt stehen.
   Übersicht zählt Sachen mit Anzahl über 0, Zubehör eingeschlossen, als Sachen und als Stück.
 - **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
@@ -910,3 +911,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.17** Einkauf: Abteilungen in der Reihenfolge im Laden (Blatt `laden_reihenfolge`), auf der Einkaufsliste und bei Lebensmittel „Einzeln“.
 - **1.3.18** Einkauf: Pfeile für die Reihenfolge im Laden als ^ und v, jetzt auch bei Lebensmittel „Einzeln“.
 - **1.3.20** Besitz: Unterorte in bis zu drei Ebenen (Formular, Ort-Filter als Baum, Liste, Übersicht), Markierung „Ausmisten“ mit Filter (Spalte `ausmisten`).
+- **1.3.21** Besitz: Kacheln kompakt (Name und rechts die Anzahl, Kategorie nur noch im Fenster mit allen Angaben, am PC ohne Spalte Kategorie).

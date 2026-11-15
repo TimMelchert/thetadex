@@ -33,7 +33,8 @@ async function holeBild(id) {
 }
 
 // Spalten der Tabelle: [Schlüssel, Überschrift, rechtsbündig]
-const SPALTEN = [['name', 'Name'], ['kategorie', 'Kategorie'], ['anzahl', 'Anzahl', true], ['kaufpreis', 'Kaufpreis', true], ['kaufdatum', 'Kaufdatum']];
+// Kategorie steht nur im Fenster mit allen Angaben (Wunsch der Person, 15.11.2026)
+const SPALTEN = [['name', 'Name'], ['anzahl', 'Anzahl', true], ['kaufpreis', 'Kaufpreis', true], ['kaufdatum', 'Kaufdatum']];
 
 const euro = (v) => Number(v).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 const datumText = (t) => (/^\d{4}-\d{2}-\d{2}$/.test(t) ? t.slice(8, 10) + '.' + t.slice(5, 7) + '.' + t.slice(0, 4) : '');
@@ -636,12 +637,17 @@ export function render(container, ctx) {
             on: { click: (ev) => { if (!ev.target.closest('button')) zeigeSache(s); } }
         }, [
             el('th', { class: 'besitz-name', attrs: { scope: 'row' } }, [
-                haupt ? el('span', { class: 'besitz-kind-pfeil', text: '↳ ', attrs: { 'aria-hidden': 'true' } }) : null,
-                el('button', { class: 'besitz-oeffnen', text: s.name, attrs: { type: 'button', 'aria-label': s.name + ' ansehen' }, on: { click: () => zeigeSache(s) } }),
+                // Name und rechts die Anzahl in einer Zeile (die Anzahl rechts nur am Handy, am PC steht sie in ihrer Spalte)
+                el('div', { class: 'besitz-namezeile' }, [
+                    el('span', {}, [
+                        haupt ? el('span', { class: 'besitz-kind-pfeil', text: '↳ ', attrs: { 'aria-hidden': 'true' } }) : null,
+                        el('button', { class: 'besitz-oeffnen', text: s.name, attrs: { type: 'button', 'aria-label': s.name + ' ansehen' }, on: { click: () => zeigeSache(s) } })
+                    ]),
+                    el('span', { class: 'besitz-stueck', text: s.anzahl + '×', attrs: { 'aria-label': 'Anzahl ' + s.anzahl } })
+                ]),
                 s.notiz ? el('span', { class: 'besitz-notiz leise', text: s.notiz }) : null,
                 merkmale.length ? el('div', { class: 'besitz-merkmale' }, merkmale) : null
             ]),
-            el('td', { text: s.kategorie, attrs: { 'data-label': 'Kategorie' } }),
             el('td', { class: 'zahl', text: String(s.anzahl), attrs: { 'data-label': 'Anzahl' } }),
             el('td', { class: 'zahl', text: s.kaufpreis == null ? '' : euro(s.kaufpreis), attrs: { 'data-label': 'Kaufpreis' } }),
             el('td', { text: datumText(s.kaufdatum), attrs: { 'data-label': 'Kaufdatum' } })
