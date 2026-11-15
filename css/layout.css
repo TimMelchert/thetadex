@@ -1,7 +1,11 @@
 /* Thetadex – Aufbau: Kopfzeile, Reiterleiste, Inhalt.
    Handy: Reiterleiste unten. PC (ab 768 px): Reiterleiste links. */
 
+/* Kopfzeile bleibt beim Blättern oben (Wunsch der Person, 16.11.2026) */
 .kopf {
+    position: sticky;
+    top: 0;
+    z-index: 20;
     display: flex;
     align-items: center;
     justify-content: space-between;

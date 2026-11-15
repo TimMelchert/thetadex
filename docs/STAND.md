@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.21** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.22** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -298,7 +298,7 @@ unter „Info“ die Version prüfen.
   Zubehör (3.4): Spalte `gehoert_zu`, eine Ebene, eingerückt und aufklappbar unter der Hauptsache.
   Bild (3.5): Spalte `bild` (Drive-Datei-Kennung), Aktion `bild` (nur Bilder, die bei einer Sache stehen), Ordner „Thetadex Besitz“.
   Nachbesserungen (3.6): Tipp auf eine Sache zeigt erst ihre Daten mit Bild, „Bearbeiten“ öffnet das Formular; Formular schließt nach dem Speichern.
-  Anzahl 0 ist ausgeblendet (außer mit Zubehör, Haken „Auch Sachen mit Anzahl 0 zeigen“). Spalte `ausgeliehen_an` mit Filter.
+  Anzahl 0 ist ausgeblendet (außer mit Zubehör, Haken „Auch Items mit Anzahl 0 zeigen“). Spalte `ausgeliehen_an` mit Filter.
   Ab 0.4.2: Spalte `ausgeliehen_anzahl` (wie viele Stück ausgeliehen sind, leer = alle); die Übersicht zeigt keine Balken mehr.
   Unterreiter „Liste“ und „Übersicht“ (Sachen, Stück, ausgeliehen; je Kategorie, je Ort, an wen). Auswahlfelder öffnen die Liste beim Tipp ins Feld.
 - Etappe 4 (fertig): Sheet „Gemeinsam“ mit Skript `gemeinsam` (4.1): Blätter `lebensmittel`, `einkaufsliste`, `gerichte`, `zutaten`, `vorrat`.
@@ -442,10 +442,13 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Im Formular drei Felder (Ort, Darin, Darin), je bis 40 Zeichen, die Auswahl zeigt nur Unterorte des gewählten Oberorts. Der Ort-Filter ist ein Baum:
   Ein Oberort zeigt auch alles in seinen Unterorten. Liste je Raum mit kleineren Überschriften je Unterort; Übersicht „Je Ort“ eingerückt.
   Ausmisten (ab 1.3.20): Spalte `ausmisten`, leer = nein, sonst `offen`, `verkaufen`, `verschenken`, `entsorgen` (prüft das Skript). Filter „Ausmisten“, Kachel und Tabelle in der Übersicht.
-  Zubehör nur eine Ebene. Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer mit Zubehör oder mit dem Haken „Auch Sachen mit Anzahl 0 zeigen“.
+  Zubehör nur eine Ebene. Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer mit Zubehör oder mit dem Haken „Auch Items mit Anzahl 0 zeigen“.
   Liste kompakt (ab 1.3.21, Wunsch der Person): am Handy nur Name, rechts die Anzahl und die Zeile mit Zubehör, Bild, ausgeliehen, ausmisten; am PC Spalten Name, Anzahl, Kaufpreis, Kaufdatum.
-  Tipp auf eine Sache zeigt erst ihre Daten mit Bild, „Bearbeiten“ öffnet das Formular. Nach dem Speichern schließt es sich, der Ort bleibt stehen.
-  Übersicht zählt Sachen mit Anzahl über 0, Zubehör eingeschlossen, als Sachen und als Stück.
+  Ab 1.3.22 (Wunsch der Person, 16.11.2026): In der App heißen Sachen „Items“ (Spalten und Code bleiben `sachen`/`besitz`). Der Listenkopf (Titel, Unterreiter, Suche, Filter, Sortierzeile) bleibt beim Blättern unter der Kopfzeile stehen,
+  außer während das Formular offen ist. Die Sortierzeile (Name, Anzahl, Kaufpreis, Kaufdatum) steht am PC einmal oben im festen Kopf, darunter die Orte als Überschriften.
+  Zubehör bleibt aufklappbar, steht aber eingerückt in der Kachel der Hauptsache (am PC mit innerer Linie).
+  Tipp auf ein Item zeigt erst seine Daten mit Bild; darin lassen sich Ausleihen (Haken und Name) und Ausmisten (Haken und Art) direkt ändern, „Übernehmen“ speichert. „Bearbeiten“ öffnet das Formular. Nach dem Speichern schließt es sich, der Ort bleibt stehen.
+  Übersicht zählt Items mit Anzahl über 0, Zubehör eingeschlossen, als Items und als Stück (ohne Hinweistext darunter).
 - **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
   Der Link enthält die Skript-Kennung und diesen Schlüssel, nie das Passwort. „Neuen Link erstellen“ macht alte Links ungültig.
   Die geteilte Ansicht zeigt den ganzen Bogen, aber keine Knöpfe zum Ändern. Grund: Bögen sollen ohne Passwort an andere gehen.
@@ -639,6 +642,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3), der gewählte Bogen bei Pen & Paper (`thetadex_dsa_bogen`, nur die Kennung, ab 0.6.1), die selbst erstellten Links zum Teilen (`thetadex_dsa_links`, Bogen-Kennung → Schlüssel, ab 0.6.6), die gewählte Ansicht bei Pen & Paper (`thetadex_dsa_modus`, ab 0.6.8), bei der Visitenkarte das eigene Passwort (`thetadex_karte_passwort`, ab 10.1), die selbst erstellten Schlüssel (`thetadex_karte_links`, Karte → Schlüssel) und die gewählte Karte (`thetadex_karte_wahl`, ab 10.3).
   Schlüssel mit Vorsilbe `thetadex_`. Keine Tracking-Einträge im Gerät speichern. Abmelden löscht alles.
   Die Tracking-Felder hält die App nur im Arbeitsspeicher (10 Minuten), damit das Formular schnell da ist.
+- **Kopfzeile angeheftet** (ab 1.3.22, Wunsch der Person, 16.11.2026): `.kopf` ist `position: sticky`. `js/app.js` schreibt ihre Höhe in `--kopf-hoehe`; andere feste Leisten nutzen `top: var(--kopf-hoehe, 0px)`.
 - **Fremder Rahmen** (ab 0.8.0): Läuft die Seite eingebettet in einer anderen Seite, zeigt `js/app.js` nur einen Hinweis (Schutz vor Klick-Fallen; `frame-ancestors` geht auf GitHub Pages nicht).
 - **Neu laden** nach einem Update nur, wenn auf dieser Seite „Jetzt neu laden“ getippt wurde (`js/app.js`). Sonst lud die Seite
   beim ersten Besuch von selbst neu, weil der Service Worker die Seite übernimmt (`clients.claim`), und Formulare waren weg.
@@ -912,3 +916,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.18** Einkauf: Pfeile für die Reihenfolge im Laden als ^ und v, jetzt auch bei Lebensmittel „Einzeln“.
 - **1.3.20** Besitz: Unterorte in bis zu drei Ebenen (Formular, Ort-Filter als Baum, Liste, Übersicht), Markierung „Ausmisten“ mit Filter (Spalte `ausmisten`).
 - **1.3.21** Besitz: Kacheln kompakt (Name und rechts die Anzahl, Kategorie nur noch im Fenster mit allen Angaben, am PC ohne Spalte Kategorie).
+- **1.3.22** Kopfzeile der App bleibt oben angeheftet. Besitz: fester Listenkopf, Sortierzeile oben, Zubehör in der Kachel der Hauptsache, „Items“ statt „Sachen“, Ausleihen und Ausmisten direkt im Fenster, Hinweis unter der Übersicht weg.

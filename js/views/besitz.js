@@ -127,7 +127,7 @@ export function render(container, ctx) {
 
     // Bild: bildStand.id = gespeichertes Bild, bildStand.daten = neu gewähltes (verkleinert), bildLink = eingefügter Drive-Link
     let bildStand = { id: '', daten: null };
-    const vorschau = el('img', { class: 'besitz-vorschau', attrs: { alt: 'Bild der Sache', hidden: true } });
+    const vorschau = el('img', { class: 'besitz-vorschau', attrs: { alt: 'Bild des Items', hidden: true } });
     const bildText = el('p', { class: 'leise besitz-hinweis' });
     const bildEntfernen = el('button', { class: 'knopf knopf-zweit', text: 'Bild entfernen', attrs: { type: 'button', hidden: true }, on: { click: () => setzeBild({ id: '', daten: null }) } });
     const bildDatei = el('input', { attrs: { id: 'besitz-bild', type: 'file', accept: 'image/*' }, on: { change: () => bildGewaehlt() } });
@@ -321,7 +321,7 @@ export function render(container, ctx) {
     // Füllt „Gehört zu“ für die Sache, die gerade im Formular steht (null = neu)
     function fuelleGehoert(sache) {
         leeren(gehoert);
-        gehoert.append(el('option', { text: '– keine, eigene Sache –', attrs: { value: '' } }));
+        gehoert.append(el('option', { text: '– keins, eigenes Item –', attrs: { value: '' } }));
         const hatEigenes = sache ? zubehoerVon(sache.id).length > 0 : false;
         (sachen || [])
             .filter((x) => !istZubehoer(x) && (!sache || x.id !== sache.id))
@@ -329,7 +329,7 @@ export function render(container, ctx) {
             .forEach((x) => gehoert.append(el('option', { text: x.name + ' (' + x.ort + ')', attrs: { value: x.id } })));
         gehoert.value = sache && istZubehoer(sache) ? sache.gehoert_zu : '';
         gehoert.disabled = hatEigenes;
-        gehoertHinweis.textContent = hatEigenes ? 'Diese Sache hat selbst Zubehör und bleibt darum eine eigene Sache.' : '';
+        gehoertHinweis.textContent = hatEigenes ? 'Dieses Item hat selbst Zubehör und bleibt darum ein eigenes Item.' : '';
     }
 
     // Hauptsache gewählt: Ort übernehmen, wenn noch keiner eingetragen ist
@@ -343,7 +343,7 @@ export function render(container, ctx) {
         const s = bearbeite;
         if (!s || sendet) return;
         const zahl = zubehoerVon(s.id).length;
-        const frage = '„' + s.name + '“ löschen?' + (zahl ? ' Das Zubehör (' + zahl + ') bleibt als eigene Sache erhalten.' : '');
+        const frage = '„' + s.name + '“ löschen?' + (zahl ? ' Das Zubehör (' + zahl + ') bleibt als eigenes Item erhalten.' : '');
         if (!confirm(frage)) return;
         sendet = true;
         speichernKnopf.disabled = true;
@@ -384,6 +384,7 @@ export function render(container, ctx) {
         const warBearbeiten = bearbeite;
         bearbeite = auf ? sache : null;
         formBox.hidden = !auf;
+        kopfLeiste.classList.toggle('besitz-oben-fest', !auf);
         neuKnopf.setAttribute('aria-expanded', auf ? 'true' : 'false');
         formTitel.textContent = sache ? 'Ändern' : 'Hinzufügen';
         loeschenKnopf.hidden = !sache;
@@ -429,8 +430,6 @@ export function render(container, ctx) {
             ['Anzahl', String(s.anzahl)],
             ['Kaufpreis', s.kaufpreis == null ? '' : euro(s.kaufpreis)],
             ['Kaufdatum', datumText(s.kaufdatum)],
-            ['Ausgeliehen', verliehen(s) ? leihText(s) : ''],
-            ['Ausmisten', ausmistText(s.ausmisten)],
             ['Gehört zu', haupt ? haupt.name : ''],
             ['Zubehör', zubehoer.map((z) => z.name + (z.anzahl > 1 ? ' (' + z.anzahl + ')' : '')).join(', ')],
             ['Notiz', s.notiz]
@@ -451,12 +450,90 @@ export function render(container, ctx) {
             s.bild ? bild : null,
             s.bild ? bildText : null,
             el('dl', { class: 'besitz-angaben' }, angaben.flatMap(([n, w]) => [el('dt', { text: n }), el('dd', { text: w })])),
+            schnellAendern(s),
             el('div', { class: 'besitz-form-knoepfe' }, [
                 el('button', { class: 'knopf knopf-bereich', text: 'Bearbeiten', attrs: { type: 'button' }, on: { click: () => { dialog.close(); zeigeFormular(true, s); } } }),
                 el('button', { class: 'knopf knopf-zweit', text: 'Schließen', attrs: { type: 'button' }, on: { click: () => dialog.close() } })
             ])
         ]));
-        dialog.showModal();
+        if (!dialog.open) dialog.showModal();
+    }
+
+    // Im Fenster direkt ausleihen und ausmisten (Wunsch der Person, 16.11.2026): je ein Haken mit Feld, nebeneinander.
+    // „Übernehmen“ speichert die ganze Sache mit den neuen Werten (gleicher Schutz vor Überschreiben wie im Formular).
+    function schnellAendern(s) {
+        const leihHaken = el('input', { attrs: { id: 'besitz-schnell-leihe', type: 'checkbox', checked: Boolean(verliehen(s)) } });
+        const leihName = el('input', { attrs: { id: 'besitz-schnell-leihe-name', type: 'text', maxlength: 60, autocomplete: 'off', placeholder: 'an wen', 'aria-label': 'Ausgeliehen an', value: verliehen(s) } });
+        const mistHaken = el('input', { attrs: { id: 'besitz-schnell-mist', type: 'checkbox', checked: Boolean(s.ausmisten) } });
+        const mistArt = el('select', { attrs: { id: 'besitz-schnell-mist-art', 'aria-label': 'Wie ausmisten' } },
+            AUSMISTEN.map(([w, t]) => el('option', { text: t, attrs: { value: w } })));
+        mistArt.value = s.ausmisten || 'offen';
+        const meldung = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
+        const knopf = el('button', { class: 'knopf knopf-bereich', text: 'Übernehmen', attrs: { type: 'button', hidden: true }, on: { click: () => uebernehmen() } });
+        const neu = () => ({
+            ausgeliehen_an: leihHaken.checked ? leihName.value.trim() : '',
+            ausmisten: mistHaken.checked ? mistArt.value : ''
+        });
+        const geaendert = () => { const n = neu(); return n.ausgeliehen_an !== verliehen(s) || n.ausmisten !== (s.ausmisten || ''); };
+        function stand() {
+            leihName.disabled = !leihHaken.checked;
+            mistArt.disabled = !mistHaken.checked;
+            knopf.hidden = !geaendert();
+            meldung.textContent = '';
+        }
+        leihHaken.addEventListener('change', () => { stand(); if (leihHaken.checked) leihName.focus(); });
+        mistHaken.addEventListener('change', stand);
+        leihName.addEventListener('input', stand);
+        mistArt.addEventListener('change', stand);
+        stand();
+
+        let laeuft = false;
+        async function uebernehmen() {
+            if (laeuft) return;
+            const n = neu();
+            if (leihHaken.checked && !n.ausgeliehen_an) {
+                meldung.textContent = 'Bitte eintragen, an wen es ausgeliehen ist.';
+                leihName.focus();
+                return;
+            }
+            laeuft = true;
+            knopf.disabled = true;
+            meldung.textContent = 'Speichere …';
+            try {
+                // Die ausgeliehene Anzahl bleibt, solange es an dieselbe Person geht; sonst gelten alle Stück
+                const leihAnzahl = n.ausgeliehen_an && n.ausgeliehen_an === verliehen(s) ? (s.ausgeliehen_anzahl || '') : '';
+                const antwort = await api('leben', 'speichern', {
+                    id: s.id, geaendert_am: s.geaendert_am,
+                    name: s.name, kategorie: s.kategorie, ort: s.ort, anzahl: s.anzahl,
+                    kaufpreis: s.kaufpreis == null ? '' : s.kaufpreis, kaufdatum: s.kaufdatum || '', notiz: s.notiz || '',
+                    gehoert_zu: s.gehoert_zu || '', bild: s.bild || '',
+                    ausgeliehen_an: n.ausgeliehen_an, ausgeliehen_anzahl: leihAnzahl, ausmisten: n.ausmisten
+                });
+                const i = sachen.findIndex((x) => x.id === s.id);
+                if (i >= 0) sachen[i] = antwort.sache;
+                zeigeGespeichert('Geändert', antwort.sache.name);
+                zeigeAlles();
+                zeigeSache(antwort.sache);
+            } catch (e) {
+                meldung.textContent = 'NICHT gespeichert: ' + e.message;
+                knopf.disabled = false;
+                laeuft = false;
+            }
+        }
+
+        return el('div', { class: 'besitz-schnell' }, [
+            el('div', { class: 'besitz-schnell-teil' }, [
+                el('h3', { text: 'Ausleihen' }),
+                el('label', { class: 'besitz-schnell-haken', attrs: { for: 'besitz-schnell-leihe' } }, [leihHaken, el('span', { text: 'ausgeliehen' })]),
+                leihName
+            ]),
+            el('div', { class: 'besitz-schnell-teil' }, [
+                el('h3', { text: 'Ausmisten' }),
+                el('label', { class: 'besitz-schnell-haken', attrs: { for: 'besitz-schnell-mist' } }, [mistHaken, el('span', { text: 'ausmisten' })]),
+                mistArt
+            ]),
+            el('div', { class: 'besitz-schnell-ende' }, [knopf, meldung])
+        ]);
     }
 
     // --- Suche und Filter (rechnen nur im Gerät) ---
@@ -529,11 +606,12 @@ export function render(container, ctx) {
         fuelleFilter(katFilter, 'Alle Kategorien', alleKat);
         fuelleFilter(leihFilter, 'Alle', [['ja', 'Nur ausgeliehene'], ['nein', 'Nicht ausgeliehen'], ...alleLeiher.map((n) => ['an:' + n, 'an ' + n])]);
         const ohne = sachen.filter((s) => !vorhanden(s)).length;
-        nullText.textContent = 'Auch Sachen mit Anzahl 0 zeigen (' + ohne + ')';
+        nullText.textContent = 'Auch Items mit Anzahl 0 zeigen (' + ohne + ')';
         suchBox.hidden = !sachen.length;
         trefferText.textContent = '';
+        zeigeSortZeile(false);
         if (!sachen.length) {
-            listeBox.append(el('p', { class: 'leise', text: 'Noch nichts eingetragen. Tippe auf „+ Hinzufügen“.' }));
+            listeBox.append(el('p', { class: 'leise', text: 'Noch keine Items eingetragen. Tippe auf „+ Hinzufügen“.' }));
             return;
         }
         const wort = klein(suche.value.trim());
@@ -551,7 +629,7 @@ export function render(container, ctx) {
             && (!wort || [s.name, s.kategorie, s.ort, s.notiz, verliehen(s)].some((t) => klein(t).includes(wort)));
         const treffer = sachen.filter(passt).length;
         if (filterAn) {
-            trefferText.textContent = treffer ? treffer + ' von ' + sachen.filter(sichtbar).length + ' Sachen' : 'Keine Treffer.';
+            trefferText.textContent = treffer ? treffer + ' von ' + sachen.filter(sichtbar).length + ' Items' : 'Keine Treffer.';
         }
         // Hauptsachen mit ihrem Zubehör. Eine Hauptsache steht da, wenn sie selbst oder ihr Zubehör passt.
         // Bei Suche oder Filter wird passendes Zubehör aufgeklappt gezeigt, sonst alles Zubehör zugeklappt.
@@ -560,8 +638,9 @@ export function render(container, ctx) {
             const kinder = filterAn ? alle.filter(passt) : alle;
             return { s, kinder, anzahlZubehoer: alle.length, selbst: passt(s), auf: offen.has(s.id) || (filterAn && kinder.length > 0) };
         }).filter((e) => e.selbst || e.kinder.length);
+        zeigeSortZeile(eintraege.length > 0);
         if (!eintraege.length && !filterAn) {
-            listeBox.append(el('p', { class: 'leise', text: 'Alle Sachen haben Anzahl 0. Setze den Haken oben, um sie zu sehen.' }));
+            listeBox.append(el('p', { class: 'leise', text: 'Alle Items haben Anzahl 0. Setze den Haken oben, um sie zu sehen.' }));
             return;
         }
         // Nach Ort gruppiert, Orte nach Name, Sachen nach der gewählten Spalte
@@ -571,7 +650,7 @@ export function render(container, ctx) {
             orte.get(e.s.ort).push(e);
         });
         // Je Raum eine Überschrift, darunter je Unterort eine kleinere (Baum-Reihenfolge)
-        const zahlText = (n) => (n === 1 ? '1 Sache' : n + ' Sachen');
+        const zahlText = (n) => (n === 1 ? '1 Item' : n + ' Items');
         let raum = null;
         ortBaum([...orte.keys()]).filter((o) => orte.has(o) || ortTeile(o).length === 1).forEach((o) => {
             const t = ortTeile(o);
@@ -593,10 +672,21 @@ export function render(container, ctx) {
                 el('span', { class: 'besitz-zahl', text: zahlText(liste.length) })
             ]) : null,
             el('table', { class: 'besitz-tabelle' }, [
-                el('thead', {}, [el('tr', {}, SPALTEN.map(spaltenKopf))]),
+                spaltenBreiten(),
                 el('tbody', {}, liste.flatMap((e) => [zeile(e.s, e), ...e.kinder.map((k) => zeile(k, null, e))]))
             ])
         ]);
+    }
+
+    // Gleiche Spaltenbreiten in der Sortier-Zeile oben und in allen Ort-Tabellen (css/components.css)
+    const spaltenBreiten = () => el('colgroup', {}, SPALTEN.map(() => el('col')));
+
+    // Eine Sortier-Zeile oben im festen Kopf (PC), darunter die Orte (Wunsch der Person, 16.11.2026)
+    const sortZeile = el('table', { class: 'besitz-tabelle besitz-sortzeile', attrs: { 'aria-label': 'Sortieren' } });
+    function zeigeSortZeile(an) {
+        leeren(sortZeile);
+        sortZeile.hidden = !an;
+        if (an) sortZeile.append(spaltenBreiten(), el('thead', {}, [el('tr', {}, SPALTEN.map(spaltenKopf))]));
     }
 
     // Spaltenkopf zum Sortieren: erster Tipp aufsteigend, zweiter absteigend
@@ -624,6 +714,9 @@ export function render(container, ctx) {
         if (haupt) klasse += ' besitz-kind';
         if (eintrag && !eintrag.selbst) klasse += ' besitz-nur-kontext'; // passt nicht selbst, nur ihr Zubehör
         if (s.anzahl === 0) klasse += ' besitz-null-zeile';
+        // Zubehör steht optisch in der Kachel der Hauptsache (Wunsch der Person, 16.11.2026)
+        if (eintrag && eintrag.kinder.length && eintrag.auf) klasse += ' besitz-offen';
+        if (haupt && haupt.kinder[haupt.kinder.length - 1] === s) klasse += ' besitz-kind-letztes';
         // Eine Zeile unter dem Namen: Zubehör-Knopf, dann Bild-Zeichen, dann „ausgeliehen“
         const merkmale = [
             eintrag && eintrag.kinder.length ? aufklapper(eintrag) : null,
@@ -667,6 +760,7 @@ export function render(container, ctx) {
                     knopf.setAttribute('aria-expanded', e.auf ? 'true' : 'false');
                     knopf.textContent = (e.auf ? '▾ ' : '▸ ') + zahl + ' Zubehör';
                     listeBox.querySelectorAll('tr[data-haupt="' + CSS.escape(e.s.id) + '"]').forEach((t) => { t.hidden = !e.auf; });
+                    knopf.closest('tr').classList.toggle('besitz-offen', e.auf);
                 }
             }
         });
@@ -690,7 +784,7 @@ export function render(container, ctx) {
             el('span', { class: 'leise', text })
         ]);
         uebersichtBox.append(el('div', { class: 'besitz-zahlen' }, [
-            zahlKachel(da.length, da.length === 1 ? 'Sache' : 'Sachen'),
+            zahlKachel(da.length, da.length === 1 ? 'Item' : 'Items'),
             zahlKachel(stueck, 'Stück'),
             zahlKachel(leihen.length, 'ausgeliehen'),
             zahlKachel(mist.length, 'ausmisten')
@@ -705,7 +799,6 @@ export function render(container, ctx) {
         );
         if (leihen.length) uebersichtBox.append(zaehlung('Ausgeliehen an', leihen, verliehen, (w) => { leihFilter.value = 'an:' + w; }, leihStueck));
         if (mist.length) uebersichtBox.append(zaehlung('Ausmisten', mist, (s) => s.ausmisten, (w) => { mistFilter.value = '=' + w; }, undefined, false, ausmistText));
-        uebersichtBox.append(el('p', { class: 'leise besitz-hinweis', text: 'Gezählt sind alle Sachen mit Anzahl über 0, Zubehör eingeschlossen. Bei „Ausgeliehen an“ zählen nur die ausgeliehenen Stück. Tipp auf eine Zeile zeigt diese Sachen in der Liste.' }));
     }
 
     // Eine Tabelle: Gruppe, Sachen und Stück. Tipp auf eine Zeile öffnet die Liste mit diesem Filter.
@@ -738,7 +831,7 @@ export function render(container, ctx) {
             el('table', { class: 'besitz-zaehlung' }, [
                 el('thead', {}, [el('tr', {}, [
                     el('th', { text: titel.replace(/^Je /, ''), attrs: { scope: 'col' } }),
-                    el('th', { class: 'zahl', text: 'Sachen', attrs: { scope: 'col' } }),
+                    el('th', { class: 'zahl', text: 'Items', attrs: { scope: 'col' } }),
                     el('th', { class: 'zahl', text: 'Stück', attrs: { scope: 'col' } })
                 ])]),
                 el('tbody', {}, reihe.map(([name, g]) => {
@@ -756,12 +849,26 @@ export function render(container, ctx) {
         ]);
     }
 
-    // --- Unterreiter Liste / Übersicht ---
-    const listeTeil = el('div', { attrs: { id: 'besitz-teil-liste' } }, [suchBox, trefferText, listeBox]);
+    // --- Fester Kopf: Titel, Unterreiter, Suche, Filter, Haken „Anzahl 0“ und Sortier-Zeile bleiben beim Blättern oben
+    // (Wunsch der Person, 16.11.2026). Solange das Formular offen ist, blättert der Kopf mit, damit Platz für das Formular bleibt.
+    const suchKopf = el('div', {}, [suchBox, sortZeile]);
+    const listeTeil = el('div', { attrs: { id: 'besitz-teil-liste' } }, [trefferText, listeBox]);
     const teilKnoepfe = [['liste', 'Liste', listeTeil], ['uebersicht', 'Übersicht', uebersichtBox]].map(([id, text, box]) => [
         id,
         el('button', { class: 'ansicht', text, attrs: { type: 'button', 'aria-controls': box.id }, on: { click: () => zeigeTeil(id) } }),
         box
+    ]);
+
+    const kopfLeiste = el('div', { class: 'besitz-oben besitz-oben-fest' }, [
+        el('div', { class: 'besitz-kopf' }, [
+            el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
+                el('span', { class: 'titel-emoji', text: '📦', attrs: { 'aria-hidden': 'true' } }),
+                el('span', { text: ctx.bereich.titel })
+            ]),
+            neuKnopf
+        ]),
+        el('div', { class: 'ansichten' }, teilKnoepfe.map(([, knopf]) => knopf)),
+        suchKopf
     ]);
 
     function zeigeTeil(id) {
@@ -770,6 +877,7 @@ export function render(container, ctx) {
             knopf.setAttribute('aria-pressed', k === id ? 'true' : 'false');
             box.hidden = k !== id;
         });
+        suchKopf.hidden = id !== 'liste';
         zeigeAlles();
     }
 
@@ -798,14 +906,7 @@ export function render(container, ctx) {
     }
 
     container.append(
-        el('div', { class: 'besitz-kopf' }, [
-            el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
-                el('span', { class: 'titel-emoji', text: '📦', attrs: { 'aria-hidden': 'true' } }),
-                el('span', { text: ctx.bereich.titel })
-            ]),
-            neuKnopf
-        ]),
-        el('div', { class: 'ansichten' }, teilKnoepfe.map(([, knopf]) => knopf)),
+        kopfLeiste,
         formBox,
         ladeStatus,
         listeTeil,
