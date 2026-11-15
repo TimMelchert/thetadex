@@ -684,17 +684,25 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .besitz-tabelle { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
 /* Gleiche Spaltenbreiten in allen Orten (PC): Name, Kategorie, Anzahl, Kaufpreis, Kaufdatum */
 @media (min-width: 768px) {
-    .besitz-tabelle thead th:nth-child(1) { width: 54%; }
-    .besitz-tabelle thead th:nth-child(2) { width: 12%; }
-    .besitz-tabelle thead th:nth-child(3) { width: 17%; }
-    .besitz-tabelle thead th:nth-child(4) { width: 17%; }
+    .besitz-tabelle col:nth-child(1) { width: 54%; }
+    .besitz-tabelle col:nth-child(2) { width: 12%; }
+    .besitz-tabelle col:nth-child(3) { width: 17%; }
+    .besitz-tabelle col:nth-child(4) { width: 17%; }
     .besitz-stueck { display: none; }
     /* Jede Sache als Block mit buntem Strich links, wie die Karten am Handy */
-    .besitz-tabelle { border-collapse: separate; border-spacing: 0 6px; }
-    .besitz-tabelle tbody th, .besitz-tabelle tbody td { background: var(--kachel); border-bottom: none; padding: 10px 8px; }
-    .besitz-tabelle tbody tr > :first-child { border-left: 6px solid var(--bereich); border-radius: var(--rund) 0 0 var(--rund); padding-left: 12px; }
+    /* Abstand zwischen den Kacheln über einen durchsichtigen Rand oben, damit Zubehör ohne Lücke in der Kachel der Hauptsache steht */
+    .besitz-tabelle { border-collapse: separate; border-spacing: 0; }
+    .besitz-tabelle tbody th, .besitz-tabelle tbody td { background: var(--kachel); background-clip: padding-box; border-top: 6px solid transparent; border-bottom: none; padding: 10px 8px; }
+    .besitz-tabelle tbody tr > :first-child { box-shadow: inset 6px 0 0 var(--bereich); border-radius: var(--rund) 0 0 var(--rund); padding-left: 18px; }
     .besitz-tabelle tbody tr > :last-child { border-radius: 0 var(--rund) var(--rund) 0; }
-    .besitz-tabelle tbody tr.besitz-kind > :first-child { border-left-width: 3px; padding-left: 32px; }
+    .besitz-tabelle tbody tr.besitz-offen > :first-child { border-bottom-left-radius: 0; }
+    .besitz-tabelle tbody tr.besitz-offen > :last-child { border-bottom-right-radius: 0; }
+    .besitz-tabelle tbody tr.besitz-kind > * { border-top-width: 0; border-radius: 0; padding-top: 6px; padding-bottom: 6px; }
+    .besitz-tabelle tbody tr.besitz-kind > :first-child { box-shadow: inset 6px 0 0 var(--bereich), inset 30px 0 0 var(--kachel), inset 33px 0 0 var(--linie); padding-left: 44px; }
+    .besitz-tabelle tbody tr.besitz-kind-letztes > * { padding-bottom: 12px; }
+    .besitz-tabelle tbody tr.besitz-kind-letztes > :first-child { border-bottom-left-radius: var(--rund); }
+    .besitz-tabelle tbody tr.besitz-kind-letztes > :last-child { border-bottom-right-radius: var(--rund); }
+    .besitz-kind-pfeil { display: none; }
 }
 .besitz-tabelle td { overflow-wrap: anywhere; }
 .besitz-tabelle th, .besitz-tabelle td { padding: 8px 6px; border-bottom: 1px solid var(--linie); text-align: left; vertical-align: top; }
@@ -747,7 +755,12 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .besitz-nur-kontext .besitz-oeffnen, .besitz-nur-kontext td { color: var(--schrift-leise); }
 
 @media (max-width: 767px) {
-    .besitz-tabelle tr.besitz-kind { margin: -2px 0 6px 28px; padding: 6px 12px; border-left-width: 3px; }
+    /* Zubehör als kleinere Kachel in der Kachel der Hauptsache */
+    .besitz-tabelle tr.besitz-offen { margin-bottom: 0; padding-bottom: 6px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+    .besitz-tabelle tr.besitz-kind { margin: 0; padding: 4px 10px 4px 22px; border-radius: 0; }
+    .besitz-tabelle tr.besitz-kind-letztes { margin-bottom: 6px; padding-bottom: 10px; border-radius: 0 0 var(--rund) var(--rund); }
+    .besitz-kind .besitz-name { padding: 6px 10px; background: var(--hintergrund); border-radius: var(--rund); }
+    .besitz-kind-pfeil { display: none; }
     .besitz-kind .besitz-name { padding-left: 0; }
     .besitz-kind-pfeil { margin-left: 0; }
 }
@@ -810,7 +823,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .einkauf-abgehakt .einkauf-text, .einkauf-abgehakt .einkauf-text .besitz-oeffnen { color: var(--schrift-leise); text-decoration: line-through; }
 .einkauf-fertig { margin-top: var(--abstand); }
 /* Leiste über der Lebensmittel-Liste: bleibt beim Scrollen oben */
-.einkauf-auswahl-leiste { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 10px; margin-top: var(--abstand); padding: 8px 0; background: var(--hintergrund); }
+.einkauf-auswahl-leiste { position: sticky; top: var(--kopf-hoehe, 0px); z-index: 2; display: flex; flex-wrap: wrap; gap: 10px; margin-top: var(--abstand); padding: 8px 0; background: var(--hintergrund); }
 .einkauf-auswahl-leiste .knopf[disabled] { opacity: 0.5; cursor: default; }
 .einkauf-klein { font-size: 0.85rem; overflow-wrap: anywhere; }
 .einkauf-warten:empty { display: none; }
@@ -1029,7 +1042,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .dsa-leiste select { min-height: 44px; max-width: 100%; padding: 8px 12px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; font-weight: 600; }
 .dsa-marke { padding: 2px 10px; border-radius: 999px; background: var(--bereich); color: var(--schrift-auf-farbe); font-size: 0.8rem; font-weight: 700; }
 .dsa-marke[hidden] { display: none; }
-.dsa-oben { position: sticky; top: 0; z-index: 5; margin-top: var(--abstand); padding: 8px 0; background: var(--hintergrund); border-bottom: 1px solid var(--linie); }
+.dsa-oben { position: sticky; top: var(--kopf-hoehe, 0px); z-index: 5; margin-top: var(--abstand); padding: 8px 0; background: var(--hintergrund); border-bottom: 1px solid var(--linie); }
 .dsa-oben[hidden] { display: none; }
 .dsa-zaehler { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 6px; }
 .dsa-zaehler-kachel { display: flex; flex-direction: column; min-height: 52px; padding: 6px 10px; border-top: 4px solid var(--bereich); border-radius: var(--rund); background: var(--kachel); }
@@ -1263,7 +1276,7 @@ button.dsa-zaehler-kachel:focus-visible { outline: 3px solid var(--bereich); out
     .inhalt:has(#finanz-buchen:not([hidden]) .sms-karte:not([hidden])) { max-width: 1040px; }
     #finanz-buchen:has(.sms-karte:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--abstand); align-items: start; }
     #finanz-buchen .sms-knoepfe { grid-template-columns: 1fr; }
-    #finanz-buchen .sms-karte { position: sticky; top: var(--abstand); max-height: calc(100vh - 2 * var(--abstand)); overflow-y: auto; }
+    #finanz-buchen .sms-karte { position: sticky; top: calc(var(--kopf-hoehe, 0px) + var(--abstand)); max-height: calc(100vh - var(--kopf-hoehe, 0px) - 2 * var(--abstand)); overflow-y: auto; }
 }
 
 /* Visitenkarte (Etappe 10). Besucher sehen nur die Karte: keine Reiterleiste, keine Kopf-Links, Marke ohne Link. */
@@ -1312,7 +1325,7 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 @media (min-width: 1200px) {
     .inhalt:has(.vk-seite) { max-width: 1040px; }
     .vk-seite { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--abstand); align-items: start; margin-top: var(--abstand); }
-    .vk-seite-rechts { grid-column: 2; grid-row: 1; position: sticky; top: var(--abstand); }
+    .vk-seite-rechts { grid-column: 2; grid-row: 1; position: sticky; top: calc(var(--kopf-hoehe, 0px) + var(--abstand)); }
     .vk-seite-haupt { grid-column: 1; grid-row: 1; }
     .vk-seite-haupt > div:first-child > .vk { margin-top: 0; }
 }
@@ -1374,3 +1387,26 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 /* Besitz: Name und Anzahl in einer Zeile */
 .besitz-namezeile { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .besitz-namezeile > :first-child { flex: 1 1 auto; min-width: 0; }
+
+/* Besitz: fester Kopf der Liste (Titel bis Haken „Anzahl 0“, am PC mit Sortier-Zeile) */
+.besitz-oben { background: var(--hintergrund); }
+.besitz-oben-fest { position: sticky; top: var(--kopf-hoehe, 0px); z-index: 5; padding-bottom: 6px; border-bottom: 1px solid var(--linie); }
+.besitz-oben .besitz-kopf { padding-top: 4px; }
+.besitz-sortzeile { margin-top: 6px; }
+.besitz-sortzeile th { border-bottom: none; }
+@media (max-width: 767px) {
+    .besitz-sortzeile { display: none; }
+    .besitz-oben .besitz-suche { margin-top: 4px; gap: 4px; }
+    .besitz-oben .besitz-suche label { margin-top: 2px; }
+}
+
+/* Besitz: im Fenster ausleihen und ausmisten, zwei Spalten nebeneinander */
+.besitz-schnell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 14px; margin-top: var(--abstand); padding-top: 10px; border-top: 1px solid var(--linie); }
+.besitz-schnell h3 { margin: 0 0 6px; font-size: 0.95rem; }
+.besitz-schnell-teil { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.besitz-schnell-haken { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; }
+.besitz-schnell-haken input { width: 20px; height: 20px; margin: 0; accent-color: var(--bereich); }
+.besitz-schnell input[type="text"], .besitz-schnell select { min-height: 40px; padding: 6px 10px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; width: 100%; }
+.besitz-schnell input:disabled, .besitz-schnell select:disabled { opacity: 0.5; }
+.besitz-schnell-ende { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.besitz-schnell-ende .meldung { margin: 0; }

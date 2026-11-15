@@ -145,6 +145,12 @@ if (imRahmen) {
     inhalt.append(el('p', { class: 'meldung', text: 'Thetadex bitte direkt öffnen, nicht eingebettet in einer anderen Seite.' }));
 } else {
     wendeAussehenAn();
+    // Die Kopfzeile bleibt oben angeheftet (Wunsch der Person, 16.11.2026). Ihre Höhe steht in --kopf-hoehe,
+    // damit feste Leisten in den Reitern (zum Beispiel der Kopf der Besitz-Liste) direkt darunter kleben.
+    const kopf = document.querySelector('.kopf');
+    if (kopf && window.ResizeObserver) {
+        new ResizeObserver(() => document.documentElement.style.setProperty('--kopf-hoehe', kopf.offsetHeight + 'px')).observe(kopf);
+    }
     window.addEventListener('hashchange', zeigeAnsicht);
     // Nach dem Speichern in den Einstellungen: Reiterleiste gleich anpassen, ohne die Seite neu zu zeichnen
     window.addEventListener('thetadex-skripte', () => baueReiter(sichtbareBereiche()));
