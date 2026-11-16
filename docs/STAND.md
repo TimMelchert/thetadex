@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.29** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.30** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -292,7 +292,7 @@ unter „Info“ die Version prüfen.
   Die gültigen Regeln je Bereich stehen in Abschnitt 4. Bei Widerspruch gilt Abschnitt 4.
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen.
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.3.30: `karte` und `gemeinsam` neue Fassung einfügen und als neue Version bereitstellen (erst nachdem 1.3.29 auf den Geräten ist).
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Die Auswertung zeigt daraus „Feste Ausgaben“ (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist) und ab 1.3.14 „Feste Einnahmen“ (Zweck, dessen Kategorie es nur bei den Einnahmen gibt, zum Beispiel Job).
 
 ---
@@ -413,7 +413,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - **Öffentlich nur, was passt:** leere oder unbekannte `karten` = auf keiner Karte (Fund 2); E-Mail nur `name@domain`, Telefon nur Ziffern, `+`, Leerzeichen, `/`, `-` (Fund 3).
     Was nicht passt, steht in der Vorschau der Person unter „Erscheint auf keiner Karte“ mit Grund.
   - **Reihenfolge** (ab 1.2.8): Name und Status stehen immer oben. Danach stehen die Blöcke (jeder Text einzeln, Kontakt, Social Media, Veröffentlichungen) dort, wo ihre erste Angabe nach `reihenfolge` steht. Text mit kleiner Zahl = oben, mit großer Zahl (z. B. 99) = unten.
-  - **Aktionen:** mit `KARTE_PIN` `ping`, `angaben`, `link`, `link_weg`, `bild`; ohne Passwort nur mit Schlüssel `karte` (ab 1.2.8 mit E-Mail und Telefon, ohne zweiten Tipp: Wunsch der Person, der Tipp schützte kaum), `kontakt` (nur noch für ältere App-Fassungen), `bild_karte` (Vorschaubild oder Logo einer Angabe dieser Karte).
+  - **Aktionen:** mit `KARTE_PIN` `ping`, `angaben`, `link`, `link_weg`, `bild`; ohne Passwort nur mit Schlüssel `karte` (ab 1.2.8 mit E-Mail und Telefon, ohne zweiten Tipp: Wunsch der Person, der Tipp schützte kaum; die alte Aktion `kontakt` ist seit 1.3.30 weg), `bild_karte` (Vorschaubild oder Logo einer Angabe dieser Karte).
     Ein gültiger Schlüssel geht immer durch (Fund 1); 20 falsche in 15 Minuten geben nur „gesperrt“. Obergrenze je Stunde für alle: 300 Karten, 60 Kontakte, 600 Bilder (ab 1.2.8 wegen der Logos). Kein Captcha (fremde Dienste, Entscheidung der Person).
   - **App:** Besucher-Ansicht ohne Reiterleiste und Kopf-Links, im Gerät der Besucher nichts. „Kontakt speichern“ erzeugt im Gerät eine vCard mit dem Link der Karte.
     Für die Person `#/visitenkarte` als Kachel, am PC auch in der Seitenleiste (Olivgrün, Icon und Register bleiben): Umschalter, Vorschau, am PC der Link-Kasten rechts (ab 1200 px), Link erstellen, kopieren, QR-Code (im Gerät, `vendor/qrcode.js`) zeigen und speichern, erneuern, nicht mehr teilen.
@@ -452,7 +452,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
       Ändert man die Personen, rechnen alle Mengen neu (auch von Hand geänderte). Der Vorrat-Haken prüft gegen die neue Menge. Gespeichert wird dabei nichts.
     - Bearbeiten: Titel, Bilder, für … Personen, ergibt, Rezepttext (nur Text mit Zeilenumbrüchen, keine fette Schrift), Link, Zutaten. Die alte Notiz steht beim Bearbeiten
       oben im Rezepttext und wandert beim Speichern dorthin (`notiz` danach leer). Bei „Inzwischen geändert“ bleibt alles im Fenster:
-      „Inzwischen geändert. Text kopieren, neu laden, dann einfügen.“ Kennt das Skript die neuen Felder nicht (`alles` ohne `rezepte_felder`), zeigt das Formular einen Hinweis und das alte Feld Notiz.
+      „Inzwischen geändert. Text kopieren, neu laden, dann einfügen.“
     - **Bilder:** bis 10 je Rezept, hochgeladen (die App verkleinert auf höchstens 1600 px, JPEG) oder als Google-Drive-Link (nur drive.google.com oder docs.google.com).
       Hochgeladene liegen im privaten Drive-Ordner „Thetadex Rezepte“ der Person (Skripteigenschaft `BILD_ORDNER`), auch wenn die Partnerin oder der Partner hochlädt (bestätigt).
       × nimmt ein Bild vom Rezept, die Datei bleibt im Drive. Neue Bilder gehen nach dem Speichern einzeln über `rezept_bild` hoch; schlägt eins fehl, bleiben die übrigen im Fenster.
@@ -550,6 +550,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **GitHub Pages hängt** (Erfahrung 4.11.2026): Bleibt „pages build and deployment“ auf „Queued“ oder bricht mit „Timeout reached“ ab, liegt es an GitHub, nicht am Code.
   Erst „Re-run all jobs“; hilft das nicht, startet die nächste Änderung auf `main` einen neuen Lauf, der hängende wartende Läufe ersetzt.
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
+- **Skript `gemeinsam`:** `tabelle_` liest jedes Blatt je Anfrage nur einmal (ab 1.3.30). Wer nicht über `neu_` oder `aendere_` ins Blatt schreibt, ruft danach `vergiss_(name)` auf.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
 - **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `karte` statt `APP_PIN` nur `KARTE_PIN` (eigenes Passwort, mindestens 12 Zeichen, ab 10.1; die App speichert es als `thetadex_karte_passwort` und schickt es nur an `karte`); im Skript `finanzen` zusätzlich `SMS_SCHLUESSEL` (nur für die Aktion `sms`, legt die Funktion `smsSchluesselErzeugen` an, ab 9.1); in den Skripten `leben`, `dsa` und `gemeinsam` (ab 1.3.4) legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
@@ -580,7 +581,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`),
-  `apps-script/karte/Code.gs` (Visitenkarte, mit `KARTE_PIN`, ohne nur `karte`, `kontakt`, `bild_karte` mit Schlüssel, Funktion `einrichten`, ab 10.1).
+  `apps-script/karte/Code.gs` (Visitenkarte, mit `KARTE_PIN`, ohne nur `karte`, `bild_karte` mit Schlüssel, Funktion `einrichten`, ab 10.1).
 
 ---
 
@@ -604,6 +605,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.3.27** Besitz: Listenkopf mit Filtern wieder nicht mehr fest, er scrollt auf allen Geräten mit.
 - **Etappe 12** Entschlacken (Abschluss = 1.4.0). **1.3.28** Schritt 12.1: Rückblick aus `docs/STAND.md` nach `docs/GESCHICHTE.md` verschoben, veraltete Projektdateien gelöscht.
 - **1.3.29** Schritt 12.2: Zeitgrenze für Anfragen, Übergangs-Code für alte Skripte in Einkauf weg, gemeinsame Helfer (`euro`, `datumText`, `bildSpeicher` …), kein Service Worker auf Visitenkarten-Links, kleine Reste weg.
+- **1.3.30** Schritt 12.3: Skript `karte` ohne alte Aktion `kontakt`, Skript `gemeinsam` liest jedes Blatt je Anfrage nur einmal und ohne Merker für alte App-Fassungen. Skripte `karte` und `gemeinsam` neu einfügen.

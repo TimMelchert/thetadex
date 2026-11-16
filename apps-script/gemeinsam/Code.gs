@@ -192,8 +192,20 @@ function spalten_(sheet) {
   return karte;
 }
 
+// Je Anfrage wird jedes Blatt nur einmal gelesen (ab 1.3.30). neu_ und aendere_ ändern die Kopie im Speicher gleich mit,
+// darum bleibt sie richtig. Wer anders ins Blatt schreibt, ruft danach vergiss_(name) auf.
+var TABELLEN_ = {};
+function vergiss_(name) {
+  delete TABELLEN_[name];
+}
+
 // Ein Blatt mit Spalten und allen Zeilen. Fehlt das Blatt oder eine Spalte, kommt eine klare Meldung.
 function tabelle_(name) {
+  if (!TABELLEN_[name]) TABELLEN_[name] = tabelleLesen_(name);
+  return TABELLEN_[name];
+}
+
+function tabelleLesen_(name) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
   if (!sheet) throw new Error("Blatt '" + name + "' fehlt. Bitte im Editor einmal 'einrichten' ausführen.");
   var sp = spalten_(sheet);
@@ -478,8 +490,6 @@ function alles_() {
     liste: offeneListe_(),
     gerichte: alleGerichte_(),
     vorrat: alleVorraete_(),
-    rezepte_felder: true,  // zeigt der App: Dieses Skript kennt Rezepttext, Personen, ergibt und Bilder (ab 1.3.4)
-    packung_felder: true,  // und Packung und Menge im Rezept in g oder ml (ab 1.3.10)
     reihenfolge: ladenReihenfolge_()   // Abteilungen in der Reihenfolge im Laden (ab 1.3.17)
   };
 }
@@ -508,6 +518,7 @@ function reihenfolgeSpeichern_(data) {
   var t = tabelle_("laden_reihenfolge");
   if (t.zeilen.length) t.sheet.getRange(2, 1, t.zeilen.length, t.breite).clearContent();
   if (sauber.length) t.sheet.getRange(2, t.sp.abteilung + 1, sauber.length, 1).setValues(sauber.map(function (a) { return [a]; }));
+  vergiss_("laden_reihenfolge");
   return { reihenfolge: ladenReihenfolge_() };
 }
 

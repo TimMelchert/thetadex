@@ -4,8 +4,8 @@
 // Blätter: „angaben“ (eine Angabe je Zeile, die Person pflegt sie im Sheet) und „links“ (je Karte ein Schlüssel).
 // Drei Karten: privat, arbeit, aktivismus. Ein Link zeigt genau eine Karte.
 // Mit Passwort (KARTE_PIN, NICHT APP_PIN) darf die Person alles lesen und Links erstellen.
-// Ohne Passwort gibt es nur „karte“, „kontakt“ und „bild_karte“, immer nur mit dem Schlüssel einer Karte.
-// Seit 1.2.8 schickt „karte“ E-Mail und Telefon gleich mit (Wunsch der Person). „kontakt“ bleibt für ältere App-Fassungen.
+// Ohne Passwort gibt es nur „karte“ und „bild_karte“, immer nur mit dem Schlüssel einer Karte.
+// Seit 1.2.8 schickt „karte“ E-Mail und Telefon gleich mit (Wunsch der Person). Die alte Aktion „kontakt“ ist seit 1.3.30 weg.
 // Das Skript schreibt nie Angaben, nur Schlüssel und fehlende Kennungen.
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (KARTE_PIN).
 // Siehe docs/STAND.md 4 „Visitenkarte“.
@@ -23,12 +23,11 @@ var TEXT_SPALTEN_ = {
 var FREIWILLIG_ = ["zusatz"];                     // neu ab 1.2.10, ohne „einrichten“ einfach leer
 var KARTEN_ = ["privat", "arbeit", "aktivismus"];
 var ARTEN_ = ["name", "status", "email", "telefon", "adresse", "social", "veroeffentlichung", "text"];
-var KONTAKT_ = ["email", "telefon"];
 var MIT_BILD_ = ["veroeffentlichung", "status"];  // Vorschaubild bzw. Logo der Gruppe
 var SYMBOLE_ = ["hut", "stift"];                           // Wort in Spalte „bild“ statt Drive-Link: eingebautes Symbol links vor dem Text
 var MAX_ = { titel: 60, wert: 200, link: 300 };
 var MAX_ANGABEN_ = 100;
-var MAX_ABRUFE_ = { karte: 300, kontakt: 60, bild: 600 };   // je Stunde, für alle zusammen
+var MAX_ABRUFE_ = { karte: 300, bild: 600 };   // je Stunde, für alle zusammen
 var MAX_FALSCHE_ = 20;                            // falsche Schlüssel in 15 Minuten
 var MAX_BILD_SENDEN_ = 1500000;
 var MAX_BILD_ECHT_ = 400000;                     // PNG, GIF, WebP bis zu dieser Größe als Datei selbst (Vorschau aus Drive macht den Hintergrund weiß)
@@ -301,18 +300,6 @@ function karte_(data) {
   };
 }
 
-// E-Mail und Telefon dieser Karte (nur noch für ältere App-Fassungen, die sie getrennt holen)
-function kontakt_(data) {
-  var k = karteFuer_(data.schluessel);
-  if (k.error) return k;
-  if (!nochErlaubt_("kontakt")) return zuViele_();
-  return {
-    karte: k.karte,
-    kontakt: angabenDerKarte_(k.karte).filter(function (a) { return KONTAKT_.indexOf(a.art) >= 0; })
-      .map(function (a) { return { id: a.id, art: a.art, titel: a.titel, wert: a.wert }; })
-  };
-}
-
 // Vorschaubild einer Angabe dieser Karte. Der Besucher schickt nur die Kennung der Angabe, nie eine Drive-Kennung.
 function bildOeffentlich_(data) {
   var k = karteFuer_(data.schluessel);
@@ -414,7 +401,7 @@ function doPost(e) {
   if (!data || typeof data !== "object") return jsonOut_({ error: "anfrage", message: "Ungültige Anfrage" });
 
   // Ohne Passwort: nur mit dem Schlüssel einer Karte, nur lesen
-  var oeffentlich = { karte: karte_, kontakt: kontakt_, bild_karte: bildOeffentlich_ };
+  var oeffentlich = { karte: karte_, bild_karte: bildOeffentlich_ };
   if (oeffentlich[data.action]) {
     try { return jsonOut_(oeffentlich[data.action](data)); } catch (err) {
       // Keine internen Fehlertexte nach außen, den genauen Text ins Protokoll
