@@ -356,3 +356,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **Etappe 12** Entschlacken (Abschluss = 1.4.0). **1.3.28** Schritt 12.1: Rückblick aus `docs/STAND.md` nach `docs/GESCHICHTE.md` verschoben, veraltete Projektdateien gelöscht.
 - **1.3.29** Schritt 12.2: Zeitgrenze für Anfragen, Übergangs-Code für alte Skripte in Einkauf weg, gemeinsame Helfer (`euro`, `datumText`, `bildSpeicher` …), kein Service Worker auf Visitenkarten-Links, kleine Reste weg.
 - **1.3.30** Schritt 12.3: Skript `karte` ohne alte Aktion `kontakt`, Skript `gemeinsam` liest jedes Blatt je Anfrage nur einmal und ohne Merker für alte App-Fassungen. Skripte `karte` und `gemeinsam` neu einfügen.
+- **1.4.0** Schritt 12.4: Besitz und Pen & Paper nutzen ein gemeinsames Bild-Feld (`bildFeld` in `js/ui/bild.js`).
