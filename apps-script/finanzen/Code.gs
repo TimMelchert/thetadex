@@ -6,7 +6,7 @@
 var KONTEN_ = ["Konto", "Paypal", "Kreditkarte", "Portemonnaie", "Muenzglas", "Pfandbons"];
 var MODI_ = ["ein", "aus", "umbuchung"];
 var BLATT_EINST_ = "Einstellungen";  // Zwecke, Kategorien, Rückzahlungen (siehe docs/STAND.md 7.2, Etappe 2)
-var EINST_KOPF_ = ["liste", "name", "kategorie", "betrag", "zweck"];
+var EINST_KOPF_ = ["liste", "name", "kategorie", "betrag", "zweck", "monate"];
 var BLATT_SMS_ = "SMS";  // Kontowecker-SMS, siehe docs/STAND.md Abschnitt 4 „Kontowecker“
 var SMS_KOPF_ = ["id", "empfangen_am", "gesendet_am", "absender", "text", "pruefsumme", "status", "erledigt_am"];
 var SMS_PRO_TAG_ = 50;  // mehr SMS am Tag lehnt das Skript ab
@@ -77,7 +77,7 @@ function doPost(e) {
   try {
     if (data.action === "stats")   return jsonOut_(getStats());
     if (data.action === "einstellungen") return jsonOut_(einstellungenLesen_());
-    if (data.action === "analyse") return jsonOut_(getAnalyseData());
+    if (data.action === "analyse") return analyseMitZwischenspeicher_(data.frisch === true);
     if (data.action === "buchungen") return jsonOut_(buchungenLesen_(data));
     if (data.action === "smsListe") return jsonOut_(smsListe_());
     if (data.action === "smsErledigt") return jsonOut_(mitSperre_(function () { return smsErledigt_(data.id); }));
@@ -94,10 +94,13 @@ function doPost(e) {
           var sms = smsFinden_(data.sms_id);
           if (sms.fehler) return jsonOut_(sms.fehler);
           var ergebnis = buchungSpeichern_(data);
+          analyseVergessen_();
           if (!ergebnis.error) smsAbschliessen_(sms, "gebucht");
           return jsonOut_(ergebnis);
         }
-        return jsonOut_(buchungSpeichern_(data));
+        var gebucht = buchungSpeichern_(data);
+        analyseVergessen_();
+        return jsonOut_(gebucht);
       } finally {
         lock.releaseLock();
       }
@@ -110,6 +113,46 @@ function doPost(e) {
 }
 
 // --- 3. ANALYSE-DATEN ---
+
+// Die Auswertung braucht viele Blätter und ist darum langsam. Das fertige Ergebnis liegt 10 Minuten im
+// Zwischenspeicher des Skripts (CacheService, nur dieses Skript kommt daran). Eine Buchung löscht ihn,
+// "Neu laden" in der App fragt frisch. Das Ergebnis wird in Stücke geteilt, weil ein Eintrag höchstens 100 KB haben darf.
+var ANALYSE_SEKUNDEN_ = 600;
+var ANALYSE_STUECK_ = 50000;
+
+function analyseMitZwischenspeicher_(frisch) {
+  var cache = CacheService.getScriptCache();
+  if (!frisch) {
+    var anzahl = Number(cache.get("analyse_n"));
+    if (anzahl > 0) {
+      var schluessel = [];
+      for (var i = 0; i < anzahl; i++) schluessel.push("analyse_" + i);
+      var teile = cache.getAll(schluessel);
+      if (schluessel.every(function (k) { return typeof teile[k] === "string"; })) {
+        return ContentService.createTextOutput(schluessel.map(function (k) { return teile[k]; }).join(""))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+  }
+  var daten = getAnalyseData();
+  var text = JSON.stringify(daten);
+  if (!daten.error) {
+    try {
+      var stuecke = {};
+      var n = 0;
+      for (var pos = 0; pos < text.length; pos += ANALYSE_STUECK_) stuecke["analyse_" + (n++)] = text.slice(pos, pos + ANALYSE_STUECK_);
+      stuecke.analyse_n = String(n);
+      cache.putAll(stuecke, ANALYSE_SEKUNDEN_);
+    } catch (err) {
+      // Zu groß oder Speicher voll: dann eben ohne Zwischenspeicher
+    }
+  }
+  return ContentService.createTextOutput(text).setMimeType(ContentService.MimeType.JSON);
+}
+
+function analyseVergessen_() {
+  CacheService.getScriptCache().remove("analyse_n");
+}
 
 function getAnalyseData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -244,7 +287,6 @@ function getAnalyseData() {
 // Nur Zwecke aus dem Blatt "Einstellungen": Rückzahlungen (Liste "rueckzahlung") und feste Zwecke (Liste "zweck" mit Betrag).
 // Aufbau: rueckzahlungen { "2026-10": { "<zweck>|<kategorie>": 12.5 } }, ausgaben und einnahmen { "2026-10": { "<zweck>": 30 } }
 function getZweckSummen_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
   var out = { rueckzahlungen: {}, ausgaben: {}, einnahmen: {} };
   var einst = einstellungenLesen_();
   if (einst.error) return out;
@@ -252,13 +294,10 @@ function getZweckSummen_() {
   einst.rueckzahlungen.forEach(function (r) { rueck[String(r.zweck).trim().toLowerCase() + "|" + String(r.kategorie).trim().toLowerCase()] = true; });
   einst.zwecke.forEach(function (z) { if (z.betrag) fest[String(z.name).trim().toLowerCase()] = true; });
   ["Konto", "Paypal", "Kreditkarte", "Portemonnaie"].forEach(function (name) {
-    var sheet = ss.getSheetByName(name);
-    if (!sheet) return;
-    var last = sheet.getLastRow();
-    if (last < 8) return;
+    var konto = kontoDaten_(name);
+    if (!konto) return;
     var splitSpalte = name === "Portemonnaie" ? 9 : 8; // J bzw. I
-    var rows = sheet.getRange(8, 1, last - 7, 10).getValues(); // A=Datum, C=Zweck, D=Kategorie, E=Einnahme, F=Ausgabe
-    rows.forEach(function (r) {
+    konto.zeilen.forEach(function (r) { // A=Datum, C=Zweck, D=Kategorie, E=Einnahme, F=Ausgabe
       var datum = r[0];
       if (!(datum instanceof Date)) return;
       var zweck = String(r[2]).trim().toLowerCase();
@@ -291,7 +330,6 @@ function getZweckSummen_() {
 // "Haben aktuell" (Kopfzeile 7). So braucht das Skript keine Startbeträge, und Umbuchungen heben sich auf.
 // Aufbau: { verlauf: [{ jahr: 2026, monat: 11, wert: 123.45 }, ...], fehlend: ["<Blatt>"] }
 function getVermoegensVerlauf_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
   var gesamt = Number(getStats().gesamt);
   if (!isFinite(gesamt)) return { verlauf: [], fehlend: ["Übersicht"] };
   var aenderung = {};  // "2026-11" -> Summe der Änderungen im Monat
@@ -299,19 +337,14 @@ function getVermoegensVerlauf_() {
   var erster = null;
   var heute = new Date();
   KONTEN_.forEach(function (name) {
-    var blatt = ss.getSheetByName(name);
-    if (!blatt) { fehlend.push(name); return; }
-    var last = blatt.getLastRow();
-    if (last < 8) return;
-    var kopf = blatt.getRange(7, 1, 1, blatt.getLastColumn()).getValues()[0]
-      .map(function (h) { return String(h).trim().toLowerCase(); });
-    var sp = kopf.indexOf("haben aktuell");
+    var konto = kontoDaten_(name);
+    if (!konto) { fehlend.push(name); return; }
+    if (!konto.zeilen.length) return;
+    var sp = konto.kopf.indexOf("haben aktuell");
     if (sp === -1) { fehlend.push(name); return; }
-    var datum = blatt.getRange(8, 1, last - 7, 1).getValues();
-    var wert = blatt.getRange(8, sp + 1, last - 7, 1).getValues();
-    for (var i = 0; i < datum.length; i++) {
-      var d = datumAus_(datum[i][0]);
-      var v = Number(wert[i][0]);
+    for (var i = 0; i < konto.zeilen.length; i++) {
+      var d = datumAus_(konto.zeilen[i][0]);
+      var v = Number(konto.zeilen[i][sp]);
       if (!d || !isFinite(v) || !v) continue;
       var key = d.getFullYear() * 12 + d.getMonth();
       aenderung[key] = (aenderung[key] || 0) + v;
@@ -330,6 +363,38 @@ function getVermoegensVerlauf_() {
   }
   verlauf.reverse();
   return { verlauf: verlauf, fehlend: fehlend };
+}
+
+// Spalte "monate" im Blatt "Einstellungen": in welchen Monaten ein fester Zweck fällig ist, zum Beispiel "9" oder "3, 9".
+// Leer = jeden Monat.
+function monateAus_(text) {
+  var liste = [];
+  String(text || "").split(/[,;\s]+/).forEach(function (t) {
+    var n = Number(t);
+    if (n >= 1 && n <= 12 && Math.floor(n) === n && liste.indexOf(n) === -1) liste.push(n);
+  });
+  return liste;
+}
+
+// Ein Konto-Blatt nur einmal je Aufruf lesen (Kopfzeile 7, Daten ab Zeile 8). Spart Zeit, weil
+// Fixkosten, Rückzahlungen und Vermögensverlauf dieselben Blätter brauchen.
+var kontoBlaetter_ = {};
+function kontoDaten_(name) {
+  if (kontoBlaetter_.hasOwnProperty(name)) return kontoBlaetter_[name];
+  var blatt = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+  var daten = null;
+  if (blatt) {
+    var last = blatt.getLastRow();
+    var spalten = Math.min(Math.max(blatt.getLastColumn(), 10), blatt.getMaxColumns());
+    if (last >= 7) {
+      var werte = blatt.getRange(7, 1, last - 6, spalten).getValues();
+      daten = { kopf: werte[0].map(function (h) { return String(h).trim().toLowerCase(); }), zeilen: werte.slice(1) };
+    } else {
+      daten = { kopf: [], zeilen: [] };
+    }
+  }
+  kontoBlaetter_[name] = daten;
+  return daten;
 }
 
 // Datum aus einer Zelle: echtes Datum oder Text wie "09.07.2018"
@@ -584,7 +649,7 @@ function einstellungenLesen_() {
     var liste = zelle(z, "liste").toLowerCase();
     var name = zelle(z, "name");
     var kat = zelle(z, "kategorie");
-    if (liste === "zweck" && name) aus.zwecke.push({ name: name, kategorie: kat, betrag: betrag(i) });
+    if (liste === "zweck" && name) aus.zwecke.push({ name: name, kategorie: kat, betrag: betrag(i), monate: monateAus_(zelle(z, "monate")) });
     else if (liste === "kategorie" && name) aus.kategorien.push(name);
     else if (liste === "rueckzahlung" && name && kat) aus.rueckzahlungen.push({ name: name, kategorie: kat, zweck: zelle(z, "zweck") });
     else if (liste === "eigenanteil" && kat) aus.eigenanteile[kat] = betrag(i) || 0;

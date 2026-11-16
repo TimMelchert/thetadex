@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.25** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.26** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -253,7 +253,7 @@ unter „Info“ die Version prüfen.
 ### 2.3 Google Sheets (Tabs)
 
 - **Bestehende Sheets** (Tracking, Finanzen) behalten ihren Aufbau. Neu kommt je ein Blatt `Einstellungen` dazu
-  (Tracking: Felder mit Gruppe, Art und Vorgabewert; Finanzen: Zwecke, Kategorien, Rückzahlungs-Personen, ab 9.2 Suchwörter für Kontowecker-SMS).
+  (Tracking: Felder mit Gruppe, Art und Vorgabewert; Finanzen: Zwecke, Kategorien, Rückzahlungs-Personen, ab 9.2 Suchwörter für Kontowecker-SMS; ab 1.3.26 Spalte F `monate` = Monate, in denen ein fester Zweck fällig ist, zum Beispiel `9`, leer = jeden Monat).
   Das Finanz-Sheet hat ab 11.11.2026 das Hilfsblatt `Alle Buchungen` (eine Formel holt Konto, PayPal, Kreditkarte, Portemonnaie zusammen; Spalten `Konto, Datum, Monat, Zweck, Kategorie, Einnahme, Ausgabe, Geteilt, Jahr, Ausgabe Anteil`). Die Spalten `-Out` und `-In` in `Analyse Monate` rechnen seitdem mit kurzen `SUMMEWENNS` daraus. Die Netto-Spalten und `Monatsnetto` bleiben wie vorher (Entscheidung der Person: alte Verrechnung gilt rückblickend weiter). Namen in Zeile 6 und 7 von `Analyse Monate` nie ändern, die App liest Zeile 7.
   Das Finanz-Sheet hat ab 9.1 zusätzlich das Blatt `SMS` (Kopfzeile 1: `id, empfangen_am, gesendet_am, absender, text, pruefsumme, status, erledigt_am`).
 - **Neues Sheet** für die neuen Reiter: Kopfzeile in Zeile 1 (klein, ohne Umlaute). Alle Daten-Blätter haben zusätzlich
@@ -285,6 +285,7 @@ unter „Info“ die Version prüfen.
     Ab 1.3.12 liefert `analyse` auch `zweckAusgaben` (je Monat Ausgaben der festen Zwecke) und ab 1.3.14 `zweckEinnahmen` (je Monat Einnahmen der festen Zwecke, zum Beispiel Gehalt) und `rueckzahlungen` aus Konto, Paypal, Kreditkarte und Portemonnaie, nur für die Zwecke und Kategorien der Liste `rueckzahlung` (vorher nur Konto und nur Abos/Wohnen). Umbuchungen (Kategorie `Transfer`) zählen nicht, `GETEILT` halb.
     Ab 1.3.15: `buchungen` (`jahr`, optional `monat`): Buchungen aus dem Hilfsblatt `Alle Buchungen` (nur lesen, ohne `Transfer`, `aus` = eigener Anteil), für „Größte Ausgaben“ und „Letzte Buchungen“ in der Auswertung. Die App lädt sie erst beim Anzeigen und hält sie nur im Speicher.
     Ab 1.3.16 liefert `analyse` auch `vermoegen` (`verlauf`: Vermögen am Ende jedes Monats, rückwärts vom Gesamtstand in `Übersicht` gerechnet mit der Spalte `Haben aktuell` (Kopfzeile 7) jedes Konto-Blatts; `fehlend`: Blätter ohne diese Spalte).
+    Ab 1.3.26: `analyse` liegt 10 Minuten im Zwischenspeicher des Skripts (CacheService, in Stücken); `buchen` löscht ihn, `frisch: true` (Knopf „Neu laden“) fragt am Speicher vorbei. Jedes Konto-Blatt wird je Aufruf nur einmal gelesen (`kontoDaten_`). `einstellungen` liefert bei Zwecken `monate`.
     Ab 9.2: `smsListe` (offene SMS), `smsErledigt` (`id`, verwerfen), `buchen` mit `sms_id` (bucht und setzt die SMS im selben Lauf auf „gebucht“; ist sie schon erledigt, Fehler `erledigt`). Nach der Zuordnung löscht das Skript Text und Absender. `einstellungen` liefert dazu `smsWoerter` (Liste `sms`: `name` = Suchwort, `zweck`, `kategorie`).
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
@@ -379,7 +380,7 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen.
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen.
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Die Auswertung zeigt daraus „Feste Ausgaben“ (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist) und ab 1.3.14 „Feste Einnahmen“ (Zweck, dessen Kategorie es nur bei den Einnahmen gibt, zum Beispiel Job).
 
 ---
@@ -924,3 +925,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.23** Besitz: Filme, Bücher und Spiele als Bild-Kacheln nebeneinander (Bild oben, Name unten, Handy zwei, PC vier je Reihe). Rahmen des Zubehör-Knopfs in der Farbe des Bereichs.
 - **1.3.24** Besitz: Bild-Kacheln nur noch, wenn im Filter Filme, Bücher oder Spiele gewählt ist.
 - **1.3.25** Besitz: freiwillige Spalte `unklar` im Sheet, Kachel dann gelb. Skript `leben` neu einfügen und `einrichten` ausführen.
+- **1.3.26** Finanzen → Auswertung: „Fixkosten“ und „Fix-Einnahmen“, Spalte `monate` für jährliche Posten, Monatsauswahl oben, Bafög aufgeklappt, drei Hinweistexte weg, schneller (Zwischenspeicher im Skript, jedes Blatt nur einmal gelesen).

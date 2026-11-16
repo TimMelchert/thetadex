@@ -1,7 +1,7 @@
 // Finanzen → Auswertung: Monats- oder Jahresbilanz mit Einnahmen und Ausgaben, Vergleich (Vormonat, Durchschnitt, Vorjahr), Ringe für Ausgaben und Einnahmen,
 // Säulen nach Rückzahlungen, Kategorien gegen Vorjahr, Budget-Balken mit festen Ausgaben und Einnahmen, Netto-Kacheln,
 // größte Ausgaben und letzte Buchungen (Aktion „buchungen“, nur bei Bedarf geladen), Vermögensverlauf, mit Haken für Rückzahlungen,
-// Jahresverlauf (Säulen und Linie), Jahrestabelle mit Summe, Durchschnitt, Budget und Sparquote, Bafög zum Aufklappen.
+// Jahresverlauf (Säulen und Linie), Jahrestabelle mit Summe, Durchschnitt, Budget und Sparquote, Bafög (aufgeklappt, zum Zuklappen).
 // Die Kategorien kommen allgemein vom Skript (Aktion „analyse“, Feld „kategorien“), keine Namen im Code.
 // Chart.js liegt als lokale Datei in vendor/ und wird erst hier geladen (docs/STAND.md, Abschnitt 4).
 
@@ -138,12 +138,12 @@ export function auswertung(box, einstellungen) {
     leeren(box);
     box.append(
         el('div', { class: 'karte finanz-staende' }, [
+            el('div', { class: 'finanz-monat-zeile finanz-monat-oben' }, [monatWahl]),
             el('p', { class: 'finanz-gesamt' }, [bilanzWert, bilanzTitel]),
             el('dl', { class: 'finanz-konten finanz-kopfzahlen' }, [
                 el('div', {}, [el('dt', { text: 'Eingenommen' }), kopfEin]),
                 el('div', {}, [el('dt', { text: 'Ausgegeben' }), kopfAus])
-            ]),
-            el('div', { class: 'finanz-monat-zeile' }, [monatWahl])
+            ])
         ]),
         el('figure', { class: 'karte finanz-ring' }, [vergleichTitel, vergleichBox]),
         el('div', { class: 'finanz-ringe' }, [
@@ -170,8 +170,8 @@ export function auswertung(box, einstellungen) {
             tabelle,
             tabelleFuss
         ])]),
-        el('details', { class: 'karte finanz-aufklapp' }, [el('summary', { text: 'Bafög' }), bafoeg]),
-        el('button', { class: 'knopf knopf-zweit finanz-neu', text: 'Neu laden', attrs: { type: 'button' }, on: { click: () => laden() } }),
+        el('details', { class: 'karte finanz-aufklapp', attrs: { open: true } }, [el('summary', { text: 'Bafög' }), bafoeg]),
+        el('button', { class: 'knopf knopf-zweit finanz-neu', text: 'Neu laden', attrs: { type: 'button' }, on: { click: () => laden(true) } }),
         status
     );
 
@@ -316,7 +316,7 @@ export function auswertung(box, einstellungen) {
             }
         });
         const letzter = verlauf[verlauf.length - 1];
-        vermoegenHinweis.textContent = 'Heute: ' + euro(letzter.wert) + ' (wie „Vermögen aktuell“ beim Buchen).'
+        vermoegenHinweis.textContent = 'Heute: ' + euro(letzter.wert) + '.'
             + (v.fehlend && v.fehlend.length ? ' Nicht gefunden: Spalte „Haben aktuell“ in ' + v.fehlend.join(', ') + '.' : '');
     }
 
@@ -416,7 +416,7 @@ export function auswertung(box, einstellungen) {
         fixBox.hidden = !fest.length;
         if (!fest.length) return;
         if (!daten.zweckAusgaben || !daten.zweckEinnahmen) {
-            fixBox.append(el('details', { class: 'finanz-aufklapp finanz-fix' }, [el('summary', { text: 'Feste Ausgaben und Einnahmen' }),
+            fixBox.append(el('details', { class: 'finanz-aufklapp finanz-fix' }, [el('summary', { text: 'Fixkosten und Fix-Einnahmen' }),
                 el('p', { class: 'leise klein', text: 'Dafür bitte die neue Code.gs im Finanz-Skript bereitstellen (Neue Version).' })]));
             return;
         }
@@ -431,9 +431,12 @@ export function auswertung(box, einstellungen) {
         const monate = w.istJahr ? (daten.monate || []).filter((m) => m.jahr === w.jahr && (hatDaten(m) || istAktuell(m))) : [w];
         const summe = (quelle, name) => monate.reduce((s, m) => s + (Number((quelle[m.jahr + '-' + monatNr(m.monat)] || {})[norm(name)]) || 0), 0);
 
-        const gruppe = (titel, wort, liste, quelle) => {
+        // Spalte „monate“: nur in diesen Monaten fällig (zum Beispiel einmal im Jahr im September). Leer = jeden Monat.
+        const faellig = (z) => monate.filter((m) => !Array.isArray(z.monate) || !z.monate.length || z.monate.includes(monatNr(m.monat))).length;
+        const gruppe = (titel, wort, alle, quelle) => {
+            const liste = alle.filter((z) => faellig(z) > 0);
             if (!liste.length) return;
-            const zeilen = liste.map((z) => ({ name: z.name, soll: Number(z.betrag) * monate.length, ist: summe(quelle, z.name) }));
+            const zeilen = liste.map((z) => ({ name: z.name, soll: Number(z.betrag) * faellig(z), ist: summe(quelle, z.name) }));
             const summeIst = zeilen.reduce((s, z) => s + z.ist, 0);
             const summeSoll = zeilen.reduce((s, z) => s + z.soll, 0);
             const anzahl = zeilen.filter((z) => z.ist > 0.005).length;
@@ -451,8 +454,8 @@ export function auswertung(box, einstellungen) {
                 ul
             ]));
         };
-        gruppe('Feste Ausgaben', 'bezahlt', fest.filter((z) => !istEinnahme(z)), daten.zweckAusgaben);
-        gruppe('Feste Einnahmen', 'eingegangen', fest.filter(istEinnahme), daten.zweckEinnahmen);
+        gruppe('Fixkosten', 'bezahlt', fest.filter((z) => !istEinnahme(z)), daten.zweckAusgaben);
+        gruppe('Fix-Einnahmen', 'eingegangen', fest.filter(istEinnahme), daten.zweckEinnahmen);
     }
 
     // Größte Ausgaben und letzte Buchungen: erst laden, wenn ein Monat oder Jahr gezeigt wird
@@ -505,7 +508,7 @@ export function auswertung(box, einstellungen) {
         leeren(letzteListe);
         const groesste = buchListe.filter((b) => b.aus > 0).sort((a, b) => b.aus - a.aus).slice(0, buchIstJahr ? 10 : 5);
         groesste.forEach((b) => groessteListe.append(buchZeile(b)));
-        buchHinweis.textContent = groesste.length ? 'Dein Anteil, geteilte Ausgaben zählen halb.' : 'Keine Ausgaben.';
+        buchHinweis.textContent = groesste.length ? '' : 'Keine Ausgaben.';
         const neueste = buchListe.slice().sort((a, b) => String(b.datum).localeCompare(String(a.datum)));
         (alleZeigen ? neueste : neueste.slice(0, 10)).forEach((b) => letzteListe.append(buchZeile(b)));
         if (!neueste.length) letzteListe.append(el('li', { class: 'leise', text: 'Keine Buchungen.' }));
@@ -621,8 +624,7 @@ export function auswertung(box, einstellungen) {
         if (budget > 0) {
             budgetText.textContent = euro(netto) + ' von ' + euro(budget);
             const rest = Math.round((budget - netto) * 100) / 100;
-            budgetRest.textContent = (rest >= 0 ? euro(rest) + ' übrig' : euro(-rest) + ' über dem Budget')
-                + '. Verbraucht = Ausgaben nach Rückzahlungen, ohne Einnahmen.';
+            budgetRest.textContent = rest >= 0 ? euro(rest) + ' übrig' : euro(-rest) + ' über dem Budget';
         } else {
             budgetText.textContent = euro(netto) + ' verbraucht';
             budgetRest.textContent = 'Kein Budget eingetragen (Spalte „Budget-Monat“).';
@@ -648,10 +650,12 @@ export function auswertung(box, einstellungen) {
         zeigeDiagramme(w);
     }
 
-    async function laden() {
+    // frisch = am Skript vorbei am Zwischenspeicher (Knopf „Neu laden“)
+    async function laden(frisch) {
         status.textContent = 'Auswertung wird geladen …';
+        if (!daten) bilanzTitel.textContent = 'Wird geladen …';
         try {
-            daten = await api('finanzen', 'analyse');
+            daten = await api('finanzen', 'analyse', frisch ? { frisch: true } : {});
             buchCache = {};
             if (!daten.monate) daten.monate = [];
             baueAuswahl();
