@@ -234,13 +234,8 @@ export function render(container, ctx = {}) {
     // Link der Karte für das Adressbuch: genau diese Seite
     const kartenLink = location.origin + location.pathname + '#/karte/' + kennung + '/' + schluessel;
 
-    frage('karte').then(async (d) => {
-        let angaben = d && Array.isArray(d.angaben) ? d.angaben : [];
-        // Altes Skript (vor 1.2.8) schickt E-Mail und Telefon leer mit „verdeckt“: dann einmal „kontakt“ dazu holen
-        if (angaben.some((a) => a.verdeckt)) {
-            const k = await frage('kontakt').then((x) => (x && Array.isArray(x.kontakt) ? x.kontakt : [])).catch(() => []);
-            angaben = angaben.map((a) => (a.verdeckt ? { ...a, wert: (k.find((x) => x.id === a.id) || {}).wert || '' } : a));
-        }
+    frage('karte').then((d) => {
+        const angaben = d && Array.isArray(d.angaben) ? d.angaben : [];
         leeren(container);
         if (!angaben.length) {
             container.append(el('h1', { text: 'Visitenkarte' }), el('p', { class: 'meldung', text: 'Auf dieser Karte steht noch nichts.' }));
