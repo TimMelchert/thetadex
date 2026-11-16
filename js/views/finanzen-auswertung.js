@@ -5,15 +5,13 @@
 // Die Kategorien kommen allgemein vom Skript (Aktion „analyse“, Feld „kategorien“), keine Namen im Code.
 // Chart.js liegt als lokale Datei in vendor/ und wird erst hier geladen (docs/STAND.md, Abschnitt 4).
 
-import { el, leeren } from '../ui/dom.js';
+import { el, leeren, euro, MONATE } from '../ui/dom.js';
 import { api } from '../api.js';
 
-const MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 // Farben der Diagramme, in Hell und Dunkel gut zu unterscheiden
 const FARBEN = ['#E07A5F', '#8DB580', '#E2A23B', '#B5838D', '#7FA7A0', '#C9784A', '#D4B483', '#6D9DC5', '#A5668B',
     '#5B8E7D', '#F2CC8F', '#9C6644', '#81B29A', '#BC4749', '#8E9AAF', '#C08497', '#6A994E', '#DDA15E'];
 
-const euro = (v) => (Number(v) || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 const norm = (t) => String(t == null ? '' : t).trim().toLowerCase();
 const monatNr = (name) => MONATE.findIndex((m) => m.slice(0, 3).toLowerCase() === norm(name).slice(0, 3)) + 1;
 // Fortlaufende Nummer eines Monats (Januar 2026 kommt direkt nach Dezember 2025)

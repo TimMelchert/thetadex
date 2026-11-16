@@ -10,7 +10,7 @@ export const AUSSEHEN = [
 ];
 
 // Farbe der Leiste am Handy, gleich wie die Kopfzeile (--kopf-grund in css/base.css, seit 0.6.1 auch im hellen Modus dunkel)
-const LEISTE = { hell: '#1C1B19', dunkel: '#1C1B19' };
+const LEISTE = '#1C1B19';
 
 export function aktuellesAussehen() {
     const wert = lesen('aussehen', 'geraet');
@@ -23,11 +23,8 @@ export function wendeAussehenAn() {
     const wurzel = document.documentElement;
     if (wert === 'geraet') wurzel.removeAttribute('data-aussehen');
     else wurzel.setAttribute('data-aussehen', wert);
-    // Die beiden theme-color-Angaben in index.html gelten je nach Gerät hell oder dunkel
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
-        const geraetHell = (m.getAttribute('media') || '').includes('light');
-        m.setAttribute('content', wert === 'geraet' ? LEISTE[geraetHell ? 'hell' : 'dunkel'] : LEISTE[wert]);
-    });
+    // Die Leiste ist in jedem Aussehen gleich dunkel (beide theme-color-Angaben in index.html)
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', LEISTE));
 }
 
 export function setzeAussehen(wert) {

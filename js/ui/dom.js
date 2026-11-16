@@ -49,3 +49,12 @@ export function heute() {
     const d = new Date();
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
+
+// --- Kleine Text-Helfer, in mehreren Reitern gleich ---
+export const MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+// Betrag in Euro mit zwei Stellen, zum Beispiel „1.234,50 €“
+export const euro = (v) => (Number(v) || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+// Sortieren nach dem Alphabet, ohne Groß und Klein, Zahlen der Größe nach („Teil 2“ vor „Teil 10“)
+export const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
+// JJJJ-MM-TT → TT.MM.JJJJ, sonst leer
+export const datumText = (t) => (/^\d{4}-\d{2}-\d{2}$/.test(t) ? t.slice(8, 10) + '.' + t.slice(5, 7) + '.' + t.slice(0, 4) : '');

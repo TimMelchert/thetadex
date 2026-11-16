@@ -22,12 +22,12 @@
 // Abhaken geht immer; die Haken warten im Gerät (thetadex_einkauf_offen), bis das Skript sie bestätigt.
 // Alles andere (Lebensmittel, Gerichte) hält die App nur im Arbeitsspeicher.
 
-import { el, leeren, sichereUrl } from '../ui/dom.js';
+import { el, leeren, sichereUrl, vergleiche } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
-import { verkleinereBild, bildAdresse } from '../ui/bild.js';
+import { verkleinereBild, bildSpeicher } from '../ui/bild.js';
 
 // Zuletzt geladene Daten { lebensmittel, liste, gerichte, vorrat }, im Arbeitsspeicher
 let daten = null;
@@ -36,15 +36,9 @@ const haken = () => lesen('einkauf_haken', []) || [];
 // Nach „Einkauf fertig“: ids, die das Skript noch nicht bestätigt hat. Liegen auch im Gerät.
 const offeneHaken = () => lesen('einkauf_offen', []) || [];
 // Schon geladene Bilder der Rezepte (Drive-Kennung → data:-Bild), nur im Arbeitsspeicher
-const bilder = new Map();
+const bilder = bildSpeicher('gemeinsam');
+const holeBild = bilder.hole;
 const MAX_BILDER = 10;
-async function holeBild(id) {
-    if (bilder.has(id)) return bilder.get(id);
-    const adresse = bildAdresse(await api('gemeinsam', 'bild', { bild: id }));
-    if (!adresse) throw new Error('Unbekannte Bildart.');
-    bilder.set(id, adresse);
-    return adresse;
-}
 // Ein Vorschaubild als Knopf. src = schon bekanntes Bild (zum Beispiel gerade gewählt), sonst lädt es über holeBild.
 function vorschauBild(id, src, label, beiTipp) {
     const bild = el('img', { attrs: { alt: label, hidden: true } });
@@ -99,7 +93,6 @@ window.addEventListener('online', () => {
     if (neuLadenBeiRueckkehr && /^#\/einkauf/.test(location.hash)) neuLadenBeiRueckkehr();
 });
 
-const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
 // Abteilungen sortieren: erst in der Reihenfolge im Laden, dann die übrigen A–Z, ohne Abteilung zuletzt
 function vergleicheAbteilung(a, b) {
     if (!a || !b) return (!a) - (!b);
@@ -372,15 +365,13 @@ export function render(container, ctx) {
         async function absenden(ev) {
             ev.preventDefault();
             const werte = { name: nameFeld.value.trim(), abteilung: abteilung.feld.value.trim(), einheit: einheit.feld.value.trim(), notiz: notiz.value.trim() };
-            if (daten.packungFelder) {
-                const t = packungFeld.value.trim();
-                if (t && !packungAus(t)) {
-                    status.textContent = 'Packung bitte als Zahl mit g, kg, ml oder l, zum Beispiel 1 kg oder 500 g.';
-                    packungFeld.focus();
-                    return;
-                }
-                werte.packung = t ? packungAus(t).text : '';
+            const t = packungFeld.value.trim();
+            if (t && !packungAus(t)) {
+                status.textContent = 'Packung bitte als Zahl mit g, kg, ml oder l, zum Beispiel 1 kg oder 500 g.';
+                packungFeld.focus();
+                return;
             }
+            werte.packung = t ? packungAus(t).text : '';
             for (const z of vorratZeilen) {
                 if (z.weg) continue;
                 const menge = leseZahl(z.menge.feld.value);
@@ -446,8 +437,8 @@ export function render(container, ctx) {
                 el('label', { text: 'Name', attrs: { for: 'einkauf-lm-name' } }), nameFeld,
                 el('label', { text: 'Abteilung im Laden', attrs: { for: 'einkauf-lm-abteilung' } }), abteilung.box,
                 el('label', { text: 'Einheit', attrs: { for: 'einkauf-lm-einheit' } }), einheit.box,
-                daten.packungFelder ? el('label', { text: 'Packung (Inhalt)', attrs: { for: 'einkauf-lm-packung' } }) : null,
-                daten.packungFelder ? packungFeld : null,
+                el('label', { text: 'Packung (Inhalt)', attrs: { for: 'einkauf-lm-packung' } }),
+                packungFeld,
                 el('label', { text: 'Notiz', attrs: { for: 'einkauf-lm-notiz' } }), notiz,
                 el('h3', { text: 'Zuhause (freiwillig)' }),
                 el('p', { class: 'leise besitz-hinweis', text: 'Wie viel davon zuhause ist und wo. Ohne Ort wird der Vorrat nicht gepflegt.' }),
@@ -1042,14 +1033,10 @@ export function render(container, ctx) {
     }
 
     // Rezept anlegen oder ändern: Titel, Personen, ergibt, Rezepttext, Link und Zutaten
-    // (Suche in den Lebensmitteln, neue gleich anlegen). Kennt das Skript die neuen Felder noch nicht
-    // (altes Code.gs), bleibt das alte Feld „Notiz“ und ein Hinweis erscheint, damit nichts verloren geht.
+    // (Suche in den Lebensmitteln, neue gleich anlegen).
     function zeigeGerichtForm(g) {
-        const neueFelder = daten.rezepteFelder;
         const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
         const name = el('input', { attrs: { id: 'einkauf-gf-name', type: 'text', maxlength: 60, autocomplete: 'off', value: g ? g.name : '' } });
-        const notiz = el('textarea', { attrs: { id: 'einkauf-gf-notiz', maxlength: 300, rows: 2, placeholder: 'freiwillig, zum Beispiel kurze Anleitung' } });
-        notiz.value = g ? g.notiz : '';
         const personen = el('input', { attrs: { id: 'einkauf-gf-personen', type: 'text', inputmode: 'numeric', maxlength: 2, autocomplete: 'off', placeholder: 'freiwillig, zum Beispiel 4', value: g && g.personen ? String(g.personen) : '' } });
         const ergibt = el('input', { attrs: { id: 'einkauf-gf-ergibt', type: 'text', maxlength: 40, autocomplete: 'off', placeholder: 'freiwillig, zum Beispiel 1 Blech', value: g && g.ergibt ? g.ergibt : '' } });
         const text = el('textarea', { class: 'einkauf-rezepttext-feld', attrs: { id: 'einkauf-gf-text', maxlength: 20000, rows: 10, placeholder: 'freiwillig, Zubereitung Schritt für Schritt' } });
@@ -1124,7 +1111,7 @@ export function render(container, ctx) {
         function zutatDazu(lm, menge = 1, z = null) {
             if (zutaten.has(lm.id)) return;
             const id = 'einkauf-gf-z' + (nr++);
-            const pk0 = daten.packungFelder ? packungVon(lm) : null;
+            const pk0 = packungVon(lm);
             // Gespeicherte Zutat mit Packung: g oder ml aus rezept_menge, bei älteren Zutaten aus Packungen umgerechnet
             const start = pk0 && z ? (z.rezept_menge !== '' && z.rezept_menge != null ? z.rezept_menge : rundeGramm(z.menge * pk0.zahl)) : menge;
             const anzahl = anzahlFeld(id, start);
@@ -1145,11 +1132,11 @@ export function render(container, ctx) {
             const zeile = el('li', { class: 'einkauf-zutat' }, [
                 el('div', { class: 'einkauf-text' }, [
                     el('span', { class: 'einkauf-lm-name', text: lm.name }),
-                    daten.packungFelder ? el('div', { class: 'einkauf-zutat-mengen' }, [
+                    el('div', { class: 'einkauf-zutat-mengen' }, [
                         el('div', {}, [mengeLabel, anzahl.box]),
                         el('div', {}, [el('label', { class: 'leise einkauf-klein', text: 'Packung', attrs: { for: id + '-pck' } }), packung])
-                    ]) : el('div', {}, [mengeLabel, anzahl.box]),
-                    daten.packungFelder ? hinweis : null
+                    ]),
+                    hinweis
                 ]),
                 el('button', {
                     class: 'form-zu', text: '×', attrs: { type: 'button', 'aria-label': lm.name + ' entfernen' },
@@ -1239,24 +1226,21 @@ export function render(container, ctx) {
 
         async function absenden(ev) {
             ev.preventDefault();
-            const werte = { name: name.value.trim(), notiz: notiz.value.trim(), link: link.value.trim(), zutaten: [] };
+            const werte = { name: name.value.trim(), notiz: '', link: link.value.trim(), zutaten: [] };   // die alte Notiz steht jetzt im Rezepttext
             if (!werte.name) {
                 status.textContent = 'Bitte einen Titel eingeben.';
                 name.focus();
                 return;
             }
-            if (neueFelder) {
-                werte.notiz = '';   // steht jetzt im Rezepttext
-                werte.text = text.value;
-                werte.ergibt = ergibt.value.trim();
-                const p = personen.value.trim();
-                if (p && !gueltigePersonen(leseZahl(p))) {
-                    status.textContent = 'Personen bitte als ganze Zahl von 1 bis 99.';
-                    personen.focus();
-                    return;
-                }
-                werte.personen = p ? leseZahl(p) : '';
+            werte.text = text.value;
+            werte.ergibt = ergibt.value.trim();
+            const p = personen.value.trim();
+            if (p && !gueltigePersonen(leseZahl(p))) {
+                status.textContent = 'Personen bitte als ganze Zahl von 1 bis 99.';
+                personen.focus();
+                return;
             }
+            werte.personen = p ? leseZahl(p) : '';
             if (werte.link && !/^https:\/\//i.test(werte.link)) {
                 status.textContent = 'Der Link muss mit https:// beginnen.';
                 link.focus();
@@ -1265,15 +1249,6 @@ export function render(container, ctx) {
             for (const [id, { anzahl, packung }] of zutaten) {
                 const n = leseZahl(anzahl.feld.value);
                 const lmName = (lmVon(id) || {}).name || 'Zutat';
-                if (!daten.packungFelder) {
-                    if (!gueltigeAnzahl(n)) {
-                        status.textContent = lmName + ': Menge bitte von 0,01 bis 9999 (bis zu zwei Stellen nach dem Komma).';
-                        anzahl.feld.focus();
-                        return;
-                    }
-                    werte.zutaten.push({ lebensmittel_id: id, menge: n });
-                    continue;
-                }
                 const t = packung.value.trim();
                 const pk = packungAus(t);
                 if (t && !pk) {
@@ -1289,7 +1264,7 @@ export function render(container, ctx) {
                 werte.zutaten.push(pk ? { lebensmittel_id: id, menge: packungen(n, pk), rezept_menge: n, packung: pk.text }
                     : { lebensmittel_id: id, menge: n, rezept_menge: '', packung: '' });
             }
-            if (neueFelder && g) werte.bilder = behalten;
+            if (g) werte.bilder = behalten;
             const antwort = await senden(status, knoepfe, 'gericht_speichern', g ? { ...werte, id: g.id, geaendert_am: g.geaendert_am } : werte,
                 'Inzwischen geändert. Text kopieren, neu laden, dann einfügen.');
             if (!antwort) return;
@@ -1308,7 +1283,7 @@ export function render(container, ctx) {
             g = neu;   // ab jetzt gilt das gespeicherte Rezept (für einen zweiten Versuch mit den restlichen Bildern)
             behalten = Array.isArray(neu.bilder) ? [...neu.bilder] : [];
             // Neue Bilder einzeln nacheinander anhängen. Schlägt eins fehl, bleibt das Fenster mit den übrigen offen.
-            while (neueFelder && neueBilder.length) {
+            while (neueBilder.length) {
                 const b = neueBilder[0];
                 status.textContent = 'Rezept gespeichert. Bild wird gesendet (noch ' + neueBilder.length + ') …';
                 const werteBild = { id: neu.id, geaendert_am: neu.geaendert_am };
@@ -1349,21 +1324,16 @@ export function render(container, ctx) {
 
         oeffneDialog(g ? 'Rezept ändern' : 'Neues Rezept', [
             el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: absenden } }, [
-                el('label', { text: neueFelder ? 'Titel' : 'Name', attrs: { for: 'einkauf-gf-name' } }), name,
-                ...(neueFelder ? [
-                    el('h3', { text: 'Bilder' }),
-                    bilderBox,
-                    el('label', { text: 'Bild wählen oder aufnehmen (mehrere gehen)', attrs: { for: 'einkauf-gf-bild' } }), bildDatei,
-                    el('label', { text: 'oder Google-Drive-Link', attrs: { for: 'einkauf-gf-bild-link' } }),
-                    el('div', { class: 'einkauf-link-zeile' }, [bildLink, linkDazu]),
-                    bildStatus,
-                    el('label', { text: 'Für wie viele Personen', attrs: { for: 'einkauf-gf-personen' } }), personen,
-                    el('label', { text: 'Ergibt', attrs: { for: 'einkauf-gf-ergibt' } }), ergibt,
-                    el('label', { text: 'Rezepttext', attrs: { for: 'einkauf-gf-text' } }), text
-                ] : [
-                    el('p', { class: 'meldung einkauf-hinweis-skript', text: 'Rezepttext, Personen und Bilder: Bitte zuerst Code.gs im Skript „gemeinsam“ ersetzen (siehe Pull Request zu Schritt 11.2).' }),
-                    el('label', { text: 'Notiz', attrs: { for: 'einkauf-gf-notiz' } }), notiz
-                ]),
+                el('label', { text: 'Titel', attrs: { for: 'einkauf-gf-name' } }), name,
+                el('h3', { text: 'Bilder' }),
+                bilderBox,
+                el('label', { text: 'Bild wählen oder aufnehmen (mehrere gehen)', attrs: { for: 'einkauf-gf-bild' } }), bildDatei,
+                el('label', { text: 'oder Google-Drive-Link', attrs: { for: 'einkauf-gf-bild-link' } }),
+                el('div', { class: 'einkauf-link-zeile' }, [bildLink, linkDazu]),
+                bildStatus,
+                el('label', { text: 'Für wie viele Personen', attrs: { for: 'einkauf-gf-personen' } }), personen,
+                el('label', { text: 'Ergibt', attrs: { for: 'einkauf-gf-ergibt' } }), ergibt,
+                el('label', { text: 'Rezepttext', attrs: { for: 'einkauf-gf-text' } }), text,
                 el('label', { text: 'Link zum Rezept', attrs: { for: 'einkauf-gf-link' } }), link,
                 el('h3', { text: 'Zutaten' }),
                 zutatenListe,
@@ -1468,8 +1438,6 @@ export function render(container, ctx) {
                 liste: [],
                 gerichte: Array.isArray(d.gerichte) ? d.gerichte : [],
                 vorrat: Array.isArray(d.vorrat) ? d.vorrat : [],
-                rezepteFelder: d.rezepte_felder === true,   // Skript ab 1.3.4
-                packungFelder: d.packung_felder === true,   // Skript ab 1.3.10
                 reihenfolge: Array.isArray(d.reihenfolge) ? d.reihenfolge.filter((x) => typeof x === 'string') : [],
                 reihenfolgeDa: Array.isArray(d.reihenfolge)   // Skript ab 1.3.17
             };
@@ -1484,7 +1452,7 @@ export function render(container, ctx) {
                 const warten = new Set(offeneHaken());
                 daten.liste = im.liste.filter((x) => !warten.has(x.id));
             }
-            ladeStatus.textContent = (e.code === 'netz' && im ? 'Ohne Verbindung: Einkaufsliste von ' + uhrzeit(im.stand) + ' Uhr. Abhaken und „Einkauf fertig“ gehen, alles andere braucht Netz.'
+            ladeStatus.textContent = ((e.code === 'netz' || e.code === 'zeit') && im ? 'Ohne Verbindung: Einkaufsliste von ' + uhrzeit(im.stand) + ' Uhr. Abhaken und „Einkauf fertig“ gehen, alles andere braucht Netz.'
                 : 'Laden fehlgeschlagen: ' + e.message);
             zeigeAlles();
         } finally {

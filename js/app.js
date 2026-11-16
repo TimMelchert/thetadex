@@ -146,7 +146,7 @@ if (imRahmen) {
 } else {
     wendeAussehenAn();
     // Die Kopfzeile bleibt oben angeheftet (Wunsch der Person, 16.11.2026). Ihre Höhe steht in --kopf-hoehe,
-    // damit feste Leisten in den Reitern (zum Beispiel der Kopf der Besitz-Liste) direkt darunter kleben.
+    // damit feste Leisten in den Reitern (zum Beispiel bei Einkauf und Pen & Paper) direkt darunter kleben.
     const kopf = document.querySelector('.kopf');
     if (kopf && window.ResizeObserver) {
         new ResizeObserver(() => document.documentElement.style.setProperty('--kopf-hoehe', kopf.offsetHeight + 'px')).observe(kopf);
@@ -158,7 +158,8 @@ if (imRahmen) {
     // Tracking-Felder schon im Hintergrund holen, damit das Formular schneller da ist (nur im Arbeitsspeicher)
     if (istEingerichtet()) tracking.vorladen();
 
-    if ('serviceWorker' in navigator) {
+    // Besucher einer Visitenkarte (#/karte/…) brauchen die App nicht: kein Service Worker, der im Hintergrund alles lädt
+    if ('serviceWorker' in navigator && aktuelleRoute() !== 'karte') {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js')
                 .then((reg) => { beobachteUpdates(reg); reg.update(); })

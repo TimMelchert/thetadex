@@ -2,7 +2,7 @@
 // Woche: überall ein Raster mit Uhrzeiten; im Hochformat am Handy schmal, darunter eine Liste je Tag (STAND.md 4, seit 5.6).
 // Zeichnet nur; Fenster und Formulare stehen in uni.js (beiEintrag, beiTag).
 
-import { el, heute } from '../ui/dom.js';
+import { el, heute, MONATE } from '../ui/dom.js';
 import { alsDate, alsText, plusTage, wochenStart, kalenderwoche, monatsRaster, minuten, eintraegeAm, spuren, arbeitsMinuten, stundenText } from '../ui/kalender.js';
 
 // Alle Arten mit Namen. Die Farben stehen in css/base.css (--art-…).
@@ -14,7 +14,6 @@ export const ART_NAME = Object.fromEntries(ARTEN);
 
 const TAGE_KURZ = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const TAGE_LANG = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
-const MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const LISTE_TAGE = 28;
 const PX_JE_MINUTE = 0.8; // 48 px je Stunde im Wochenraster
 

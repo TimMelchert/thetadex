@@ -9,12 +9,12 @@
 // Die Bögen liegen nur im Arbeitsspeicher, solange die Seite offen ist. Im Gerät steht nur, welcher Bogen gewählt war
 // (thetadex_dsa_bogen). Siehe docs/STAND.md 4 „Pen & Paper, Sheet ‚DSA‘“.
 
-import { el, leeren } from '../ui/dom.js';
+import { el, leeren, vergleiche } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
 import { api, apiOeffentlich } from '../api.js';
 import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
-import { verkleinereBild, bildAdresse } from '../ui/bild.js';
+import { verkleinereBild, bildAdresse, bildSpeicher } from '../ui/bild.js';
 import { wuerfelKnopf } from '../ui/wuerfel.js';
 import { abenteuerAnsicht, dmAnsicht } from './dsa-abenteuer.js';
 
@@ -33,14 +33,8 @@ const SCHLUESSEL = /^[a-f0-9]{64}$/;
 const ADRESSE = /^https:\/\/script\.google\.com\/macros\/s\/([A-Za-z0-9_-]+)\/exec$/;
 
 // Schon geladene Bilder (Drive-Kennung → data:-Bild), nur im Arbeitsspeicher
-const bilder = new Map();
-async function holeBild(id) {
-    if (bilder.has(id)) return bilder.get(id);
-    const adresse = bildAdresse(await api('dsa', 'bild', { bild: id }));
-    if (!adresse) throw new Error('Unbekannte Bildart.');
-    bilder.set(id, adresse);
-    return adresse;
-}
+const bilder = bildSpeicher('dsa');
+const holeBild = bilder.hole;
 // Verlauf: gewählter Zähler und ob alle Änderungen zu sehen sind
 let verlaufFilter = '';
 let verlaufAlle = false;
@@ -72,7 +66,6 @@ const ZAUBER_FELDER = [['kosten', 'Kosten'], ['zauberdauer', 'Zauberdauer'], ['w
 const TALENT_GRUPPEN = ['Kampftechniken', 'Körperliche Talente', 'Gesellschaftliche Talente', 'Natur-Talente',
     'Wissenstalente', 'Handwerkliche Talente', 'Sprachen und Schriften'];
 
-const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
 // Erst nach „Reihenfolge“ (falls gesetzt), dann nach Name
 const rang = (e) => (e.reihenfolge > 0 ? e.reihenfolge : 10000);
 const sortiere = (liste) => [...liste].sort((a, b) => rang(a) - rang(b) || vergleiche(a.name, b.name));

@@ -2,7 +2,7 @@
 // Zwecke und Kategorien kommen aus dem Blatt „Einstellungen“ des Finanz-Sheets und werden nicht im Gerät gespeichert.
 // Im Gerät liegen nur die zuletzt bekannten Kontostände (docs/STAND.md, Abschnitt 5).
 
-import { el, heute, kalenderBeiKlick } from '../ui/dom.js';
+import { el, heute, kalenderBeiKlick, euro } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
 import { lesen, schreiben } from '../store.js';
 import { api } from '../api.js';
@@ -21,7 +21,6 @@ const KONTEN = [
     ['Pfandbons', 'Pfandbons', 'pfandbons', 'Pfand']
 ];
 
-const euro = (v) => (Number(v) || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 const norm = (t) => String(t == null ? '' : t).trim().toLowerCase();
 
 export function render(container, ctx) {

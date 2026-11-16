@@ -1310,7 +1310,6 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .vk-liste li:last-child { border-bottom: none; }
 .vk-beschriftung { flex: 0 0 8rem; color: var(--schrift-leise); }
 .vk-wert { flex: 1 1 12rem; font-weight: 600; overflow-wrap: anywhere; }
-.vk-zeigen { margin: 0; }
 .vk-veroeff { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .vk-veroeff-link { display: flex; gap: 12px; align-items: center; min-height: 44px; padding: 8px; border: 1px solid var(--linie); border-radius: var(--rund); background: var(--hintergrund); text-decoration: none; }
 .vk-veroeff-link:focus-visible { outline: 3px solid var(--fokus); outline-offset: 2px; }
@@ -1389,7 +1388,7 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .besitz-namezeile { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .besitz-namezeile > :first-child { flex: 1 1 auto; min-width: 0; }
 
-/* Besitz: fester Kopf der Liste (Titel bis Haken „Anzahl 0“, am PC mit Sortier-Zeile) */
+/* Besitz: Kopf der Liste (Titel bis Haken „Anzahl 0“, am PC mit Sortier-Zeile), scrollt mit */
 .besitz-oben { background: var(--hintergrund); }
 /* Der Listenkopf scrollt wieder mit (Wunsch der Person, 16.11.2026: fest nahm er am PC zu viel Platz weg) */
 .besitz-oben .besitz-kopf { padding-top: 4px; }

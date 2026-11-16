@@ -6,7 +6,7 @@
 import { el, leeren } from '../ui/dom.js';
 import { api } from '../api.js';
 import { lesen, schreiben } from '../store.js';
-import { bildAdresse } from '../ui/bild.js';
+import { bildSpeicher } from '../ui/bild.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { zeichneKarte, KARTEN, SCHLUESSEL } from './karte.js';
 
@@ -62,7 +62,7 @@ export function render(container) {
     dialog.addEventListener('cancel', (ev) => ev.preventDefault());
     let daten = null;
     let wahl = KARTEN.some((k) => k.id === lesen('karte_wahl')) ? lesen('karte_wahl') : 'privat';
-    const bilder = new Map();
+    const holeBild = bildSpeicher('karte', 'id').hole;
 
     const knoepfe = KARTEN.map((k) => el('button', {
         class: 'ansicht', text: k.titel,
@@ -93,13 +93,6 @@ export function render(container) {
         const links = lesen('karte_links', {}) || {};
         const s = daten && daten.geteilt[k] && SCHLUESSEL.test(links[k] || '') ? links[k] : '';
         return s && kennung() ? location.origin + location.pathname + '#/karte/' + kennung() + '/' + s : '';
-    }
-
-    async function holeBild(id) {
-        if (bilder.has(id)) return bilder.get(id);
-        const adresse = bildAdresse(await api('karte', 'bild', { id }));
-        bilder.set(id, adresse);
-        return adresse;
     }
 
     async function link(action) {
