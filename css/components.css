@@ -1410,3 +1410,16 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .besitz-schnell input:disabled, .besitz-schnell select:disabled { opacity: 0.5; }
 .besitz-schnell-ende { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 .besitz-schnell-ende .meldung { margin: 0; }
+
+/* Besitz: Filme, Bücher und Spiele als Bild-Kacheln nebeneinander (Wunsch der Person, 16.11.2026) */
+.besitz-galerie { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+.besitz-galerie li { min-width: 0; }
+.besitz-galerie-kachel { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 0; overflow: hidden; text-align: left; font: inherit; color: inherit; background: var(--kachel); border: 1px solid var(--linie); border-top: 4px solid var(--bereich); border-radius: var(--rund); cursor: pointer; }
+.besitz-galerie-kachel:hover .besitz-galerie-name { text-decoration: underline; }
+.besitz-galerie-bild { display: flex; align-items: center; justify-content: center; aspect-ratio: 2 / 3; background: var(--hintergrund); overflow: hidden; }
+.besitz-galerie-bild img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.besitz-galerie-zeichen { font-size: 2.2rem; opacity: .55; }
+.besitz-galerie-name { padding: 6px 8px 0; font-size: 0.85rem; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.besitz-galerie-merkmale { padding: 2px 8px 0; font-size: 0.75rem; }
+.besitz-galerie-kachel > :last-child { padding-bottom: 8px; }
+.besitz-galerie-kachel.besitz-nur-kontext, .besitz-galerie-kachel.besitz-null-zeile { opacity: .6; }

@@ -40,6 +40,11 @@ const euro = (v) => Number(v).toLocaleString('de-DE', { minimumFractionDigits: 2
 const datumText = (t) => (/^\d{4}-\d{2}-\d{2}$/.test(t) ? t.slice(8, 10) + '.' + t.slice(5, 7) + '.' + t.slice(0, 4) : '');
 const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
 const klein = (t) => String(t == null ? '' : t).toLocaleLowerCase('de');
+// Kategorien, die als Bild-Kacheln nebeneinander stehen (Wunsch der Person, 16.11.2026): Filme, Bücher (und Hefte), Spiele
+const GALERIE = [[/^film/, '🎬'], [/^(buch|bücher|heft)/, '📚'], [/^spiel/, '🎲']];
+const galerieArt = (s) => GALERIE.find(([muster]) => muster.test(klein(s.kategorie).trim()));
+const istGalerie = (s) => Boolean(galerieArt(s));
+const galerieZeichen = (s) => (galerieArt(s) || [null, '📦'])[1];
 const verliehen = (s) => String(s.ausgeliehen_an || '').trim();
 // Unterorte: bis zu drei Ebenen im Text von „ort“, getrennt mit „ / “ (zum Beispiel „Zimmer / Kallax / Stoffkiste“)
 const ORT_TRENNER = ' / ';
@@ -665,17 +670,86 @@ export function render(container, ctx) {
 
     // Eine Tabelle je Ort. Am Handy macht css/components.css daraus Karten (Spaltenname über data-label).
     // unterort = Weg unterhalb des Raums („Kallax › Stoffkiste“), leer = direkt im Raum
+    // Filme, Bücher und Spiele stehen als Bild-Kacheln nebeneinander, die anderen in der Tabelle (Wunsch der Person, 16.11.2026)
     function ortGruppe(unterort, liste, zahlText) {
+        const galerie = liste.filter((e) => istGalerie(e.s));
+        const tabelle = liste.filter((e) => !istGalerie(e.s));
         return el('section', { class: 'besitz-gruppe' }, [
             unterort ? el('h3', { class: 'besitz-unterort' }, [
                 el('span', { text: unterort }),
                 el('span', { class: 'besitz-zahl', text: zahlText(liste.length) })
             ]) : null,
-            el('table', { class: 'besitz-tabelle' }, [
+            tabelle.length ? el('table', { class: 'besitz-tabelle' }, [
                 spaltenBreiten(),
-                el('tbody', {}, liste.flatMap((e) => [zeile(e.s, e), ...e.kinder.map((k) => zeile(k, null, e))]))
-            ])
+                el('tbody', {}, tabelle.flatMap((e) => [zeile(e.s, e), ...e.kinder.map((k) => zeile(k, null, e))]))
+            ]) : null,
+            galerie.length ? el('ul', { class: 'besitz-galerie' }, galerie.map(bildKachel)) : null
         ]);
+    }
+
+    // Eine Kachel: oben das Bild (ohne Bild ein Zeichen der Kategorie), darunter der Name. Tipp öffnet das Fenster.
+    function bildKachel(e) {
+        const s = e.s;
+        const flaeche = el('span', { class: 'besitz-galerie-bild', attrs: { 'aria-hidden': 'true' } }, [
+            el('span', { class: 'besitz-galerie-zeichen', text: galerieZeichen(s) })
+        ]);
+        if (s.bild) bildSpaeter(flaeche, s.bild);
+        const merkmale = [
+            s.anzahl !== 1 ? s.anzahl + '×' : '',
+            e.anzahlZubehoer ? '+ ' + e.anzahlZubehoer + ' Zubehör' : '',
+            verliehen(s) ? '🤝 ' + leihText(s) : '',
+            s.ausmisten ? '🧹 ' + (s.ausmisten === 'offen' ? 'ausmisten' : ausmistText(s.ausmisten)) : ''
+        ].filter(Boolean);
+        let klasse = 'besitz-galerie-kachel';
+        if (!e.selbst) klasse += ' besitz-nur-kontext';
+        if (s.anzahl === 0) klasse += ' besitz-null-zeile';
+        return el('li', {}, [el('button', {
+            class: klasse,
+            attrs: { type: 'button', 'aria-label': s.name + ' ansehen' },
+            on: { click: () => zeigeSache(s) }
+        }, [
+            flaeche,
+            el('span', { class: 'besitz-galerie-name', text: s.name }),
+            merkmale.length ? el('span', { class: 'besitz-galerie-merkmale leise', text: merkmale.join(' · ') }) : null
+        ])]);
+    }
+
+    // Bilder der Kacheln erst holen, wenn die Kachel fast zu sehen ist, und höchstens drei gleichzeitig.
+    // So fragt die Liste nicht hundert Bilder auf einmal beim Skript an.
+    let bildBeobachter = null;
+    const bildWarteschlange = [];
+    let bilderUnterwegs = 0;
+    function bildSpaeter(flaeche, id) {
+        if (bilder.has(id)) { setzeKachelBild(flaeche, bilder.get(id)); return; }
+        flaeche.dataset.bild = id;
+        if (!window.IntersectionObserver) { bildAnstellen(flaeche); return; }
+        if (!bildBeobachter) {
+            bildBeobachter = new IntersectionObserver((sicht) => sicht.forEach((x) => {
+                if (!x.isIntersecting) return;
+                bildBeobachter.unobserve(x.target);
+                bildAnstellen(x.target);
+            }), { rootMargin: '300px 0px' });
+        }
+        bildBeobachter.observe(flaeche);
+    }
+    function bildAnstellen(flaeche) {
+        bildWarteschlange.push(flaeche);
+        naechstesBild();
+    }
+    function naechstesBild() {
+        while (bilderUnterwegs < 3 && bildWarteschlange.length) {
+            const flaeche = bildWarteschlange.shift();
+            if (!flaeche.isConnected) continue; // Liste wurde inzwischen neu gezeichnet
+            bilderUnterwegs++;
+            holeBild(flaeche.dataset.bild)
+                .then((adresse) => setzeKachelBild(flaeche, adresse))
+                .catch(() => { /* Zeichen der Kategorie bleibt stehen */ })
+                .finally(() => { bilderUnterwegs--; naechstesBild(); });
+        }
+    }
+    function setzeKachelBild(flaeche, adresse) {
+        leeren(flaeche);
+        flaeche.append(el('img', { attrs: { src: adresse, alt: '' } }));
     }
 
     // Gleiche Spaltenbreiten in der Sortier-Zeile oben und in allen Ort-Tabellen (css/components.css)
