@@ -6,14 +6,20 @@
 // liegen im privaten Drive-Ordner „Thetadex Besitz“. Bilder gibt das Skript nur mit Passwort heraus.
 // Ausgeliehen (ab 3.6): Spalte „ausgeliehen_an“, freier Text (an wen), leer = nicht ausgeliehen.
 // Ausgeliehene Anzahl (ab 0.4.2): Spalte „ausgeliehen_anzahl“, wie viele Stück davon ausgeliehen sind; leer = alle.
+// Unterorte (ab 1.3.20): „ort“ hat bis zu drei Ebenen, getrennt mit „ / “ (zum Beispiel „Zimmer / Regal / Kiste“), darum 130 Zeichen.
+// Ausmisten (ab 1.3.20): Spalte „ausmisten“, leer = nein, sonst offen, verkaufen, verschenken oder entsorgen.
+// Unklar (ab 1.3.25): Spalte „unklar“, nur im Sheet gepflegt. Leer = alles klar, sonst ein kurzer Text (was noch zu klären ist).
+// Die App färbt die Kachel gelb und zeigt den Text; sie ändert die Spalte nie. Keine Pflichtspalte: Speichern geht auch ohne sie.
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN).
 // Siehe docs/STAND.md 4 „Besitz, Blatt ‚besitz‘ im Sheet ‚Leben‘“.
 // =====================================================
 
 var BLATT_BESITZ_ = "besitz";
-var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht", "gehoert_zu", "bild", "ausgeliehen_an", "ausgeliehen_anzahl"];
-var TEXT_SPALTEN_ = ["id", "name", "kategorie", "ort", "notiz", "gehoert_zu", "bild", "ausgeliehen_an"];   // bleiben im Sheet reiner Text (kein Datum, keine Zahl)
-var MAX_ = { name: 80, kategorie: 40, ort: 60, notiz: 300, ausgeliehen_an: 60 };       // Höchstlängen
+var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht", "gehoert_zu", "bild", "ausgeliehen_an", "ausgeliehen_anzahl", "ausmisten"];
+var KANN_SPALTEN_ = ["unklar"];   // legt „einrichten“ an, Speichern verlangt sie nicht
+var TEXT_SPALTEN_ = ["id", "name", "kategorie", "ort", "notiz", "gehoert_zu", "bild", "ausgeliehen_an", "ausmisten", "unklar"];   // bleiben im Sheet reiner Text (kein Datum, keine Zahl)
+var MAX_ = { name: 80, kategorie: 40, ort: 130, notiz: 300, ausgeliehen_an: 60 };       // Höchstlängen
+var AUSMISTEN_ = ["offen", "verkaufen", "verschenken", "entsorgen"];   // erlaubte Werte, leer = nicht ausmisten
 var MAX_ANZAHL_ = 9999;
 var MAX_PREIS_ = 1000000;
 var BILD_ORDNER_NAME_ = "Thetadex Besitz";      // privater Ordner im Drive für hochgeladene Bilder
@@ -27,12 +33,12 @@ function einrichten() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(BLATT_BESITZ_) || ss.insertSheet(BLATT_BESITZ_);
   if (sheet.getLastRow() === 0) {
-    sheet.getRange(1, 1, 1, KOPF_BESITZ_.length).setValues([KOPF_BESITZ_]).setFontWeight("bold");
+    sheet.getRange(1, 1, 1, KOPF_BESITZ_.length + KANN_SPALTEN_.length).setValues([KOPF_BESITZ_.concat(KANN_SPALTEN_)]).setFontWeight("bold");
     sheet.setFrozenRows(1);
     Logger.log("Blatt '" + BLATT_BESITZ_ + "' angelegt.");
   } else {
     var sp = spalten_(sheet);
-    var fehlen = KOPF_BESITZ_.filter(function (k) { return sp[k] == null; });
+    var fehlen = KOPF_BESITZ_.concat(KANN_SPALTEN_).filter(function (k) { return sp[k] == null; });
     if (fehlen.length) {
       sheet.getRange(1, sheet.getLastColumn() + 1, 1, fehlen.length).setValues([fehlen]).setFontWeight("bold");
       Logger.log("Spalten ergänzt: " + fehlen.join(", "));
@@ -165,6 +171,8 @@ function sacheAus_(z, sp) {
     bild: String(zelle_(z, sp, "bild")).trim(),
     ausgeliehen_an: ohneSchutz_(zelle_(z, sp, "ausgeliehen_an")),
     ausgeliehen_anzahl: Number(zelle_(z, sp, "ausgeliehen_anzahl")) || null,
+    ausmisten: String(zelle_(z, sp, "ausmisten")).trim(),
+    unklar: ohneSchutz_(zelle_(z, sp, "unklar")).trim().substring(0, 300),
     geaendert_am: stempel_(zelle_(z, sp, "geaendert_am"))
   };
 }
@@ -254,6 +262,10 @@ function pruefeSache_(data) {
   w.anzahl = anzahl;
 
   // Ausgeliehene Anzahl: nur mit „Ausgeliehen an“, ganze Zahl von 1 bis zur Anzahl; leer = alle
+  var mist = String(data.ausmisten == null ? "" : data.ausmisten).trim();
+  if (mist && AUSMISTEN_.indexOf(mist) < 0) return { fehler: "Ungültiger Wert bei Ausmisten." };
+  w.ausmisten = mist;
+
   w.ausgeliehen_anzahl = "";
   if (w.ausgeliehen_an && data.ausgeliehen_anzahl != null && String(data.ausgeliehen_anzahl).trim() !== "") {
     var leih = Number(data.ausgeliehen_anzahl);

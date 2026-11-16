@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.19** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.26** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -253,7 +253,7 @@ unter „Info“ die Version prüfen.
 ### 2.3 Google Sheets (Tabs)
 
 - **Bestehende Sheets** (Tracking, Finanzen) behalten ihren Aufbau. Neu kommt je ein Blatt `Einstellungen` dazu
-  (Tracking: Felder mit Gruppe, Art und Vorgabewert; Finanzen: Zwecke, Kategorien, Rückzahlungs-Personen, ab 9.2 Suchwörter für Kontowecker-SMS; ab 1.3.19 Spalte F `monate` = Monate, in denen ein fester Zweck fällig ist, zum Beispiel `9`, leer = jeden Monat).
+  (Tracking: Felder mit Gruppe, Art und Vorgabewert; Finanzen: Zwecke, Kategorien, Rückzahlungs-Personen, ab 9.2 Suchwörter für Kontowecker-SMS; ab 1.3.26 Spalte F `monate` = Monate, in denen ein fester Zweck fällig ist, zum Beispiel `9`, leer = jeden Monat).
   Das Finanz-Sheet hat ab 11.11.2026 das Hilfsblatt `Alle Buchungen` (eine Formel holt Konto, PayPal, Kreditkarte, Portemonnaie zusammen; Spalten `Konto, Datum, Monat, Zweck, Kategorie, Einnahme, Ausgabe, Geteilt, Jahr, Ausgabe Anteil`). Die Spalten `-Out` und `-In` in `Analyse Monate` rechnen seitdem mit kurzen `SUMMEWENNS` daraus. Die Netto-Spalten und `Monatsnetto` bleiben wie vorher (Entscheidung der Person: alte Verrechnung gilt rückblickend weiter). Namen in Zeile 6 und 7 von `Analyse Monate` nie ändern, die App liest Zeile 7.
   Das Finanz-Sheet hat ab 9.1 zusätzlich das Blatt `SMS` (Kopfzeile 1: `id, empfangen_am, gesendet_am, absender, text, pruefsumme, status, erledigt_am`).
 - **Neues Sheet** für die neuen Reiter: Kopfzeile in Zeile 1 (klein, ohne Umlaute). Alle Daten-Blätter haben zusätzlich
@@ -285,7 +285,7 @@ unter „Info“ die Version prüfen.
     Ab 1.3.12 liefert `analyse` auch `zweckAusgaben` (je Monat Ausgaben der festen Zwecke) und ab 1.3.14 `zweckEinnahmen` (je Monat Einnahmen der festen Zwecke, zum Beispiel Gehalt) und `rueckzahlungen` aus Konto, Paypal, Kreditkarte und Portemonnaie, nur für die Zwecke und Kategorien der Liste `rueckzahlung` (vorher nur Konto und nur Abos/Wohnen). Umbuchungen (Kategorie `Transfer`) zählen nicht, `GETEILT` halb.
     Ab 1.3.15: `buchungen` (`jahr`, optional `monat`): Buchungen aus dem Hilfsblatt `Alle Buchungen` (nur lesen, ohne `Transfer`, `aus` = eigener Anteil), für „Größte Ausgaben“ und „Letzte Buchungen“ in der Auswertung. Die App lädt sie erst beim Anzeigen und hält sie nur im Speicher.
     Ab 1.3.16 liefert `analyse` auch `vermoegen` (`verlauf`: Vermögen am Ende jedes Monats, rückwärts vom Gesamtstand in `Übersicht` gerechnet mit der Spalte `Haben aktuell` (Kopfzeile 7) jedes Konto-Blatts; `fehlend`: Blätter ohne diese Spalte).
-    Ab 1.3.19: `analyse` liegt 10 Minuten im Zwischenspeicher des Skripts (CacheService, in Stücken); `buchen` löscht ihn, `frisch: true` (Knopf „Neu laden“) fragt am Speicher vorbei. Jedes Konto-Blatt wird je Aufruf nur einmal gelesen (`kontoDaten_`). `einstellungen` liefert bei Zwecken `monate`.
+    Ab 1.3.26: `analyse` liegt 10 Minuten im Zwischenspeicher des Skripts (CacheService, in Stücken); `buchen` löscht ihn, `frisch: true` (Knopf „Neu laden“) fragt am Speicher vorbei. Jedes Konto-Blatt wird je Aufruf nur einmal gelesen (`kontoDaten_`). `einstellungen` liefert bei Zwecken `monate`.
     Ab 9.2: `smsListe` (offene SMS), `smsErledigt` (`id`, verwerfen), `buchen` mit `sms_id` (bucht und setzt die SMS im selben Lauf auf „gebucht“; ist sie schon erledigt, Fehler `erledigt`). Nach der Zuordnung löscht das Skript Text und Absender. `einstellungen` liefert dazu `smsWoerter` (Liste `sms`: `name` = Suchwort, `zweck`, `kategorie`).
 - Neues Repo `thetadex` angelegt. Schritt 0.0 erledigt (Sheets kopiert, alte Repos als ZIP gesichert).
 - Schritt 0.1: leeres App-Gerüst mit Reiterleiste (Platzhalter), Ersteinrichtung, Info, Hell- und Dunkelmodus, Hinweis „Neue Version da“.
@@ -299,7 +299,7 @@ unter „Info“ die Version prüfen.
   Zubehör (3.4): Spalte `gehoert_zu`, eine Ebene, eingerückt und aufklappbar unter der Hauptsache.
   Bild (3.5): Spalte `bild` (Drive-Datei-Kennung), Aktion `bild` (nur Bilder, die bei einer Sache stehen), Ordner „Thetadex Besitz“.
   Nachbesserungen (3.6): Tipp auf eine Sache zeigt erst ihre Daten mit Bild, „Bearbeiten“ öffnet das Formular; Formular schließt nach dem Speichern.
-  Anzahl 0 ist ausgeblendet (außer mit Zubehör, Haken „Auch Sachen mit Anzahl 0 zeigen“). Spalte `ausgeliehen_an` mit Filter.
+  Anzahl 0 ist ausgeblendet (außer mit Zubehör, Haken „Auch Items mit Anzahl 0 zeigen“). Spalte `ausgeliehen_an` mit Filter.
   Ab 0.4.2: Spalte `ausgeliehen_anzahl` (wie viele Stück ausgeliehen sind, leer = alle); die Übersicht zeigt keine Balken mehr.
   Unterreiter „Liste“ und „Übersicht“ (Sachen, Stück, ausgeliehen; je Kategorie, je Ort, an wen). Auswahlfelder öffnen die Liste beim Tipp ins Feld.
 - Etappe 4 (fertig): Sheet „Gemeinsam“ mit Skript `gemeinsam` (4.1): Blätter `lebensmittel`, `einkaufsliste`, `gerichte`, `zutaten`, `vorrat`.
@@ -380,7 +380,7 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen.
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen.
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Die Auswertung zeigt daraus „Feste Ausgaben“ (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist) und ab 1.3.14 „Feste Einnahmen“ (Zweck, dessen Kategorie es nur bei den Einnahmen gibt, zum Beispiel Job).
 
 ---
@@ -434,14 +434,26 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Besitz: keine Daten öffentlich** (Wunsch der Person). Wie bei Finanzen: keine Gegenstände, Orte oder Preise im Repo.
   Auch die Namen bei „Ausgeliehen an“ stehen nur im Sheet „Leben“, nie im Repo, in Beispielen oder Pull-Request-Texten.
 - **Besitz, Blatt `besitz` im Sheet „Leben“** (Etappe 3): Spalten `id, name, kategorie, ort, anzahl, kaufpreis, kaufdatum, notiz,
-  erstellt_am, geaendert_am, geloescht, gehoert_zu, bild, ausgeliehen_an, ausgeliehen_anzahl`. Pflicht: Name (80), Kategorie (40), Ort (60), Anzahl (0 bis 9999).
+  erstellt_am, geaendert_am, geloescht, gehoert_zu, bild, ausgeliehen_an, ausgeliehen_anzahl, ausmisten`. Pflicht: Name (80), Kategorie (40), Ort (130, siehe Unterorte), Anzahl (0 bis 9999).
   Freiwillig: Kaufpreis (bis 1.000.000 €), Kaufdatum (nicht in der Zukunft), Notiz (300), Ausgeliehen an (60), davon ausgeliehen (ganze Zahl 1 bis Anzahl, leer = alle, nur mit „Ausgeliehen an“). `einrichten` ergänzt fehlende Spalten am Ende.
   Orte und Kategorien haben kein eigenes Blatt: Die Auswahl entsteht aus der Liste, Umbenennen im Sheet mit „Suchen und ersetzen“.
   Keine Summe der Kaufpreise (Wunsch der Person). Ändern schickt `geaendert_am` mit; ist die Zeile inzwischen anders, speichert das Skript nicht.
   Löschen ist weich (`geloescht = TRUE`, im Sheet zurückholbar); Zubehör einer gelöschten Hauptsache bleibt als eigene Sache.
-  Zubehör nur eine Ebene. Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer mit Zubehör oder mit dem Haken „Auch Sachen mit Anzahl 0 zeigen“.
-  Tipp auf eine Sache zeigt erst ihre Daten mit Bild, „Bearbeiten“ öffnet das Formular. Nach dem Speichern schließt es sich, der Ort bleibt stehen.
-  Übersicht zählt Sachen mit Anzahl über 0, Zubehör eingeschlossen, als Sachen und als Stück.
+  Unterorte (ab 1.3.20, Wunsch der Person, 15.11.2026): `ort` hat bis zu drei Ebenen, getrennt mit „ / “ (zum Beispiel „Zimmer / Regal / Kiste“).
+  Im Formular drei Felder (Ort, Darin, Darin), je bis 40 Zeichen, die Auswahl zeigt nur Unterorte des gewählten Oberorts. Der Ort-Filter ist ein Baum:
+  Ein Oberort zeigt auch alles in seinen Unterorten. Liste je Raum mit kleineren Überschriften je Unterort; Übersicht „Je Ort“ eingerückt.
+  Ausmisten (ab 1.3.20): Spalte `ausmisten`, leer = nein, sonst `offen`, `verkaufen`, `verschenken`, `entsorgen` (prüft das Skript). Filter „Ausmisten“, Kachel und Tabelle in der Übersicht.
+  Zubehör nur eine Ebene. Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer mit Zubehör oder mit dem Haken „Auch Items mit Anzahl 0 zeigen“.
+  Liste kompakt (ab 1.3.21, Wunsch der Person): am Handy nur Name, rechts die Anzahl und die Zeile mit Zubehör, Bild, ausgeliehen, ausmisten; am PC Spalten Name, Anzahl, Kaufpreis, Kaufdatum.
+  Ab 1.3.22 (Wunsch der Person, 16.11.2026): In der App heißen Sachen „Items“ (Spalten und Code bleiben `sachen`/`besitz`). Der Listenkopf (Titel, Unterreiter, Suche, Filter, Sortierzeile) bleibt beim Blättern unter der Kopfzeile stehen,
+  außer während das Formular offen ist. Die Sortierzeile (Name, Anzahl, Kaufpreis, Kaufdatum) steht am PC einmal oben im festen Kopf, darunter die Orte als Überschriften.
+  Zubehör bleibt aufklappbar, steht aber eingerückt in der Kachel der Hauptsache (am PC mit innerer Linie).
+  Tipp auf ein Item zeigt erst seine Daten mit Bild; darin lassen sich Ausleihen (Haken und Name) und Ausmisten (Haken und Art) direkt ändern, „Übernehmen“ speichert. „Bearbeiten“ öffnet das Formular. Nach dem Speichern schließt es sich, der Ort bleibt stehen.
+  Unklar (ab 1.3.25, Wunsch der Person, 16.11.2026): freiwillige Spalte `unklar` am Ende des Blatts, nur im Sheet gepflegt (die App ändert sie nie, Speichern verlangt sie nicht).
+  Leer = klar, sonst ein kurzer Text, was zu klären ist. Die Kachel ist dann gelb (`--besitz-unklar`), das Fenster zeigt „Unklar“ mit dem Text, die Suche findet ihn.
+  Übersicht zählt Items mit Anzahl über 0, Zubehör eingeschlossen, als Items und als Stück (ohne Hinweistext darunter).
+  Bild-Kacheln (ab 1.3.23, Wunsch der Person, 16.11.2026): Items der Kategorien Filme, Bücher (auch „Bücher und Hefte“) und Spiele stehen je Ort als Kacheln nebeneinander (Handy zwei, PC vier je Reihe), ab 1.3.24 nur, wenn oben im Filter diese Kategorie gewählt ist (sonst Zeilen wie alle anderen), oben das Bild (ohne Bild ein Zeichen 🎬 📚 🎲), darunter der Name.
+  Erkannt am Anfang der Kategorie (`GALERIE` in `js/views/besitz.js`). Bilder lädt die Liste erst, wenn die Kachel fast zu sehen ist, höchstens drei gleichzeitig, nur im Arbeitsspeicher.
 - **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
   Der Link enthält die Skript-Kennung und diesen Schlüssel, nie das Passwort. „Neuen Link erstellen“ macht alte Links ungültig.
   Die geteilte Ansicht zeigt den ganzen Bogen, aber keine Knöpfe zum Ändern. Grund: Bögen sollen ohne Passwort an andere gehen.
@@ -635,6 +647,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3), der gewählte Bogen bei Pen & Paper (`thetadex_dsa_bogen`, nur die Kennung, ab 0.6.1), die selbst erstellten Links zum Teilen (`thetadex_dsa_links`, Bogen-Kennung → Schlüssel, ab 0.6.6), die gewählte Ansicht bei Pen & Paper (`thetadex_dsa_modus`, ab 0.6.8), bei der Visitenkarte das eigene Passwort (`thetadex_karte_passwort`, ab 10.1), die selbst erstellten Schlüssel (`thetadex_karte_links`, Karte → Schlüssel) und die gewählte Karte (`thetadex_karte_wahl`, ab 10.3).
   Schlüssel mit Vorsilbe `thetadex_`. Keine Tracking-Einträge im Gerät speichern. Abmelden löscht alles.
   Die Tracking-Felder hält die App nur im Arbeitsspeicher (10 Minuten), damit das Formular schnell da ist.
+- **Kopfzeile angeheftet** (ab 1.3.22, Wunsch der Person, 16.11.2026): `.kopf` ist `position: sticky`. `js/app.js` schreibt ihre Höhe in `--kopf-hoehe`; andere feste Leisten nutzen `top: var(--kopf-hoehe, 0px)`.
 - **Fremder Rahmen** (ab 0.8.0): Läuft die Seite eingebettet in einer anderen Seite, zeigt `js/app.js` nur einen Hinweis (Schutz vor Klick-Fallen; `frame-ancestors` geht auf GitHub Pages nicht).
 - **Neu laden** nach einem Update nur, wenn auf dieser Seite „Jetzt neu laden“ getippt wurde (`js/app.js`). Sonst lud die Seite
   beim ersten Besuch von selbst neu, weil der Service Worker die Seite übernimmt (`clients.claim`), und Formulare waren weg.
@@ -906,4 +919,10 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.16** Finanzen → Auswertung (A5): Vermögen am Monatsende als Linie über die ganze Zeit (Skript `finanzen`, `vermoegen` in `analyse`).
 - **1.3.17** Einkauf: Abteilungen in der Reihenfolge im Laden (Blatt `laden_reihenfolge`), auf der Einkaufsliste und bei Lebensmittel „Einzeln“.
 - **1.3.18** Einkauf: Pfeile für die Reihenfolge im Laden als ^ und v, jetzt auch bei Lebensmittel „Einzeln“.
-- **1.3.19** Finanzen → Auswertung: „Fixkosten“ und „Fix-Einnahmen“, Spalte `monate` für jährliche Posten, Monatsauswahl oben, Bafög aufgeklappt, drei Hinweistexte weg, schneller (Zwischenspeicher im Skript, jedes Blatt nur einmal gelesen).
+- **1.3.20** Besitz: Unterorte in bis zu drei Ebenen (Formular, Ort-Filter als Baum, Liste, Übersicht), Markierung „Ausmisten“ mit Filter (Spalte `ausmisten`).
+- **1.3.21** Besitz: Kacheln kompakt (Name und rechts die Anzahl, Kategorie nur noch im Fenster mit allen Angaben, am PC ohne Spalte Kategorie).
+- **1.3.22** Kopfzeile der App bleibt oben angeheftet. Besitz: fester Listenkopf, Sortierzeile oben, Zubehör in der Kachel der Hauptsache, „Items“ statt „Sachen“, Ausleihen und Ausmisten direkt im Fenster, Hinweis unter der Übersicht weg.
+- **1.3.23** Besitz: Filme, Bücher und Spiele als Bild-Kacheln nebeneinander (Bild oben, Name unten, Handy zwei, PC vier je Reihe). Rahmen des Zubehör-Knopfs in der Farbe des Bereichs.
+- **1.3.24** Besitz: Bild-Kacheln nur noch, wenn im Filter Filme, Bücher oder Spiele gewählt ist.
+- **1.3.25** Besitz: freiwillige Spalte `unklar` im Sheet, Kachel dann gelb. Skript `leben` neu einfügen und `einrichten` ausführen.
+- **1.3.26** Finanzen → Auswertung: „Fixkosten“ und „Fix-Einnahmen“, Spalte `monate` für jährliche Posten, Monatsauswahl oben, Bafög aufgeklappt, drei Hinweistexte weg, schneller (Zwischenspeicher im Skript, jedes Blatt nur einmal gelesen).
