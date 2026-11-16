@@ -1425,3 +1425,16 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .besitz-galerie-merkmale { padding: 2px 10px 0; font-size: 0.8rem; }
 .besitz-galerie-kachel > :last-child { padding-bottom: 8px; }
 .besitz-galerie-kachel.besitz-nur-kontext, .besitz-galerie-kachel.besitz-null-zeile { opacity: .6; }
+
+/* Besitz: noch unklar (Spalte „unklar“ im Sheet) – ganze Kachel gelb (Wunsch der Person, 16.11.2026) */
+.besitz-galerie-kachel.besitz-unklar { background: var(--besitz-unklar); }
+@media (min-width: 768px) {
+    .besitz-tabelle tbody tr.besitz-unklar > * { background-color: var(--besitz-unklar); }
+    .besitz-tabelle tbody tr.besitz-kind.besitz-unklar > :first-child { box-shadow: inset 6px 0 0 var(--bereich), inset 30px 0 0 var(--kachel), inset 33px 0 0 var(--linie); }
+}
+@media (max-width: 767px) {
+    .besitz-tabelle tr.besitz-unklar { background: var(--besitz-unklar); }
+    /* Zubehör: nur die innere Kachel gelb, die Kachel der Hauptsache bleibt wie sie ist */
+    .besitz-tabelle tr.besitz-kind.besitz-unklar { background: var(--kachel); }
+    .besitz-tabelle tr.besitz-kind.besitz-unklar .besitz-name { background: var(--besitz-unklar); }
+}

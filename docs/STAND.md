@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.24** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.25** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -379,7 +379,7 @@ unter „Info“ die Version prüfen.
 
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen.
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen.
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Die Auswertung zeigt daraus „Feste Ausgaben“ (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist) und ab 1.3.14 „Feste Einnahmen“ (Zweck, dessen Kategorie es nur bei den Einnahmen gibt, zum Beispiel Job).
 
 ---
@@ -448,6 +448,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   außer während das Formular offen ist. Die Sortierzeile (Name, Anzahl, Kaufpreis, Kaufdatum) steht am PC einmal oben im festen Kopf, darunter die Orte als Überschriften.
   Zubehör bleibt aufklappbar, steht aber eingerückt in der Kachel der Hauptsache (am PC mit innerer Linie).
   Tipp auf ein Item zeigt erst seine Daten mit Bild; darin lassen sich Ausleihen (Haken und Name) und Ausmisten (Haken und Art) direkt ändern, „Übernehmen“ speichert. „Bearbeiten“ öffnet das Formular. Nach dem Speichern schließt es sich, der Ort bleibt stehen.
+  Unklar (ab 1.3.25, Wunsch der Person, 16.11.2026): freiwillige Spalte `unklar` am Ende des Blatts, nur im Sheet gepflegt (die App ändert sie nie, Speichern verlangt sie nicht).
+  Leer = klar, sonst ein kurzer Text, was zu klären ist. Die Kachel ist dann gelb (`--besitz-unklar`), das Fenster zeigt „Unklar“ mit dem Text, die Suche findet ihn.
   Übersicht zählt Items mit Anzahl über 0, Zubehör eingeschlossen, als Items und als Stück (ohne Hinweistext darunter).
   Bild-Kacheln (ab 1.3.23, Wunsch der Person, 16.11.2026): Items der Kategorien Filme, Bücher (auch „Bücher und Hefte“) und Spiele stehen je Ort als Kacheln nebeneinander (Handy zwei, PC vier je Reihe), ab 1.3.24 nur, wenn oben im Filter diese Kategorie gewählt ist (sonst Zeilen wie alle anderen), oben das Bild (ohne Bild ein Zeichen 🎬 📚 🎲), darunter der Name.
   Erkannt am Anfang der Kategorie (`GALERIE` in `js/views/besitz.js`). Bilder lädt die Liste erst, wenn die Kachel fast zu sehen ist, höchstens drei gleichzeitig, nur im Arbeitsspeicher.
@@ -921,3 +923,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.22** Kopfzeile der App bleibt oben angeheftet. Besitz: fester Listenkopf, Sortierzeile oben, Zubehör in der Kachel der Hauptsache, „Items“ statt „Sachen“, Ausleihen und Ausmisten direkt im Fenster, Hinweis unter der Übersicht weg.
 - **1.3.23** Besitz: Filme, Bücher und Spiele als Bild-Kacheln nebeneinander (Bild oben, Name unten, Handy zwei, PC vier je Reihe). Rahmen des Zubehör-Knopfs in der Farbe des Bereichs.
 - **1.3.24** Besitz: Bild-Kacheln nur noch, wenn im Filter Filme, Bücher oder Spiele gewählt ist.
+- **1.3.25** Besitz: freiwillige Spalte `unklar` im Sheet, Kachel dann gelb. Skript `leben` neu einfügen und `einrichten` ausführen.
