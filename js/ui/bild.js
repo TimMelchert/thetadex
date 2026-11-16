@@ -1,6 +1,8 @@
 // Bilder vor dem Senden verkleinern. Alles passiert im Gerät, nichts geht an fremde Server.
 // Ergebnis ist ein data:-Bild (JPEG), passend zur Content-Security-Policy (img-src 'self' data:).
 
+import { api } from '../api.js';
+
 // Liest eine Bilddatei, verkleinert sie auf höchstens maxSeite Pixel und gibt ein data:-JPEG zurück.
 export function verkleinereBild(datei, maxSeite = 1600, qualitaet = 0.85) {
     return new Promise((fertig, fehler) => {
@@ -36,4 +38,19 @@ export function bildAdresse(antwort) {
     const typ = String(antwort && antwort.typ || '');
     if (!/^image\/(jpeg|png|gif|webp)$/.test(typ) || typeof antwort.daten !== 'string') return null;
     return 'data:' + typ + ';base64,' + antwort.daten;
+}
+
+// Merkt geladene Bilder im Arbeitsspeicher (Kennung → data:-Bild) und holt fehlende beim Skript.
+// bilder.hole(id) lädt einmal und merkt es; bilder.set(id, adresse) merkt ein gerade gewähltes Bild.
+// feld = Name, unter dem das Skript die Kennung erwartet (Visitenkarte: „id“, sonst „bild“).
+export function bildSpeicher(skript, feld = 'bild') {
+    const bilder = new Map();
+    bilder.hole = async (id) => {
+        if (bilder.has(id)) return bilder.get(id);
+        const adresse = bildAdresse(await api(skript, 'bild', { [feld]: id }));
+        if (!adresse) throw new Error('Unbekannte Bildart.');
+        bilder.set(id, adresse);
+        return adresse;
+    };
+    return bilder;
 }

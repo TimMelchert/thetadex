@@ -9,7 +9,7 @@
 // Ohne Netz (Ausnahme in docs/STAND.md 4): Die zuletzt geladenen Uni-Daten liegen im Gerät (thetadex_uni), ohne Rolle.
 // Dann gibt es keine Knöpfe zum Ändern; Ändern geht nur mit Netz.
 
-import { el, leeren, heute, kalenderBeiKlick } from '../ui/dom.js';
+import { el, leeren, heute, kalenderBeiKlick, vergleiche, datumText } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { lesen, schreiben } from '../store.js';
@@ -34,8 +34,6 @@ const TAGE_KURZ = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const ARTEN_TERMIN = [['vorlesung', 'Vorlesung, Übung, Seminar'], ['pruefung', 'Prüfung'], ['arbeit', 'Arbeit'], ['zug', 'Zug'],
     ['urlaub', 'Urlaub, Feiertag, frei'], ['hobby', 'Hobby'], ['sonstiges', 'Sonstiges']];
 
-const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
-const datumText = (t) => (/^\d{4}-\d{2}-\d{2}$/.test(t) ? t.slice(8, 10) + '.' + t.slice(5, 7) + '.' + t.slice(0, 4) : '');
 const liste = (x) => (Array.isArray(x) ? x : []);
 const standText = (ms) => new Date(ms).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
@@ -857,7 +855,7 @@ export function render(container, ctx) {
         } catch (e) {
             // Ohne Netz: die Uni-Daten aus dem Gerät zeigen, ohne Knöpfe zum Ändern
             const im = lesen('uni', null);
-            if (e.code === 'netz' && im && im.daten) {
+            if ((e.code === 'netz' || e.code === 'zeit') && im && im.daten) {
                 if (!daten || ohneNetz) setzeDaten(im.daten);
                 ohneNetz = true;
                 ladeStatus.textContent = 'Ohne Verbindung: Stand von ' + standText(im.stand) + ' Uhr. Ändern geht nur mit Netz.';

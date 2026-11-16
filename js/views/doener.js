@@ -1,7 +1,7 @@
 // Reiter Döner Landau (öffentlich): Rangliste aller Läden, Einzelheiten je Laden, neue Bewertung.
 // Ohne Passwort. Die Script-Adresse kommt aus der Einrichtung oder aus dem geteilten Link #/doener/<kennung>.
 
-import { el, leeren } from '../ui/dom.js';
+import { el, leeren, datumText } from '../ui/dom.js';
 import { lesen, schreiben } from '../store.js';
 import { apiOeffentlich } from '../api.js';
 
@@ -70,11 +70,6 @@ function sterneWahl(id, titel) {
 
 function zahl(n) {
     return n.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-}
-
-function datumText(iso) {
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
-    return m ? m[3] + '.' + m[2] + '.' + m[1] : '';
 }
 
 function schnitt(werte) {

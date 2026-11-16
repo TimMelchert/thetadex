@@ -2,7 +2,7 @@
 // Eingabe: Die Felder kommen aus dem Blatt „Einstellungen“ des Tracking-Sheets
 // und werden bei jedem Öffnen neu geladen, nie im Gerät gespeichert (sie verraten, was getrackt wird).
 
-import { el, leeren, heute, kalenderBeiKlick } from '../ui/dom.js';
+import { el, leeren, heute, kalenderBeiKlick, MONATE } from '../ui/dom.js';
 import { api } from '../api.js';
 import { lesen } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
@@ -13,7 +13,6 @@ function datumText(iso) {
     return m ? m[3] + '.' + m[2] + '.' + m[1] : iso;
 }
 
-const MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 
 // Die Felder bleiben nur im Arbeitsspeicher (nie im Gerät gespeichert) und gelten 10 Minuten.

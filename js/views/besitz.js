@@ -6,11 +6,11 @@
 // Daten aus dem Skript „leben“ (Sheet „Leben“, Blatt „besitz“). Nur mit Passwort.
 // Die Liste liegt nur im Arbeitsspeicher, solange die Seite offen ist, nie im Gerät (docs/STAND.md, Abschnitt 4).
 
-import { el, leeren, heute, kalenderBeiKlick } from '../ui/dom.js';
+import { el, leeren, heute, kalenderBeiKlick, euro, vergleiche, datumText } from '../ui/dom.js';
 import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
-import { verkleinereBild, bildAdresse } from '../ui/bild.js';
+import { verkleinereBild, bildSpeicher } from '../ui/bild.js';
 
 // Zuletzt geladene Liste, nur im Arbeitsspeicher. Beim Öffnen sofort zeigen, dann frisch laden.
 let sachen = null;
@@ -19,26 +19,15 @@ let sortierung = { spalte: 'name', ab: false };
 // Aufgeklappte Hauptsachen (ids). Bleibt, solange die Seite offen ist.
 const offen = new Set();
 // Schon geladene Bilder (Drive-Kennung → data:-Bild), nur im Arbeitsspeicher
-const bilder = new Map();
+const bilder = bildSpeicher('leben');
+const holeBild = bilder.hole;
 // Liste oder Übersicht. Bleibt, solange die Seite offen ist.
 let teil = 'liste';
-
-// Lädt ein gespeichertes Bild vom Skript (nur mit Passwort), einmal je Kennung
-async function holeBild(id) {
-    if (bilder.has(id)) return bilder.get(id);
-    const adresse = bildAdresse(await api('leben', 'bild', { bild: id }));
-    if (!adresse) throw new Error('Unbekannte Bildart.');
-    bilder.set(id, adresse);
-    return adresse;
-}
 
 // Spalten der Tabelle: [Schlüssel, Überschrift, rechtsbündig]
 // Kategorie steht nur im Fenster mit allen Angaben (Wunsch der Person, 15.11.2026)
 const SPALTEN = [['name', 'Name'], ['anzahl', 'Anzahl', true], ['kaufpreis', 'Kaufpreis', true], ['kaufdatum', 'Kaufdatum']];
 
-const euro = (v) => Number(v).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-const datumText = (t) => (/^\d{4}-\d{2}-\d{2}$/.test(t) ? t.slice(8, 10) + '.' + t.slice(5, 7) + '.' + t.slice(0, 4) : '');
-const vergleiche = (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base', numeric: true });
 const klein = (t) => String(t == null ? '' : t).toLocaleLowerCase('de');
 // Kategorien, die als Bild-Kacheln nebeneinander stehen (Wunsch der Person, 16.11.2026): Filme, Bücher (und Hefte), Spiele
 const GALERIE = [[/^film/, '🎬'], [/^(buch|bücher|heft)/, '📚'], [/^spiel/, '🎲']];

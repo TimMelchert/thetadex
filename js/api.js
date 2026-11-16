@@ -31,25 +31,43 @@ export async function apiOeffentlich(adresse, action, daten = {}) {
     return senden(adresse, { ...daten, action });
 }
 
-async function senden(adresse, koerper) {
-    let antwort;
-    try {
-        antwort = await fetch(adresse, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(koerper)
-        });
-    } catch (e) {
-        throw new ApiFehler('netz', 'Keine Verbindung. Bitte Internet prüfen und erneut versuchen.');
-    }
+// Zeitgrenze: Antwortet das Skript nicht, bricht die App ab und zeigt eine Meldung (statt ohne Ende „Lädt …“).
+// Mit Bild (großer Körper) bekommt das Skript mehr Zeit.
+const WARTEN_MS = 60000;
+const WARTEN_BILD_MS = 180000;
 
+async function senden(adresse, koerper) {
+    const text = JSON.stringify(koerper);
+    const abbruch = new AbortController();
+    const uhr = setTimeout(() => abbruch.abort(), text.length > 100000 ? WARTEN_BILD_MS : WARTEN_MS);
+    let antwort;
     let d;
     try {
-        d = await antwort.json();
-    } catch (e) {
-        throw new ApiFehler('antwort', 'Das Skript hat keine lesbare Antwort geschickt. Ist die richtige Version bereitgestellt?');
+        try {
+            antwort = await fetch(adresse, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: text,
+                signal: abbruch.signal
+            });
+        } catch (e) {
+            if (abbruch.signal.aborted) throw zuLangsam();
+            throw new ApiFehler('netz', 'Keine Verbindung. Bitte Internet prüfen und erneut versuchen.');
+        }
+        try {
+            d = await antwort.json();
+        } catch (e) {
+            if (abbruch.signal.aborted) throw zuLangsam();
+            throw new ApiFehler('antwort', 'Das Skript hat keine lesbare Antwort geschickt. Ist die richtige Version bereitgestellt?');
+        }
+    } finally {
+        clearTimeout(uhr);
     }
 
     if (d && d.error) throw new ApiFehler(d.error, d.message || 'Unbekannter Fehler');
     return d;
+}
+
+function zuLangsam() {
+    return new ApiFehler('zeit', 'Das Skript antwortet nicht. Bitte erneut versuchen. Beim Speichern vorher neu laden und prüfen, ob es schon gespeichert ist.');
 }

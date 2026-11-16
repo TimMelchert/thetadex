@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.28** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.29** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -17,7 +17,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 9 „Kontowecker“ ist fertig (1.11.2026): Kontowecker-SMS kommen von selbst ins Finanz-Sheet, Festlegungen in 4 („Kontowecker“).
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
 - Etappe 11 „Rezepte“ ist fertig (7.11.2026): Festlegungen in 4 („Einkauf, Sheet ‚Gemeinsam‘“, Abschnitt Rezepte). 
-- Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) läuft: Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
+- Etappe 12 „Entschlacken“ (1.3.28 bis 1.3.28, Abschluss ist 1.3.28: Entscheidung der Person, 16.11.2026) läuft: Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -545,8 +545,8 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 ## 5. Technik-Merkzettel
 
 - **Hilfsmodule** vor dem Neubauen suchen und wiederverwenden. Lies die Datei, bevor du sie benutzt. Rate keine Signaturen.
-  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`, `kalenderBeiKlick`), `js/ui/kalender.js` (`plusTage`, `wochenStart`, `monatsRaster`, `eintraegeAm`, `tageListe`, `kursSemester`, `istFrei`, `spuren`, `arbeitsMinuten`, `stundenText` …), `js/ui/auswahl.js` (`auswahlFeld`), `js/ui/overlay.js` (`zeigeGespeichert`), `js/ui/farben.js` (`farbRegeln`), `js/ui/aussehen.js` (`wendeAussehenAn`, `setzeAussehen`), `js/ui/bild.js` (`verkleinereBild`, `bildAdresse`), `js/ui/wuerfel.js` (`wurf`, `wuerfelKnopf`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
-  `js/api.js` (`api(skript, action, daten)`, `apiOeffentlich(adresse, action, daten)` ohne Passwort, `ApiFehler` mit `code`).
+  Liste: `js/ui/dom.js` (`el`, `leeren`, `sichereUrl`, `heute`, `kalenderBeiKlick`, ab 1.3.29 `MONATE`, `euro`, `vergleiche`, `datumText`), `js/ui/kalender.js` (`plusTage`, `wochenStart`, `monatsRaster`, `eintraegeAm`, `tageListe`, `kursSemester`, `istFrei`, `spuren`, `arbeitsMinuten`, `stundenText` …), `js/ui/auswahl.js` (`auswahlFeld`), `js/ui/overlay.js` (`zeigeGespeichert`), `js/ui/farben.js` (`farbRegeln`), `js/ui/aussehen.js` (`wendeAussehenAn`, `setzeAussehen`), `js/ui/bild.js` (`verkleinereBild`, `bildAdresse`, ab 1.3.29 `bildSpeicher(skript)` mit `.hole(id)`), `js/ui/wuerfel.js` (`wurf`, `wuerfelKnopf`), `js/store.js` (`lesen`, `schreiben`, `abmelden`, `istEingerichtet`),
+  `js/api.js` (`api(skript, action, daten)`, `apiOeffentlich(adresse, action, daten)` ohne Passwort, `ApiFehler` mit `code`; ab 1.3.29 bricht jede Anfrage nach 60 Sekunden ab, mit Bild nach 180, Code `zeit`).
 - **GitHub Pages hängt** (Erfahrung 4.11.2026): Bleibt „pages build and deployment“ auf „Queued“ oder bricht mit „Timeout reached“ ab, liegt es an GitHub, nicht am Code.
   Erst „Re-run all jobs“; hilft das nicht, startet die nächste Änderung auf `main` einen neuen Lauf, der hängende wartende Läufe ersetzt.
 - **Ein Syntaxfehler** in einer Datei lässt die Ansicht ausfallen. Dann zuerst die zuletzt geänderten Dateien auf fehlende oder doppelte Klammern prüfen.
@@ -563,7 +563,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Neu laden** nach einem Update nur, wenn auf dieser Seite „Jetzt neu laden“ getippt wurde (`js/app.js`). Sonst lud die Seite
   beim ersten Besuch von selbst neu, weil der Service Worker die Seite übernimmt (`clients.claim`), und Formulare waren weg.
 - **Service Worker** (`sw.js`): App-Dateien zwischenspeichern (`<name>-<VERSION>`, beim Installieren mit `cache: 'reload'` frisch vom Server, ab 0.8.2), Daten nicht im Service Worker,
-  Anfragen an die Skripte nie aus dem Zwischenspeicher. Jede geänderte Datei braucht eine neue VERSION, sonst bekommen Geräte sie nicht.
+  Anfragen an die Skripte nie aus dem Zwischenspeicher. Auf `#/karte/…` meldet `js/app.js` keinen Service Worker an (Besucher, ab 1.3.29). Jede geänderte Datei braucht eine neue VERSION, sonst bekommen Geräte sie nicht.
 - **Barrierefreiheit beim Bauen:** genau eine `h1` je Seite, jedes Feld mit Beschriftung, Fenster mit `role="dialog"` und `aria-modal="true"`,
   Überschriften ohne Sprung.
 
@@ -604,6 +604,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.3.26** Finanzen → Auswertung: „Fixkosten“ und „Fix-Einnahmen“, Spalte `monate` für jährliche Posten, Monatsauswahl oben, Bafög aufgeklappt, drei Hinweistexte weg, schneller (Zwischenspeicher im Skript, jedes Blatt nur einmal gelesen).
 - **1.3.27** Besitz: Listenkopf mit Filtern wieder nicht mehr fest, er scrollt auf allen Geräten mit.
 - **Etappe 12** Entschlacken (Abschluss = 1.4.0). **1.3.28** Schritt 12.1: Rückblick aus `docs/STAND.md` nach `docs/GESCHICHTE.md` verschoben, veraltete Projektdateien gelöscht.
+- **1.3.29** Schritt 12.2: Zeitgrenze für Anfragen, Übergangs-Code für alte Skripte in Einkauf weg, gemeinsame Helfer (`euro`, `datumText`, `bildSpeicher` …), kein Service Worker auf Visitenkarten-Links, kleine Reste weg.

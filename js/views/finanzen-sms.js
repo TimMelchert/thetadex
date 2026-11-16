@@ -2,10 +2,9 @@
 // Die SMS kommen vom Finanz-Skript (Aktion smsListe) und liegen nur im Arbeitsspeicher, nie im Gerät.
 // Die App schlägt eine Buchung vor; gebucht wird erst, wenn die Person im Formular auf Ausgabe oder Einnahme tippt.
 
-import { el, leeren } from '../ui/dom.js';
+import { el, leeren, euro } from '../ui/dom.js';
 import { api } from '../api.js';
 
-const euro = (v) => (Number(v) || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 
 // Betragszeile der SMS: „<Gegenseite>: <Betrag> EUR“, Minus = Ausgabe. Die Zeile mit dem Saldo zählt nicht.
 const BETRAG = /^(.*?):\s*([-−+]?)\s*(\d{1,3}(?:\.\d{3})+|\d+),(\d{2})\s*(?:EUR|€)/i;
