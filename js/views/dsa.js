@@ -14,7 +14,7 @@ import { auswahlFeld } from '../ui/auswahl.js';
 import { api, apiOeffentlich } from '../api.js';
 import { lesen, schreiben } from '../store.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
-import { verkleinereBild, bildAdresse, bildSpeicher } from '../ui/bild.js';
+import { bildAdresse, bildSpeicher, bildFeld } from '../ui/bild.js';
 import { wuerfelKnopf } from '../ui/wuerfel.js';
 import { abenteuerAnsicht, dmAnsicht } from './dsa-abenteuer.js';
 
@@ -726,47 +726,9 @@ export function render(container, ctx = {}) {
         notiz.value = b ? b.notiz : '';
         const knoepfe = formKnoepfe(b ? () => loeschen(b, status, knoepfe) : null);
 
-        // Bild (6.5): bildStand.id = gespeichertes Bild, bildStand.daten = neu gewähltes (verkleinert), bildLink = eingefügter Drive-Link.
-        // Mitgeschickt wird es nur, wenn sich etwas geändert hat.
-        let bildStand = { id: b ? b.bild || '' : '', daten: null };
-        let bildGeaendert = false;
-        const vorschau = el('img', { class: 'besitz-vorschau', attrs: { alt: 'Bild des Helden', hidden: true } });
-        const bildText = el('p', { class: 'leise besitz-hinweis' });
-        const bildEntfernen = el('button', { class: 'knopf knopf-zweit', text: 'Bild entfernen', attrs: { type: 'button', hidden: true }, on: { click: () => { bildGeaendert = true; bildStand = { id: '', daten: null }; bildDatei.value = ''; bildLink.value = ''; zeigeVorschau(null); } } });
-        const bildDatei = el('input', { attrs: { id: 'dsa-bild', type: 'file', accept: 'image/*' }, on: { change: () => bildGewaehlt() } });
-        const bildLink = el('input', {
-            attrs: { id: 'dsa-bild-link', type: 'url', inputmode: 'url', autocomplete: 'off', spellcheck: 'false', placeholder: 'https://drive.google.com/…' },
-            on: { input: () => { bildGeaendert = true; if (bildLink.value.trim()) { bildStand = { id: bildStand.id, daten: null }; zeigeVorschau(null, 'Das Bild aus dem Link erscheint nach dem Speichern.'); } } }
-        });
-        function zeigeVorschau(adresse, text = '') {
-            vorschau.hidden = !adresse;
-            if (adresse) vorschau.src = adresse; else vorschau.removeAttribute('src');
-            bildText.textContent = text;
-            bildEntfernen.hidden = !(adresse || bildStand.id || bildLink.value.trim());
-        }
-        async function bildGewaehlt() {
-            const datei = bildDatei.files && bildDatei.files[0];
-            if (!datei) return;
-            zeigeVorschau(null, 'Bild wird verkleinert …');
-            try {
-                const daten = await verkleinereBild(datei);
-                bildLink.value = '';
-                bildStand = { id: bildStand.id, daten };
-                bildGeaendert = true;
-                zeigeVorschau(daten);
-            } catch (e) {
-                bildDatei.value = '';
-                zeigeVorschau(null, e.message);
-            }
-        }
-        if (bildStand.id) {
-            const id = bildStand.id;
-            zeigeVorschau(bilder.get(id) || null, bilder.has(id) ? '' : 'Bild lädt …');
-            if (!bilder.has(id)) {
-                holeBild(id).then((a) => { if (bildStand.id === id && !bildStand.daten && !bildLink.value.trim()) zeigeVorschau(a); })
-                    .catch((e) => { if (bildStand.id === id) zeigeVorschau(null, 'Bild nicht geladen: ' + e.message); });
-            }
-        }
+        // Bild (6.5): hochladen oder Drive-Link (js/ui/bild.js). Mitgeschickt wird es nur, wenn sich etwas geändert hat.
+        const bild = bildFeld({ id: 'dsa-bild', alt: 'Bild des Helden', bilder });
+        bild.setze(b ? b.bild || '' : '');
 
         async function absenden(ev) {
             ev.preventDefault();
@@ -775,15 +737,12 @@ export function render(container, ctx = {}) {
             kopfFelder.forEach(([k, , f]) => { if (f.value.trim()) kopf[k] = f.value.trim(); });
             const werte = b ? bogenWerte(b) : { eigenschaften: VORLAGE_EIGENSCHAFTEN, zaehler: VORLAGE_ZAEHLER };
             Object.assign(werte, { name: name.value.trim(), regelwerk: regelwerk.value, kopf, notiz: notiz.value.trim() });
-            if (bildGeaendert) {
-                if (bildStand.daten) werte.bild_daten = bildStand.daten.replace(/^data:image\/jpeg;base64,/, '');
-                else werte.bild = bildLink.value.trim() || bildStand.id;
-            }
+            if (bild.geaendert) Object.assign(werte, bild.werte());
             const antwort = await senden(status, knoepfe, 'bogen_speichern', { bogen: werte });
             if (!antwort) return;
             // Neu hochgeladenes Bild gleich merken, dann muss es nicht neu geladen werden
             const neu = antwort.boegen && antwort.boegen.find((x) => x.id === (b ? b.id : antwort.id));
-            if (bildStand.daten && neu && neu.bild) bilder.set(neu.bild, bildStand.daten);
+            if (neu) bild.merke(neu.bild);
             dialog.close();
             if (antwort.id) { schreiben('dsa_bogen', antwort.id); auswahl.value = antwort.id; }
             zeigeAlles();
@@ -797,9 +756,7 @@ export function render(container, ctx = {}) {
                 b ? null : el('p', { class: 'leise besitz-hinweis', text: 'Der Bogen startet mit den Eigenschaften und Zählern von DSA. Alles lässt sich danach ändern.' }),
                 ...kopfFelder.flatMap(([k, t, f]) => feld('dsa-kopf-' + k, t, f)),
                 ...feld('dsa-notiz', 'Notiz', notiz),
-                el('label', { text: 'Bild (freiwillig): wählen oder aufnehmen', attrs: { for: 'dsa-bild' } }), bildDatei,
-                el('label', { text: 'oder Google-Drive-Link', attrs: { for: 'dsa-bild-link' } }), bildLink,
-                vorschau, bildText, bildEntfernen,
+                ...bild.elemente,
                 el('p', { class: 'leise besitz-hinweis', text: 'Das Bild liegt in deinem Google Drive im Ordner „Thetadex DSA“.' }),
                 status,
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe)

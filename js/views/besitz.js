@@ -10,7 +10,7 @@ import { el, leeren, heute, kalenderBeiKlick, euro, vergleiche, datumText } from
 import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
-import { verkleinereBild, bildSpeicher } from '../ui/bild.js';
+import { bildSpeicher, bildFeld } from '../ui/bild.js';
 
 // Zuletzt geladene Liste, nur im Arbeitsspeicher. Beim Öffnen sofort zeigen, dann frisch laden.
 let sachen = null;
@@ -119,59 +119,8 @@ export function render(container, ctx) {
     const gehoert = el('select', { attrs: { id: 'besitz-gehoert' }, on: { change: () => hauptGewaehlt() } });
     const gehoertHinweis = el('p', { class: 'leise besitz-hinweis' });
 
-    // Bild: bildStand.id = gespeichertes Bild, bildStand.daten = neu gewähltes (verkleinert), bildLink = eingefügter Drive-Link
-    let bildStand = { id: '', daten: null };
-    const vorschau = el('img', { class: 'besitz-vorschau', attrs: { alt: 'Bild des Items', hidden: true } });
-    const bildText = el('p', { class: 'leise besitz-hinweis' });
-    const bildEntfernen = el('button', { class: 'knopf knopf-zweit', text: 'Bild entfernen', attrs: { type: 'button', hidden: true }, on: { click: () => setzeBild({ id: '', daten: null }) } });
-    const bildDatei = el('input', { attrs: { id: 'besitz-bild', type: 'file', accept: 'image/*' }, on: { change: () => bildGewaehlt() } });
-    const bildLink = el('input', {
-        attrs: { id: 'besitz-bild-link', type: 'url', inputmode: 'url', autocomplete: 'off', spellcheck: 'false', placeholder: 'https://drive.google.com/…' },
-        on: { input: () => { if (bildLink.value.trim()) { bildStand = { id: bildStand.id, daten: null }; zeigeVorschau(null, 'Das Bild aus dem Link erscheint nach dem Speichern.'); } } }
-    });
-
-    function zeigeVorschau(adresse, text = '') {
-        vorschau.hidden = !adresse;
-        if (adresse) vorschau.src = adresse; else vorschau.removeAttribute('src');
-        bildText.textContent = text;
-        bildEntfernen.hidden = !(adresse || bildStand.id || bildLink.value.trim());
-    }
-
-    function setzeBild(stand) {
-        bildStand = stand;
-        bildDatei.value = '';
-        bildLink.value = '';
-        if (stand.daten) zeigeVorschau(stand.daten);
-        else if (stand.id) ladeVorschau(stand.id);
-        else zeigeVorschau(null);
-    }
-
-    async function bildGewaehlt() {
-        const datei = bildDatei.files && bildDatei.files[0];
-        if (!datei) return;
-        zeigeVorschau(null, 'Bild wird verkleinert …');
-        try {
-            const daten = await verkleinereBild(datei);
-            bildLink.value = '';
-            bildStand = { id: bildStand.id, daten };
-            zeigeVorschau(daten);
-        } catch (e) {
-            bildDatei.value = '';
-            zeigeVorschau(null, e.message);
-        }
-    }
-
-    // Zeigt ein gespeichertes Bild, wenn das Formular noch dieselbe Sache zeigt
-    async function ladeVorschau(id) {
-        if (bilder.has(id)) { zeigeVorschau(bilder.get(id)); return; }
-        zeigeVorschau(null, 'Bild lädt …');
-        try {
-            const adresse = await holeBild(id);
-            if (bildStand.id === id && !bildStand.daten && !bildLink.value.trim()) zeigeVorschau(adresse);
-        } catch (e) {
-            if (bildStand.id === id) zeigeVorschau(null, 'Bild nicht geladen: ' + e.message);
-        }
-    }
+    // Bild: hochladen oder Drive-Link (js/ui/bild.js)
+    const bild = bildFeld({ id: 'besitz-bild', alt: 'Bild des Items', bilder });
     const speichernKnopf = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
     const loeschenKnopf = el('button', { class: 'knopf knopf-zweit', text: 'Löschen', attrs: { type: 'button', hidden: true }, on: { click: () => loeschen() } });
 
@@ -193,8 +142,7 @@ export function render(container, ctx) {
             gehoert_zu: gehoert.value
         };
         // Bild: neu gewählt geht als Text mit, sonst Link oder das bisherige Bild (leer = kein Bild)
-        if (bildStand.daten) werte.bild_daten = bildStand.daten.replace(/^data:image\/jpeg;base64,/, '');
-        else werte.bild = bildLink.value.trim() || bildStand.id;
+        Object.assign(werte, bild.werte());
         const fehlt = [[werte.name, name, 'einen Namen'], [werte.kategorie, kategorie.feld, 'eine Kategorie'], [ortFelder[0].feld.value.trim(), ort.feld, 'einen Ort']]
             .find(([w]) => !w);
         if (fehlt) {
@@ -246,7 +194,7 @@ export function render(container, ctx) {
             // Neues Zubehör gleich sichtbar machen: Hauptsache aufklappen
             if (antwort.sache.gehoert_zu) offen.add(antwort.sache.gehoert_zu);
             // Neu hochgeladenes Bild gleich merken, dann muss es nicht neu geladen werden
-            if (bildStand.daten && antwort.sache.bild) bilder.set(antwort.sache.bild, bildStand.daten);
+            bild.merke(antwort.sache.bild);
             zeigeAlles();
             // Formular schließt sich (Wunsch der Person). Der Ort bleibt für die nächste neue Sache stehen.
             zeigeFormular(false);
@@ -276,9 +224,7 @@ export function render(container, ctx) {
         el('label', { text: 'Ausmisten', attrs: { for: 'besitz-ausmisten' } }), ausmisten,
         el('label', { text: 'Notiz', attrs: { for: 'besitz-notiz' } }), notiz,
         el('label', { text: 'Gehört zu (Zubehör von)', attrs: { for: 'besitz-gehoert' } }), gehoert, gehoertHinweis,
-        el('label', { text: 'Bild (freiwillig): wählen oder aufnehmen', attrs: { for: 'besitz-bild' } }), bildDatei,
-        el('label', { text: 'oder Google-Drive-Link', attrs: { for: 'besitz-bild-link' } }), bildLink,
-        vorschau, bildText, bildEntfernen,
+        ...bild.elemente,
         el('div', { class: 'besitz-form-knoepfe' }, [speichernKnopf, loeschenKnopf]),
         status
     ]);
@@ -293,7 +239,7 @@ export function render(container, ctx) {
         ausgeliehen.feld.value = '';
         leihAnzahl.value = '';
         ausmisten.value = '';
-        setzeBild({ id: '', daten: null });
+        bild.setze('');
     }
 
     // Hauptsachen = Sachen, die nicht selbst Zubehör einer vorhandenen Sache sind
@@ -393,7 +339,7 @@ export function render(container, ctx) {
             notiz.value = sache.notiz || '';
             ausgeliehen.feld.value = verliehen(sache);
             leihAnzahl.value = sache.ausgeliehen_anzahl ? String(sache.ausgeliehen_anzahl) : '';
-            setzeBild({ id: sache.bild || '', daten: null });
+            bild.setze(sache.bild || '');
         } else if (warBearbeiten) {
             // Vom Ändern zurück: keine Werte der geänderten Sache stehen lassen
             felderLeeren();

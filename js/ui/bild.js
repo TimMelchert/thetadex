@@ -2,6 +2,7 @@
 // Ergebnis ist ein data:-Bild (JPEG), passend zur Content-Security-Policy (img-src 'self' data:).
 
 import { api } from '../api.js';
+import { el } from './dom.js';
 
 // Liest eine Bilddatei, verkleinert sie auf höchstens maxSeite Pixel und gibt ein data:-JPEG zurück.
 export function verkleinereBild(datei, maxSeite = 1600, qualitaet = 0.85) {
@@ -53,4 +54,77 @@ export function bildSpeicher(skript, feld = 'bild') {
         return adresse;
     };
     return bilder;
+}
+
+// Ein Bild-Feld im Formular (Besitz, Pen & Paper): Datei wählen (die App verkleinert sie) oder Drive-Link, Vorschau, „Bild entfernen“.
+// id = Vorsilbe der Feld-Kennungen, alt = Beschreibung der Vorschau, bilder = bildSpeicher des Reiters.
+// feld.elemente ins Formular hängen; feld.setze(kennung) beim Öffnen; feld.werte() beim Speichern ({ bild_daten } oder { bild });
+// feld.geaendert sagt, ob die Person am Bild etwas getan hat; feld.merke(kennung) merkt ein neu hochgeladenes Bild nach dem Speichern.
+export function bildFeld({ id, alt, bilder }) {
+    let stand = { id: '', daten: null };   // id = gespeichertes Bild, daten = neu gewähltes (verkleinert)
+    let geaendert = false;
+    const vorschau = el('img', { class: 'besitz-vorschau', attrs: { alt, hidden: true } });
+    const text = el('p', { class: 'leise besitz-hinweis' });
+    const datei = el('input', { attrs: { id, type: 'file', accept: 'image/*' }, on: { change: () => gewaehlt() } });
+    const link = el('input', {
+        attrs: { id: id + '-link', type: 'url', inputmode: 'url', autocomplete: 'off', spellcheck: 'false', placeholder: 'https://drive.google.com/…' },
+        on: { input: () => { geaendert = true; if (link.value.trim()) { stand = { id: stand.id, daten: null }; zeige(null, 'Das Bild aus dem Link erscheint nach dem Speichern.'); } } }
+    });
+    const entfernen = el('button', {
+        class: 'knopf knopf-zweit', text: 'Bild entfernen', attrs: { type: 'button', hidden: true },
+        on: { click: () => { geaendert = true; stand = { id: '', daten: null }; datei.value = ''; link.value = ''; zeige(null); } }
+    });
+
+    function zeige(adresse, hinweis = '') {
+        vorschau.hidden = !adresse;
+        if (adresse) vorschau.src = adresse; else vorschau.removeAttribute('src');
+        text.textContent = hinweis;
+        entfernen.hidden = !(adresse || stand.id || link.value.trim());
+    }
+
+    async function gewaehlt() {
+        const d = datei.files && datei.files[0];
+        if (!d) return;
+        zeige(null, 'Bild wird verkleinert …');
+        try {
+            const daten = await verkleinereBild(d);
+            link.value = '';
+            stand = { id: stand.id, daten };
+            geaendert = true;
+            zeige(daten);
+        } catch (e) {
+            datei.value = '';
+            zeige(null, e.message);
+        }
+    }
+
+    return {
+        elemente: [
+            el('label', { text: 'Bild (freiwillig): wählen oder aufnehmen', attrs: { for: id } }), datei,
+            el('label', { text: 'oder Google-Drive-Link', attrs: { for: id + '-link' } }), link,
+            vorschau, text, entfernen
+        ],
+        get geaendert() { return geaendert; },
+        // Gespeichertes Bild zeigen (leer = keins). Lädt es, wenn es noch nicht im Speicher ist.
+        setze(kennung) {
+            stand = { id: kennung || '', daten: null };
+            geaendert = false;
+            datei.value = '';
+            link.value = '';
+            if (!stand.id) { zeige(null); return; }
+            const k = stand.id;
+            if (bilder.has(k)) { zeige(bilder.get(k)); return; }
+            zeige(null, 'Bild lädt …');
+            bilder.hole(k)
+                .then((a) => { if (stand.id === k && !stand.daten && !link.value.trim()) zeige(a); })
+                .catch((e) => { if (stand.id === k) zeige(null, 'Bild nicht geladen: ' + e.message); });
+        },
+        // Neu gewählt geht als Text mit, sonst Link oder das bisherige Bild (leer = kein Bild)
+        werte() {
+            return stand.daten ? { bild_daten: stand.daten.replace(/^data:image\/jpeg;base64,/, '') } : { bild: link.value.trim() || stand.id };
+        },
+        merke(kennung) {
+            if (stand.daten && kennung) bilder.set(kennung, stand.daten);
+        }
+    };
 }
