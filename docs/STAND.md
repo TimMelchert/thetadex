@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.26** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.27** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -445,8 +445,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Ausmisten (ab 1.3.20): Spalte `ausmisten`, leer = nein, sonst `offen`, `verkaufen`, `verschenken`, `entsorgen` (prüft das Skript). Filter „Ausmisten“, Kachel und Tabelle in der Übersicht.
   Zubehör nur eine Ebene. Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer mit Zubehör oder mit dem Haken „Auch Items mit Anzahl 0 zeigen“.
   Liste kompakt (ab 1.3.21, Wunsch der Person): am Handy nur Name, rechts die Anzahl und die Zeile mit Zubehör, Bild, ausgeliehen, ausmisten; am PC Spalten Name, Anzahl, Kaufpreis, Kaufdatum.
-  Ab 1.3.22 (Wunsch der Person, 16.11.2026): In der App heißen Sachen „Items“ (Spalten und Code bleiben `sachen`/`besitz`). Der Listenkopf (Titel, Unterreiter, Suche, Filter, Sortierzeile) bleibt beim Blättern unter der Kopfzeile stehen,
-  außer während das Formular offen ist. Die Sortierzeile (Name, Anzahl, Kaufpreis, Kaufdatum) steht am PC einmal oben im festen Kopf, darunter die Orte als Überschriften.
+  Ab 1.3.22 (Wunsch der Person, 16.11.2026): In der App heißen Sachen „Items“ (Spalten und Code bleiben `sachen`/`besitz`). Der Listenkopf (Titel, Unterreiter, Suche, Filter, Sortierzeile) scrollt mit (ab 1.3.27 wieder, Wunsch der Person: fest nahm er am PC zu viel Platz weg); nur die Kopfzeile der App bleibt angeheftet. Die Sortierzeile (Name, Anzahl, Kaufpreis, Kaufdatum) steht am PC einmal oben unter den Filtern, darunter die Orte als Überschriften.
   Zubehör bleibt aufklappbar, steht aber eingerückt in der Kachel der Hauptsache (am PC mit innerer Linie).
   Tipp auf ein Item zeigt erst seine Daten mit Bild; darin lassen sich Ausleihen (Haken und Name) und Ausmisten (Haken und Art) direkt ändern, „Übernehmen“ speichert. „Bearbeiten“ öffnet das Formular. Nach dem Speichern schließt es sich, der Ort bleibt stehen.
   Unklar (ab 1.3.25, Wunsch der Person, 16.11.2026): freiwillige Spalte `unklar` am Ende des Blatts, nur im Sheet gepflegt (die App ändert sie nie, Speichern verlangt sie nicht).
@@ -926,3 +925,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.24** Besitz: Bild-Kacheln nur noch, wenn im Filter Filme, Bücher oder Spiele gewählt ist.
 - **1.3.25** Besitz: freiwillige Spalte `unklar` im Sheet, Kachel dann gelb. Skript `leben` neu einfügen und `einrichten` ausführen.
 - **1.3.26** Finanzen → Auswertung: „Fixkosten“ und „Fix-Einnahmen“, Spalte `monate` für jährliche Posten, Monatsauswahl oben, Bafög aufgeklappt, drei Hinweistexte weg, schneller (Zwischenspeicher im Skript, jedes Blatt nur einmal gelesen).
+- **1.3.27** Besitz: Listenkopf mit Filtern wieder nicht mehr fest, er scrollt auf allen Geräten mit.
