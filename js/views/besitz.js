@@ -437,7 +437,8 @@ export function render(container, ctx) {
             ['Kaufdatum', datumText(s.kaufdatum)],
             ['Gehört zu', haupt ? haupt.name : ''],
             ['Zubehör', zubehoer.map((z) => z.name + (z.anzahl > 1 ? ' (' + z.anzahl + ')' : '')).join(', ')],
-            ['Notiz', s.notiz]
+            ['Notiz', s.notiz],
+            ['Unklar', s.unklar]
         ].filter(([, w]) => w);
         const bild = el('img', { class: 'besitz-dialog-bild', attrs: { alt: 'Bild: ' + s.name, hidden: true } });
         const bildText = el('p', { class: 'leise besitz-hinweis' });
@@ -631,7 +632,7 @@ export function render(container, ctx) {
             && (!katFilter.value || s.kategorie === katFilter.value)
             && passtLeihe(s)
             && passtMist(s)
-            && (!wort || [s.name, s.kategorie, s.ort, s.notiz, verliehen(s)].some((t) => klein(t).includes(wort)));
+            && (!wort || [s.name, s.kategorie, s.ort, s.notiz, verliehen(s), s.unklar].some((t) => klein(t).includes(wort)));
         const treffer = sachen.filter(passt).length;
         if (filterAn) {
             trefferText.textContent = treffer ? treffer + ' von ' + sachen.filter(sichtbar).length + ' Items' : 'Keine Treffer.';
@@ -705,6 +706,7 @@ export function render(container, ctx) {
         let klasse = 'besitz-galerie-kachel';
         if (!e.selbst) klasse += ' besitz-nur-kontext';
         if (s.anzahl === 0) klasse += ' besitz-null-zeile';
+        if (s.unklar) klasse += ' besitz-unklar';
         return el('li', {}, [el('button', {
             class: klasse,
             attrs: { type: 'button', 'aria-label': s.name + ' ansehen' },
@@ -790,6 +792,8 @@ export function render(container, ctx) {
         if (haupt) klasse += ' besitz-kind';
         if (eintrag && !eintrag.selbst) klasse += ' besitz-nur-kontext'; // passt nicht selbst, nur ihr Zubehör
         if (s.anzahl === 0) klasse += ' besitz-null-zeile';
+        // Noch unklar (Spalte „unklar“ im Sheet): ganze Kachel gelb (Wunsch der Person, 16.11.2026)
+        if (s.unklar) klasse += ' besitz-unklar';
         // Zubehör steht optisch in der Kachel der Hauptsache (Wunsch der Person, 16.11.2026)
         if (eintrag && eintrag.kinder.length && eintrag.auf) klasse += ' besitz-offen';
         if (haupt && haupt.kinder[haupt.kinder.length - 1] === s) klasse += ' besitz-kind-letztes';

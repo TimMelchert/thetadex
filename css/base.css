@@ -39,6 +39,7 @@
     --zelle-rot: #E8908A;
     --zelle-dunkelrot: #A63A35;
     --zelle-gelb: #F2D46B;
+    --besitz-unklar: #F6E6A0;
     --zelle-blau: #8FB3E0;
     --zelle-rosa: #F2B8D2;
     --zelle-grau: #C9C5BE;
@@ -92,6 +93,7 @@
     --zelle-rot: #B9554F;
     --zelle-dunkelrot: #7E2A26;
     --zelle-gelb: #C9A93E;
+    --besitz-unklar: #4D4220;
     --zelle-blau: #5A80B0;
     --zelle-rosa: #C47FA0;
     --zelle-grau: #6E6A64;
@@ -116,6 +118,7 @@
         --zelle-rot: #B9554F;
         --zelle-dunkelrot: #7E2A26;
         --zelle-gelb: #C9A93E;
+        --besitz-unklar: #4D4220;
         --zelle-blau: #5A80B0;
         --zelle-rosa: #C47FA0;
         --zelle-grau: #6E6A64;
