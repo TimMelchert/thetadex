@@ -670,10 +670,12 @@ export function render(container, ctx) {
 
     // Eine Tabelle je Ort. Am Handy macht css/components.css daraus Karten (Spaltenname über data-label).
     // unterort = Weg unterhalb des Raums („Kallax › Stoffkiste“), leer = direkt im Raum
-    // Filme, Bücher und Spiele stehen als Bild-Kacheln nebeneinander, die anderen in der Tabelle (Wunsch der Person, 16.11.2026)
+    // Filme, Bücher und Spiele stehen als Bild-Kacheln nebeneinander, die anderen in der Tabelle (Wunsch der Person, 16.11.2026).
+    // Nur wenn oben im Filter genau eine dieser Kategorien gewählt ist, in der allgemeinen Liste bleiben sie Zeilen.
     function ortGruppe(unterort, liste, zahlText) {
-        const galerie = liste.filter((e) => istGalerie(e.s));
-        const tabelle = liste.filter((e) => !istGalerie(e.s));
+        const alsKachel = (s) => istGalerie({ kategorie: katFilter.value }) && istGalerie(s);
+        const galerie = liste.filter((e) => alsKachel(e.s));
+        const tabelle = liste.filter((e) => !alsKachel(e.s));
         return el('section', { class: 'besitz-gruppe' }, [
             unterort ? el('h3', { class: 'besitz-unterort' }, [
                 el('span', { text: unterort }),

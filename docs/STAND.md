@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.3.23** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.3.24** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -449,7 +449,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Zubehör bleibt aufklappbar, steht aber eingerückt in der Kachel der Hauptsache (am PC mit innerer Linie).
   Tipp auf ein Item zeigt erst seine Daten mit Bild; darin lassen sich Ausleihen (Haken und Name) und Ausmisten (Haken und Art) direkt ändern, „Übernehmen“ speichert. „Bearbeiten“ öffnet das Formular. Nach dem Speichern schließt es sich, der Ort bleibt stehen.
   Übersicht zählt Items mit Anzahl über 0, Zubehör eingeschlossen, als Items und als Stück (ohne Hinweistext darunter).
-  Bild-Kacheln (ab 1.3.23, Wunsch der Person, 16.11.2026): Items der Kategorien Filme, Bücher (auch „Bücher und Hefte“) und Spiele stehen je Ort als Kacheln nebeneinander (Handy zwei, PC vier je Reihe), oben das Bild (ohne Bild ein Zeichen 🎬 📚 🎲), darunter der Name.
+  Bild-Kacheln (ab 1.3.23, Wunsch der Person, 16.11.2026): Items der Kategorien Filme, Bücher (auch „Bücher und Hefte“) und Spiele stehen je Ort als Kacheln nebeneinander (Handy zwei, PC vier je Reihe), ab 1.3.24 nur, wenn oben im Filter diese Kategorie gewählt ist (sonst Zeilen wie alle anderen), oben das Bild (ohne Bild ein Zeichen 🎬 📚 🎲), darunter der Name.
   Erkannt am Anfang der Kategorie (`GALERIE` in `js/views/besitz.js`). Bilder lädt die Liste erst, wenn die Kachel fast zu sehen ist, höchstens drei gleichzeitig, nur im Arbeitsspeicher.
 - **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
   Der Link enthält die Skript-Kennung und diesen Schlüssel, nie das Passwort. „Neuen Link erstellen“ macht alte Links ungültig.
@@ -920,3 +920,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.21** Besitz: Kacheln kompakt (Name und rechts die Anzahl, Kategorie nur noch im Fenster mit allen Angaben, am PC ohne Spalte Kategorie).
 - **1.3.22** Kopfzeile der App bleibt oben angeheftet. Besitz: fester Listenkopf, Sortierzeile oben, Zubehör in der Kachel der Hauptsache, „Items“ statt „Sachen“, Ausleihen und Ausmisten direkt im Fenster, Hinweis unter der Übersicht weg.
 - **1.3.23** Besitz: Filme, Bücher und Spiele als Bild-Kacheln nebeneinander (Bild oben, Name unten, Handy zwei, PC vier je Reihe). Rahmen des Zubehör-Knopfs in der Farbe des Bereichs.
+- **1.3.24** Besitz: Bild-Kacheln nur noch, wenn im Filter Filme, Bücher oder Spiele gewählt ist.
