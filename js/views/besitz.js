@@ -389,7 +389,6 @@ export function render(container, ctx) {
         const warBearbeiten = bearbeite;
         bearbeite = auf ? sache : null;
         formBox.hidden = !auf;
-        kopfLeiste.classList.toggle('besitz-oben-fest', !auf);
         neuKnopf.setAttribute('aria-expanded', auf ? 'true' : 'false');
         formTitel.textContent = sache ? 'Ändern' : 'Hinzufügen';
         loeschenKnopf.hidden = !sache;
@@ -939,7 +938,7 @@ export function render(container, ctx) {
         box
     ]);
 
-    const kopfLeiste = el('div', { class: 'besitz-oben besitz-oben-fest' }, [
+    const kopfLeiste = el('div', { class: 'besitz-oben' }, [
         el('div', { class: 'besitz-kopf' }, [
             el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
                 el('span', { class: 'titel-emoji', text: '📦', attrs: { 'aria-hidden': 'true' } }),

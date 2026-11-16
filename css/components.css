@@ -1391,7 +1391,7 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 
 /* Besitz: fester Kopf der Liste (Titel bis Haken „Anzahl 0“, am PC mit Sortier-Zeile) */
 .besitz-oben { background: var(--hintergrund); }
-.besitz-oben-fest { position: sticky; top: var(--kopf-hoehe, 0px); z-index: 5; padding-bottom: 6px; border-bottom: 1px solid var(--linie); }
+/* Der Listenkopf scrollt wieder mit (Wunsch der Person, 16.11.2026: fest nahm er am PC zu viel Platz weg) */
 .besitz-oben .besitz-kopf { padding-top: 4px; }
 .besitz-sortzeile { margin-top: 6px; }
 .besitz-sortzeile th { border-bottom: none; }
