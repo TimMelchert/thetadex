@@ -38,7 +38,10 @@ const verliehen = (s) => String(s.ausgeliehen_an || '').trim();
 // Unterorte: bis zu drei Ebenen im Text von „ort“, getrennt mit „ / “ (zum Beispiel „Zimmer / Kallax / Stoffkiste“)
 const ORT_TRENNER = ' / ';
 const ortTeile = (o) => String(o || '').split('/').map((t) => t.trim()).filter(Boolean);
-const ortText = (teile) => teile.join(ORT_TRENNER);
+const ortText = (teile) => teile.filter(Boolean).join(ORT_TRENNER);
+// Ort in Normalform: leere Ebenen weg („Zimmer /  / “ → „Zimmer“). Bis 1.3.27 speicherte das Formular leere Ebenen mit,
+// solche Items fielen aus der Liste. Darum jede Sache vom Skript einmal so ordnen.
+const ordne = (s) => { if (s) s.ort = ortText(ortTeile(s.ort)); return s; };
 // Gehört die Sache zu diesem Ort oder einem seiner Unterorte?
 const imOrt = (o, filter) => o === filter || String(o).startsWith(filter + ORT_TRENNER);
 // Alle Orte mit ihren Oberorten, in Baum-Reihenfolge: „Zimmer“, „Zimmer / Kallax“, „Zimmer / Kallax / Stoffkiste“
@@ -184,6 +187,7 @@ export function render(container, ctx) {
         try {
             const alt = bearbeite;
             const antwort = await api('leben', 'speichern', alt ? { ...werte, anzahl: n, id: alt.id, geaendert_am: alt.geaendert_am } : { ...werte, anzahl: n });
+            ordne(antwort.sache);
             if (sachen) {
                 const i = alt ? sachen.findIndex((x) => x.id === alt.id) : -1;
                 if (i >= 0) sachen[i] = antwort.sache;
@@ -449,6 +453,7 @@ export function render(container, ctx) {
                     gehoert_zu: s.gehoert_zu || '', bild: s.bild || '',
                     ausgeliehen_an: n.ausgeliehen_an, ausgeliehen_anzahl: leihAnzahl, ausmisten: n.ausmisten
                 });
+                ordne(antwort.sache);
                 const i = sachen.findIndex((x) => x.id === s.id);
                 if (i >= 0) sachen[i] = antwort.sache;
                 zeigeGespeichert('Geändert', antwort.sache.name);
@@ -909,7 +914,7 @@ export function render(container, ctx) {
         ladeStatus.textContent = sachen ? 'Aktualisiere …' : 'Lädt …';
         try {
             const d = await api('leben', 'liste');
-            sachen = Array.isArray(d.sachen) ? d.sachen : [];
+            sachen = Array.isArray(d.sachen) ? d.sachen.map(ordne) : [];
             ladeStatus.textContent = '';
             zeigeAlles();
         } catch (e) {
