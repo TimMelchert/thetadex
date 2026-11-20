@@ -120,6 +120,12 @@ export function render(container, ctx) {
     const notiz = el('textarea', { attrs: { id: 'besitz-notiz', maxlength: 300, rows: 2, placeholder: 'freiwillig' } });
     // Gehört zu: Auswahl der Hauptsachen. Wer selbst Zubehör hat, kann nicht Zubehör werden (nur eine Ebene).
     const gehoert = el('select', { attrs: { id: 'besitz-gehoert' }, on: { change: () => hauptGewaehlt() } });
+    // Suchzeile über der Auswahl (Wunsch der Person, 20.11.2026): filtert nach Name und Ort, die Auswahl ist nach Orten gegliedert
+    const gehoertSuche = el('input', {
+        attrs: { id: 'besitz-gehoert-suche', type: 'search', autocomplete: 'off', maxlength: 60, placeholder: 'Hauptsache suchen, zum Beispiel Tannenbäumchen', 'aria-label': 'Hauptsache suchen', 'aria-controls': 'besitz-gehoert' },
+        on: { input: () => zeichneGehoert(true) }
+    });
+    let gehoertKandidaten = [];
     const gehoertHinweis = el('p', { class: 'leise besitz-hinweis' });
 
     // Bild: hochladen oder Drive-Link (js/ui/bild.js)
@@ -227,7 +233,7 @@ export function render(container, ctx) {
         el('label', { text: 'Davon ausgeliehen (Stück)', attrs: { for: 'besitz-leih-anzahl' } }), leihAnzahl,
         el('label', { text: 'Ausmisten', attrs: { for: 'besitz-ausmisten' } }), ausmisten,
         el('label', { text: 'Notiz', attrs: { for: 'besitz-notiz' } }), notiz,
-        el('label', { text: 'Gehört zu (Zubehör von)', attrs: { for: 'besitz-gehoert' } }), gehoert, gehoertHinweis,
+        el('label', { text: 'Gehört zu (Zubehör von)', attrs: { for: 'besitz-gehoert' } }), gehoertSuche, gehoert, gehoertHinweis,
         ...bild.elemente,
         el('div', { class: 'besitz-form-knoepfe' }, [speichernKnopf, loeschenKnopf]),
         status
@@ -264,16 +270,37 @@ export function render(container, ctx) {
 
     // Füllt „Gehört zu“ für die Sache, die gerade im Formular steht (null = neu)
     function fuelleGehoert(sache) {
+        const hatEigenes = sache ? zubehoerVon(sache.id).length > 0 : false;
+        gehoertKandidaten = (sachen || []).filter((x) => !istZubehoer(x) && (!sache || x.id !== sache.id));
+        gehoertSuche.value = '';
+        zeichneGehoert(false, sache && istZubehoer(sache) ? sache.gehoert_zu : '');
+        gehoert.disabled = hatEigenes;
+        gehoertSuche.hidden = hatEigenes;
+        gehoertHinweis.textContent = hatEigenes ? 'Dieses Item hat selbst Zubehör und bleibt darum ein eigenes Item.' : '';
+    }
+
+    // Baut die Auswahl neu: je Ort eine Gruppe (Baum-Reihenfolge), darin nach Name. Mit Suchwort nur passende Items;
+    // die gewählte Hauptsache bleibt immer drin. getippt = aus der Suchzeile: bei genau einem Treffer gleich wählen.
+    function zeichneGehoert(getippt, wert = gehoert.value) {
+        const wort = klein(gehoertSuche.value.trim());
+        const passt = (x) => !wort || klein(x.name).includes(wort) || klein(x.ort).includes(wort);
+        const treffer = gehoertKandidaten.filter(passt);
+        const liste = treffer.concat(gehoertKandidaten.filter((x) => x.id === wert && !passt(x)));
         leeren(gehoert);
         gehoert.append(el('option', { text: '– keins, eigenes Item –', attrs: { value: '' } }));
-        const hatEigenes = sache ? zubehoerVon(sache.id).length > 0 : false;
-        (sachen || [])
-            .filter((x) => !istZubehoer(x) && (!sache || x.id !== sache.id))
-            .sort((a, b) => vergleiche(a.name, b.name))
-            .forEach((x) => gehoert.append(el('option', { text: x.name + ' (' + x.ort + ')', attrs: { value: x.id } })));
-        gehoert.value = sache && istZubehoer(sache) ? sache.gehoert_zu : '';
-        gehoert.disabled = hatEigenes;
-        gehoertHinweis.textContent = hatEigenes ? 'Dieses Item hat selbst Zubehör und bleibt darum ein eigenes Item.' : '';
+        const orte = new Map();
+        liste.forEach((x) => { if (!orte.has(x.ort)) orte.set(x.ort, []); orte.get(x.ort).push(x); });
+        ortBaum([...orte.keys()]).filter((o) => orte.has(o)).forEach((o) => {
+            gehoert.append(el('optgroup', { attrs: { label: ortTeile(o).join(' › ') || 'ohne Ort' } },
+                orte.get(o).sort((a, b) => vergleiche(a.name, b.name)).map((x) => el('option', { text: x.name, attrs: { value: x.id } }))));
+        });
+        if (getippt && wort && treffer.length === 1) {
+            gehoert.value = treffer[0].id;
+            hauptGewaehlt();
+        } else {
+            gehoert.value = wert;
+        }
+        gehoertHinweis.textContent = wort ? (treffer.length ? treffer.length + (treffer.length === 1 ? ' Treffer, gewählt' : ' Treffer, bitte unten wählen') : 'Kein Treffer.') : '';
     }
 
     // Hauptsache gewählt: Ort übernehmen, wenn noch keiner eingetragen ist
