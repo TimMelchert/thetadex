@@ -119,13 +119,16 @@ export function render(container, ctx) {
     const leihAnzahl = el('input', { attrs: { id: 'besitz-leih-anzahl', type: 'number', inputmode: 'numeric', min: '1', max: '9999', step: '1', placeholder: 'leer = alle' } });
     const notiz = el('textarea', { attrs: { id: 'besitz-notiz', maxlength: 300, rows: 2, placeholder: 'freiwillig' } });
     // Gehört zu: Auswahl der Hauptsachen. Wer selbst Zubehör hat, kann nicht Zubehör werden (nur eine Ebene).
-    const gehoert = el('select', { attrs: { id: 'besitz-gehoert' }, on: { change: () => hauptGewaehlt() } });
-    // Suchzeile über der Auswahl (Wunsch der Person, 20.11.2026): filtert nach Name und Ort, die Auswahl ist nach Orten gegliedert
-    const gehoertSuche = el('input', {
-        attrs: { id: 'besitz-gehoert-suche', type: 'search', autocomplete: 'off', maxlength: 60, placeholder: 'Hauptsache suchen, zum Beispiel Tannenbäumchen', 'aria-label': 'Hauptsache suchen', 'aria-controls': 'besitz-gehoert' },
-        on: { input: () => zeichneGehoert(true) }
-    });
-    let gehoertKandidaten = [];
+    // Gehört zu (Wunsch der Person, 20.11.2026): Feld mit Vorschlägen wie bei Kategorie und Ort.
+    // Vorschlag = „Name · Ort“, damit gleiche Namen an verschiedenen Orten unterscheidbar bleiben. Leer = eigenes Item.
+    const gehoertFeld = auswahlFeld({ id: 'besitz-gehoert', maxlength: 200, placeholder: 'leer = eigenes Item, sonst tippen oder wählen', beiWahl: () => hauptGewaehlt() });
+    let gehoertZuId = new Map(); // Vorschlag → id der Hauptsache
+    const gehoertText = (x) => x.name + ' · ' + (ortTeile(x.ort).join(' › ') || 'ohne Ort');
+    const gehoert = {
+        id: () => gehoertZuId.get(gehoertFeld.feld.value.trim()) || '',
+        leer: () => !gehoertFeld.feld.value.trim()
+    };
+    gehoertFeld.feld.addEventListener('change', () => hauptGewaehlt());
     const gehoertHinweis = el('p', { class: 'leise besitz-hinweis' });
 
     // Bild: hochladen oder Drive-Link (js/ui/bild.js)
@@ -148,7 +151,7 @@ export function render(container, ctx) {
             notiz: notiz.value.trim(),
             ausgeliehen_an: ausgeliehen.feld.value.trim(),
             ausgeliehen_anzahl: '',
-            gehoert_zu: gehoert.value
+            gehoert_zu: gehoert.id()
         };
         // Bild: neu gewählt geht als Text mit, sonst Link oder das bisherige Bild (leer = kein Bild)
         Object.assign(werte, bild.werte());
@@ -157,6 +160,11 @@ export function render(container, ctx) {
         if (fehlt) {
             status.textContent = 'Bitte ' + fehlt[2] + ' eingeben.';
             fehlt[1].focus();
+            return;
+        }
+        if (!gehoert.leer() && !werte.gehoert_zu) {
+            status.textContent = 'Bitte bei „Gehört zu“ eine Hauptsache aus der Liste wählen (oder das Feld leeren).';
+            gehoertFeld.feld.focus();
             return;
         }
         const n = Number(werte.anzahl);
@@ -233,7 +241,7 @@ export function render(container, ctx) {
         el('label', { text: 'Davon ausgeliehen (Stück)', attrs: { for: 'besitz-leih-anzahl' } }), leihAnzahl,
         el('label', { text: 'Ausmisten', attrs: { for: 'besitz-ausmisten' } }), ausmisten,
         el('label', { text: 'Notiz', attrs: { for: 'besitz-notiz' } }), notiz,
-        el('label', { text: 'Gehört zu (Zubehör von)', attrs: { for: 'besitz-gehoert' } }), gehoertSuche, gehoert, gehoertHinweis,
+        el('label', { text: 'Gehört zu (Zubehör von)', attrs: { for: 'besitz-gehoert' } }), gehoertFeld.box, gehoertHinweis,
         ...bild.elemente,
         el('div', { class: 'besitz-form-knoepfe' }, [speichernKnopf, loeschenKnopf]),
         status
@@ -271,41 +279,24 @@ export function render(container, ctx) {
     // Füllt „Gehört zu“ für die Sache, die gerade im Formular steht (null = neu)
     function fuelleGehoert(sache) {
         const hatEigenes = sache ? zubehoerVon(sache.id).length > 0 : false;
-        gehoertKandidaten = (sachen || []).filter((x) => !istZubehoer(x) && (!sache || x.id !== sache.id));
-        gehoertSuche.value = '';
-        zeichneGehoert(false, sache && istZubehoer(sache) ? sache.gehoert_zu : '');
-        gehoert.disabled = hatEigenes;
-        gehoertSuche.hidden = hatEigenes;
-        gehoertHinweis.textContent = hatEigenes ? 'Dieses Item hat selbst Zubehör und bleibt darum ein eigenes Item.' : '';
-    }
-
-    // Baut die Auswahl neu: je Ort eine Gruppe (Baum-Reihenfolge), darin nach Name. Mit Suchwort nur passende Items;
-    // die gewählte Hauptsache bleibt immer drin. getippt = aus der Suchzeile: bei genau einem Treffer gleich wählen.
-    function zeichneGehoert(getippt, wert = gehoert.value) {
-        const wort = klein(gehoertSuche.value.trim());
-        const passt = (x) => !wort || klein(x.name).includes(wort) || klein(x.ort).includes(wort);
-        const treffer = gehoertKandidaten.filter(passt);
-        const liste = treffer.concat(gehoertKandidaten.filter((x) => x.id === wert && !passt(x)));
-        leeren(gehoert);
-        gehoert.append(el('option', { text: '– keins, eigenes Item –', attrs: { value: '' } }));
-        const orte = new Map();
-        liste.forEach((x) => { if (!orte.has(x.ort)) orte.set(x.ort, []); orte.get(x.ort).push(x); });
-        ortBaum([...orte.keys()]).filter((o) => orte.has(o)).forEach((o) => {
-            gehoert.append(el('optgroup', { attrs: { label: ortTeile(o).join(' › ') || 'ohne Ort' } },
-                orte.get(o).sort((a, b) => vergleiche(a.name, b.name)).map((x) => el('option', { text: x.name, attrs: { value: x.id } }))));
+        const kandidaten = (sachen || []).filter((x) => !istZubehoer(x) && (!sache || x.id !== sache.id));
+        gehoertZuId = new Map();
+        kandidaten.forEach((x) => {
+            let t = gehoertText(x);
+            for (let k = 2; gehoertZuId.has(t); k++) t = gehoertText(x) + ' (' + k + ')'; // gleicher Name am gleichen Ort
+            gehoertZuId.set(t, x.id);
         });
-        if (getippt && wort && treffer.length === 1) {
-            gehoert.value = treffer[0].id;
-            hauptGewaehlt();
-        } else {
-            gehoert.value = wert;
-        }
-        gehoertHinweis.textContent = wort ? (treffer.length ? treffer.length + (treffer.length === 1 ? ' Treffer, gewählt' : ' Treffer, bitte unten wählen') : 'Kein Treffer.') : '';
+        gehoertFeld.setzeEintraege([...gehoertZuId.keys()]);
+        const haupt = sache && istZubehoer(sache) ? sache.gehoert_zu : '';
+        gehoertFeld.feld.value = haupt ? ([...gehoertZuId].find(([, id]) => id === haupt) || [''])[0] : '';
+        gehoertFeld.feld.disabled = hatEigenes;
+        gehoertFeld.box.querySelector('.auswahl-pfeil').disabled = hatEigenes;
+        gehoertHinweis.textContent = hatEigenes ? 'Dieses Item hat selbst Zubehör und bleibt darum ein eigenes Item.' : '';
     }
 
     // Hauptsache gewählt: Ort übernehmen, wenn noch keiner eingetragen ist
     function hauptGewaehlt() {
-        const h = (sachen || []).find((x) => x.id === gehoert.value);
+        const h = (sachen || []).find((x) => x.id === gehoert.id());
         if (h && !ort.wert()) ort.setze(h.ort);
     }
 
