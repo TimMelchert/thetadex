@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.4.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.4.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -609,3 +609,4 @@ Letzte Versionen:
 - **1.3.30** Schritt 12.3: Skript `karte` ohne alte Aktion `kontakt`, Skript `gemeinsam` liest jedes Blatt je Anfrage nur einmal und ohne Merker für alte App-Fassungen. Skripte `karte` und `gemeinsam` neu einfügen.
 - **1.4.0** Schritt 12.4: Besitz und Pen & Paper nutzen ein gemeinsames Bild-Feld (`bildFeld` in `js/ui/bild.js`).
 - **1.4.1** Besitz behoben: Das Formular speicherte leere Unterorte mit („Zimmer /  / “), solche Items fehlten danach in der Liste. Jetzt ohne leere Ebenen; die App ordnet beim Laden auch alte Einträge so (`ordne` in `js/views/besitz.js`), im Sheet wird es beim nächsten Speichern richtig.
+- **1.4.2** Besitz: „Gehört zu (Zubehör von)“ ist ein Feld mit Vorschlägen wie Kategorie und Ort (`auswahlFeld`), Vorschlag „Name · Ort“; freier Text, der zu keinem Vorschlag passt, wird nicht gespeichert.
