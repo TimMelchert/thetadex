@@ -730,7 +730,7 @@ body[data-seite="start"] .kopf-marke { visibility: hidden; }
 .besitz-filter { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
 .besitz-filter > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .besitz-filter select { width: 100%; }
-.besitz-treffer { margin: 8px 0 0; }
+.besitz-treffer { display: flex; align-items: center; min-height: 44px; font-weight: 600; }
 .besitz-form-knoepfe { display: flex; flex-wrap: wrap; gap: 10px; margin-top: var(--abstand); }
 .formular .besitz-form-knoepfe .knopf { margin-top: 0; }
 .besitz-sortieren { padding: 0; min-height: 32px; border: none; background: none; color: inherit; font: inherit; font-weight: 600; cursor: pointer; text-align: inherit; width: 100%; }
@@ -1438,3 +1438,14 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
     .besitz-tabelle tr.besitz-kind.besitz-unklar { background: var(--kachel); }
     .besitz-tabelle tr.besitz-kind.besitz-unklar .besitz-name { background: var(--besitz-unklar); }
 }
+
+/* Besitz: Speichern, Löschen, Abbrechen am Handy in einer Reihe */
+@media (max-width: 479px) {
+    .besitz-form-knoepfe { gap: 6px; }
+    .besitz-form-knoepfe .knopf { padding-left: 12px; padding-right: 12px; }
+}
+
+/* Besitz: Trefferzahl an der vierten Stelle der Filter, nur sichtbar mit Suche oder Filter (Wunsch der Person, 21.11.2026) */
+.besitz-trefferfeld { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.besitz-treffer-titel { font-weight: 600; }
+.besitz-trefferfeld:has(.besitz-treffer:empty) { visibility: hidden; }

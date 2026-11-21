@@ -42,6 +42,15 @@ const ortText = (teile) => teile.filter(Boolean).join(ORT_TRENNER);
 // Ort in Normalform: leere Ebenen weg („Zimmer /  / “ → „Zimmer“). Bis 1.3.27 speicherte das Formular leere Ebenen mit,
 // solche Items fielen aus der Liste. Darum jede Sache vom Skript einmal so ordnen.
 const ordne = (s) => { if (s) s.ort = ortText(ortTeile(s.ort)); return s; };
+// Alle Angaben einer Sache zum Speichern (Skript-Aktion „speichern“), mit einzelnen Änderungen
+const alsDaten = (s, aenderung = {}) => ({
+    id: s.id, geaendert_am: s.geaendert_am,
+    name: s.name, kategorie: s.kategorie, ort: s.ort, anzahl: s.anzahl,
+    kaufpreis: s.kaufpreis == null ? '' : s.kaufpreis, kaufdatum: s.kaufdatum || '', notiz: s.notiz || '',
+    gehoert_zu: s.gehoert_zu || '', bild: s.bild || '',
+    ausgeliehen_an: s.ausgeliehen_an || '', ausgeliehen_anzahl: s.ausgeliehen_anzahl || '', ausmisten: s.ausmisten || '',
+    ...aenderung
+});
 // Gehört die Sache zu diesem Ort oder einem seiner Unterorte?
 const imOrt = (o, filter) => o === filter || String(o).startsWith(filter + ORT_TRENNER);
 // Alle Orte mit ihren Oberorten, in Baum-Reihenfolge: „Zimmer“, „Zimmer / Kallax“, „Zimmer / Kallax / Stoffkiste“
@@ -135,6 +144,7 @@ export function render(container, ctx) {
     const bild = bildFeld({ id: 'besitz-bild', alt: 'Bild des Items', bilder });
     const speichernKnopf = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
     const loeschenKnopf = el('button', { class: 'knopf knopf-zweit', text: 'Löschen', attrs: { type: 'button', hidden: true }, on: { click: () => loeschen() } });
+    const abbrechenKnopf = el('button', { class: 'knopf knopf-zweit', text: 'Abbrechen', attrs: { type: 'button' }, on: { click: () => zeigeFormular(false) } });
 
     let sendet = false; // gegen doppelte Einträge durch mehrfaches Tippen
     async function speichern(ev) {
@@ -207,8 +217,23 @@ export function render(container, ctx) {
                 if (i >= 0) sachen[i] = antwort.sache;
                 else sachen.push(antwort.sache);
             }
+            // Ort der Hauptsache geändert: Zubehör, das am alten Ort stand, zieht mit (Wunsch der Person, 21.11.2026)
+            const mitziehen = alt && alt.ort !== antwort.sache.ort ? (sachen || []).filter((x) => x.gehoert_zu === alt.id && x.ort === alt.ort) : [];
+            let nichtMit = 0;
+            for (const k of mitziehen) {
+                status.textContent = 'Zubehör zieht mit um …';
+                try {
+                    const a = await api('leben', 'speichern', alsDaten(k, { ort: antwort.sache.ort }));
+                    ordne(a.sache);
+                    const j = sachen.findIndex((x) => x.id === k.id);
+                    if (j >= 0) sachen[j] = a.sache;
+                } catch (e) {
+                    nichtMit++;
+                }
+            }
             status.textContent = '';
-            zeigeGespeichert(alt ? 'Geändert' : 'Gespeichert', antwort.sache.name);
+            zeigeGespeichert(alt ? 'Geändert' : 'Gespeichert', antwort.sache.name + (mitziehen.length ? ' (mit ' + (mitziehen.length - nichtMit) + ' Zubehör)' : ''));
+            if (nichtMit) alert(nichtMit + ' Zubehör konnte nicht mit umziehen. Bitte „Neu laden“ und den Ort dort von Hand ändern.');
             // Neues Zubehör gleich sichtbar machen: Hauptsache aufklappen
             if (antwort.sache.gehoert_zu) offen.add(antwort.sache.gehoert_zu);
             // Neu hochgeladenes Bild gleich merken, dann muss es nicht neu geladen werden
@@ -243,7 +268,7 @@ export function render(container, ctx) {
         el('label', { text: 'Notiz', attrs: { for: 'besitz-notiz' } }), notiz,
         el('label', { text: 'Gehört zu (Zubehör von)', attrs: { for: 'besitz-gehoert' } }), gehoertFeld.box, gehoertHinweis,
         ...bild.elemente,
-        el('div', { class: 'besitz-form-knoepfe' }, [speichernKnopf, loeschenKnopf]),
+        el('div', { class: 'besitz-form-knoepfe' }, [speichernKnopf, loeschenKnopf, abbrechenKnopf]),
         status
     ]);
 
@@ -464,13 +489,7 @@ export function render(container, ctx) {
             try {
                 // Die ausgeliehene Anzahl bleibt, solange es an dieselbe Person geht; sonst gelten alle Stück
                 const leihAnzahl = n.ausgeliehen_an && n.ausgeliehen_an === verliehen(s) ? (s.ausgeliehen_anzahl || '') : '';
-                const antwort = await api('leben', 'speichern', {
-                    id: s.id, geaendert_am: s.geaendert_am,
-                    name: s.name, kategorie: s.kategorie, ort: s.ort, anzahl: s.anzahl,
-                    kaufpreis: s.kaufpreis == null ? '' : s.kaufpreis, kaufdatum: s.kaufdatum || '', notiz: s.notiz || '',
-                    gehoert_zu: s.gehoert_zu || '', bild: s.bild || '',
-                    ausgeliehen_an: n.ausgeliehen_an, ausgeliehen_anzahl: leihAnzahl, ausmisten: n.ausmisten
-                });
+                const antwort = await api('leben', 'speichern', alsDaten(s, { ausgeliehen_an: n.ausgeliehen_an, ausgeliehen_anzahl: leihAnzahl, ausmisten: n.ausmisten }));
                 ordne(antwort.sache);
                 const i = sachen.findIndex((x) => x.id === s.id);
                 if (i >= 0) sachen[i] = antwort.sache;
@@ -508,22 +527,22 @@ export function render(container, ctx) {
     let suchWarten = null;
     const ortFilter = el('select', { attrs: { id: 'besitz-filter-ort' }, on: { change: () => zeigeListe() } });
     const katFilter = el('select', { attrs: { id: 'besitz-filter-kategorie' }, on: { change: () => zeigeListe() } });
-    const leihFilter = el('select', { attrs: { id: 'besitz-filter-leihe' }, on: { change: () => zeigeListe() } });
-    const mistFilter = el('select', { attrs: { id: 'besitz-filter-ausmisten' }, on: { change: () => zeigeListe() } });
-    const nullZeigen = el('input', { attrs: { id: 'besitz-null', type: 'checkbox' }, on: { change: () => zeigeListe() } });
-    const nullText = el('span');
-    const nullBox = el('label', { class: 'besitz-null', attrs: { for: 'besitz-null' } }, [nullZeigen, nullText]);
+    // Ein Filter für Ausgeliehen, Ausmisten und „Anzahl 0“ (Wunsch der Person, 21.11.2026).
+    // Werte: '' alle, 'leihe:ja' / 'leihe:an:Name', 'mist:=verschenken' usw., 'null' = auch Items mit Anzahl 0
+    const trefferText = el('span', { class: 'besitz-treffer', attrs: { 'aria-live': 'polite' } });
+    const zustandFilter = el('select', { attrs: { id: 'besitz-filter-zustand' }, on: { change: () => zeigeListe() } });
+    const zustand = () => zustandFilter.value;
+    const nullAn = () => zustand() === 'null';
     const suchBox = el('div', { class: 'formular besitz-suche', attrs: { role: 'search' } }, [
         el('label', { text: 'Suchen', attrs: { for: 'besitz-suche' } }), suche,
         el('div', { class: 'besitz-filter' }, [
             el('div', {}, [el('label', { text: 'Ort', attrs: { for: 'besitz-filter-ort' } }), ortFilter]),
             el('div', {}, [el('label', { text: 'Kategorie', attrs: { for: 'besitz-filter-kategorie' } }), katFilter]),
-            el('div', {}, [el('label', { text: 'Ausgeliehen', attrs: { for: 'besitz-filter-leihe' } }), leihFilter]),
-            el('div', {}, [el('label', { text: 'Ausmisten', attrs: { for: 'besitz-filter-ausmisten' } }), mistFilter])
-        ]),
-        nullBox
+            el('div', {}, [el('label', { text: 'Ausgeliehen / Ausmisten', attrs: { for: 'besitz-filter-zustand' } }), zustandFilter]),
+            // An der vierten Stelle: wie viele Items der Filter zeigt (nur mit Suche oder Filter)
+            el('div', { class: 'besitz-trefferfeld' }, [el('span', { class: 'besitz-treffer-titel', text: 'Treffer' }), trefferText])
+        ])
     ]);
-    const trefferText = el('p', { class: 'leise besitz-treffer', attrs: { 'aria-live': 'polite' } });
 
     // Füllt eine Filter-Auswahl neu und behält die Wahl, wenn es sie noch gibt. werte: Text oder [Wert, Text]
     function fuelleFilter(auswahl, alleText, werte) {
@@ -535,9 +554,15 @@ export function render(container, ctx) {
         auswahl.value = paare.some(([w]) => w === vorher) ? vorher : '';
     }
 
+    // Setzt einen Filter auch auf einen Wert, der sonst nicht in der Auswahl steht (aus der Übersicht)
+    function setzeFilter(auswahl, wert, text) {
+        if (![...auswahl.options].some((o) => o.value === wert)) auswahl.append(el('option', { text, attrs: { value: wert } }));
+        auswahl.value = wert;
+    }
+
     // Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer die Sache hat Zubehör oder der Haken ist gesetzt
     const vorhanden = (s) => s.anzahl > 0 || zubehoerVon(s.id).length > 0;
-    const sichtbar = (s) => nullZeigen.checked || vorhanden(s);
+    const sichtbar = (s) => nullAn() || vorhanden(s);
 
     // --- Liste ---
     function zeigeListe() {
@@ -565,11 +590,15 @@ export function render(container, ctx) {
             const t = ortTeile(o);
             return [o, '\u00A0\u00A0\u00A0'.repeat(t.length - 1) + (t.length > 1 ? '↳ ' : '') + t[t.length - 1]];
         }));
-        fuelleFilter(mistFilter, 'Alle', [['ja', 'Nur zum Ausmisten'], ['nein', 'Nicht ausmisten'], ...AUSMISTEN.map(([w, t]) => ['=' + w, t])]);
-        fuelleFilter(katFilter, 'Alle Kategorien', alleKat);
-        fuelleFilter(leihFilter, 'Alle', [['ja', 'Nur ausgeliehene'], ['nein', 'Nicht ausgeliehen'], ...alleLeiher.map((n) => ['an:' + n, 'an ' + n])]);
+        // Filter schlicht (Wunsch der Person, 21.11.2026). Andere Werte nur, solange die Übersicht sie gesetzt hat.
         const ohne = sachen.filter((s) => !vorhanden(s)).length;
-        nullText.textContent = 'Auch Items mit Anzahl 0 zeigen (' + ohne + ')';
+        const zustandWerte = [['leihe:ja', 'Ausgeliehen'], ['mist:=verschenken', 'Ausmisten: verschenken'], ['mist:=entsorgen', 'Ausmisten: entsorgen'], ['null', 'Auch Items mit Anzahl 0 (' + ohne + ')']];
+        const v = zustand();
+        if (v && !zustandWerte.some(([w]) => w === v)) {
+            zustandWerte.push([v, v.startsWith('leihe:an:') ? 'Ausgeliehen an ' + v.slice(9) : 'Ausmisten: ' + ausmistText(v.slice(6))]);
+        }
+        fuelleFilter(zustandFilter, 'Alle', zustandWerte);
+        fuelleFilter(katFilter, 'Alle Kategorien', alleKat);
         suchBox.hidden = !sachen.length;
         trefferText.textContent = '';
         zeigeSortZeile(false);
@@ -578,9 +607,9 @@ export function render(container, ctx) {
             return;
         }
         const wort = klein(suche.value.trim());
-        const leihe = leihFilter.value;
-        const mist = mistFilter.value;
-        const filterAn = Boolean(wort || ortFilter.value || katFilter.value || leihe || mist);
+        const leihe = zustand().startsWith('leihe:') ? zustand().slice(6) : '';
+        const mist = zustand().startsWith('mist:') ? zustand().slice(5) : '';
+        const filterAn = Boolean(wort || ortFilter.value || katFilter.value || zustand());
         const passtMist = (s) => !mist || (mist === 'ja' ? Boolean(s.ausmisten) : mist === 'nein' ? !s.ausmisten : s.ausmisten === mist.slice(1));
         const passtLeihe = (s) => !leihe || (leihe === 'ja' ? Boolean(verliehen(s)) : leihe === 'nein' ? !verliehen(s) : verliehen(s) === leihe.slice(3));
         const passt = (s) =>
@@ -603,7 +632,7 @@ export function render(container, ctx) {
         }).filter((e) => e.selbst || e.kinder.length);
         zeigeSortZeile(eintraege.length > 0);
         if (!eintraege.length && !filterAn) {
-            listeBox.append(el('p', { class: 'leise', text: 'Alle Items haben Anzahl 0. Setze den Haken oben, um sie zu sehen.' }));
+            listeBox.append(el('p', { class: 'leise', text: 'Alle Items haben Anzahl 0. Wähle oben bei Ausgeliehen / Ausmisten „Auch Items mit Anzahl 0“, um sie zu sehen.' }));
             return;
         }
         // Nach Ort gruppiert, Orte nach Name, Sachen nach der gewählten Spalte
@@ -834,8 +863,8 @@ export function render(container, ctx) {
             zaehlung('Je Kategorie', da, (s) => s.kategorie, (w) => { katFilter.value = w; }),
             zaehlung('Je Ort', da, (s) => ortTeile(s.ort).map((_, i, t) => ortText(t.slice(0, i + 1))), (w) => { ortFilter.value = w; }, undefined, true)
         );
-        if (leihen.length) uebersichtBox.append(zaehlung('Ausgeliehen an', leihen, verliehen, (w) => { leihFilter.value = 'an:' + w; }, leihStueck));
-        if (mist.length) uebersichtBox.append(zaehlung('Ausmisten', mist, (s) => s.ausmisten, (w) => { mistFilter.value = '=' + w; }, undefined, false, ausmistText));
+        if (leihen.length) uebersichtBox.append(zaehlung('Ausgeliehen an', leihen, verliehen, (w) => setzeFilter(zustandFilter, 'leihe:an:' + w, 'Ausgeliehen an ' + w), leihStueck));
+        if (mist.length) uebersichtBox.append(zaehlung('Ausmisten', mist, (s) => s.ausmisten, (w) => setzeFilter(zustandFilter, 'mist:=' + w, 'Ausmisten: ' + ausmistText(w)), undefined, false, ausmistText));
     }
 
     // Eine Tabelle: Gruppe, Sachen und Stück. Tipp auf eine Zeile öffnet die Liste mit diesem Filter.
@@ -858,8 +887,7 @@ export function render(container, ctx) {
             suche.value = '';
             ortFilter.value = '';
             katFilter.value = '';
-            leihFilter.value = '';
-            mistFilter.value = '';
+            zustandFilter.value = '';
             filtern(w);
             zeigeTeil('liste');
         };
@@ -889,7 +917,7 @@ export function render(container, ctx) {
     // --- Fester Kopf: Titel, Unterreiter, Suche, Filter, Haken „Anzahl 0“ und Sortier-Zeile bleiben beim Blättern oben
     // (Wunsch der Person, 16.11.2026). Solange das Formular offen ist, blättert der Kopf mit, damit Platz für das Formular bleibt.
     const suchKopf = el('div', {}, [suchBox, sortZeile]);
-    const listeTeil = el('div', { attrs: { id: 'besitz-teil-liste' } }, [trefferText, listeBox]);
+    const listeTeil = el('div', { attrs: { id: 'besitz-teil-liste' } }, [listeBox]);
     const teilKnoepfe = [['liste', 'Liste', listeTeil], ['uebersicht', 'Übersicht', uebersichtBox]].map(([id, text, box]) => [
         id,
         el('button', { class: 'ansicht', text, attrs: { type: 'button', 'aria-controls': box.id }, on: { click: () => zeigeTeil(id) } }),
