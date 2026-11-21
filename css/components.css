@@ -1438,3 +1438,9 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
     .besitz-tabelle tr.besitz-kind.besitz-unklar { background: var(--kachel); }
     .besitz-tabelle tr.besitz-kind.besitz-unklar .besitz-name { background: var(--besitz-unklar); }
 }
+
+/* Besitz: Speichern, Löschen, Abbrechen am Handy in einer Reihe */
+@media (max-width: 479px) {
+    .besitz-form-knoepfe { gap: 6px; }
+    .besitz-form-knoepfe .knopf { padding-left: 12px; padding-right: 12px; }
+}
