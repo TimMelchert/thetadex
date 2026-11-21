@@ -527,22 +527,22 @@ export function render(container, ctx) {
     let suchWarten = null;
     const ortFilter = el('select', { attrs: { id: 'besitz-filter-ort' }, on: { change: () => zeigeListe() } });
     const katFilter = el('select', { attrs: { id: 'besitz-filter-kategorie' }, on: { change: () => zeigeListe() } });
-    const leihFilter = el('select', { attrs: { id: 'besitz-filter-leihe' }, on: { change: () => zeigeListe() } });
-    const mistFilter = el('select', { attrs: { id: 'besitz-filter-ausmisten' }, on: { change: () => zeigeListe() } });
-    const nullZeigen = el('input', { attrs: { id: 'besitz-null', type: 'checkbox' }, on: { change: () => zeigeListe() } });
-    const nullText = el('span');
-    const nullBox = el('label', { class: 'besitz-null', attrs: { for: 'besitz-null' } }, [nullZeigen, nullText]);
+    // Ein Filter für Ausgeliehen, Ausmisten und „Anzahl 0“ (Wunsch der Person, 21.11.2026).
+    // Werte: '' alle, 'leihe:ja' / 'leihe:an:Name', 'mist:=verschenken' usw., 'null' = auch Items mit Anzahl 0
+    const trefferText = el('span', { class: 'besitz-treffer', attrs: { 'aria-live': 'polite' } });
+    const zustandFilter = el('select', { attrs: { id: 'besitz-filter-zustand' }, on: { change: () => zeigeListe() } });
+    const zustand = () => zustandFilter.value;
+    const nullAn = () => zustand() === 'null';
     const suchBox = el('div', { class: 'formular besitz-suche', attrs: { role: 'search' } }, [
         el('label', { text: 'Suchen', attrs: { for: 'besitz-suche' } }), suche,
         el('div', { class: 'besitz-filter' }, [
             el('div', {}, [el('label', { text: 'Ort', attrs: { for: 'besitz-filter-ort' } }), ortFilter]),
             el('div', {}, [el('label', { text: 'Kategorie', attrs: { for: 'besitz-filter-kategorie' } }), katFilter]),
-            el('div', {}, [el('label', { text: 'Ausgeliehen', attrs: { for: 'besitz-filter-leihe' } }), leihFilter]),
-            el('div', {}, [el('label', { text: 'Ausmisten', attrs: { for: 'besitz-filter-ausmisten' } }), mistFilter])
-        ]),
-        nullBox
+            el('div', {}, [el('label', { text: 'Ausgeliehen / Ausmisten', attrs: { for: 'besitz-filter-zustand' } }), zustandFilter]),
+            // An der vierten Stelle: wie viele Items der Filter zeigt (nur mit Suche oder Filter)
+            el('div', { class: 'besitz-trefferfeld' }, [el('span', { class: 'besitz-treffer-titel', text: 'Treffer' }), trefferText])
+        ])
     ]);
-    const trefferText = el('p', { class: 'leise besitz-treffer', attrs: { 'aria-live': 'polite' } });
 
     // Füllt eine Filter-Auswahl neu und behält die Wahl, wenn es sie noch gibt. werte: Text oder [Wert, Text]
     function fuelleFilter(auswahl, alleText, werte) {
@@ -562,7 +562,7 @@ export function render(container, ctx) {
 
     // Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer die Sache hat Zubehör oder der Haken ist gesetzt
     const vorhanden = (s) => s.anzahl > 0 || zubehoerVon(s.id).length > 0;
-    const sichtbar = (s) => nullZeigen.checked || vorhanden(s);
+    const sichtbar = (s) => nullAn() || vorhanden(s);
 
     // --- Liste ---
     function zeigeListe() {
@@ -591,15 +591,14 @@ export function render(container, ctx) {
             return [o, '\u00A0\u00A0\u00A0'.repeat(t.length - 1) + (t.length > 1 ? '↳ ' : '') + t[t.length - 1]];
         }));
         // Filter schlicht (Wunsch der Person, 21.11.2026). Andere Werte nur, solange die Übersicht sie gesetzt hat.
-        const mistWerte = [['=verschenken', 'verschenken'], ['=entsorgen', 'entsorgen']];
-        if (mistFilter.value.startsWith('=') && !mistWerte.some(([w]) => w === mistFilter.value)) mistWerte.push([mistFilter.value, ausmistText(mistFilter.value.slice(1))]);
-        fuelleFilter(mistFilter, 'Alle', mistWerte);
-        fuelleFilter(katFilter, 'Alle Kategorien', alleKat);
-        const leihWerte = [['ja', 'Ausgeliehen']];
-        if (leihFilter.value.startsWith('an:')) leihWerte.push([leihFilter.value, 'an ' + leihFilter.value.slice(3)]);
-        fuelleFilter(leihFilter, 'Alle', leihWerte);
         const ohne = sachen.filter((s) => !vorhanden(s)).length;
-        nullText.textContent = 'Auch Items mit Anzahl 0 zeigen (' + ohne + ')';
+        const zustandWerte = [['leihe:ja', 'Ausgeliehen'], ['mist:=verschenken', 'Ausmisten: verschenken'], ['mist:=entsorgen', 'Ausmisten: entsorgen'], ['null', 'Auch Items mit Anzahl 0 (' + ohne + ')']];
+        const v = zustand();
+        if (v && !zustandWerte.some(([w]) => w === v)) {
+            zustandWerte.push([v, v.startsWith('leihe:an:') ? 'Ausgeliehen an ' + v.slice(9) : 'Ausmisten: ' + ausmistText(v.slice(6))]);
+        }
+        fuelleFilter(zustandFilter, 'Alle', zustandWerte);
+        fuelleFilter(katFilter, 'Alle Kategorien', alleKat);
         suchBox.hidden = !sachen.length;
         trefferText.textContent = '';
         zeigeSortZeile(false);
@@ -608,9 +607,9 @@ export function render(container, ctx) {
             return;
         }
         const wort = klein(suche.value.trim());
-        const leihe = leihFilter.value;
-        const mist = mistFilter.value;
-        const filterAn = Boolean(wort || ortFilter.value || katFilter.value || leihe || mist);
+        const leihe = zustand().startsWith('leihe:') ? zustand().slice(6) : '';
+        const mist = zustand().startsWith('mist:') ? zustand().slice(5) : '';
+        const filterAn = Boolean(wort || ortFilter.value || katFilter.value || zustand());
         const passtMist = (s) => !mist || (mist === 'ja' ? Boolean(s.ausmisten) : mist === 'nein' ? !s.ausmisten : s.ausmisten === mist.slice(1));
         const passtLeihe = (s) => !leihe || (leihe === 'ja' ? Boolean(verliehen(s)) : leihe === 'nein' ? !verliehen(s) : verliehen(s) === leihe.slice(3));
         const passt = (s) =>
@@ -633,7 +632,7 @@ export function render(container, ctx) {
         }).filter((e) => e.selbst || e.kinder.length);
         zeigeSortZeile(eintraege.length > 0);
         if (!eintraege.length && !filterAn) {
-            listeBox.append(el('p', { class: 'leise', text: 'Alle Items haben Anzahl 0. Setze den Haken oben, um sie zu sehen.' }));
+            listeBox.append(el('p', { class: 'leise', text: 'Alle Items haben Anzahl 0. Wähle oben bei Ausgeliehen / Ausmisten „Auch Items mit Anzahl 0“, um sie zu sehen.' }));
             return;
         }
         // Nach Ort gruppiert, Orte nach Name, Sachen nach der gewählten Spalte
@@ -864,8 +863,8 @@ export function render(container, ctx) {
             zaehlung('Je Kategorie', da, (s) => s.kategorie, (w) => { katFilter.value = w; }),
             zaehlung('Je Ort', da, (s) => ortTeile(s.ort).map((_, i, t) => ortText(t.slice(0, i + 1))), (w) => { ortFilter.value = w; }, undefined, true)
         );
-        if (leihen.length) uebersichtBox.append(zaehlung('Ausgeliehen an', leihen, verliehen, (w) => setzeFilter(leihFilter, 'an:' + w, 'an ' + w), leihStueck));
-        if (mist.length) uebersichtBox.append(zaehlung('Ausmisten', mist, (s) => s.ausmisten, (w) => setzeFilter(mistFilter, '=' + w, ausmistText(w)), undefined, false, ausmistText));
+        if (leihen.length) uebersichtBox.append(zaehlung('Ausgeliehen an', leihen, verliehen, (w) => setzeFilter(zustandFilter, 'leihe:an:' + w, 'Ausgeliehen an ' + w), leihStueck));
+        if (mist.length) uebersichtBox.append(zaehlung('Ausmisten', mist, (s) => s.ausmisten, (w) => setzeFilter(zustandFilter, 'mist:=' + w, 'Ausmisten: ' + ausmistText(w)), undefined, false, ausmistText));
     }
 
     // Eine Tabelle: Gruppe, Sachen und Stück. Tipp auf eine Zeile öffnet die Liste mit diesem Filter.
@@ -888,8 +887,7 @@ export function render(container, ctx) {
             suche.value = '';
             ortFilter.value = '';
             katFilter.value = '';
-            leihFilter.value = '';
-            mistFilter.value = '';
+            zustandFilter.value = '';
             filtern(w);
             zeigeTeil('liste');
         };
@@ -919,7 +917,7 @@ export function render(container, ctx) {
     // --- Fester Kopf: Titel, Unterreiter, Suche, Filter, Haken „Anzahl 0“ und Sortier-Zeile bleiben beim Blättern oben
     // (Wunsch der Person, 16.11.2026). Solange das Formular offen ist, blättert der Kopf mit, damit Platz für das Formular bleibt.
     const suchKopf = el('div', {}, [suchBox, sortZeile]);
-    const listeTeil = el('div', { attrs: { id: 'besitz-teil-liste' } }, [trefferText, listeBox]);
+    const listeTeil = el('div', { attrs: { id: 'besitz-teil-liste' } }, [listeBox]);
     const teilKnoepfe = [['liste', 'Liste', listeTeil], ['uebersicht', 'Übersicht', uebersichtBox]].map(([id, text, box]) => [
         id,
         el('button', { class: 'ansicht', text, attrs: { type: 'button', 'aria-controls': box.id }, on: { click: () => zeigeTeil(id) } }),
