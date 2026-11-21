@@ -540,7 +540,7 @@ export function render(container, ctx) {
             el('div', {}, [el('label', { text: 'Kategorie', attrs: { for: 'besitz-filter-kategorie' } }), katFilter]),
             el('div', {}, [el('label', { text: 'Ausgeliehen / Ausmisten', attrs: { for: 'besitz-filter-zustand' } }), zustandFilter]),
             // An der vierten Stelle: wie viele Items der Filter zeigt (nur mit Suche oder Filter)
-            el('div', { class: 'besitz-trefferfeld' }, [el('span', { class: 'besitz-treffer-titel', text: 'Treffer' }), trefferText])
+            el('div', { class: 'besitz-trefferfeld' }, [trefferText])
         ])
     ]);
 
@@ -592,10 +592,10 @@ export function render(container, ctx) {
         }));
         // Filter schlicht (Wunsch der Person, 21.11.2026). Andere Werte nur, solange die Übersicht sie gesetzt hat.
         const ohne = sachen.filter((s) => !vorhanden(s)).length;
-        const zustandWerte = [['leihe:ja', 'Ausgeliehen'], ['mist:=verschenken', 'Ausmisten: verschenken'], ['mist:=entsorgen', 'Ausmisten: entsorgen'], ['null', 'Auch Items mit Anzahl 0 (' + ohne + ')']];
+        const zustandWerte = [['leihe:ja', 'Ausgeliehen'], ['mist:=verkaufen', 'verkaufen'], ['mist:=verschenken', 'verschenken'], ['mist:=entsorgen', 'entsorgen'], ['null', 'Items mit Anzahl 0 (' + ohne + ')']];
         const v = zustand();
         if (v && !zustandWerte.some(([w]) => w === v)) {
-            zustandWerte.push([v, v.startsWith('leihe:an:') ? 'Ausgeliehen an ' + v.slice(9) : 'Ausmisten: ' + ausmistText(v.slice(6))]);
+            zustandWerte.push([v, v.startsWith('leihe:an:') ? 'Ausgeliehen an ' + v.slice(9) : ausmistText(v.slice(6))]);
         }
         fuelleFilter(zustandFilter, 'Alle', zustandWerte);
         fuelleFilter(katFilter, 'Alle Kategorien', alleKat);
@@ -632,7 +632,7 @@ export function render(container, ctx) {
         }).filter((e) => e.selbst || e.kinder.length);
         zeigeSortZeile(eintraege.length > 0);
         if (!eintraege.length && !filterAn) {
-            listeBox.append(el('p', { class: 'leise', text: 'Alle Items haben Anzahl 0. Wähle oben bei Ausgeliehen / Ausmisten „Auch Items mit Anzahl 0“, um sie zu sehen.' }));
+            listeBox.append(el('p', { class: 'leise', text: 'Alle Items haben Anzahl 0. Wähle oben bei Ausgeliehen / Ausmisten „Items mit Anzahl 0“, um sie zu sehen.' }));
             return;
         }
         // Nach Ort gruppiert, Orte nach Name, Sachen nach der gewählten Spalte
@@ -864,7 +864,7 @@ export function render(container, ctx) {
             zaehlung('Je Ort', da, (s) => ortTeile(s.ort).map((_, i, t) => ortText(t.slice(0, i + 1))), (w) => { ortFilter.value = w; }, undefined, true)
         );
         if (leihen.length) uebersichtBox.append(zaehlung('Ausgeliehen an', leihen, verliehen, (w) => setzeFilter(zustandFilter, 'leihe:an:' + w, 'Ausgeliehen an ' + w), leihStueck));
-        if (mist.length) uebersichtBox.append(zaehlung('Ausmisten', mist, (s) => s.ausmisten, (w) => setzeFilter(zustandFilter, 'mist:=' + w, 'Ausmisten: ' + ausmistText(w)), undefined, false, ausmistText));
+        if (mist.length) uebersichtBox.append(zaehlung('Ausmisten', mist, (s) => s.ausmisten, (w) => setzeFilter(zustandFilter, 'mist:=' + w, ausmistText(w)), undefined, false, ausmistText));
     }
 
     // Eine Tabelle: Gruppe, Sachen und Stück. Tipp auf eine Zeile öffnet die Liste mit diesem Filter.

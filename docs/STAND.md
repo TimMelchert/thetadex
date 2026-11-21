@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.4.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.4.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -355,7 +355,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Im Formular drei Felder (Ort, Darin, Darin), je bis 40 Zeichen, die Auswahl zeigt nur Unterorte des gewählten Oberorts. Der Ort-Filter ist ein Baum:
   Ein Oberort zeigt auch alles in seinen Unterorten. Liste je Raum mit kleineren Überschriften je Unterort; Übersicht „Je Ort“ eingerückt.
   Ausmisten (ab 1.3.20): Spalte `ausmisten`, leer = nein, sonst `offen`, `verkaufen`, `verschenken`, `entsorgen` (prüft das Skript). Filter „Ausmisten“, Kachel und Tabelle in der Übersicht.
-  Zubehör nur eine Ebene. Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer mit Zubehör oder mit „Auch Items mit Anzahl 0“ im Filter Ausgeliehen / Ausmisten (bis 1.4.2 ein Haken).
+  Zubehör nur eine Ebene. Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer mit Zubehör oder mit „Items mit Anzahl 0“ im Filter Ausgeliehen / Ausmisten (bis 1.4.2 ein Haken).
   Liste kompakt (ab 1.3.21, Wunsch der Person): am Handy nur Name, rechts die Anzahl und die Zeile mit Zubehör, Bild, ausgeliehen, ausmisten; am PC Spalten Name, Anzahl, Kaufpreis, Kaufdatum.
   Ab 1.3.22 (Wunsch der Person, 16.11.2026): In der App heißen Sachen „Items“ (Spalten und Code bleiben `sachen`/`besitz`). Der Listenkopf (Titel, Unterreiter, Suche, Filter, Sortierzeile) scrollt mit (ab 1.3.27 wieder, Wunsch der Person: fest nahm er am PC zu viel Platz weg); nur die Kopfzeile der App bleibt angeheftet. Die Sortierzeile (Name, Anzahl, Kaufpreis, Kaufdatum) steht am PC einmal oben unter den Filtern, darunter die Orte als Überschriften.
   Zubehör bleibt aufklappbar, steht aber eingerückt in der Kachel der Hauptsache (am PC mit innerer Linie).
@@ -610,4 +610,5 @@ Letzte Versionen:
 - **1.4.0** Schritt 12.4: Besitz und Pen & Paper nutzen ein gemeinsames Bild-Feld (`bildFeld` in `js/ui/bild.js`).
 - **1.4.1** Besitz behoben: Das Formular speicherte leere Unterorte mit („Zimmer /  / “), solche Items fehlten danach in der Liste. Jetzt ohne leere Ebenen; die App ordnet beim Laden auch alte Einträge so (`ordne` in `js/views/besitz.js`), im Sheet wird es beim nächsten Speichern richtig.
 - **1.4.2** Besitz: „Gehört zu (Zubehör von)“ ist ein Feld mit Vorschlägen wie Kategorie und Ort (`auswahlFeld`), Vorschlag „Name · Ort“; freier Text, der zu keinem Vorschlag passt, wird nicht gespeichert.
-- **1.4.3** Besitz: „Abbrechen“ im Formular; ändert sich der Ort einer Hauptsache, zieht Zubehör am alten Ort mit um (die App speichert es einzeln mit); ein Filter „Ausgeliehen / Ausmisten“ (Alle, Ausgeliehen, verschenken, entsorgen, „Auch Items mit Anzahl 0“ statt des Hakens; andere Werte nur über die Übersicht); die Trefferzahl steht an der vierten Stelle der Filter statt in einer eigenen Zeile.
+- **1.4.3** Besitz: „Abbrechen“ im Formular; ändert sich der Ort einer Hauptsache, zieht Zubehör am alten Ort mit um (die App speichert es einzeln mit); ein Filter „Ausgeliehen / Ausmisten“ (Alle, Ausgeliehen, verkaufen, verschenken, entsorgen, „Items mit Anzahl 0“ statt des Hakens, ab 1.4.4; andere Werte nur über die Übersicht); die Trefferzahl steht an der vierten Stelle der Filter statt in einer eigenen Zeile.
+- **1.4.4** Besitz: Filter-Texte kürzer (verkaufen dazu, ohne „Ausmisten:“ und „Auch“), Trefferzahl ohne Überschrift, Sortierzeile näher an der Liste.

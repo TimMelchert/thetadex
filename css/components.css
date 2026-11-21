@@ -1446,6 +1446,10 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 }
 
 /* Besitz: Trefferzahl an der vierten Stelle der Filter, nur sichtbar mit Suche oder Filter (Wunsch der Person, 21.11.2026) */
-.besitz-trefferfeld { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.besitz-treffer-titel { font-weight: 600; }
+.besitz-trefferfeld { display: flex; flex-direction: column; justify-content: flex-end; min-width: 0; }
 .besitz-trefferfeld:has(.besitz-treffer:empty) { visibility: hidden; }
+
+/* Besitz: Sortierzeile näher an die Liste (Wunsch der Person, 21.11.2026) */
+.besitz-sortzeile { margin-top: 2px; }
+.besitz-sortzeile th { padding-top: 0; padding-bottom: 0; }
+.besitz-liste > .besitz-ort:first-child { margin-top: 6px; }
