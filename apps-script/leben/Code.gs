@@ -14,7 +14,7 @@
 // und „karten“ (Karteikarten anderer Fachbereiche). Lernstand (Fach 1 bis 5) steht in derselben Zeile.
 // Bilder im privaten Drive-Ordner „Thetadex Herbarium“ (Skripteigenschaft HERBAR_ORDNER).
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN).
-// Siehe docs/STAND.md 4 „Besitz, Blatt ‚besitz‘ im Sheet ‚Leben‘“ und docs/PLAN-ETAPPE-13.md.
+// Siehe docs/STAND.md 4 „Besitz, Blatt ‚besitz‘ im Sheet ‚Leben‘“ und 4 „Herbarium, Sheet ‚Leben‘“.
 // =====================================================
 
 var BLATT_BESITZ_ = "besitz";
@@ -287,10 +287,16 @@ function doPost(e) {
     if (data.action === "liste") return jsonOut_(liste_());
     if (data.action === "bild") return jsonOut_(bildLesen_(data));
 
-    // Herbarium (ab 1.5.3): alle Aktionen schreiben (auch „herbar“, wenn eingefügte Zeilen noch keine id haben)
-    var HERBAR_AKTIONEN_ = { herbar: herbarListe_, herbar_speichern: herbarSpeichern_, herbar_loeschen: herbarLoeschen_,
-                             herbar_bild: herbarBild_, herbar_gelernt: herbarGelernt_ };
-    if (HERBAR_AKTIONEN_[data.action]) {
+    // Herbarium (ab 1.5.3). Laden liest ohne Sperre (ab 1.5.8) und sperrt nur,
+    // wenn von Hand eingefügte Zeilen noch keine id haben.
+    if (data.action === "herbar") {
+      var ohneSperre = herbarListe_(false);
+      if (ohneSperre) return jsonOut_(ohneSperre);
+    }
+    var HERBAR_AKTIONEN_ = { herbar: function () { return herbarListe_(true); }, herbar_speichern: herbarSpeichern_,
+                             herbar_loeschen: herbarLoeschen_, herbar_bild: herbarBild_, herbar_gelernt: herbarGelernt_ };
+    // Nur eigene Einträge (ab 1.5.8): sonst fände z. B. "constructor" eine eingebaute Funktion
+    if (Object.prototype.hasOwnProperty.call(HERBAR_AKTIONEN_, String(data.action))) {
       var sperre = LockService.getScriptLock();
       if (!sperre.tryLock(20000)) {
         return jsonOut_({ error: "ausgelastet", message: "Script ausgelastet. Bitte gleich nochmal versuchen." });
@@ -541,7 +547,7 @@ function bildLesen_(data) {
 
 
 // --- 7. HERBARIUM (ab 1.5.3, Etappe 13) ---
-// Blätter „arten“ und „karten“ im selben Sheet. Siehe docs/PLAN-ETAPPE-13.md.
+// Blätter „arten“ und „karten“ im selben Sheet. Siehe docs/STAND.md 4 „Herbarium, Sheet ‚Leben‘“.
 
 // Wie bereinigeText_, aber Zeilenumbrüche bleiben (höchstens eine Leerzeile). Für lange Texte.
 function bereinigeLang_(text, maxLaenge) {
@@ -560,7 +566,7 @@ function bilderListe_(v) {
 
 // Blatt mit Spalten; fehlt eine Spalte, Hinweis auf „einrichten“
 function herbarBlatt_(name) {
-  if (!HERBAR_[name]) throw new Error("Unbekanntes Blatt.");
+  if (!Object.prototype.hasOwnProperty.call(HERBAR_, String(name))) throw new Error("Unbekanntes Blatt.");
   var sheet = blatt_(name);
   var sp = spalten_(sheet);
   var fehlen = HERBAR_[name].kopf.filter(function (k) { return sp[k] == null; });
@@ -597,22 +603,27 @@ function herbarAktiv_(b, z) {
 }
 
 // Alle Pflanzen und Karten. Eingefügte Zeilen ohne id bekommen hier eine (darum läuft „herbar“ mit Sperre).
-function herbarListe_() {
+// schreiben = false: liest nur und liefert null, sobald eine id fehlt (dann neu mit Sperre und schreiben = true).
+function herbarListe_(schreiben) {
   var antwort = {};
-  Object.keys(HERBAR_).forEach(function (name) {
+  var namen = Object.keys(HERBAR_);
+  for (var n = 0; n < namen.length; n++) {
+    var name = namen[n];
     var b = herbarBlatt_(name);
     var alle = zeilen_(b.sheet);
     var liste = [];
-    alle.forEach(function (z, i) {
-      if (!herbarAktiv_(b, z)) return;
+    for (var i = 0; i < alle.length; i++) {
+      var z = alle[i];
+      if (!herbarAktiv_(b, z)) continue;
       if (!String(z[b.sp.id]).trim()) {
+        if (!schreiben) return null;
         z[b.sp.id] = Utilities.getUuid();
         b.sheet.getRange(i + 2, b.sp.id + 1).setValue(z[b.sp.id]);
       }
       liste.push(herbarAus_(b, z));
-    });
+    }
     antwort[name] = liste;
-  });
+  }
   return antwort;
 }
 
