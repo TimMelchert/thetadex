@@ -357,3 +357,6 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.29** Schritt 12.2: Zeitgrenze für Anfragen, Übergangs-Code für alte Skripte in Einkauf weg, gemeinsame Helfer (`euro`, `datumText`, `bildSpeicher` …), kein Service Worker auf Visitenkarten-Links, kleine Reste weg.
 - **1.3.30** Schritt 12.3: Skript `karte` ohne alte Aktion `kontakt`, Skript `gemeinsam` liest jedes Blatt je Anfrage nur einmal und ohne Merker für alte App-Fassungen. Skripte `karte` und `gemeinsam` neu einfügen.
 - **1.4.0** Schritt 12.4: Besitz und Pen & Paper nutzen ein gemeinsames Bild-Feld (`bildFeld` in `js/ui/bild.js`).
+- **Etappe 13** Herbarium. **1.5.0** Schritt 13.0: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium: Pflanzen als Karteikarten mit Herbarium-Angaben, weitere Karten je Kategorie, Lernen mit 5 Fächern).
+- **1.5.1** Antworten zum Plan: zwei Unterreiter Herbarium und Karten (Karten mit Wahl des Fachbereichs), 5 Fächer, 5 Bilder, Reiter am Handy nur als Kachel.
+- **1.5.2** Plan: Pflanzen lassen sich auch unter Karten anlegen (auch noch nicht gefundene).
