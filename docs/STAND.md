@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.5.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.5.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -293,7 +293,7 @@ unter „Info“ die Version prüfen.
   Die gültigen Regeln je Bereich stehen in Abschnitt 4. Bei Widerspruch gilt Abschnitt 4.
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.3.30: `karte` und `gemeinsam` neue Fassung einfügen und als neue Version bereitstellen (erst nachdem 1.3.29 auf den Geräten ist). Ab 1.5.3: `leben` neue Fassung (Herbarium) einfügen, `einrichten` ausführen, als neue Version bereitstellen.
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.3.30: `karte` und `gemeinsam` neue Fassung einfügen und als neue Version bereitstellen (erst nachdem 1.3.29 auf den Geräten ist). Ab 1.5.3: `leben` neue Fassung (Herbarium) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.5.8: `leben` wieder neue Fassung einfügen und als neue Version bereitstellen (kein `einrichten` nötig).
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Die Auswertung zeigt daraus „Feste Ausgaben“ (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist) und ab 1.3.14 „Feste Einnahmen“ (Zweck, dessen Kategorie es nur bei den Einnahmen gibt, zum Beispiel Job).
 
 ---
@@ -637,3 +637,4 @@ Letzte Versionen:
 - **1.5.5** Schritt 13.3: Unterreiter Karten: Fachbereich Pflanzen mit Filter, fünf Fächer, Lernen (vorne deutscher Name, hinten alle Angaben, Marke „im Herbarium“ auf beiden Seiten), Antworten gehen im Hintergrund ans Skript.
 - **1.5.6** Schritt 13.4: Karten in weiteren Fachbereichen (Wahl „+ Neuer Fachbereich“, Vorderseite, Rückseite, bis zu 5 Bilder), lernen wie bei Pflanzen; Bilder-Teil im Formular für Pflanzen und Karten gemeinsam.
 - **1.5.7** Schritt 13.5: Etappe 13 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md eingearbeitet (4 „Herbarium“), `docs/PLAN-ETAPPE-13.md` gelöscht.
+- **1.5.8** Schritt 13.6: zwei kleine Funde der Prüfung im Skript `leben` behoben: Aktionen und Blätter nur noch als eigene Einträge nachschlagen (`hasOwnProperty`), `herbar` (Laden) läuft ohne Sperre und sperrt nur, wenn eine `id` fehlt. Skript neu einfügen und bereitstellen.

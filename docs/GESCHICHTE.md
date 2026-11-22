@@ -365,3 +365,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.5.5** Schritt 13.3: Unterreiter Karten: Fachbereich Pflanzen mit Filter, fünf Fächer, Lernen (vorne deutscher Name, hinten alle Angaben, Marke „im Herbarium“ auf beiden Seiten), Antworten gehen im Hintergrund ans Skript.
 - **1.5.6** Schritt 13.4: Karten in weiteren Fachbereichen (Wahl „+ Neuer Fachbereich“, Vorderseite, Rückseite, bis zu 5 Bilder), lernen wie bei Pflanzen; Bilder-Teil im Formular für Pflanzen und Karten gemeinsam.
 - **1.5.7** Schritt 13.5: Etappe 13 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md eingearbeitet (4 „Herbarium“), `docs/PLAN-ETAPPE-13.md` gelöscht.
+- **1.5.8** Schritt 13.6: zwei kleine Funde der Prüfung im Skript `leben` behoben (`hasOwnProperty` beim Nachschlagen, Laden ohne Sperre).
