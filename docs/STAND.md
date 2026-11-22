@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.4.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.5.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -17,7 +17,8 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 9 „Kontowecker“ ist fertig (1.11.2026): Kontowecker-SMS kommen von selbst ins Finanz-Sheet, Festlegungen in 4 („Kontowecker“).
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
 - Etappe 11 „Rezepte“ ist fertig (7.11.2026): Festlegungen in 4 („Einkauf, Sheet ‚Gemeinsam‘“, Abschnitt Rezepte). 
-- Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) ist fertig (16.11.2026): Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108). Nächste Etappe: offen.
+- Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) ist fertig (16.11.2026): Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
+- Etappe 13 „Herbarium“ (1.5.x) läuft: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium mit Karteikarten für Pflanzen und weitere Kategorien, Blätter `arten` und `karten` im Sheet „Leben“). Nächster Schritt: 13.1 (Skript `leben`).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -577,7 +578,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `finanzen-sms.js` (Noch zuordnen, Vorschlag aus der SMS, ab 9.2), `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8), `karte.js` (Visitenkarte für Besucher und `zeichneKarte` für die Vorschau, ab 10.2), `visitenkarte.js` (Vorschau, Links und QR-Code für die Person, ab 10.3). `vendor/qrcode.js`: QR Code Generator 1.4.4. `icons/social/`: Symbole für Instagram, LinkedIn, Signal (ab 1.2.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper. `icons/reiter/visitenkarte.svg`: Kachel Visitenkarte (ab 10.3).
-- `docs/`: `STAND.md` (diese Datei), `GESCHICHTE.md` (Rückblick, nur bei Bedarf lesen); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
+- `docs/`: `STAND.md` (diese Datei), `GESCHICHTE.md` (Rückblick, nur bei Bedarf lesen); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-13.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`),
@@ -612,3 +613,4 @@ Letzte Versionen:
 - **1.4.2** Besitz: „Gehört zu (Zubehör von)“ ist ein Feld mit Vorschlägen wie Kategorie und Ort (`auswahlFeld`), Vorschlag „Name · Ort“; freier Text, der zu keinem Vorschlag passt, wird nicht gespeichert.
 - **1.4.3** Besitz: „Abbrechen“ im Formular; ändert sich der Ort einer Hauptsache, zieht Zubehör am alten Ort mit um (die App speichert es einzeln mit); ein Filter „Ausgeliehen / Ausmisten“ (Alle, Ausgeliehen, verkaufen, verschenken, entsorgen, „Items mit Anzahl 0“ statt des Hakens, ab 1.4.4; andere Werte nur über die Übersicht); die Trefferzahl steht an der vierten Stelle der Filter statt in einer eigenen Zeile.
 - **1.4.4** Besitz: Filter-Texte kürzer (verkaufen dazu, ohne „Ausmisten:“ und „Auch“), Trefferzahl ohne Überschrift, Sortierzeile näher an der Liste.
+- **1.5.0** Schritt 13.0: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium: Pflanzen als Karteikarten mit Herbarium-Angaben, weitere Karten je Kategorie, Lernen mit 5 Fächern).
