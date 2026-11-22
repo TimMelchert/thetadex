@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '1.5.3';
+export const VERSION = '1.5.4';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {
@@ -13,7 +13,8 @@ export const features = {
     besitz: true,
     uni: true,
     doener: true,
-    visitenkarte: true
+    visitenkarte: true,
+    herbarium: true
 };
 
 // Die sieben Bereiche in der Reihenfolge der Reiterleiste, dazu die Visitenkarte: am Handy nur als Kachel, am PC auch in der Seitenleiste (nurBreit).
@@ -29,7 +30,9 @@ export const BEREICHE = [
     { id: 'uni',      titel: 'Uni',      oeffentlich: false, skript: 'gemeinsam' },
     { id: 'doener',   titel: 'Döner',    oeffentlich: true },
     // Visitenkarte (10.3): nur Kachel auf der Startseite, kein Reiter in der Leiste (Wunsch der Person, 4.11.2026)
-    { id: 'visitenkarte', titel: 'Visitenkarte', oeffentlich: false, skript: 'karte', nurBreit: true }
+    { id: 'visitenkarte', titel: 'Visitenkarte', oeffentlich: false, skript: 'karte', nurBreit: true },
+    // Herbarium (13.2): wie die Visitenkarte am Handy nur als Kachel (Entscheidung der Person, 22.11.2026). Daten im Sheet „Leben“.
+    { id: 'herbarium', titel: 'Herbarium', oeffentlich: false, skript: 'leben', nurBreit: true }
 ];
 
 // Skripte, deren Adresse in der Ersteinrichtung eingetragen wird.

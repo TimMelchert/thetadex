@@ -17,6 +17,7 @@ import * as uni from './views/uni.js';
 import * as dsa from './views/dsa.js';
 import * as karte from './views/karte.js';
 import * as visitenkarte from './views/visitenkarte.js';
+import * as herbarium from './views/herbarium.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
@@ -45,6 +46,7 @@ ANSICHTEN.bogen = dsa;
 // Visitenkarte (10.2): #/karte/<skript>/<schluessel>, ohne Einrichtung, nur lesen. Ohne Reiterleiste und Kopf-Links (CSS über data-seite).
 ANSICHTEN.karte = karte;
 ANSICHTEN.visitenkarte = visitenkarte;
+ANSICHTEN.herbarium = herbarium;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';
