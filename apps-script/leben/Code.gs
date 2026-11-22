@@ -10,8 +10,11 @@
 // Ausmisten (ab 1.3.20): Spalte „ausmisten“, leer = nein, sonst offen, verkaufen, verschenken oder entsorgen.
 // Unklar (ab 1.3.25): Spalte „unklar“, nur im Sheet gepflegt. Leer = alles klar, sonst ein kurzer Text (was noch zu klären ist).
 // Die App färbt die Kachel gelb und zeigt den Text; sie ändert die Spalte nie. Keine Pflichtspalte: Speichern geht auch ohne sie.
+// Herbarium (ab 1.5.3, Etappe 13): Blätter „arten“ (eine Zeile je Pflanze, später auch Tiere: Spalte „reich“)
+// und „karten“ (Karteikarten anderer Fachbereiche). Lernstand (Fach 1 bis 5) steht in derselben Zeile.
+// Bilder im privaten Drive-Ordner „Thetadex Herbarium“ (Skripteigenschaft HERBAR_ORDNER).
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN).
-// Siehe docs/STAND.md 4 „Besitz, Blatt ‚besitz‘ im Sheet ‚Leben‘“.
+// Siehe docs/STAND.md 4 „Besitz, Blatt ‚besitz‘ im Sheet ‚Leben‘“ und docs/PLAN-ETAPPE-13.md.
 // =====================================================
 
 var BLATT_BESITZ_ = "besitz";
@@ -25,6 +28,45 @@ var MAX_PREIS_ = 1000000;
 var BILD_ORDNER_NAME_ = "Thetadex Besitz";      // privater Ordner im Drive für hochgeladene Bilder
 var MAX_BILD_TEXT_ = 4000000;                   // Höchstlänge eines hochgeladenen Bildes als Text (etwa 3 MB)
 var MAX_BILD_SENDEN_ = 1500000;                 // größere Bilder schickt das Skript als Vorschau (Bytes)
+
+// Herbarium (ab 1.5.3). Je Blatt die Felder, die die App schreiben darf:
+// max = Höchstlänge (zu lang wird abgelehnt, nicht gekürzt), lang = Zeilenumbrüche bleiben, pflicht, art = haken / datum / wahl.
+var HERBAR_ = {
+  arten: {
+    kopf: ["id", "reich", "name", "latein", "familie", "gruppen", "eigenschaften", "merkmale", "notiz", "bilder",
+           "im_herbar", "herbar_nr", "gefunden_am", "fundort", "fach", "gelernt_am", "erstellt_am", "geaendert_am", "geloescht"],
+    felder: {
+      reich: { art: "wahl", werte: ["flora", "fauna"], titel: "Reich" },
+      name: { max: 80, pflicht: true, titel: "Deutscher Name" },
+      latein: { max: 80, titel: "Lateinischer Name" },
+      familie: { max: 80, titel: "Familie" },
+      gruppen: { max: 200, art: "liste", titel: "Gruppen" },
+      eigenschaften: { max: 3000, lang: true, titel: "Eigenschaften" },
+      merkmale: { max: 3000, lang: true, titel: "Bestimmungsmerkmale" },
+      notiz: { max: 3000, lang: true, titel: "Notiz" },
+      im_herbar: { art: "haken" },
+      herbar_nr: { max: 20, titel: "Nummer im Herbarium" },
+      gefunden_am: { art: "datum", titel: "Funddatum" },
+      fundort: { max: 100, titel: "Fundort" }
+    },
+    pruefen: "name",           // Zeilen ohne dieses Feld zählen nicht
+    wort: "Diese Pflanze"
+  },
+  karten: {
+    kopf: ["id", "kategorie", "vorne", "hinten", "bilder", "fach", "gelernt_am", "erstellt_am", "geaendert_am", "geloescht"],
+    felder: {
+      kategorie: { max: 40, pflicht: true, titel: "Fachbereich" },
+      vorne: { max: 300, pflicht: true, titel: "Vorderseite" },
+      hinten: { max: 3000, lang: true, titel: "Rückseite" }
+    },
+    pruefen: "vorne",
+    wort: "Diese Karte"
+  }
+};
+var HERBAR_ZAHL_SPALTEN_ = ["im_herbar", "fach", "erstellt_am", "geaendert_am", "geloescht"];   // alle anderen bleiben reiner Text
+var MAX_HERBAR_ZEILEN_ = 3000;      // je Blatt
+var MAX_HERBAR_BILDER_ = 5;         // je Pflanze oder Karte
+var HERBAR_ORDNER_NAME_ = "Thetadex Herbarium";
 
 // --- 1. EINRICHTEN (im Editor ausführen, auch nach einem Update) ---
 
@@ -51,10 +93,37 @@ function einrichten() {
   TEXT_SPALTEN_.forEach(function (k) {
     sheet.getRange(2, karte[k] + 1, sheet.getMaxRows() - 1, 1).setNumberFormat("@");
   });
+  // Herbarium (ab 1.5.3): Blätter „arten“ und „karten“
+  Object.keys(HERBAR_).forEach(function (name) { einrichtenHerbar_(ss, name); });
   // Drive-Ordner für Bilder anlegen (beim ersten Mal fragt Google nach der Erlaubnis für Drive)
   var ordner = bildOrdner_();
   Logger.log("Ordner für Bilder: '" + ordner.getName() + "'.");
+  Logger.log("Ordner für Bilder im Herbarium: '" + herbarOrdner_().getName() + "'.");
   Logger.log("Fertig.");
+}
+
+// Legt ein Blatt des Herbariums an oder ergänzt fehlende Spalten am Ende. Vorhandene Daten bleiben unverändert.
+function einrichtenHerbar_(ss, name) {
+  var kopf = HERBAR_[name].kopf;
+  var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, kopf.length).setValues([kopf]).setFontWeight("bold");
+    sheet.setFrozenRows(1);
+    Logger.log("Blatt '" + name + "' angelegt.");
+  } else {
+    var sp = spalten_(sheet);
+    var fehlen = kopf.filter(function (k) { return sp[k] == null; });
+    if (fehlen.length) {
+      sheet.getRange(1, sheet.getLastColumn() + 1, 1, fehlen.length).setValues([fehlen]).setFontWeight("bold");
+      Logger.log("Blatt '" + name + "': Spalten ergänzt: " + fehlen.join(", "));
+    } else {
+      Logger.log("Blatt '" + name + "' ist vollständig.");
+    }
+  }
+  var karte = spalten_(sheet);
+  kopf.forEach(function (k) {
+    if (HERBAR_ZAHL_SPALTEN_.indexOf(k) < 0) sheet.getRange(2, karte[k] + 1, sheet.getMaxRows() - 1, 1).setNumberFormat("@");
+  });
 }
 
 // Der private Ordner für hochgeladene Bilder. Seine Kennung steht in den Skripteigenschaften (BILD_ORDNER).
@@ -66,6 +135,18 @@ function bildOrdner_() {
   }
   var ordner = DriveApp.createFolder(BILD_ORDNER_NAME_);
   props.setProperty("BILD_ORDNER", ordner.getId());
+  return ordner;
+}
+
+// Der private Ordner für Bilder im Herbarium (Skripteigenschaft HERBAR_ORDNER), ab 1.5.3
+function herbarOrdner_() {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty("HERBAR_ORDNER");
+  if (id) {
+    try { return DriveApp.getFolderById(id); } catch (e) { /* gelöscht: neu anlegen */ }
+  }
+  var ordner = DriveApp.createFolder(HERBAR_ORDNER_NAME_);
+  props.setProperty("HERBAR_ORDNER", ordner.getId());
   return ordner;
 }
 
@@ -205,6 +286,21 @@ function doPost(e) {
     if (data.action === "ping") return jsonOut_({ ok: true });
     if (data.action === "liste") return jsonOut_(liste_());
     if (data.action === "bild") return jsonOut_(bildLesen_(data));
+
+    // Herbarium (ab 1.5.3): alle Aktionen schreiben (auch „herbar“, wenn eingefügte Zeilen noch keine id haben)
+    var HERBAR_AKTIONEN_ = { herbar: herbarListe_, herbar_speichern: herbarSpeichern_, herbar_loeschen: herbarLoeschen_,
+                             herbar_bild: herbarBild_, herbar_gelernt: herbarGelernt_ };
+    if (HERBAR_AKTIONEN_[data.action]) {
+      var sperre = LockService.getScriptLock();
+      if (!sperre.tryLock(20000)) {
+        return jsonOut_({ error: "ausgelastet", message: "Script ausgelastet. Bitte gleich nochmal versuchen." });
+      }
+      try {
+        return jsonOut_(HERBAR_AKTIONEN_[data.action](data));
+      } finally {
+        sperre.releaseLock();
+      }
+    }
 
     if (data.action === "speichern" || data.action === "loeschen") {
       // Sperre: Es kann immer nur ein Schreibzugriff gleichzeitig laufen
@@ -391,8 +487,9 @@ function driveKennung_(text) {
   return m ? m[1] : "";
 }
 
-// Prüft das Bild einer Sache und liefert { id } (leer = kein Bild) oder { fehler }
-function bildAus_(data) {
+// Prüft das Bild einer Sache und liefert { id } (leer = kein Bild) oder { fehler }.
+// ordner: wohin hochgeladene Bilder kommen (leer = „Thetadex Besitz“, ab 1.5.3 auch „Thetadex Herbarium“)
+function bildAus_(data, ordner) {
   if (data.bild_daten) {
     var text = String(data.bild_daten);
     if (text.length > MAX_BILD_TEXT_) return { fehler: "Das Bild ist zu groß." };
@@ -403,7 +500,7 @@ function bildAus_(data) {
     var png = bytes.length > 4 && (bytes[0] & 255) === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
     if (!jpeg && !png) return { fehler: "Bitte ein Bild (JPEG oder PNG) wählen." };
     var name = bereinigeText_(data.name, 60) || "Bild";
-    var datei = bildOrdner_().createFile(Utilities.newBlob(bytes, jpeg ? "image/jpeg" : "image/png", name + (jpeg ? ".jpg" : ".png")));
+    var datei = (ordner || bildOrdner_()).createFile(Utilities.newBlob(bytes, jpeg ? "image/jpeg" : "image/png", name + (jpeg ? ".jpg" : ".png")));
     return { id: datei.getId() };
   }
   var roh = String(data.bild == null ? "" : data.bild).trim();
@@ -428,7 +525,7 @@ function bildLesen_(data) {
   var sp = spalten_(sheet);
   var bekannt = zeilen_(sheet).some(function (z) {
     return String(zelle_(z, sp, "bild")).trim() === id && !istWahr_(zelle_(z, sp, "geloescht"));
-  });
+  }) || herbarKenntBild_(id);
   if (!bekannt) return { error: "eingabe", message: "Unbekanntes Bild." };
   var blob;
   try {
@@ -440,4 +537,237 @@ function bildLesen_(data) {
   }
   if (!blob) return { error: "gross", message: "Das Bild ist zu groß für eine Vorschau. Bitte kleiner hochladen." };
   return { typ: blob.getContentType(), daten: Utilities.base64Encode(blob.getBytes()) };
+}
+
+
+// --- 7. HERBARIUM (ab 1.5.3, Etappe 13) ---
+// Blätter „arten“ und „karten“ im selben Sheet. Siehe docs/PLAN-ETAPPE-13.md.
+
+// Wie bereinigeText_, aber Zeilenumbrüche bleiben (höchstens eine Leerzeile). Für lange Texte.
+function bereinigeLang_(text, maxLaenge) {
+  var t = String(text == null ? "" : text).replace(/\r\n?/g, "\n").replace(/\t/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+  if (t.length > maxLaenge) t = t.substring(0, maxLaenge);
+  if (/^[=+\-@]/.test(t)) t = "'" + t;
+  return t;
+}
+
+// Liste von Drive-Kennungen aus einer Zelle (JSON-Liste)
+function bilderListe_(v) {
+  var liste;
+  try { liste = JSON.parse(String(v == null || v === "" ? "[]" : v)); } catch (e) { liste = []; }
+  return Array.isArray(liste) ? liste.map(function (x) { return String(x); }).filter(function (x) { return /^[A-Za-z0-9_-]{20,}$/.test(x); }) : [];
+}
+
+// Blatt mit Spalten; fehlt eine Spalte, Hinweis auf „einrichten“
+function herbarBlatt_(name) {
+  if (!HERBAR_[name]) throw new Error("Unbekanntes Blatt.");
+  var sheet = blatt_(name);
+  var sp = spalten_(sheet);
+  var fehlen = HERBAR_[name].kopf.filter(function (k) { return sp[k] == null; });
+  if (fehlen.length) throw new Error("Im Blatt '" + name + "' fehlen Spalten: " + fehlen.join(", ") + ". Bitte im Editor 'einrichten' ausführen.");
+  return { name: name, sheet: sheet, sp: sp, breite: sheet.getLastColumn() };
+}
+
+// Fach 1 bis 5 aus einer Zelle (leer oder Unsinn = 1)
+function fach_(v) {
+  var n = Number(v);
+  return isFinite(n) && Math.floor(n) === n && n >= 1 && n <= 5 ? n : 1;
+}
+
+// Eine Zeile als Objekt für die App
+function herbarAus_(b, z) {
+  var e = { id: String(zelle_(z, b.sp, "id")).trim() };
+  Object.keys(HERBAR_[b.name].felder).forEach(function (k) {
+    var f = HERBAR_[b.name].felder[k];
+    if (f.art === "haken") e[k] = istWahr_(zelle_(z, b.sp, k));
+    else if (f.art === "datum") e[k] = tag_(zelle_(z, b.sp, k));
+    else e[k] = ohneSchutz_(zelle_(z, b.sp, k));
+  });
+  if (b.name === "arten" && !e.reich) e.reich = "flora";
+  e.bilder = bilderListe_(zelle_(z, b.sp, "bilder"));
+  e.fach = fach_(zelle_(z, b.sp, "fach"));
+  e.gelernt_am = tag_(zelle_(z, b.sp, "gelernt_am"));
+  e.geaendert_am = stempel_(zelle_(z, b.sp, "geaendert_am"));
+  return e;
+}
+
+// Zählt eine Zeile? (nicht gelöscht, Pflichtfeld da)
+function herbarAktiv_(b, z) {
+  return !istWahr_(zelle_(z, b.sp, "geloescht")) && String(zelle_(z, b.sp, HERBAR_[b.name].pruefen)).trim() !== "";
+}
+
+// Alle Pflanzen und Karten. Eingefügte Zeilen ohne id bekommen hier eine (darum läuft „herbar“ mit Sperre).
+function herbarListe_() {
+  var antwort = {};
+  Object.keys(HERBAR_).forEach(function (name) {
+    var b = herbarBlatt_(name);
+    var alle = zeilen_(b.sheet);
+    var liste = [];
+    alle.forEach(function (z, i) {
+      if (!herbarAktiv_(b, z)) return;
+      if (!String(z[b.sp.id]).trim()) {
+        z[b.sp.id] = Utilities.getUuid();
+        b.sheet.getRange(i + 2, b.sp.id + 1).setValue(z[b.sp.id]);
+      }
+      liste.push(herbarAus_(b, z));
+    });
+    antwort[name] = liste;
+  });
+  return antwort;
+}
+
+// Sucht eine nicht gelöschte Zeile nach id. Liefert { nr, zeile } oder null.
+function herbarFinde_(b, id) {
+  if (!id) return null;
+  var alle = zeilen_(b.sheet);
+  for (var i = 0; i < alle.length; i++) {
+    if (String(alle[i][b.sp.id]).trim() === id && !istWahr_(alle[i][b.sp.geloescht])) return { nr: i + 2, zeile: alle[i] };
+  }
+  return null;
+}
+
+// Prüft die mitgeschickten Felder. Felder, die nicht mitkommen, bleiben unverändert (bei neuen: leer).
+function herbarPruefe_(name, data, neu) {
+  var felder = HERBAR_[name].felder;
+  var w = {};
+  var namen = Object.keys(felder);
+  for (var i = 0; i < namen.length; i++) {
+    var k = namen[i], f = felder[k];
+    if (data[k] === undefined && !neu) continue;
+    var roh = data[k] == null ? "" : data[k];
+    if (f.art === "haken") { w[k] = roh === true || istWahr_(roh); continue; }
+    var t = f.lang ? String(roh).replace(/\r\n?/g, "\n").trim() : String(roh).replace(/\s+/g, " ").trim();
+    if (f.art === "wahl") {
+      if (!t && neu) t = f.werte[0];
+      if (f.werte.indexOf(t) < 0) return { fehler: "Ungültiger Wert bei " + f.titel + "." };
+      w[k] = t; continue;
+    }
+    if (f.art === "datum") {
+      if (t && (!/^\d{4}-\d{2}-\d{2}$/.test(t) || isNaN(new Date(t + "T12:00:00")) || new Date(t + "T12:00:00").toISOString().substring(0, 10) !== t)) {
+        return { fehler: "Ungültiges " + f.titel + "." };
+      }
+      if (t && t > tag_(new Date())) return { fehler: "Das " + f.titel + " liegt in der Zukunft." };
+      w[k] = t; continue;
+    }
+    if (f.art === "liste") {
+      // „Frühblüher,  Heilpflanze, frühblüher“ → „Frühblüher, Heilpflanze“
+      var gesehen = {};
+      t = t.split(",").map(function (x) { return x.trim(); }).filter(function (x) {
+        var key = x.toLowerCase();
+        if (!x || gesehen[key]) return false;
+        gesehen[key] = true;
+        return true;
+      }).join(", ");
+    }
+    if (!t && f.pflicht) return { fehler: "Bitte " + f.titel + " angeben." };
+    if (t.length > f.max) return { fehler: f.titel + " ist zu lang (höchstens " + f.max + " Zeichen)." };
+    w[k] = f.lang ? bereinigeLang_(t, f.max) : bereinigeText_(t, f.max);
+  }
+  return { werte: w };
+}
+
+// Neu (ohne id) oder ändern (mit id und geaendert_am). „bilder“ = Liste der behaltenen Bilder; neue kommen über herbar_bild.
+function herbarSpeichern_(data) {
+  var b = herbarBlatt_(String(data.blatt || ""));
+  var neu = data.id == null || data.id === "";
+  var p = herbarPruefe_(b.name, data, neu);
+  if (p.fehler) return { error: "eingabe", message: p.fehler };
+
+  var zeile, nr;
+  if (neu) {
+    var anzahl = zeilen_(b.sheet).filter(function (z) { return herbarAktiv_(b, z); }).length;
+    if (anzahl >= MAX_HERBAR_ZEILEN_) return { error: "eingabe", message: "Höchstens " + MAX_HERBAR_ZEILEN_ + " Einträge." };
+    zeile = new Array(b.breite).fill("");
+    zeile[b.sp.id] = Utilities.getUuid();
+    zeile[b.sp.geloescht] = false;
+    zeile[b.sp.fach] = 1;
+    nr = b.sheet.getLastRow() + 1;
+  } else {
+    var gefunden = herbarFinde_(b, String(data.id));
+    if (!gefunden) return { error: "fehlt", message: HERBAR_[b.name].wort + " gibt es nicht mehr. Bitte neu laden." };
+    if (stempel_(gefunden.zeile[b.sp.geaendert_am]) !== String(data.geaendert_am || "")) {
+      return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+    }
+    zeile = gefunden.zeile;
+    nr = gefunden.nr;
+  }
+
+  // Bilder: nur behaltene Kennungen, die schon beim Eintrag stehen (so kommt hier keine fremde Datei dazu)
+  if (Array.isArray(data.bilder)) {
+    var alt = bilderListe_(zeile[b.sp.bilder]);
+    var behalten = data.bilder.map(function (x) { return String(x); }).filter(function (x, i, liste) {
+      return alt.indexOf(x) >= 0 && liste.indexOf(x) === i;
+    });
+    p.werte.bilder = behalten.length ? JSON.stringify(behalten) : "";
+  }
+
+  var jetzt = jetzt_(zeile[b.sp.geaendert_am]);
+  if (!zeile[b.sp.erstellt_am]) zeile[b.sp.erstellt_am] = jetzt;
+  Object.keys(p.werte).forEach(function (k) { zeile[b.sp[k]] = p.werte[k]; });
+  zeile[b.sp.geaendert_am] = jetzt;
+  b.sheet.getRange(nr, 1, 1, b.breite).setValues([zeile]);
+  return { eintrag: herbarAus_(b, b.sheet.getRange(nr, 1, 1, b.breite).getValues()[0]) };
+}
+
+// Weich löschen (geloescht = TRUE, im Sheet zurückholbar)
+function herbarLoeschen_(data) {
+  var b = herbarBlatt_(String(data.blatt || ""));
+  var gefunden = herbarFinde_(b, String(data.id || ""));
+  if (!gefunden) return { error: "fehlt", message: HERBAR_[b.name].wort + " gibt es nicht mehr. Bitte neu laden." };
+  if (stempel_(gefunden.zeile[b.sp.geaendert_am]) !== String(data.geaendert_am || "")) {
+    return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+  }
+  b.sheet.getRange(gefunden.nr, b.sp.geloescht + 1).setValue(true);
+  b.sheet.getRange(gefunden.nr, b.sp.geaendert_am + 1).setValue(jetzt_(gefunden.zeile[b.sp.geaendert_am]));
+  return { ok: true };
+}
+
+// Ein neues Bild hinten anhängen: hochgeladen (bild_daten) oder als Drive-Link (bild). Schutz über geaendert_am.
+function herbarBild_(data) {
+  var b = herbarBlatt_(String(data.blatt || ""));
+  var gefunden = herbarFinde_(b, String(data.id || ""));
+  if (!gefunden) return { error: "fehlt", message: HERBAR_[b.name].wort + " gibt es nicht mehr. Bitte neu laden." };
+  if (stempel_(gefunden.zeile[b.sp.geaendert_am]) !== String(data.geaendert_am || "")) {
+    return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+  }
+  var bilder = bilderListe_(gefunden.zeile[b.sp.bilder]);
+  if (bilder.length >= MAX_HERBAR_BILDER_) return { error: "eingabe", message: "Höchstens " + MAX_HERBAR_BILDER_ + " Bilder." };
+  if (!data.bild_daten && !String(data.bild == null ? "" : data.bild).trim()) return { error: "eingabe", message: "Bitte ein Bild wählen oder einen Drive-Link einfügen." };
+  var titel = ohneSchutz_(gefunden.zeile[b.sp[HERBAR_[b.name].pruefen]]);
+  var bild = bildAus_({ bild_daten: data.bild_daten, bild: data.bild, name: titel }, herbarOrdner_());
+  if (bild.fehler) return { error: "eingabe", message: bild.fehler };
+  if (bilder.indexOf(bild.id) >= 0) return { error: "eingabe", message: "Dieses Bild ist schon dabei." };
+  bilder.push(bild.id);
+  var z = gefunden.zeile;
+  z[b.sp.bilder] = JSON.stringify(bilder);
+  z[b.sp.geaendert_am] = jetzt_(z[b.sp.geaendert_am]);
+  b.sheet.getRange(gefunden.nr, 1, 1, b.breite).setValues([z]);
+  return { eintrag: herbarAus_(b, b.sheet.getRange(gefunden.nr, 1, 1, b.breite).getValues()[0]) };
+}
+
+// Eine Antwort beim Lernen: gewusst = ein Fach weiter (höchstens 5), nicht gewusst = zurück in Fach 1.
+// Ändert nur fach und gelernt_am, nicht geaendert_am (sonst schlüge danach „Bearbeiten“ fehl).
+function herbarGelernt_(data) {
+  var b = herbarBlatt_(String(data.blatt || ""));
+  var gefunden = herbarFinde_(b, String(data.id || ""));
+  if (!gefunden) return { error: "fehlt", message: HERBAR_[b.name].wort + " gibt es nicht mehr. Bitte neu laden." };
+  var fach = data.gewusst === true ? Math.min(5, fach_(gefunden.zeile[b.sp.fach]) + 1) : 1;
+  var heute = tag_(new Date());
+  b.sheet.getRange(gefunden.nr, b.sp.fach + 1).setValue(fach);
+  b.sheet.getRange(gefunden.nr, b.sp.gelernt_am + 1).setValue(heute);
+  return { id: String(data.id), fach: fach, gelernt_am: heute };
+}
+
+// Steht ein Bild bei einer nicht gelöschten Pflanze oder Karte? (für die Aktion „bild“)
+function herbarKenntBild_(id) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  return Object.keys(HERBAR_).some(function (name) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) return false;
+    var b = { name: name, sheet: sheet, sp: spalten_(sheet) };
+    if (b.sp.bilder == null) return false;
+    return zeilen_(sheet).some(function (z) {
+      return herbarAktiv_(b, z) && bilderListe_(zelle_(z, b.sp, "bilder")).indexOf(id) >= 0;
+    });
+  });
 }
