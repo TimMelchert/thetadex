@@ -1,4 +1,4 @@
-// Reiter Herbarium (Etappe 13, Plan docs/PLAN-ETAPPE-13.md). Unterreiter Herbarium (die Pflanzen) und Karten (lernen mit 5 Fächern, ab 13.3).
+// Reiter Herbarium (Etappe 13, docs/STAND.md 4 „Herbarium“). Unterreiter Herbarium (die Pflanzen) und Karten (lernen mit 5 Fächern, ab 13.3).
 // Herbarium: Pflanzen suchen und filtern, ansehen, „Im Herbarium“ mit Nummer, Funddatum und Fundort anhaken, anlegen, ändern, löschen.
 // Daten aus dem Skript „leben“ (Sheet „Leben“, Blätter „arten“ und „karten“). Nur mit Passwort, nur im Arbeitsspeicher.
 

@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.5.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.5.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -18,7 +18,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
 - Etappe 11 „Rezepte“ ist fertig (7.11.2026): Festlegungen in 4 („Einkauf, Sheet ‚Gemeinsam‘“, Abschnitt Rezepte). 
 - Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) ist fertig (16.11.2026): Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
-- Etappe 13 „Herbarium“ (1.5.x) läuft: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium mit Unterreitern Herbarium und Karten, Karteikarten für Pflanzen und weitere Fachbereiche, Blätter `arten` und `karten` im Sheet „Leben“). 13.1 (Skript `leben`), 13.2 (Reiter und Unterreiter Herbarium) 13.3 (Karten: Lernen mit 5 Fächern für Pflanzen) und 13.4 (weitere Fachbereiche) sind gebaut. Nächster Schritt: 13.5 (Abschluss und Prüfung).
+- Etappe 13 „Herbarium“ (1.5.x) ist fertig (22.11.2026): Reiter Herbarium mit Karteikarten, Festlegungen in 4 („Herbarium“), Prüfung `pruefung/etappe-13-herbarium-bericht.md` in den Projektdateien. Nächste Etappe: offen.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -262,7 +262,7 @@ unter „Info“ die Version prüfen.
   `id, erstellt_am, geaendert_am, geloescht`. Die genauen Spalten legt der Plan der jeweiligen Etappe fest. Geplante Blätter:
   | Sheet | Blätter |
   | --- | --- |
-  | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026); ab 1.5.3 `arten` und `karten` (Herbarium, Spalten in `docs/PLAN-ETAPPE-13.md`) |
+  | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026); ab 1.5.3 `arten` und `karten` (Herbarium, Spalten in 4 „Herbarium“) |
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, ab 1.3.17 `laden_reihenfolge` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt und seit 0.7.3 nicht mehr im Skript; das Blatt darf die Person löschen) |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
@@ -326,6 +326,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     Besitz `#7FA7A0`, Uni `#C9784A`, Döner `#E2A23B` (frühere Farbe von ToDos, der Reiter ist am 29.10.2026 entfallen). Kein Blau.
     Damit gibt es wieder sieben Reiter, passend zum Icon.
     Ausnahme Visitenkarte (Wunsch der Person, 4.11.2026): eigene Farbe Olivgrün `#A8AE6E` (`--farbe-visitenkarte`, Kontrast 7,3:1 zur Schrift), nur für die Kachel, den Reiter und die Karte, nicht im Icon.
+    Ausnahme Herbarium (Wunsch der Person, 22.11.2026): Moosgrün `#7A9455` (`--farbe-herbarium`, Kontrast 5,1:1 zur Schrift), 🌿 vor der Überschrift, Symbol Blatt, nicht im Icon.
     Zweite Ausnahme: Die Symbole für Instagram, LinkedIn und Signal (`icons/social/`, selbst gezeichnet) haben ihre Markenfarben, auch Blau (Wunsch der Person, 4.11.2026).
   - Bereichsfarben auf hellem Grund nur als Fläche oder Marke, nicht als Schriftfarbe (zu wenig Kontrast nach WCAG AA).
   - Ausnahme (Wunsch der Person, 29.10.2026): Nach dem Speichern erscheint kurz ein Fenster mit grünem Haken (`--erfolg`).
@@ -366,6 +367,21 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Übersicht zählt Items mit Anzahl über 0, Zubehör eingeschlossen, als Items und als Stück (ohne Hinweistext darunter).
   Bild-Kacheln (ab 1.3.23, Wunsch der Person, 16.11.2026): Items der Kategorien Filme, Bücher (auch „Bücher und Hefte“) und Spiele stehen je Ort als Kacheln nebeneinander (Handy zwei, PC vier je Reihe), ab 1.3.24 nur, wenn oben im Filter diese Kategorie gewählt ist (sonst Zeilen wie alle anderen), oben das Bild (ohne Bild ein Zeichen 🎬 📚 🎲), darunter der Name.
   Erkannt am Anfang der Kategorie (`GALERIE` in `js/views/besitz.js`). Bilder lädt die Liste erst, wenn die Kachel fast zu sehen ist, höchstens drei gleichzeitig, nur im Arbeitsspeicher.
+- **Herbarium, Sheet „Leben“** (Etappe 13, Plan eingearbeitet am 22.11.2026). Reiter `#/herbarium`, Skript `leben`, nur die Person (`APP_PIN`), kein Teilen, kein Partner-Zugang.
+  Am Handy nur als Kachel, am PC auch in der Seitenleiste (`nurBreit`). Der Eintrag „Herbarium“ im Besitz bleibt; die Inhalte des Herbariums kommen nicht in den Besitz (Wunsch der Person).
+  Ziel: Pflanzen kennen und lernen; das Herbarium aus Papier führt die Person weiter, die App zeigt je Pflanze, ob sie darin ist. Später sollen Tiere (Fauna) dazukommen können.
+  - **Unterreiter Herbarium · Karten** (Wunsch der Person: zwei, nicht drei). Herbarium: Pflanzenliste A–Z (deutscher Name, lateinischer Name, rechts „Nr. 12“ oder „fehlt noch“), Suche, Filter Gruppe, Familie, Herbarium; Tipp zeigt alle Angaben, darin „Im Herbarium“ mit Nummer, Funddatum, Fundort direkt ändern („Übernehmen“). „+ Neue Pflanze“ und „Bearbeiten“ öffnen das Formular.
+  - **Karten:** Fachbereich wählen: Pflanzen (mit Filter Gruppe, Familie, Gattung, Herbarium) oder eine Kategorie aus `karten`, „+ Neuer Fachbereich …“ legt eine Karte mit neuem Fachbereich an. Darunter die fünf Fächer, „Lernen (n)“ und die Liste mit „+ Neue Pflanze“ (auch noch nicht gefundene, Wunsch der Person) oder „+ Neue Karte“.
+  - **Lernen mit 5 Fächern** (Leitner, bestätigt): neu = Fach 1. „Gewusst“ = ein Fach weiter (höchstens 5), „Nicht gewusst“ = Fach 1. Dran: Fach 1 immer, Fach 2 nach 1 Tag, 3 nach 3, 4 nach 7, 5 nach 14 Tagen (`WARTEN_TAGE`); Haken „Alle Karten“. Reihenfolge: niedrige Fächer zuerst, darin gemischt.
+    Vorne bei Pflanzen der deutsche Name, sonst die Vorderseite; „Umdrehen“ zeigt alles. Die Marke „im Herbarium · Nr.“ oder „fehlt noch“ steht auf beiden Seiten (Wunsch der Person).
+    Antworten gehen im Hintergrund nacheinander an `herbar_gelernt`; nicht gesendete bleiben im Arbeitsspeicher mit „Nochmal senden“ (nichts im Gerät).
+  - **Gattung** ist das erste Wort des lateinischen Namens (keine eigene Spalte). Gruppen mit Komma getrennt, bekannte zum Antippen.
+  - Blatt `arten` (eine Zeile je Pflanze, später auch Tier): `id, reich` (`flora`, später `fauna`), `name` (Pflicht, 80), `latein` (80), `familie` (80), `gruppen` (200), `eigenschaften`, `merkmale`, `notiz` (je 3000, Zeilenumbrüche bleiben), `bilder` (JSON, höchstens 5), `im_herbar`, `herbar_nr` (Text, 20), `gefunden_am` (nicht in der Zukunft), `fundort` (100, kein GPS), `fach` (1 bis 5), `gelernt_am`, `erstellt_am, geaendert_am, geloescht`.
+    Blatt `karten`: `id, kategorie` (Fachbereich, Pflicht, 40), `vorne` (Pflicht, 300), `hinten` (3000, Zeilenumbrüche bleiben), `bilder`, `fach`, `gelernt_am` + Standardspalten. Höchstens 3000 Zeilen je Blatt. Zu lange Texte lehnt das Skript ab.
+    Warum zwei Blätter im Sheet „Leben“ statt eigenem Sheet (Frage der Person): Ein eigenes Sheet bräuchte ein eigenes Skript und eine neue Adresse und lohnt nur bei anderem Zugriff. Eine Zeile je Pflanze mit Herbarium-Angaben und Lernstand.
+    Viele Pflanzen auf einmal: Zeilen direkt ins Blatt einfügen; fehlende `id` ergänzt `herbar` beim Laden.
+  - Aktionen (nur `APP_PIN`, alle mit `LockService`): `herbar` (alles), `herbar_speichern` (`blatt`, ohne `id` neu, sonst mit `geaendert_am`; Felder, die nicht mitkommen, bleiben; `bilder` nur behaltene), `herbar_loeschen` (weich), `herbar_bild` (ein Bild anhängen, Ordner „Thetadex Herbarium“, Skripteigenschaft `HERBAR_ORDNER`), `herbar_gelernt` (`blatt`, `id`, `gewusst`; ändert nur `fach` und `gelernt_am`, nicht `geaendert_am`). `bild` liest auch Bilder aus `arten` und `karten`.
+  - Datenschutz: Fundort und Funddatum nur als Text im Sheet „Leben“. Keine Pflanzenlisten, Karten oder Fundorte im Repo. Prüfung: `pruefung/etappe-13-herbarium-bericht.md` (zwei kleine Funde im Skript, zum nächsten Umbau von `leben`).
 - **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
   Der Link enthält die Skript-Kennung und diesen Schlüssel, nie das Passwort. „Neuen Link erstellen“ macht alte Links ungültig.
   Die geteilte Ansicht zeigt den ganzen Bogen, aber keine Knöpfe zum Ändern. Grund: Bögen sollen ohne Passwort an andere gehen.
@@ -578,7 +594,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `finanzen-sms.js` (Noch zuordnen, Vorschlag aus der SMS, ab 9.2), `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8), `karte.js` (Visitenkarte für Besucher und `zeichneKarte` für die Vorschau, ab 10.2), `visitenkarte.js` (Vorschau, Links und QR-Code für die Person, ab 10.3), `herbarium.js` (Reiter Herbarium, ab 13.2). `vendor/qrcode.js`: QR Code Generator 1.4.4. `icons/social/`: Symbole für Instagram, LinkedIn, Signal (ab 1.2.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper. `icons/reiter/visitenkarte.svg`: Kachel Visitenkarte (ab 10.3). `icons/reiter/herbarium.svg`: Blatt, Reiter Herbarium (ab 13.2).
-- `docs/`: `STAND.md` (diese Datei), `GESCHICHTE.md` (Rückblick, nur bei Bedarf lesen); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-13.md`).
+- `docs/`: `STAND.md` (diese Datei), `GESCHICHTE.md` (Rückblick, nur bei Bedarf lesen); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit keiner).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`),
@@ -620,3 +636,4 @@ Letzte Versionen:
 - **1.5.4** Schritt 13.2: Reiter Herbarium (🌿, Moosgrün, am Handy nur Kachel) mit Unterreiter Herbarium: Pflanzen suchen, filtern, ansehen, „Im Herbarium“ anhaken, anlegen und ändern mit bis zu 5 Bildern.
 - **1.5.5** Schritt 13.3: Unterreiter Karten: Fachbereich Pflanzen mit Filter, fünf Fächer, Lernen (vorne deutscher Name, hinten alle Angaben, Marke „im Herbarium“ auf beiden Seiten), Antworten gehen im Hintergrund ans Skript.
 - **1.5.6** Schritt 13.4: Karten in weiteren Fachbereichen (Wahl „+ Neuer Fachbereich“, Vorderseite, Rückseite, bis zu 5 Bilder), lernen wie bei Pflanzen; Bilder-Teil im Formular für Pflanzen und Karten gemeinsam.
+- **1.5.7** Schritt 13.5: Etappe 13 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md eingearbeitet (4 „Herbarium“), `docs/PLAN-ETAPPE-13.md` gelöscht.
