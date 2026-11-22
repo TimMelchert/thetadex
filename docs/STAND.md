@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.5.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.5.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -18,7 +18,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
 - Etappe 11 „Rezepte“ ist fertig (7.11.2026): Festlegungen in 4 („Einkauf, Sheet ‚Gemeinsam‘“, Abschnitt Rezepte). 
 - Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) ist fertig (16.11.2026): Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
-- Etappe 13 „Herbarium“ (1.5.x) läuft: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium mit Karteikarten für Pflanzen und weitere Kategorien, Blätter `arten` und `karten` im Sheet „Leben“). Nächster Schritt: 13.1 (Skript `leben`).
+- Etappe 13 „Herbarium“ (1.5.x) läuft: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium mit Unterreitern Herbarium und Karten, Karteikarten für Pflanzen und weitere Fachbereiche, Blätter `arten` und `karten` im Sheet „Leben“). Nächster Schritt: 13.1 (Skript `leben`).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -614,3 +614,4 @@ Letzte Versionen:
 - **1.4.3** Besitz: „Abbrechen“ im Formular; ändert sich der Ort einer Hauptsache, zieht Zubehör am alten Ort mit um (die App speichert es einzeln mit); ein Filter „Ausgeliehen / Ausmisten“ (Alle, Ausgeliehen, verkaufen, verschenken, entsorgen, „Items mit Anzahl 0“ statt des Hakens, ab 1.4.4; andere Werte nur über die Übersicht); die Trefferzahl steht an der vierten Stelle der Filter statt in einer eigenen Zeile.
 - **1.4.4** Besitz: Filter-Texte kürzer (verkaufen dazu, ohne „Ausmisten:“ und „Auch“), Trefferzahl ohne Überschrift, Sortierzeile näher an der Liste.
 - **1.5.0** Schritt 13.0: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium: Pflanzen als Karteikarten mit Herbarium-Angaben, weitere Karten je Kategorie, Lernen mit 5 Fächern).
+- **1.5.1** Antworten zum Plan: zwei Unterreiter Herbarium und Karten (Karten mit Wahl des Fachbereichs), 5 Fächer, 5 Bilder, Reiter am Handy nur als Kachel.
