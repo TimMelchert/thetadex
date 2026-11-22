@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.5.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.5.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -18,7 +18,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
 - Etappe 11 „Rezepte“ ist fertig (7.11.2026): Festlegungen in 4 („Einkauf, Sheet ‚Gemeinsam‘“, Abschnitt Rezepte). 
 - Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) ist fertig (16.11.2026): Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
-- Etappe 13 „Herbarium“ (1.5.x) läuft: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium mit Unterreitern Herbarium und Karten, Karteikarten für Pflanzen und weitere Fachbereiche, Blätter `arten` und `karten` im Sheet „Leben“). Nächster Schritt: 13.1 (Skript `leben`).
+- Etappe 13 „Herbarium“ (1.5.x) läuft: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium mit Unterreitern Herbarium und Karten, Karteikarten für Pflanzen und weitere Fachbereiche, Blätter `arten` und `karten` im Sheet „Leben“). 13.1 (Skript `leben`) ist gebaut. Nächster Schritt: 13.2 (Reiter und Unterreiter Herbarium).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -262,7 +262,7 @@ unter „Info“ die Version prüfen.
   `id, erstellt_am, geaendert_am, geloescht`. Die genauen Spalten legt der Plan der jeweiligen Etappe fest. Geplante Blätter:
   | Sheet | Blätter |
   | --- | --- |
-  | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026) |
+  | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026); ab 1.5.3 `arten` und `karten` (Herbarium, Spalten in `docs/PLAN-ETAPPE-13.md`) |
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, ab 1.3.17 `laden_reihenfolge` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt und seit 0.7.3 nicht mehr im Skript; das Blatt darf die Person löschen) |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
@@ -293,7 +293,7 @@ unter „Info“ die Version prüfen.
   Die gültigen Regeln je Bereich stehen in Abschnitt 4. Bei Widerspruch gilt Abschnitt 4.
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.3.30: `karte` und `gemeinsam` neue Fassung einfügen und als neue Version bereitstellen (erst nachdem 1.3.29 auf den Geräten ist).
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.3.30: `karte` und `gemeinsam` neue Fassung einfügen und als neue Version bereitstellen (erst nachdem 1.3.29 auf den Geräten ist). Ab 1.5.3: `leben` neue Fassung (Herbarium) einfügen, `einrichten` ausführen, als neue Version bereitstellen.
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Die Auswertung zeigt daraus „Feste Ausgaben“ (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist) und ab 1.3.14 „Feste Einnahmen“ (Zweck, dessen Kategorie es nur bei den Einnahmen gibt, zum Beispiel Job).
 
 ---
@@ -554,7 +554,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Skript `gemeinsam`:** `tabelle_` liest jedes Blatt je Anfrage nur einmal (ab 1.3.30). Wer nicht über `neu_` oder `aendere_` ins Blatt schreibt, ruft danach `vergiss_(name)` auf.
 - **Skript:** Keine `appsscript.json` im Repo. Bewährte Helfer aus dem Finanz-Skript wiederverwenden:
   `jsonOut_`, `pruefePin_`, `bereinigeText_`, `pruefeEingabe_`, `LockService`-Muster.
-- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `karte` statt `APP_PIN` nur `KARTE_PIN` (eigenes Passwort, mindestens 12 Zeichen, ab 10.1; die App speichert es als `thetadex_karte_passwort` und schickt es nur an `karte`); im Skript `finanzen` zusätzlich `SMS_SCHLUESSEL` (nur für die Aktion `sms`, legt die Funktion `smsSchluesselErzeugen` an, ab 9.1); in den Skripten `leben`, `dsa` und `gemeinsam` (ab 1.3.4) legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners).
+- **Skripteigenschaften** (nur im Editor, je Skript): `APP_PIN`; im Skript `gemeinsam` zusätzlich `PARTNER_PIN`; im Skript `karte` statt `APP_PIN` nur `KARTE_PIN` (eigenes Passwort, mindestens 12 Zeichen, ab 10.1; die App speichert es als `thetadex_karte_passwort` und schickt es nur an `karte`); im Skript `finanzen` zusätzlich `SMS_SCHLUESSEL` (nur für die Aktion `sms`, legt die Funktion `smsSchluesselErzeugen` an, ab 9.1); in den Skripten `leben`, `dsa` und `gemeinsam` (ab 1.3.4) legt `einrichten` selbst `BILD_ORDNER` an (Kennung des Bild-Ordners); im Skript `leben` ab 1.5.3 zusätzlich `HERBAR_ORDNER` (Ordner „Thetadex Herbarium“).
 - **Im Gerät (localStorage):** nur Passwort, Script-Adressen, geladene Einstellungen, zuletzt bekannte Kontostände, die Wahl beim Aussehen (`thetadex_aussehen`),
   die offene Einkaufsliste (`thetadex_einkaufsliste`, nur Einträge mit Namen, Abteilung, Einheit), abgehakte Einträge vor „Einkauf fertig“ (`thetadex_einkauf_haken`)
   und noch nicht gesendete Haken (`thetadex_einkauf_offen`), die zuletzt geladenen Uni-Daten (`thetadex_uni`, ab 0.5.3), der gewählte Bogen bei Pen & Paper (`thetadex_dsa_bogen`, nur die Kennung, ab 0.6.1), die selbst erstellten Links zum Teilen (`thetadex_dsa_links`, Bogen-Kennung → Schlüssel, ab 0.6.6), die gewählte Ansicht bei Pen & Paper (`thetadex_dsa_modus`, ab 0.6.8), bei der Visitenkarte das eigene Passwort (`thetadex_karte_passwort`, ab 10.1), die selbst erstellten Schlüssel (`thetadex_karte_links`, Karte → Schlüssel) und die gewählte Karte (`thetadex_karte_wahl`, ab 10.3).
@@ -616,3 +616,4 @@ Letzte Versionen:
 - **1.5.0** Schritt 13.0: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium: Pflanzen als Karteikarten mit Herbarium-Angaben, weitere Karten je Kategorie, Lernen mit 5 Fächern).
 - **1.5.1** Antworten zum Plan: zwei Unterreiter Herbarium und Karten (Karten mit Wahl des Fachbereichs), 5 Fächer, 5 Bilder, Reiter am Handy nur als Kachel.
 - **1.5.2** Plan: Pflanzen lassen sich auch unter Karten anlegen (auch noch nicht gefundene).
+- **1.5.3** Schritt 13.1: Skript `leben` mit den Blättern `arten` und `karten` und den Aktionen `herbar`, `herbar_speichern`, `herbar_loeschen`, `herbar_bild`, `herbar_gelernt`. Skript neu einfügen, `einrichten` ausführen.

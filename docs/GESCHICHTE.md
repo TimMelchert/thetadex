@@ -360,3 +360,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **Etappe 13** Herbarium. **1.5.0** Schritt 13.0: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium: Pflanzen als Karteikarten mit Herbarium-Angaben, weitere Karten je Kategorie, Lernen mit 5 Fächern).
 - **1.5.1** Antworten zum Plan: zwei Unterreiter Herbarium und Karten (Karten mit Wahl des Fachbereichs), 5 Fächer, 5 Bilder, Reiter am Handy nur als Kachel.
 - **1.5.2** Plan: Pflanzen lassen sich auch unter Karten anlegen (auch noch nicht gefundene).
+- **1.5.3** Schritt 13.1: Skript `leben` mit den Blättern `arten` und `karten` und den Aktionen `herbar`, `herbar_speichern`, `herbar_loeschen`, `herbar_bild`, `herbar_gelernt`. Skript neu einfügen, `einrichten` ausführen.
