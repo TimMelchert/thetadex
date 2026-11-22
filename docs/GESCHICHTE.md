@@ -361,3 +361,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.5.1** Antworten zum Plan: zwei Unterreiter Herbarium und Karten (Karten mit Wahl des Fachbereichs), 5 Fächer, 5 Bilder, Reiter am Handy nur als Kachel.
 - **1.5.2** Plan: Pflanzen lassen sich auch unter Karten anlegen (auch noch nicht gefundene).
 - **1.5.3** Schritt 13.1: Skript `leben` mit den Blättern `arten` und `karten` und den Aktionen `herbar`, `herbar_speichern`, `herbar_loeschen`, `herbar_bild`, `herbar_gelernt`. Skript neu einfügen, `einrichten` ausführen.
+- **1.5.4** Schritt 13.2: Reiter Herbarium (🌿, Moosgrün, am Handy nur Kachel) mit Unterreiter Herbarium: Pflanzen suchen, filtern, ansehen, „Im Herbarium“ anhaken, anlegen und ändern mit bis zu 5 Bildern.

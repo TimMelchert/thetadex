@@ -105,6 +105,7 @@
 [data-symbol="uni"]      { --symbol: url("../icons/reiter/uni.svg"); }
 [data-symbol="doener"]   { --symbol: url("../icons/reiter/doener.svg"); }
 [data-symbol="visitenkarte"] { --symbol: url("../icons/reiter/visitenkarte.svg"); }
+[data-symbol="herbarium"] { --symbol: url("../icons/reiter/herbarium.svg"); }
 [data-symbol="stift"]    { --symbol: url("../icons/symbole/stift.svg"); }
 [data-symbol="einstellungen"] { --symbol: url("../icons/einstellungen.svg"); }
 
@@ -1453,3 +1454,21 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .besitz-sortzeile { margin-top: 2px; }
 .besitz-sortzeile th { padding-top: 0; padding-bottom: 0; }
 .besitz-liste > .besitz-ort:first-child { margin-top: 6px; }
+
+/* Herbarium (13.2): Pflanzenliste, Marke „im Herbarium“, Vorschläge für Gruppen */
+.herbar-liste { margin-top: var(--abstand); }
+.herbar-zahl { margin: 0 0 4px; font-size: 0.9rem; }
+.herbar-latein { font-style: italic; }
+.herbar-nr { flex: 0 0 auto; align-self: center; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.herbar-nr.leise { font-weight: 400; font-size: 0.85rem; }
+.herbar-marke { display: inline-block; margin: 6px 0 0; padding: 2px 10px; border: 1px solid var(--linie); border-radius: var(--rund); color: var(--schrift-leise); font-size: 0.9rem; }
+.herbar-marke.ist-drin { border-color: var(--bereich); background: var(--bereich); color: var(--schrift-auf-farbe); font-weight: 600; }
+.herbar-schnell { margin-top: var(--abstand); padding-top: 10px; border-top: 1px solid var(--linie); }
+.herbar-schnell h3 { margin: 0; font-size: 1rem; }
+.formular .herbar-haken { margin-top: 8px; font-weight: 600; }
+.herbar-vorschlaege { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.herbar-vorschlag { min-height: 36px; padding: 4px 10px; border: 1px solid var(--bereich); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift); font: inherit; font-size: 0.9rem; cursor: pointer; }
+.herbar-link-zeile { display: flex; gap: 8px; align-items: stretch; }
+.herbar-link-zeile input { flex: 1; min-width: 0; }
+.formular .herbar-link-zeile .knopf { margin-top: 0; }
+.herbar-bald { margin-top: var(--abstand); }
