@@ -1471,4 +1471,20 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .herbar-link-zeile { display: flex; gap: 8px; align-items: stretch; }
 .herbar-link-zeile input { flex: 1; min-width: 0; }
 .formular .herbar-link-zeile .knopf { margin-top: 0; }
-.herbar-bald { margin-top: var(--abstand); }
+
+/* Herbarium (13.3): fünf Fächer und die Karteikarte beim Lernen */
+.herbar-faecher { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: var(--abstand); }
+.herbar-fach { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; background: var(--kachel); border-radius: var(--rund); border-top: 4px solid var(--bereich); text-align: center; }
+.herbar-fach.ist-leer { border-top-color: var(--linie); }
+.herbar-fach-name { font-size: 0.85rem; }
+.herbar-fach-zahl { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.herbar-fach-dran { font-size: 0.75rem; }
+.herbar-k-titel { margin-top: calc(var(--abstand) * 1.5); }
+.herbar-k-neu { margin-top: 6px; }
+.herbar-lernen { margin-top: var(--abstand); }
+.herbar-karte { min-height: 220px; padding: 16px var(--abstand) var(--abstand); background: var(--kachel); border-radius: var(--rund); border-left: 8px solid var(--bereich); }
+.herbar-karte-fach { margin: 0; font-size: 0.85rem; }
+.herbar-karte-vorne { margin: 24px 0 8px; font-size: 1.7rem; font-weight: 700; text-align: center; overflow-wrap: anywhere; }
+.herbar-karte > .herbar-marke { display: table; margin: 0 auto 12px; }
+.herbar-lern-knoepfe .knopf { min-height: 52px; }
+.herbar-sende:empty { display: none; }

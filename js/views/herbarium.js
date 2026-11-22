@@ -1,4 +1,4 @@
-// Reiter Herbarium (Etappe 13, Plan docs/PLAN-ETAPPE-13.md). Unterreiter Herbarium (die Pflanzen) und Karten (lernen, ab 13.3).
+// Reiter Herbarium (Etappe 13, Plan docs/PLAN-ETAPPE-13.md). Unterreiter Herbarium (die Pflanzen) und Karten (lernen mit 5 Fächern, ab 13.3).
 // Herbarium: Pflanzen suchen und filtern, ansehen, „Im Herbarium“ mit Nummer, Funddatum und Fundort anhaken, anlegen, ändern, löschen.
 // Daten aus dem Skript „leben“ (Sheet „Leben“, Blätter „arten“ und „karten“). Nur mit Passwort, nur im Arbeitsspeicher.
 
@@ -7,6 +7,7 @@ import { auswahlFeld } from '../ui/auswahl.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { verkleinereBild, bildSpeicher } from '../ui/bild.js';
+import { plusTage } from '../ui/kalender.js';
 
 // Zuletzt geladene Daten { arten, karten }, nur im Arbeitsspeicher. Beim Öffnen sofort zeigen, dann frisch laden.
 let daten = null;
@@ -15,6 +16,15 @@ let teil = 'herbarium';
 // Schon geladene Bilder (Drive-Kennung → data:-Bild), nur im Arbeitsspeicher
 const bilder = bildSpeicher('leben');
 const MAX_BILDER = 5;
+// Lernen mit 5 Fächern (Leitner, 13.3): nach so vielen Tagen ist eine Karte im Fach wieder dran. Fach 1 immer.
+const WARTEN_TAGE = { 1: 0, 2: 1, 3: 3, 4: 7, 5: 14 };
+// Dran: noch nie gelernt, Fach 1, oder die Wartezeit des Fachs ist um
+const istDran = (k) => !k.gelernt_am || (k.fach || 1) <= 1 || plusTage(k.gelernt_am, WARTEN_TAGE[k.fach] || 0) <= heute();
+// Gewählter Fachbereich und Lernstand der laufenden Runde. Bleiben, solange die Seite offen ist.
+let fachbereich = 'pflanzen';
+let runde = null;   // { karten: [...], i, umgedreht, gewusst, nicht }
+// Antworten, die das Skript noch nicht bestätigt hat: { blatt, id, gewusst }
+const offeneAntworten = [];
 
 // Für die Suche: klein, ä = ae, ö = oe, ü = ue, ß = ss; dazu ohne Punkte (so findet „gans“ auch „Gänseblümchen“)
 const norm = (t) => String(t == null ? '' : t).toLocaleLowerCase('de')
@@ -164,7 +174,7 @@ export function render(container, ctx) {
             if (!antwort) return;
             merke(antwort.eintrag);
             zeigeGespeichert('Geändert', antwort.eintrag.name);
-            zeigeListe();
+            zeigeAlles();
             zeigePflanze(antwort.eintrag);
         }
         return box;
@@ -296,7 +306,7 @@ export function render(container, ctx) {
                 if (!a) {
                     status.textContent = 'Pflanze gespeichert, aber ein Bild nicht: ' + status.textContent.replace(/^NICHT gespeichert: /, '') + ' Bitte nochmal „Speichern“ tippen.';
                     zeigeBilder();
-                    zeigeListe();
+                    zeigeAlles();
                     return;
                 }
                 neu = a.eintrag;
@@ -308,7 +318,7 @@ export function render(container, ctx) {
                 neueBilder.shift();
             }
             zeigeGespeichert(werte.id ? 'Geändert' : 'Gespeichert', neu.name);
-            zeigeListe();
+            zeigeAlles();
             zeigePflanze(neu);
         }
 
@@ -320,7 +330,7 @@ export function render(container, ctx) {
             daten.arten = daten.arten.filter((x) => x.id !== p.id);
             dialog.close();
             zeigeGespeichert('Gelöscht', p.name);
-            zeigeListe();
+            zeigeAlles();
         }
 
         oeffneDialog(p ? 'Pflanze ändern' : 'Neue Pflanze', [
@@ -414,13 +424,201 @@ export function render(container, ctx) {
         ]))));
     }
 
+    // --- Karten: Fachbereich wählen, Fächer sehen, lernen (13.3) ---
+    // Fachbereiche: zurzeit nur Pflanzen, weitere (Raumplanung, Geographie …) ab 13.4
+    const fachbereichWahl = el('select', { attrs: { id: 'herbar-fachbereich' }, on: { change: () => { fachbereich = fachbereichWahl.value; zeigeKarten(); } } }, [
+        el('option', { text: 'Pflanzen', attrs: { value: 'pflanzen' } })
+    ]);
+    const kGruppe = el('select', { attrs: { id: 'herbar-k-gruppe' }, on: { change: () => zeigeKarten() } });
+    const kFamilie = el('select', { attrs: { id: 'herbar-k-familie' }, on: { change: () => zeigeKarten() } });
+    const kGattung = el('select', { attrs: { id: 'herbar-k-gattung' }, on: { change: () => zeigeKarten() } });
+    const kDrin = el('select', { attrs: { id: 'herbar-k-drin' }, on: { change: () => zeigeKarten() } }, [
+        el('option', { text: 'Alle', attrs: { value: '' } }),
+        el('option', { text: 'Im Herbarium', attrs: { value: 'ja' } }),
+        el('option', { text: 'Fehlt noch', attrs: { value: 'nein' } })
+    ]);
+    const pflanzenFilter = el('div', { class: 'besitz-filter' }, [
+        el('div', {}, [el('label', { text: 'Gruppe', attrs: { for: 'herbar-k-gruppe' } }), kGruppe]),
+        el('div', {}, [el('label', { text: 'Familie', attrs: { for: 'herbar-k-familie' } }), kFamilie]),
+        el('div', {}, [el('label', { text: 'Gattung', attrs: { for: 'herbar-k-gattung' } }), kGattung]),
+        el('div', {}, [el('label', { text: 'Herbarium', attrs: { for: 'herbar-k-drin' } }), kDrin])
+    ]);
+    const alleHaken = el('input', { attrs: { id: 'herbar-k-alle', type: 'checkbox' }, on: { change: () => zeigeKarten() } });
+    const faecherBox = el('div', { class: 'herbar-faecher' });
+    const lernenKnopf = el('button', { class: 'knopf knopf-bereich', text: 'Lernen', attrs: { type: 'button' }, on: { click: () => starteRunde() } });
+    const kNeuKnopf = el('button', { class: 'knopf knopf-zweit', text: '+ Neue Pflanze', attrs: { type: 'button' }, on: { click: () => zeigeForm(null) } });
+    const kListe = el('div', { class: 'herbar-liste' });
+    const sendeStatus = el('p', { class: 'meldung herbar-sende', attrs: { role: 'status', 'aria-live': 'polite' } });
+    const nochmalKnopf = el('button', { class: 'knopf knopf-zweit', text: 'Nochmal senden', attrs: { type: 'button', hidden: true }, on: { click: () => sendeAntworten(true) } });
+    const wahlBox = el('div', {}, [
+        el('div', { class: 'formular besitz-suche' }, [
+            el('label', { text: 'Fachbereich', attrs: { for: 'herbar-fachbereich' } }), fachbereichWahl,
+            pflanzenFilter,
+            el('label', { class: 'besitz-schnell-haken herbar-haken', attrs: { for: 'herbar-k-alle' } }, [alleHaken, el('span', { text: 'Alle Karten lernen, auch die noch nicht dran sind' })])
+        ]),
+        faecherBox,
+        el('div', { class: 'besitz-form-knoepfe' }, [lernenKnopf]),
+        el('h2', { class: 'besitz-ort herbar-k-titel', text: 'Karten in diesem Fachbereich' }),
+        el('div', { class: 'besitz-form-knoepfe herbar-k-neu' }, [kNeuKnopf]),
+        kListe
+    ]);
+    const lernBox = el('div', { class: 'herbar-lernen', attrs: { hidden: true } });
+
+    // Karten des gewählten Fachbereichs mit Filter (zurzeit nur Pflanzen; weitere Fachbereiche ab 13.4)
+    function kartenAuswahl() {
+        if (!daten) return [];
+        const gr = kGruppe.value, fa = kFamilie.value, ga = kGattung.value, drin = kDrin.value;
+        return pflanzen().filter((p) => (!gr || gruppenVon(p.gruppen).includes(gr))
+            && (!fa || p.familie === fa)
+            && (!ga || gattung(p) === ga)
+            && (!drin || (drin === 'ja') === Boolean(p.im_herbar)));
+    }
+
+    function zeigeKarten() {
+        fachbereichWahl.value = fachbereich;
+        leeren(faecherBox);
+        leeren(kListe);
+        lernBox.hidden = !runde;
+        wahlBox.hidden = Boolean(runde);
+        neuLaden.hidden = Boolean(runde);
+        if (runde) { zeigeKarte(); return; }
+        wahlBox.append(sendeStatus, nochmalKnopf);
+        if (!daten) return;
+        const alle = pflanzen();
+        fuelleFilter(kGruppe, 'Alle Gruppen', [...new Set(alle.flatMap((p) => gruppenVon(p.gruppen)))].sort(vergleiche));
+        fuelleFilter(kFamilie, 'Alle Familien', [...new Set(alle.map((p) => p.familie).filter(Boolean))].sort(vergleiche));
+        fuelleFilter(kGattung, 'Alle Gattungen', [...new Set(alle.map(gattung).filter(Boolean))].sort(vergleiche));
+        const auswahl = kartenAuswahl();
+        // Fünf Fächer: wie viele Karten darin liegen und wie viele davon heute dran sind
+        for (let f = 1; f <= 5; f++) {
+            const im = auswahl.filter((k) => (k.fach || 1) === f);
+            const dran = im.filter(istDran).length;
+            faecherBox.append(el('div', { class: 'herbar-fach' + (im.length ? '' : ' ist-leer') }, [
+                el('span', { class: 'herbar-fach-name', text: 'Fach ' + f }),
+                el('span', { class: 'herbar-fach-zahl', text: String(im.length) }),
+                el('span', { class: 'leise herbar-fach-dran', text: f === 1 ? 'immer dran' : dran + ' dran' })
+            ]));
+        }
+        const zahl = alleHaken.checked ? auswahl.length : auswahl.filter(istDran).length;
+        lernenKnopf.textContent = 'Lernen (' + zahl + ')';
+        lernenKnopf.disabled = !zahl;
+        if (!auswahl.length) {
+            kListe.append(el('p', { class: 'leise', text: alle.length ? 'Keine Pflanze passt zum Filter.' : 'Noch keine Pflanzen. Tippe auf „+ Neue Pflanze“.' }));
+            return;
+        }
+        kListe.append(el('ul', { class: 'einkauf-liste' }, auswahl.slice().sort((a, b) => vergleiche(a.name, b.name)).map((p) => el('li', { class: 'einkauf-zeile einkauf-lm' }, [
+            el('button', { class: 'einkauf-lm-wahl', attrs: { type: 'button' }, on: { click: () => zeigePflanze(p) } }, [
+                el('span', { class: 'einkauf-lm-name', text: p.name }),
+                el('span', { class: 'leise einkauf-klein', text: herbarText(p) })
+            ]),
+            el('span', { class: 'herbar-nr leise', text: 'Fach ' + (p.fach || 1) + (istDran(p) ? ' · dran' : '') })
+        ]))));
+    }
+
+    // Neue Runde: dran (oder alle), niedrige Fächer zuerst, innerhalb eines Fachs gemischt
+    function starteRunde() {
+        const auswahl = kartenAuswahl().filter((k) => alleHaken.checked || istDran(k));
+        if (!auswahl.length) return;
+        const gemischt = auswahl.map((k) => [k, Math.random()]).sort((a, b) => (a[0].fach || 1) - (b[0].fach || 1) || a[1] - b[1]).map(([k]) => k);
+        runde = { karten: gemischt, i: 0, umgedreht: false, gewusst: 0, nicht: 0 };
+        zeigeKarten();
+    }
+
+    // Eine Karte: vorne der deutsche Name, nach „Umdrehen“ alle Angaben. Die Marke „im Herbarium · Nr.“ steht auf beiden Seiten.
+    function zeigeKarte() {
+        leeren(lernBox);
+        const beenden = el('button', { class: 'knopf knopf-zweit', text: 'Beenden', attrs: { type: 'button' }, on: { click: () => { runde = null; zeigeKarten(); } } });
+        if (runde.i >= runde.karten.length) {
+            lernBox.append(
+                el('h2', { text: 'Runde fertig' }),
+                el('p', { text: runde.gewusst + ' gewusst, ' + runde.nicht + ' nicht gewusst.' }),
+                el('div', { class: 'besitz-form-knoepfe' }, [beenden]),
+                sendeStatus, nochmalKnopf
+            );
+            beenden.textContent = 'Zurück';
+            beenden.className = 'knopf knopf-bereich';
+            beenden.focus();
+            return;
+        }
+        const p = runde.karten[runde.i];
+        const karte = el('div', { class: 'herbar-karte', attrs: { 'aria-live': 'polite' } }, [
+            el('p', { class: 'leise herbar-karte-fach', text: 'Karte ' + (runde.i + 1) + ' von ' + runde.karten.length + ' · Fach ' + (p.fach || 1) }),
+            el('p', { class: 'herbar-karte-vorne', text: p.name }),
+            el('p', { class: 'herbar-marke' + (p.im_herbar ? ' ist-drin' : ''), text: herbarText(p) })
+        ]);
+        if (runde.umgedreht) {
+            const angaben = [
+                ['Lateinisch', p.latein], ['Familie', p.familie], ['Gattung', gattung(p)], ['Gruppen', gruppenVon(p.gruppen).join(', ')],
+                ['Eigenschaften', p.eigenschaften], ['Bestimmungs­merkmale', p.merkmale], ['Notiz', p.notiz],
+                ['Funddatum', p.im_herbar ? datumText(p.gefunden_am) : ''], ['Fundort', p.im_herbar ? p.fundort : '']
+            ].filter(([, w]) => w);
+            const fotos = p.bilder || [];
+            const gross = el('img', { class: 'besitz-dialog-bild einkauf-bild-gross', attrs: { alt: '', hidden: true } });
+            gross.addEventListener('click', () => { gross.hidden = true; });
+            karte.append(...[
+                fotos.length ? gross : null,
+                fotos.length ? el('div', { class: 'dsa-ab-bilder einkauf-bilder' }, fotos.map((id, i) =>
+                    vorschauBild(id, null, 'Bild ' + (i + 1) + ' zu ' + p.name + ' groß zeigen', (src) => {
+                        gross.hidden = !gross.hidden && gross.src === src;
+                        gross.src = src;
+                    }))) : null,
+                angaben.length ? el('dl', { class: 'besitz-angaben' }, angaben.flatMap(([n, w]) => [el('dt', { text: n }), el('dd', { text: w })]))
+                    : el('p', { class: 'leise', text: 'Noch keine Angaben auf der Rückseite. Tippe in der Liste auf die Pflanze und dann auf „Bearbeiten“.' })
+            ].filter(Boolean));
+        }
+        const knoepfe = runde.umgedreht
+            ? [
+                el('button', { class: 'knopf knopf-bereich', text: '✓ Gewusst', attrs: { type: 'button' }, on: { click: () => antworte(p, true) } }),
+                el('button', { class: 'knopf knopf-zweit', text: '✗ Nicht gewusst', attrs: { type: 'button' }, on: { click: () => antworte(p, false) } })
+            ]
+            : [el('button', { class: 'knopf knopf-bereich', text: 'Umdrehen', attrs: { type: 'button' }, on: { click: () => { runde.umgedreht = true; zeigeKarte(); } } })];
+        lernBox.append(karte, el('div', { class: 'besitz-form-knoepfe herbar-lern-knoepfe' }, [...knoepfe, beenden]), sendeStatus, nochmalKnopf);
+        knoepfe[0].focus({ preventScroll: true });
+    }
+
+    // Antwort merken, gleich weiter zur nächsten Karte. Gesendet wird im Hintergrund.
+    function antworte(p, gewusst) {
+        if (gewusst) runde.gewusst++; else runde.nicht++;
+        offeneAntworten.push({ blatt: 'arten', id: p.id, gewusst });
+        runde.i++;
+        runde.umgedreht = false;
+        zeigeKarte();
+        sendeAntworten(false);
+    }
+
+    // Schickt die offenen Antworten nacheinander ans Skript. Schlägt eine fehl, bleibt sie (und alle danach) im Arbeitsspeicher.
+    let sendetAntworten = false;
+    async function sendeAntworten(nochmal) {
+        if (sendetAntworten) return;
+        sendetAntworten = true;
+        nochmalKnopf.hidden = true;
+        if (nochmal) sendeStatus.textContent = 'Sende …';
+        while (offeneAntworten.length) {
+            const a = offeneAntworten[0];
+            try {
+                const r = await api('leben', 'herbar_gelernt', a);
+                const k = daten && daten[a.blatt].find((x) => x.id === r.id);
+                if (k) { k.fach = r.fach; k.gelernt_am = r.gelernt_am; }
+                offeneAntworten.shift();
+            } catch (e) {
+                // „gibt es nicht mehr“: diese Antwort verwerfen, die übrigen weiter senden
+                if (e.code === 'fehlt') { offeneAntworten.shift(); continue; }
+                const n = offeneAntworten.length;
+                sendeStatus.textContent = (n === 1 ? '1 Antwort' : n + ' Antworten') + ' nicht gespeichert: ' + e.message;
+                nochmalKnopf.hidden = false;
+                sendetAntworten = false;
+                return;
+            }
+        }
+        sendeStatus.textContent = '';
+        sendetAntworten = false;
+        if (!runde) zeigeKarten();
+    }
+
     // --- Unterreiter ---
     const neuKnopf = el('button', { class: 'knopf knopf-bereich', text: '+ Neue Pflanze', attrs: { type: 'button' }, on: { click: () => zeigeForm(null) } });
     const herbarTeil = el('div', { attrs: { id: 'herbar-teil-herbarium' } }, [suchBox, listeBox]);
-    // Karten (Lernen mit 5 Fächern) kommen in Schritt 13.3
-    const kartenTeil = el('div', { attrs: { id: 'herbar-teil-karten' } }, [
-        el('p', { class: 'leise herbar-bald', text: 'Hier lernst du bald mit Karteikarten: Pflanzen, Raumplanung, Geographie und mehr (kommt im nächsten Schritt).' })
-    ]);
+    const kartenTeil = el('div', { attrs: { id: 'herbar-teil-karten' } }, [wahlBox, lernBox]);
     const teilKnoepfe = [['herbarium', 'Herbarium', herbarTeil], ['karten', 'Karten', kartenTeil]].map(([id, text, box]) => [
         id,
         el('button', { class: 'ansicht', text, attrs: { type: 'button', 'aria-controls': box.id }, on: { click: () => zeigeTeil(id) } }),
@@ -433,6 +631,12 @@ export function render(container, ctx) {
             box.hidden = k !== id;
         });
         neuKnopf.hidden = id !== 'herbarium';
+        neuLaden.hidden = id === 'karten' && Boolean(runde);
+    }
+
+    function zeigeAlles() {
+        zeigeListe();
+        if (!runde) zeigeKarten();
     }
 
     // --- Laden ---
@@ -445,7 +649,7 @@ export function render(container, ctx) {
             const d = await api('leben', 'herbar');
             daten = { arten: Array.isArray(d.arten) ? d.arten : [], karten: Array.isArray(d.karten) ? d.karten : [] };
             ladeStatus.textContent = '';
-            zeigeListe();
+            zeigeAlles();
         } catch (e) {
             ladeStatus.textContent = 'Laden fehlgeschlagen: ' + e.message
                 + (e.code === 'aktion' ? ' Bitte im Sheet „Leben“ die neue Fassung des Skripts einfügen und bereitstellen (Schritt 13.1).' : '');
@@ -470,6 +674,9 @@ export function render(container, ctx) {
         dialog
     );
     zeigeTeil(teil);
-    zeigeListe();
+    zeigeAlles();
+    if (runde) zeigeKarten();
     laden();
+    // Noch offene Antworten (zum Beispiel nach einem Wechsel des Reiters) weiter senden
+    if (offeneAntworten.length) sendeAntworten(false);
 }

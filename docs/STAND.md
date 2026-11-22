@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.5.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.5.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -18,7 +18,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 10 „Visitenkarte“ ist fertig (4.11.2026): Festlegungen in 4 („Visitenkarte“).
 - Etappe 11 „Rezepte“ ist fertig (7.11.2026): Festlegungen in 4 („Einkauf, Sheet ‚Gemeinsam‘“, Abschnitt Rezepte). 
 - Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) ist fertig (16.11.2026): Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
-- Etappe 13 „Herbarium“ (1.5.x) läuft: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium mit Unterreitern Herbarium und Karten, Karteikarten für Pflanzen und weitere Fachbereiche, Blätter `arten` und `karten` im Sheet „Leben“). 13.1 (Skript `leben`) und 13.2 (Reiter und Unterreiter Herbarium) sind gebaut. Nächster Schritt: 13.3 (Karten: Lernen mit 5 Fächern).
+- Etappe 13 „Herbarium“ (1.5.x) läuft: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium mit Unterreitern Herbarium und Karten, Karteikarten für Pflanzen und weitere Fachbereiche, Blätter `arten` und `karten` im Sheet „Leben“). 13.1 (Skript `leben`), 13.2 (Reiter und Unterreiter Herbarium) und 13.3 (Karten: Lernen mit 5 Fächern für Pflanzen) sind gebaut. Nächster Schritt: 13.4 (weitere Fachbereiche).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -618,3 +618,4 @@ Letzte Versionen:
 - **1.5.2** Plan: Pflanzen lassen sich auch unter Karten anlegen (auch noch nicht gefundene).
 - **1.5.3** Schritt 13.1: Skript `leben` mit den Blättern `arten` und `karten` und den Aktionen `herbar`, `herbar_speichern`, `herbar_loeschen`, `herbar_bild`, `herbar_gelernt`. Skript neu einfügen, `einrichten` ausführen.
 - **1.5.4** Schritt 13.2: Reiter Herbarium (🌿, Moosgrün, am Handy nur Kachel) mit Unterreiter Herbarium: Pflanzen suchen, filtern, ansehen, „Im Herbarium“ anhaken, anlegen und ändern mit bis zu 5 Bildern.
+- **1.5.5** Schritt 13.3: Unterreiter Karten: Fachbereich Pflanzen mit Filter, fünf Fächer, Lernen (vorne deutscher Name, hinten alle Angaben, Marke „im Herbarium“ auf beiden Seiten), Antworten gehen im Hintergrund ans Skript.
