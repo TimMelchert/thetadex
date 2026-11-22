@@ -1,6 +1,6 @@
 # Plan Etappe 13 „Herbarium“ (1.5.x)
 
-Stand: 22.11.2026, Schritt 13.0 (1.5.1: Antworten der Person). Grundlage: Wunsch der Person (22.11.2026). Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelöscht.
+Stand: 22.11.2026, Schritt 13.0 (1.5.1 und 1.5.2: Antworten der Person). Grundlage: Wunsch der Person (22.11.2026). Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelöscht.
 
 ## 1. Ziel
 
@@ -47,9 +47,10 @@ Kachel auf der Startseite und am PC in der Seitenleiste, am Handy nicht in der L
   Bei Pflanzen steht auf **beiden Seiten** ein kleines Zeichen „im Herbarium · Nr. 12“ oder „fehlt noch“ (Wunsch der Person: die Markierung beim Lernen sehen).
 - Die Antworten gehen gleich im Hintergrund ans Skript, die App wartet nicht darauf. Klappt das Senden nicht, bleibt die Antwort im Arbeitsspeicher, und die App zeigt
   „2 Antworten nicht gespeichert · Nochmal senden“. Nichts wird ohne Netz im Gerät gespeichert (1.5).
-- **Karten anlegen und ändern** (nicht bei Pflanzen, die pflegt die Person im Unterreiter Herbarium): Unter dem Knopf „Lernen“ die Liste der Karten des gewählten
-  Fachbereichs mit Suche (Vorder- und Rückseite) und „+ Neue Karte“. Tipp zeigt die Karte, „Bearbeiten“ öffnet das Formular.
-  Formular: Fachbereich (Pflicht, mit Vorschlägen, so entsteht auch ein neuer), Vorderseite (Pflicht), Rückseite (Zeilenumbrüche bleiben), bis zu 5 Bilder.
+- **Karten anlegen und ändern:** Unter dem Knopf „Lernen“ die Liste der Karten des gewählten Fachbereichs mit Suche und „+ Neue Karte“. Tipp zeigt die Karte, „Bearbeiten“ öffnet das Formular.
+  - Bei **Pflanzen** ist es dieselbe Liste wie im Unterreiter Herbarium, mit „+ Neue Pflanze“ und demselben Formular (Wunsch der Person, 22.11.2026:
+    auch Pflanzen eintragen und lernen, die noch nicht gefunden sind). Eine neue Pflanze ist zuerst „fehlt noch“, bis „Im Herbarium“ angehakt ist.
+  - Bei den anderen Fachbereichen: Formular mit Fachbereich (Pflicht, mit Vorschlägen, so entsteht auch ein neuer), Vorderseite (Pflicht), Rückseite (Zeilenumbrüche bleiben), bis zu 5 Bilder.
 
 **Bilder** wie bei Besitz: hochladen (die App verkleinert auf höchstens 1600 px, JPEG) oder Google-Drive-Link, Datei im Drive der Person,
 neuer privater Ordner **„Thetadex Herbarium“**. Die Liste lädt Bilder erst, wenn sie zu sehen sind, nur im Arbeitsspeicher (`bildSpeicher`).
@@ -127,12 +128,12 @@ Neue Aktionen, nur mit `APP_PIN`:
 
 | Schritt | Version | Inhalt |
 | --- | --- | --- |
-| 13.0 | 1.5.0, 1.5.1 | dieser Plan (1.5.1: Antworten der Person eingearbeitet) |
-| 13.1 | 1.5.2 | Skript `leben`: Blätter `arten` und `karten`, Aktionen aus 4, Bild-Ordner. Von Hand: Skript einfügen, `einrichten`, neue Version bereitstellen |
-| 13.2 | 1.5.3 | Reiter Herbarium (Kachel, Symbol, Farbe), Unterreiter Herbarium: Liste, Suche, Filter, Karte ansehen, „Im Herbarium“ anhaken, Formular mit Bildern |
-| 13.3 | 1.5.4 | Unterreiter Karten: Fachbereich wählen, Lernen mit 5 Fächern, zuerst für Pflanzen |
-| 13.4 | 1.5.5 | Unterreiter Karten: weitere Fachbereiche (Raumplanung, Geographie …), Karten anlegen und ändern |
-| 13.5 | 1.5.6 | Abschluss: Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in `docs/STAND.md` einarbeiten, diese Datei löschen |
+| 13.0 | 1.5.0 bis 1.5.2 | dieser Plan (1.5.1 und 1.5.2: Antworten der Person eingearbeitet) |
+| 13.1 | 1.5.3 | Skript `leben`: Blätter `arten` und `karten`, Aktionen aus 4, Bild-Ordner. Von Hand: Skript einfügen, `einrichten`, neue Version bereitstellen |
+| 13.2 | 1.5.4 | Reiter Herbarium (Kachel, Symbol, Farbe), Unterreiter Herbarium: Liste, Suche, Filter, Karte ansehen, „Im Herbarium“ anhaken, Formular mit Bildern |
+| 13.3 | 1.5.5 | Unterreiter Karten: Fachbereich wählen, Lernen mit 5 Fächern, zuerst für Pflanzen (mit „+ Neue Pflanze“) |
+| 13.4 | 1.5.6 | Unterreiter Karten: weitere Fachbereiche (Raumplanung, Geographie …), Karten anlegen und ändern |
+| 13.5 | 1.5.7 | Abschluss: Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in `docs/STAND.md` einarbeiten, diese Datei löschen |
 
 ## 7. Später (nicht in dieser Etappe)
 
