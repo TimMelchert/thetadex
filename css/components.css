@@ -1488,3 +1488,6 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .herbar-karte > .herbar-marke { display: table; margin: 0 auto 12px; }
 .herbar-lern-knoepfe .knopf { min-height: 52px; }
 .herbar-sende:empty { display: none; }
+
+/* Herbarium (13.4): Rückseite einer Karte mit Zeilenumbrüchen */
+.herbar-hinten { margin: 12px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }

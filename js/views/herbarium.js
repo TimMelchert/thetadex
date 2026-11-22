@@ -180,6 +180,109 @@ export function render(container, ctx) {
         return box;
     }
 
+    // Bilder im Formular (Pflanze oder Karte): behalten = gespeicherte Kennungen, die bleiben;
+    // neue = gewählte (data:-Bild) oder Drive-Links, die nach dem Speichern einzeln hochgehen
+    function bilderTeil(start, vorsilbe) {
+        const t = { behalten: [...(start || [])], neue: [] };   // neue: { daten } oder { link }
+        const bilderBox = el('div', { class: 'dsa-ab-bilder einkauf-bilder' });
+        const bildStatus = el('p', { class: 'leise besitz-hinweis', attrs: { role: 'status', 'aria-live': 'polite' } });
+        const bildDatei = el('input', { attrs: { id: vorsilbe + '-bild', type: 'file', accept: 'image/*', multiple: true }, on: { change: () => bilderGewaehlt() } });
+        const bildLink = el('input', { attrs: { id: vorsilbe + '-bild-link', type: 'url', inputmode: 'url', autocomplete: 'off', spellcheck: 'false', placeholder: 'https://drive.google.com/…' } });
+        const linkDazu = el('button', { class: 'knopf knopf-zweit', text: 'Link dazu', attrs: { type: 'button' }, on: { click: () => bildLinkDazu() } });
+        bildLink.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); bildLinkDazu(); } });
+        const platz = () => MAX_BILDER - t.behalten.length - t.neue.length;
+        t.zeige = () => {
+            leeren(bilderBox);
+            const weg = (label, tun) => el('button', { class: 'form-zu einkauf-bild-weg', text: '×', attrs: { type: 'button', 'aria-label': label }, on: { click: tun } });
+            t.behalten.forEach((id, i) => bilderBox.append(el('div', { class: 'einkauf-bild-feld' }, [
+                vorschauBild(id, null, 'Bild ' + (i + 1), () => {}),
+                weg('Bild ' + (i + 1) + ' entfernen', () => { t.behalten = t.behalten.filter((x) => x !== id); t.zeige(); })
+            ])));
+            t.neue.forEach((b, i) => bilderBox.append(el('div', { class: 'einkauf-bild-feld' }, [
+                b.daten ? vorschauBild('', b.daten, 'Neues Bild ' + (i + 1), () => {})
+                    : el('span', { class: 'dsa-ab-bild einkauf-bild-link leise', text: 'Drive-Link' }),
+                weg('Neues Bild ' + (i + 1) + ' entfernen', () => { t.neue.splice(t.neue.indexOf(b), 1); t.zeige(); })
+            ])));
+            bilderBox.hidden = !t.behalten.length && !t.neue.length;
+            const voll = platz() <= 0;
+            bildDatei.disabled = voll;
+            bildLink.disabled = voll;
+            linkDazu.disabled = voll;
+            bildStatus.textContent = voll ? 'Höchstens ' + MAX_BILDER + ' Bilder.'
+                : t.neue.length ? 'Neue Bilder gehen beim Speichern hoch. Entfernte bleiben im Drive-Ordner „Thetadex Herbarium“.' : '';
+        };
+        async function bilderGewaehlt() {
+            const dateien = [...(bildDatei.files || [])];
+            bildDatei.value = '';
+            for (const datei of dateien) {
+                if (platz() <= 0) break;
+                try {
+                    bildStatus.textContent = 'Bild wird verkleinert …';
+                    t.neue.push({ daten: await verkleinereBild(datei) });
+                } catch (e) {
+                    t.zeige();
+                    bildStatus.textContent = e.message;
+                    return;
+                }
+            }
+            t.zeige();
+        }
+        function bildLinkDazu() {
+            const wert = bildLink.value.trim();
+            if (!wert || platz() <= 0) return;
+            if (!/^https:\/\/(drive|docs)\.google\.com\//i.test(wert)) {
+                bildStatus.textContent = 'Bitte einen Google-Drive-Link einfügen (in Drive „Link kopieren“).';
+                return;
+            }
+            t.neue.push({ link: wert });
+            bildLink.value = '';
+            t.zeige();
+        }
+        t.elemente = [
+            el('label', { text: 'Bilder (freiwillig, bis zu ' + MAX_BILDER + '): wählen oder aufnehmen', attrs: { for: vorsilbe + '-bild' } }), bilderBox, bildDatei,
+            el('label', { text: 'oder Google-Drive-Link', attrs: { for: vorsilbe + '-bild-link' } }),
+            el('div', { class: 'herbar-link-zeile' }, [bildLink, linkDazu]), bildStatus
+        ];
+        t.zeige();
+        return t;
+    }
+
+    // Speichert einen Eintrag (Pflanze oder Karte), danach die neuen Bilder einzeln. Liefert den gespeicherten Eintrag oder null.
+    // Schlägt ein Bild fehl, bleibt das Fenster mit den übrigen offen; gilt() bekommt jeden gespeicherten Stand (für einen zweiten Versuch).
+    async function speichereMitBildern(blatt, alt, werte, bt, status, knoepfe, wort, gilt) {
+        const anfrage = { ...werte, blatt };
+        if (alt) Object.assign(anfrage, { id: alt.id, geaendert_am: alt.geaendert_am, bilder: bt.behalten });
+        const antwort = await senden(status, knoepfe, 'herbar_speichern', anfrage);
+        if (!antwort) return null;
+        let neu = antwort.eintrag;
+        const merkeHier = (x) => {
+            const liste = daten[blatt];
+            const i = liste.findIndex((y) => y.id === x.id);
+            if (i >= 0) liste[i] = x; else liste.push(x);
+            gilt(x);
+            bt.behalten = [...(x.bilder || [])];
+        };
+        merkeHier(neu);
+        while (bt.neue.length) {
+            const b = bt.neue[0];
+            const werteBild = { blatt, id: neu.id, geaendert_am: neu.geaendert_am };
+            if (b.daten) werteBild.bild_daten = b.daten.replace(/^data:image\/jpeg;base64,/, ''); else werteBild.bild = b.link;
+            const a = await senden(status, knoepfe, 'herbar_bild', werteBild);
+            if (!a) {
+                status.textContent = wort + ' gespeichert, aber ein Bild nicht: ' + status.textContent.replace(/^NICHT gespeichert: /, '') + ' Bitte nochmal „Speichern“ tippen.';
+                bt.zeige();
+                zeigeAlles();
+                return null;
+            }
+            neu = a.eintrag;
+            merkeHier(neu);
+            // Hochgeladenes Bild gleich merken, dann muss es nicht neu geladen werden
+            if (b.daten && bt.behalten.length) bilder.set(bt.behalten[bt.behalten.length - 1], b.daten);
+            bt.neue.shift();
+        }
+        return neu;
+    }
+
     // --- Pflanze anlegen oder ändern ---
     function zeigeForm(p) {
         const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
@@ -215,64 +318,7 @@ export function render(container, ctx) {
         const notiz = text('herbar-f-notiz', p && p.notiz, 'freiwillig');
         const herbar = herbarFelder(p, 'herbar-f');
 
-        // Bilder: behalten = gespeicherte Kennungen, die bleiben; neu = gewählte (data:-Bild) oder Drive-Links, die nach dem Speichern hochgehen
-        let behalten = p ? [...(p.bilder || [])] : [];
-        const neueBilder = [];   // { daten, name } oder { link }
-        const bilderBox = el('div', { class: 'dsa-ab-bilder einkauf-bilder' });
-        const bildStatus = el('p', { class: 'leise besitz-hinweis', attrs: { role: 'status', 'aria-live': 'polite' } });
-        const bildDatei = el('input', { attrs: { id: 'herbar-f-bild', type: 'file', accept: 'image/*', multiple: true }, on: { change: () => bilderGewaehlt() } });
-        const bildLink = el('input', { attrs: { id: 'herbar-f-bild-link', type: 'url', inputmode: 'url', autocomplete: 'off', spellcheck: 'false', placeholder: 'https://drive.google.com/…' } });
-        const linkDazu = el('button', { class: 'knopf knopf-zweit', text: 'Link dazu', attrs: { type: 'button' }, on: { click: () => bildLinkDazu() } });
-        bildLink.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); bildLinkDazu(); } });
-        const platz = () => MAX_BILDER - behalten.length - neueBilder.length;
-        function zeigeBilder() {
-            leeren(bilderBox);
-            const weg = (label, tun) => el('button', { class: 'form-zu einkauf-bild-weg', text: '×', attrs: { type: 'button', 'aria-label': label }, on: { click: tun } });
-            behalten.forEach((id, i) => bilderBox.append(el('div', { class: 'einkauf-bild-feld' }, [
-                vorschauBild(id, null, 'Bild ' + (i + 1), () => {}),
-                weg('Bild ' + (i + 1) + ' entfernen', () => { behalten = behalten.filter((x) => x !== id); zeigeBilder(); })
-            ])));
-            neueBilder.forEach((b, i) => bilderBox.append(el('div', { class: 'einkauf-bild-feld' }, [
-                b.daten ? vorschauBild('', b.daten, 'Neues Bild ' + (i + 1), () => {})
-                    : el('span', { class: 'dsa-ab-bild einkauf-bild-link leise', text: 'Drive-Link' }),
-                weg('Neues Bild ' + (i + 1) + ' entfernen', () => { neueBilder.splice(neueBilder.indexOf(b), 1); zeigeBilder(); })
-            ])));
-            bilderBox.hidden = !behalten.length && !neueBilder.length;
-            const voll = platz() <= 0;
-            bildDatei.disabled = voll;
-            bildLink.disabled = voll;
-            linkDazu.disabled = voll;
-            bildStatus.textContent = voll ? 'Höchstens ' + MAX_BILDER + ' Bilder.'
-                : neueBilder.length ? 'Neue Bilder gehen beim Speichern hoch. Entfernte bleiben im Drive-Ordner „Thetadex Herbarium“.' : '';
-        }
-        async function bilderGewaehlt() {
-            const dateien = [...(bildDatei.files || [])];
-            bildDatei.value = '';
-            for (const datei of dateien) {
-                if (platz() <= 0) break;
-                try {
-                    bildStatus.textContent = 'Bild wird verkleinert …';
-                    neueBilder.push({ daten: await verkleinereBild(datei), name: String(datei.name || 'Bild').replace(/\.[^.]*$/, '').slice(0, 60) });
-                } catch (e) {
-                    zeigeBilder();
-                    bildStatus.textContent = e.message;
-                    return;
-                }
-            }
-            zeigeBilder();
-        }
-        function bildLinkDazu() {
-            const wert = bildLink.value.trim();
-            if (!wert || platz() <= 0) return;
-            if (!/^https:\/\/(drive|docs)\.google\.com\//i.test(wert)) {
-                bildStatus.textContent = 'Bitte einen Google-Drive-Link einfügen (in Drive „Link kopieren“).';
-                return;
-            }
-            neueBilder.push({ link: wert });
-            bildLink.value = '';
-            zeigeBilder();
-        }
-        zeigeBilder();
+        const bt = bilderTeil(p ? p.bilder : [], 'herbar-f');
 
         const speichern = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
         const loeschen = p ? el('button', { class: 'knopf knopf-zweit', text: 'Löschen', attrs: { type: 'button' }, on: { click: () => entfernen() } }) : null;
@@ -282,7 +328,7 @@ export function render(container, ctx) {
         async function absenden(ev) {
             ev.preventDefault();
             const werte = {
-                blatt: 'arten', reich: 'flora',
+                reich: 'flora',
                 name: name.value.trim(), latein: latein.value.trim(), familie: familie.feld.value.trim(), gruppen: gruppenVon(gruppen.value).join(', '),
                 eigenschaften: eigenschaften.value, merkmale: merkmale.value, notiz: notiz.value,
                 ...herbar.werte()
@@ -290,34 +336,10 @@ export function render(container, ctx) {
             if (!werte.name) { status.textContent = 'Bitte den deutschen Namen eingeben.'; name.focus(); return; }
             if (werte.gruppen.length > 200) { status.textContent = 'Gruppen sind zu lang (höchstens 200 Zeichen).'; gruppen.focus(); return; }
             if (datumFehler(werte)) { status.textContent = datumFehler(werte); herbar.datum.focus(); return; }
-            if (p) Object.assign(werte, { id: p.id, geaendert_am: p.geaendert_am, bilder: behalten });
-            const antwort = await senden(status, knoepfe, 'herbar_speichern', werte);
-            if (!antwort) return;
-            let neu = antwort.eintrag;
-            merke(neu);
-            p = neu;   // ab jetzt gilt die gespeicherte Pflanze (für einen zweiten Versuch mit den restlichen Bildern)
-            behalten = [...(neu.bilder || [])];
-            // Neue Bilder einzeln nacheinander anhängen. Schlägt eins fehl, bleibt das Fenster mit den übrigen offen.
-            while (neueBilder.length) {
-                const b = neueBilder[0];
-                const werteBild = { blatt: 'arten', id: neu.id, geaendert_am: neu.geaendert_am };
-                if (b.daten) werteBild.bild_daten = b.daten.replace(/^data:image\/jpeg;base64,/, ''); else werteBild.bild = b.link;
-                const a = await senden(status, knoepfe, 'herbar_bild', werteBild);
-                if (!a) {
-                    status.textContent = 'Pflanze gespeichert, aber ein Bild nicht: ' + status.textContent.replace(/^NICHT gespeichert: /, '') + ' Bitte nochmal „Speichern“ tippen.';
-                    zeigeBilder();
-                    zeigeAlles();
-                    return;
-                }
-                neu = a.eintrag;
-                merke(neu);
-                p = neu;
-                behalten = [...(neu.bilder || [])];
-                // Hochgeladenes Bild gleich merken, dann muss es nicht neu geladen werden
-                if (b.daten && behalten.length) bilder.set(behalten[behalten.length - 1], b.daten);
-                neueBilder.shift();
-            }
-            zeigeGespeichert(werte.id ? 'Geändert' : 'Gespeichert', neu.name);
+            const warNeu = !p;
+            const neu = await speichereMitBildern('arten', p, werte, bt, status, knoepfe, 'Pflanze', (x) => { p = x; });
+            if (!neu) return;
+            zeigeGespeichert(warNeu ? 'Gespeichert' : 'Geändert', neu.name);
             zeigeAlles();
             zeigePflanze(neu);
         }
@@ -343,9 +365,7 @@ export function render(container, ctx) {
                 el('label', { text: 'Eigenschaften', attrs: { for: 'herbar-f-eigenschaften' } }), eigenschaften,
                 el('label', { text: 'Bestimmungsmerkmale', attrs: { for: 'herbar-f-merkmale' } }), merkmale,
                 el('label', { text: 'Notiz', attrs: { for: 'herbar-f-notiz' } }), notiz,
-                el('label', { text: 'Bilder (freiwillig, bis zu ' + MAX_BILDER + '): wählen oder aufnehmen', attrs: { for: 'herbar-f-bild' } }), bilderBox, bildDatei,
-                el('label', { text: 'oder Google-Drive-Link', attrs: { for: 'herbar-f-bild-link' } }),
-                el('div', { class: 'herbar-link-zeile' }, [bildLink, linkDazu]), bildStatus,
+                ...bt.elemente,
                 el('h3', { text: 'Herbarium' }), ...herbar.elemente,
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe),
                 status
@@ -425,10 +445,17 @@ export function render(container, ctx) {
     }
 
     // --- Karten: Fachbereich wählen, Fächer sehen, lernen (13.3) ---
-    // Fachbereiche: zurzeit nur Pflanzen, weitere (Raumplanung, Geographie …) ab 13.4
-    const fachbereichWahl = el('select', { attrs: { id: 'herbar-fachbereich' }, on: { change: () => { fachbereich = fachbereichWahl.value; zeigeKarten(); } } }, [
-        el('option', { text: 'Pflanzen', attrs: { value: 'pflanzen' } })
-    ]);
+    // Fachbereiche: Pflanzen und jede Kategorie aus dem Blatt „karten“ (13.4). „+ Neuer Fachbereich“ öffnet eine neue Karte.
+    const fachbereichWahl = el('select', {
+        attrs: { id: 'herbar-fachbereich' },
+        on: { change: () => {
+            if (fachbereichWahl.value === '__neu') { fachbereichWahl.value = fachbereich; zeigeKartenForm(null, ''); return; }
+            fachbereich = fachbereichWahl.value;
+            zeigeKarten();
+        } }
+    });
+    const kategorien = () => (daten ? [...new Set(daten.karten.map((k) => k.kategorie).filter(Boolean))].sort(vergleiche) : []);
+    const istPflanzen = () => fachbereich === 'pflanzen';
     const kGruppe = el('select', { attrs: { id: 'herbar-k-gruppe' }, on: { change: () => zeigeKarten() } });
     const kFamilie = el('select', { attrs: { id: 'herbar-k-familie' }, on: { change: () => zeigeKarten() } });
     const kGattung = el('select', { attrs: { id: 'herbar-k-gattung' }, on: { change: () => zeigeKarten() } });
@@ -446,7 +473,7 @@ export function render(container, ctx) {
     const alleHaken = el('input', { attrs: { id: 'herbar-k-alle', type: 'checkbox' }, on: { change: () => zeigeKarten() } });
     const faecherBox = el('div', { class: 'herbar-faecher' });
     const lernenKnopf = el('button', { class: 'knopf knopf-bereich', text: 'Lernen', attrs: { type: 'button' }, on: { click: () => starteRunde() } });
-    const kNeuKnopf = el('button', { class: 'knopf knopf-zweit', text: '+ Neue Pflanze', attrs: { type: 'button' }, on: { click: () => zeigeForm(null) } });
+    const kNeuKnopf = el('button', { class: 'knopf knopf-zweit', text: '+ Neue Pflanze', attrs: { type: 'button' }, on: { click: () => (istPflanzen() ? zeigeForm(null) : zeigeKartenForm(null, fachbereich)) } });
     const kListe = el('div', { class: 'herbar-liste' });
     const sendeStatus = el('p', { class: 'meldung herbar-sende', attrs: { role: 'status', 'aria-live': 'polite' } });
     const nochmalKnopf = el('button', { class: 'knopf knopf-zweit', text: 'Nochmal senden', attrs: { type: 'button', hidden: true }, on: { click: () => sendeAntworten(true) } });
@@ -464,9 +491,10 @@ export function render(container, ctx) {
     ]);
     const lernBox = el('div', { class: 'herbar-lernen', attrs: { hidden: true } });
 
-    // Karten des gewählten Fachbereichs mit Filter (zurzeit nur Pflanzen; weitere Fachbereiche ab 13.4)
+    // Karten des gewählten Fachbereichs (bei Pflanzen mit Filter)
     function kartenAuswahl() {
         if (!daten) return [];
+        if (!istPflanzen()) return daten.karten.filter((k) => k.kategorie === fachbereich);
         const gr = kGruppe.value, fa = kFamilie.value, ga = kGattung.value, drin = kDrin.value;
         return pflanzen().filter((p) => (!gr || gruppenVon(p.gruppen).includes(gr))
             && (!fa || p.familie === fa)
@@ -475,7 +503,18 @@ export function render(container, ctx) {
     }
 
     function zeigeKarten() {
+        // Gibt es den Fachbereich nicht mehr (zum Beispiel letzte Karte gelöscht), zurück zu Pflanzen
+        const kats = kategorien();
+        if (!istPflanzen() && daten && !kats.includes(fachbereich)) fachbereich = 'pflanzen';
+        leeren(fachbereichWahl);
+        fachbereichWahl.append(
+            el('option', { text: 'Pflanzen', attrs: { value: 'pflanzen' } }),
+            ...kats.map((k) => el('option', { text: k, attrs: { value: k } })),
+            el('option', { text: '+ Neuer Fachbereich …', attrs: { value: '__neu' } })
+        );
         fachbereichWahl.value = fachbereich;
+        pflanzenFilter.hidden = !istPflanzen();
+        kNeuKnopf.textContent = istPflanzen() ? '+ Neue Pflanze' : '+ Neue Karte';
         leeren(faecherBox);
         leeren(kListe);
         lernBox.hidden = !runde;
@@ -502,6 +541,15 @@ export function render(container, ctx) {
         const zahl = alleHaken.checked ? auswahl.length : auswahl.filter(istDran).length;
         lernenKnopf.textContent = 'Lernen (' + zahl + ')';
         lernenKnopf.disabled = !zahl;
+        if (!istPflanzen()) {
+            kListe.append(el('ul', { class: 'einkauf-liste' }, auswahl.slice().sort((a, b) => vergleiche(a.vorne, b.vorne)).map((k) => el('li', { class: 'einkauf-zeile einkauf-lm' }, [
+                el('button', { class: 'einkauf-lm-wahl', attrs: { type: 'button' }, on: { click: () => zeigeKarteEintrag(k) } }, [
+                    el('span', { class: 'einkauf-lm-name', text: k.vorne + ((k.bilder || []).length ? ' · 📷' : '') })
+                ]),
+                el('span', { class: 'herbar-nr leise', text: 'Fach ' + (k.fach || 1) + (istDran(k) ? ' · dran' : '') })
+            ]))));
+            return;
+        }
         if (!auswahl.length) {
             kListe.append(el('p', { class: 'leise', text: alle.length ? 'Keine Pflanze passt zum Filter.' : 'Noch keine Pflanzen. Tippe auf „+ Neue Pflanze“.' }));
             return;
@@ -515,12 +563,92 @@ export function render(container, ctx) {
         ]))));
     }
 
+    // Bilder nebeneinander, Tipp zeigt groß darüber. Liefert [großes Bild, Leiste] oder [].
+    function bilderLeiste(fotos, titel) {
+        if (!fotos || !fotos.length) return [];
+        const gross = el('img', { class: 'besitz-dialog-bild einkauf-bild-gross', attrs: { alt: '', hidden: true } });
+        gross.addEventListener('click', () => { gross.hidden = true; });
+        return [gross, el('div', { class: 'dsa-ab-bilder einkauf-bilder' }, fotos.map((id, i) =>
+            vorschauBild(id, null, 'Bild ' + (i + 1) + ' zu ' + titel + ' groß zeigen', (src) => {
+                gross.hidden = !gross.hidden && gross.src === src;
+                gross.src = src;
+                gross.alt = 'Bild ' + (i + 1) + ' zu ' + titel;
+            })))];
+    }
+
+    // Eine Karte (nicht Pflanze) ansehen
+    function zeigeKarteEintrag(k) {
+        oeffneDialog(k.vorne, [
+            el('p', { class: 'leise', text: k.kategorie + ' · Fach ' + (k.fach || 1) + (k.gelernt_am ? ' · zuletzt gelernt ' + datumText(k.gelernt_am) : '') }),
+            ...bilderLeiste(k.bilder, k.vorne),
+            k.hinten ? el('p', { class: 'herbar-hinten', text: k.hinten }) : el('p', { class: 'leise', text: 'Noch nichts auf der Rückseite.' }),
+            el('div', { class: 'besitz-form-knoepfe' }, [
+                el('button', { class: 'knopf knopf-bereich', text: 'Bearbeiten', attrs: { type: 'button' }, on: { click: () => zeigeKartenForm(k, k.kategorie) } }),
+                el('button', { class: 'knopf knopf-zweit', text: 'Schließen', attrs: { type: 'button' }, on: { click: () => dialog.close() } })
+            ])
+        ]);
+    }
+
+    // Karte anlegen oder ändern: Fachbereich, Vorderseite, Rückseite, Bilder
+    function zeigeKartenForm(k, kat) {
+        const status = el('p', { class: 'meldung', attrs: { role: 'status', 'aria-live': 'polite' } });
+        const bereich = auswahlFeld({ id: 'herbar-kf-bereich', maxlength: 40, placeholder: 'wählen oder neu eintippen, zum Beispiel Geographie' });
+        bereich.feld.value = k ? k.kategorie : (kat || '');
+        bereich.setzeEintraege(kategorien());
+        const vorne = el('textarea', { attrs: { id: 'herbar-kf-vorne', maxlength: 300, rows: 2, placeholder: 'Frage oder Begriff' } });
+        vorne.value = k ? k.vorne : '';
+        const hinten = el('textarea', { attrs: { id: 'herbar-kf-hinten', maxlength: 3000, rows: 6, placeholder: 'Antwort' } });
+        hinten.value = k ? k.hinten : '';
+        const bt = bilderTeil(k ? k.bilder : [], 'herbar-kf');
+        const speichern = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
+        const loeschen = k ? el('button', { class: 'knopf knopf-zweit', text: 'Löschen', attrs: { type: 'button' }, on: { click: () => entfernen() } }) : null;
+        const abbrechen = el('button', { class: 'knopf knopf-zweit', text: 'Abbrechen', attrs: { type: 'button' }, on: { click: () => dialog.close() } });
+        const knoepfe = [speichern, loeschen, abbrechen].filter(Boolean);
+
+        async function absenden(ev) {
+            ev.preventDefault();
+            const werte = { kategorie: bereich.feld.value.replace(/\s+/g, ' ').trim(), vorne: vorne.value.replace(/\s+/g, ' ').trim(), hinten: hinten.value };
+            if (!werte.kategorie) { status.textContent = 'Bitte einen Fachbereich wählen oder eintippen.'; bereich.feld.focus(); return; }
+            if (!werte.vorne) { status.textContent = 'Bitte die Vorderseite ausfüllen.'; vorne.focus(); return; }
+            const warNeu = !k;
+            const neu = await speichereMitBildern('karten', k, werte, bt, status, knoepfe, 'Karte', (x) => { k = x; });
+            if (!neu) return;
+            fachbereich = neu.kategorie;
+            zeigeGespeichert(warNeu ? 'Gespeichert' : 'Geändert', neu.vorne);
+            zeigeAlles();
+            zeigeKarteEintrag(neu);
+        }
+
+        // Löschen ist weich: Im Sheet steht dann geloescht = TRUE, die Person kann es dort zurückholen.
+        async function entfernen() {
+            if (!confirm('Karte „' + k.vorne + '“ löschen?')) return;
+            const antwort = await senden(status, knoepfe, 'herbar_loeschen', { blatt: 'karten', id: k.id, geaendert_am: k.geaendert_am });
+            if (!antwort) return;
+            daten.karten = daten.karten.filter((x) => x.id !== k.id);
+            dialog.close();
+            zeigeGespeichert('Gelöscht', k.vorne);
+            zeigeAlles();
+        }
+
+        oeffneDialog(k ? 'Karte ändern' : 'Neue Karte', [
+            el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: absenden, input: () => { if (!sendet) status.textContent = ''; } } }, [
+                el('label', { text: 'Fachbereich', attrs: { for: 'herbar-kf-bereich' } }), bereich.box,
+                el('label', { text: 'Vorderseite', attrs: { for: 'herbar-kf-vorne' } }), vorne,
+                el('label', { text: 'Rückseite', attrs: { for: 'herbar-kf-hinten' } }), hinten,
+                ...bt.elemente,
+                el('div', { class: 'besitz-form-knoepfe' }, knoepfe),
+                status
+            ])
+        ]);
+        (k || kat ? vorne : bereich.feld).focus();
+    }
+
     // Neue Runde: dran (oder alle), niedrige Fächer zuerst, innerhalb eines Fachs gemischt
     function starteRunde() {
         const auswahl = kartenAuswahl().filter((k) => alleHaken.checked || istDran(k));
         if (!auswahl.length) return;
         const gemischt = auswahl.map((k) => [k, Math.random()]).sort((a, b) => (a[0].fach || 1) - (b[0].fach || 1) || a[1] - b[1]).map(([k]) => k);
-        runde = { karten: gemischt, i: 0, umgedreht: false, gewusst: 0, nicht: 0 };
+        runde = { blatt: istPflanzen() ? 'arten' : 'karten', karten: gemischt, i: 0, umgedreht: false, gewusst: 0, nicht: 0 };
         zeigeKarten();
     }
 
@@ -541,12 +669,20 @@ export function render(container, ctx) {
             return;
         }
         const p = runde.karten[runde.i];
+        const pflanze = runde.blatt === 'arten';
         const karte = el('div', { class: 'herbar-karte', attrs: { 'aria-live': 'polite' } }, [
             el('p', { class: 'leise herbar-karte-fach', text: 'Karte ' + (runde.i + 1) + ' von ' + runde.karten.length + ' · Fach ' + (p.fach || 1) }),
-            el('p', { class: 'herbar-karte-vorne', text: p.name }),
-            el('p', { class: 'herbar-marke' + (p.im_herbar ? ' ist-drin' : ''), text: herbarText(p) })
+            el('p', { class: 'herbar-karte-vorne', text: pflanze ? p.name : p.vorne }),
+            pflanze ? el('p', { class: 'herbar-marke' + (p.im_herbar ? ' ist-drin' : ''), text: herbarText(p) }) : null
         ]);
-        if (runde.umgedreht) {
+        if (runde.umgedreht && !pflanze) {
+            karte.append(...[
+                bilderLeiste(p.bilder, p.vorne),
+                p.hinten ? el('p', { class: 'herbar-hinten', text: p.hinten })
+                    : el('p', { class: 'leise', text: 'Noch nichts auf der Rückseite. Tippe in der Liste auf die Karte und dann auf „Bearbeiten“.' })
+            ].flat().filter(Boolean));
+        }
+        if (runde.umgedreht && pflanze) {
             const angaben = [
                 ['Lateinisch', p.latein], ['Familie', p.familie], ['Gattung', gattung(p)], ['Gruppen', gruppenVon(p.gruppen).join(', ')],
                 ['Eigenschaften', p.eigenschaften], ['Bestimmungs­merkmale', p.merkmale], ['Notiz', p.notiz],
@@ -579,7 +715,7 @@ export function render(container, ctx) {
     // Antwort merken, gleich weiter zur nächsten Karte. Gesendet wird im Hintergrund.
     function antworte(p, gewusst) {
         if (gewusst) runde.gewusst++; else runde.nicht++;
-        offeneAntworten.push({ blatt: 'arten', id: p.id, gewusst });
+        offeneAntworten.push({ blatt: runde.blatt, id: p.id, gewusst });
         runde.i++;
         runde.umgedreht = false;
         zeigeKarte();
