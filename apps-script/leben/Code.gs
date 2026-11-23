@@ -1054,11 +1054,17 @@ function packZuruecksetzen_(data) {
   if (!name) return { error: "eingabe", message: "Bitte eine Liste angeben." };
   var t = packBlatt_();
   var zahl = 0;
-  t.zeilen.forEach(function (z, i) {
+  t.zeilen.forEach(function (z) {
     if (!packAktiv_(t, z) || ohneSchutz_(z[t.sp.liste]).trim().toLowerCase() !== name) return;
-    if (istWahr_(z[t.sp.hin])) { t.sheet.getRange(i + 2, t.sp.hin + 1).setValue(""); zahl++; }
-    if (istWahr_(z[t.sp.zurueck])) { t.sheet.getRange(i + 2, t.sp.zurueck + 1).setValue(""); zahl++; }
+    if (istWahr_(z[t.sp.hin])) { z[t.sp.hin] = ""; zahl++; }
+    if (istWahr_(z[t.sp.zurueck])) { z[t.sp.zurueck] = ""; zahl++; }
   });
+  // Jede Spalte in einem Zug schreiben (schneller als Zelle für Zelle), nur wenn sich etwas geändert hat
+  if (zahl > 0) {
+    ["hin", "zurueck"].forEach(function (art) {
+      t.sheet.getRange(2, t.sp[art] + 1, t.zeilen.length, 1).setValues(t.zeilen.map(function (z) { return [z[t.sp[art]]]; }));
+    });
+  }
   return { ok: true, geaendert: zahl };
 }
 

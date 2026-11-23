@@ -380,7 +380,7 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.7.3** Packlisten: Zähler „Nutzungen“ nur bei Haken „Hin“; grüner Wanderrucksack (`icons/rucksack.svg`) statt 🧳, neues Reiter-Symbol.
 - **1.7.4** Packlisten: Zähler „Nutzungen“ auch ohne Netz (Schritte im Gerät, werden nachgetragen); „Item aus dem Besitz“ als Suchfeld mit Liste.
 - **1.7.5** Packlisten: zuletzt gezeigte Zähler im Gerät, damit sie auch beim Öffnen ohne Netz da sind.
-- **1.7.6** Schritt 15.4: Abschluss Etappe 15 „Packlisten“ (Prüfung ohne schlimme Funde, Plan in `docs/STAND.md` 4 eingearbeitet, `docs/PLAN-ETAPPE-15.md` gelöscht).
+- **1.7.6** Schritt 15.4: Abschluss Etappe 15 „Packlisten“ (Prüfung ohne schlimme Funde, Plan in `docs/STAND.md` 4 eingearbeitet, `docs/PLAN-ETAPPE-15.md` gelöscht). Beide kleinen Funde der Prüfung behoben: `packZuruecksetzen_` schreibt die Spalten `hin` und `zurueck` in einem Zug, Haken senden je Eintrag nacheinander.
 - **1.8.0** Schritt 16.1: Skript `gemeinsam` mit Blatt `projekte` (Projekte mit Abschnitten, Titel, Notiz, Status idee/laeuft/pausiert/fertig, Reihenfolge); Partner*in darf dort alles. Plan `docs/PLAN-ETAPPE-16.md`.
 - **1.8.1** Schritt 16.2: Reiter Projekte (`js/views/projekte.js`, 🛠️, Taupe `#A39382`, Symbol Hammer): eine Liste mit Abschnitten als zweiter Ebene, bunter Kreis je Status (Idee violett, Läuft sandgelb, Pausiert grau, Fertig grün), Pfeile ^ v, Formular mit Titel, Status, Notiz; Partner*in darf alles. Bis 16.3 am Handy nur Kachel.
 - **1.8.2** Schritt 16.3: Reihenfolge der Leiste Tracking, Finanzen, Projekte, Start (Thetadex-Icon), Einkauf, Besitz, Uni (Pen & Paper und Döner am Handy nur Kachel); Kacheln der Startseite nach `START` (Tracking, Finanzen, Projekte, Einkauf, Uni, Besitz, Visitenkarte, Rest).
