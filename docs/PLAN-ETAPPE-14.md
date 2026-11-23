@@ -1,6 +1,6 @@
 # Plan Etappe 14 „Bucket List“ (1.6.x)
 
-Stand: 23.11.2026, Schritt 14.1. Grundlage: Wünsche und Antworten der Person (23.11.2026). Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelöscht.
+Stand: 23.11.2026, Schritt 14.2. Grundlage: Wünsche und Antworten der Person (23.11.2026). Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelöscht.
 
 ## 1. Ziel
 

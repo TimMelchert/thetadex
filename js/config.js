@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '1.6.0';
+export const VERSION = '1.6.1';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {
@@ -14,7 +14,8 @@ export const features = {
     uni: true,
     doener: true,
     visitenkarte: true,
-    herbarium: true
+    herbarium: true,
+    bucketlist: true
 };
 
 // Die sieben Bereiche in der Reihenfolge der Reiterleiste, dazu die Visitenkarte: am Handy nur als Kachel, am PC auch in der Seitenleiste (nurBreit).
@@ -32,7 +33,9 @@ export const BEREICHE = [
     // Visitenkarte (10.3): nur Kachel auf der Startseite, kein Reiter in der Leiste (Wunsch der Person, 4.11.2026)
     { id: 'visitenkarte', titel: 'Visitenkarte', oeffentlich: false, skript: 'karte', nurBreit: true },
     // Herbarium (13.2): wie die Visitenkarte am Handy nur als Kachel (Entscheidung der Person, 22.11.2026). Daten im Sheet „Leben“.
-    { id: 'herbarium', titel: 'Herbarium', oeffentlich: false, skript: 'leben', nurBreit: true }
+    { id: 'herbarium', titel: 'Herbarium', oeffentlich: false, skript: 'leben', nurBreit: true },
+    // Bucket List (14.2): wie das Herbarium am Handy nur als Kachel (Wunsch der Person, 23.11.2026). Daten im Sheet „Gemeinsam“, Partner*in nur lesen.
+    { id: 'bucketlist', titel: 'Bucket List', oeffentlich: false, skript: 'gemeinsam', nurBreit: true }
 ];
 
 // Skripte, deren Adresse in der Ersteinrichtung eingetragen wird.
@@ -42,7 +45,7 @@ export const SKRIPTE = [
     { id: 'finanzen', titel: 'Finanzen', test: 'einstellungen' },
     { id: 'doener',   titel: 'Döner',    test: 'liste' },
     { id: 'leben',    titel: 'Besitz',   test: 'liste' },
-    { id: 'gemeinsam', titel: 'Einkauf und Uni', test: 'ping' },
+    { id: 'gemeinsam', titel: 'Einkauf, Uni und Bucket List', test: 'ping' },
     { id: 'dsa',      titel: 'Pen & Paper', test: 'ping' },
     // Visitenkarte (ab 10.1): eigenes Passwort KARTE_PIN, die App schickt diesem Skript nie das Hauptpasswort
     { id: 'karte',    titel: 'Visitenkarte', test: 'ping', eigenesPasswort: 'karte_passwort' }

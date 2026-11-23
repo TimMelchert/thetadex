@@ -17,6 +17,8 @@
     --farbe-visitenkarte: #A8AE6E;
     /* Herbarium (Wunsch der Person, 22.11.2026): Moosgrün, nur im Reiter Herbarium, nicht im Icon. Kontrast 5,1:1 zur Schrift */
     --farbe-herbarium: #7A9455;
+    /* Bucket List (Wunsch der Person, 23.11.2026): Rosé, nur im Reiter Bucket List, nicht im Icon. Kontrast 6,7:1 zur Schrift */
+    --farbe-bucketlist: #D98C9A;
 
     /* Schrift auf Bereichsfarbe (hell und dunkel gleich, Kontrast über 7:1) */
     --schrift-auf-farbe: #1C1B19;
@@ -141,6 +143,7 @@
 /* Visitenkarte: eigene Farbe Lavendel, die sieben Register im Icon bleiben (Wunsch der Person, 4.11.2026) */
 [data-bereich="visitenkarte"] { --bereich: var(--farbe-visitenkarte); }
 [data-bereich="herbarium"] { --bereich: var(--farbe-herbarium); }
+[data-bereich="bucketlist"] { --bereich: var(--farbe-bucketlist); }
 
 *, *::before, *::after { box-sizing: border-box; }
 
