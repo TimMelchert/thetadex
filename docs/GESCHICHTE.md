@@ -381,3 +381,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.7.4** Packlisten: Zähler „Nutzungen“ auch ohne Netz (Schritte im Gerät, werden nachgetragen); „Item aus dem Besitz“ als Suchfeld mit Liste.
 - **1.7.5** Packlisten: zuletzt gezeigte Zähler im Gerät, damit sie auch beim Öffnen ohne Netz da sind.
 - **1.7.6** Schritt 15.4: Abschluss Etappe 15 „Packlisten“ (Prüfung ohne schlimme Funde, Plan in `docs/STAND.md` 4 eingearbeitet, `docs/PLAN-ETAPPE-15.md` gelöscht). Beide kleinen Funde der Prüfung behoben: `packZuruecksetzen_` schreibt die Spalten `hin` und `zurueck` in einem Zug, Haken senden je Eintrag nacheinander.
+- **1.8.0** Schritt 16.1: Skript `gemeinsam` mit Blatt `projekte` (Projekte mit Abschnitten, Titel, Notiz, Status idee/laeuft/pausiert/fertig, Reihenfolge); Partner*in darf dort alles. Plan `docs/PLAN-ETAPPE-16.md`.
