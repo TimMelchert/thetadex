@@ -13,18 +13,21 @@
 // Herbarium (ab 1.5.3, Etappe 13): Blätter „arten“ (eine Zeile je Pflanze, später auch Tiere: Spalte „reich“)
 // und „karten“ (Karteikarten anderer Fachbereiche). Lernstand (Fach 1 bis 5) steht in derselben Zeile.
 // Bilder im privaten Drive-Ordner „Thetadex Herbarium“ (Skripteigenschaft HERBAR_ORDNER).
+// Packlisten (ab 1.7.0, Etappe 15): Blatt „packliste“, eine Zeile je Eintrag, die Liste steht als Name in „liste“.
+// Nutzungen (ab 1.7.0): freiwillige Spalte „nutzungen“ im Blatt „besitz“ (Zähler, zum Beispiel beim Wasserfilter).
 // Passwort steht NICHT hier, sondern in den Skripteigenschaften (APP_PIN).
 // Siehe docs/STAND.md 4 „Besitz, Blatt ‚besitz‘ im Sheet ‚Leben‘“ und 4 „Herbarium, Sheet ‚Leben‘“.
 // =====================================================
 
 var BLATT_BESITZ_ = "besitz";
 var KOPF_BESITZ_ = ["id", "name", "kategorie", "ort", "anzahl", "kaufpreis", "kaufdatum", "notiz", "erstellt_am", "geaendert_am", "geloescht", "gehoert_zu", "bild", "ausgeliehen_an", "ausgeliehen_anzahl", "ausmisten"];
-var KANN_SPALTEN_ = ["unklar"];   // legt „einrichten“ an, Speichern verlangt sie nicht
+var KANN_SPALTEN_ = ["unklar", "nutzungen"];   // legt „einrichten“ an, Speichern verlangt sie nicht
 var TEXT_SPALTEN_ = ["id", "name", "kategorie", "ort", "notiz", "gehoert_zu", "bild", "ausgeliehen_an", "ausmisten", "unklar"];   // bleiben im Sheet reiner Text (kein Datum, keine Zahl)
 var MAX_ = { name: 80, kategorie: 40, ort: 130, notiz: 300, ausgeliehen_an: 60 };       // Höchstlängen
 var AUSMISTEN_ = ["offen", "verkaufen", "verschenken", "entsorgen"];   // erlaubte Werte, leer = nicht ausmisten
 var MAX_ANZAHL_ = 9999;
 var MAX_PREIS_ = 1000000;
+var MAX_NUTZUNGEN_ = 1000000;     // Zähler „nutzungen“ (ab 1.7.0)
 var BILD_ORDNER_NAME_ = "Thetadex Besitz";      // privater Ordner im Drive für hochgeladene Bilder
 var MAX_BILD_TEXT_ = 4000000;                   // Höchstlänge eines hochgeladenen Bildes als Text (etwa 3 MB)
 var MAX_BILD_SENDEN_ = 1500000;                 // größere Bilder schickt das Skript als Vorschau (Bytes)
@@ -68,6 +71,16 @@ var MAX_HERBAR_ZEILEN_ = 3000;      // je Blatt
 var MAX_HERBAR_BILDER_ = 5;         // je Pflanze oder Karte
 var HERBAR_ORDNER_NAME_ = "Thetadex Herbarium";
 
+// Packlisten (ab 1.7.0). hin, zurueck: TRUE oder leer. reihenfolge: kleine Zahl = oben (je Liste).
+// besitz_id: freiwillig, zeigt auf ein Item im Blatt „besitz“ (für dessen Zähler „nutzungen“).
+var PACK_BLATT_ = "packliste";
+var PACK_KOPF_ = ["id", "liste", "gruppe", "name", "anzahl", "hin", "zurueck", "reihenfolge", "besitz_id", "erstellt_am", "geaendert_am", "geloescht"];
+var PACK_TEXT_ = ["id", "liste", "gruppe", "name", "besitz_id"];   // bleiben im Sheet reiner Text
+var PACK_MAX_ = { liste: 40, gruppe: 40, name: 80 };
+var PACK_MAX_ANZAHL_ = 999;
+var PACK_MAX_LISTEN_ = 50;
+var PACK_MAX_ZEILEN_ = 2000;
+
 // --- 1. EINRICHTEN (im Editor ausführen, auch nach einem Update) ---
 
 // Legt das Blatt an und ergänzt fehlende Spalten am Ende. Vorhandene Daten bleiben unverändert.
@@ -95,6 +108,8 @@ function einrichten() {
   });
   // Herbarium (ab 1.5.3): Blätter „arten“ und „karten“
   Object.keys(HERBAR_).forEach(function (name) { einrichtenHerbar_(ss, name); });
+  // Packlisten (ab 1.7.0): Blatt „packliste“
+  einrichtenPack_(ss);
   // Drive-Ordner für Bilder anlegen (beim ersten Mal fragt Google nach der Erlaubnis für Drive)
   var ordner = bildOrdner_();
   Logger.log("Ordner für Bilder: '" + ordner.getName() + "'.");
@@ -124,6 +139,27 @@ function einrichtenHerbar_(ss, name) {
   kopf.forEach(function (k) {
     if (HERBAR_ZAHL_SPALTEN_.indexOf(k) < 0) sheet.getRange(2, karte[k] + 1, sheet.getMaxRows() - 1, 1).setNumberFormat("@");
   });
+}
+
+// Legt das Blatt „packliste“ an oder ergänzt fehlende Spalten am Ende (ab 1.7.0). Vorhandene Daten bleiben.
+function einrichtenPack_(ss) {
+  var sheet = ss.getSheetByName(PACK_BLATT_) || ss.insertSheet(PACK_BLATT_);
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, PACK_KOPF_.length).setValues([PACK_KOPF_]).setFontWeight("bold");
+    sheet.setFrozenRows(1);
+    Logger.log("Blatt '" + PACK_BLATT_ + "' angelegt.");
+  } else {
+    var sp = spalten_(sheet);
+    var fehlen = PACK_KOPF_.filter(function (k) { return sp[k] == null; });
+    if (fehlen.length) {
+      sheet.getRange(1, sheet.getLastColumn() + 1, 1, fehlen.length).setValues([fehlen]).setFontWeight("bold");
+      Logger.log("Blatt '" + PACK_BLATT_ + "': Spalten ergänzt: " + fehlen.join(", "));
+    } else {
+      Logger.log("Blatt '" + PACK_BLATT_ + "' ist vollständig.");
+    }
+  }
+  var karte = spalten_(sheet);
+  PACK_TEXT_.forEach(function (k) { sheet.getRange(2, karte[k] + 1, sheet.getMaxRows() - 1, 1).setNumberFormat("@"); });
 }
 
 // Der private Ordner für hochgeladene Bilder. Seine Kennung steht in den Skripteigenschaften (BILD_ORDNER).
@@ -254,8 +290,16 @@ function sacheAus_(z, sp) {
     ausgeliehen_anzahl: Number(zelle_(z, sp, "ausgeliehen_anzahl")) || null,
     ausmisten: String(zelle_(z, sp, "ausmisten")).trim(),
     unklar: ohneSchutz_(zelle_(z, sp, "unklar")).trim().substring(0, 300),
+    nutzungen: nutzungen_(zelle_(z, sp, "nutzungen")),
     geaendert_am: stempel_(zelle_(z, sp, "geaendert_am"))
   };
+}
+
+// Zähler „nutzungen“ aus einer Zelle: leer = kein Zähler (null), sonst ganze Zahl ab 0
+function nutzungen_(v) {
+  if (String(v == null ? "" : v).trim() === "") return null;
+  var n = Number(v);
+  return isFinite(n) && n >= 0 ? Math.floor(n) : null;
 }
 
 // --- 3. EINSTIEGSPUNKTE ---
@@ -305,6 +349,26 @@ function doPost(e) {
         return jsonOut_(HERBAR_AKTIONEN_[data.action](data));
       } finally {
         sperre.releaseLock();
+      }
+    }
+
+    // Packlisten (ab 1.7.0). Laden liest ohne Sperre, außer eingefügte Zeilen haben noch keine id.
+    if (data.action === "packliste") {
+      var packOhne = packListe_(false);
+      if (packOhne) return jsonOut_(packOhne);
+    }
+    var PACK_AKTIONEN_ = { packliste: function () { return packListe_(true); }, pack_speichern: packSpeichern_,
+                           pack_haken: packHaken_, pack_loeschen: packLoeschen_, pack_zuruecksetzen: packZuruecksetzen_,
+                           pack_reihenfolge: packReihenfolge_, besitz_nutzung: besitzNutzung_ };
+    if (Object.prototype.hasOwnProperty.call(PACK_AKTIONEN_, String(data.action))) {
+      var packSperre = LockService.getScriptLock();
+      if (!packSperre.tryLock(20000)) {
+        return jsonOut_({ error: "ausgelastet", message: "Script ausgelastet. Bitte gleich nochmal versuchen." });
+      }
+      try {
+        return jsonOut_(PACK_AKTIONEN_[data.action](data));
+      } finally {
+        packSperre.releaseLock();
       }
     }
 
@@ -394,6 +458,19 @@ function pruefeSache_(data) {
     if (String(data.kaufdatum) > tag_(new Date())) return { fehler: "Das Kaufdatum liegt in der Zukunft." };
     w.kaufdatum = d;
   }
+
+  // Nutzungen (ab 1.7.0): nur wenn die App sie mitschickt; leer = kein Zähler
+  if ("nutzungen" in data) {
+    var nz = data.nutzungen == null ? "" : String(data.nutzungen).trim();
+    if (nz !== "") {
+      var nzahl = Number(nz);
+      if (!isFinite(nzahl) || Math.floor(nzahl) !== nzahl || nzahl < 0 || nzahl > MAX_NUTZUNGEN_) {
+        return { fehler: "Nutzungen bitte als ganze Zahl von 0 bis " + MAX_NUTZUNGEN_ + " (oder leer)." };
+      }
+      nz = nzahl;
+    }
+    w.nutzungen = nz;
+  }
   return { werte: w };
 }
 
@@ -406,6 +483,9 @@ function speichern_(data) {
   var sp = spalten_(sheet);
   var fehlen = KOPF_BESITZ_.filter(function (k) { return sp[k] == null; });
   if (fehlen.length) return { error: "blatt", message: "Spalten fehlen: " + fehlen.join(", ") + ". Bitte im Editor 'einrichten' ausführen." };
+  if ("nutzungen" in p.werte && sp.nutzungen == null) {
+    return { error: "blatt", message: "Spalte nutzungen fehlt. Bitte im Editor 'einrichten' ausführen." };
+  }
 
   var breite = sheet.getLastColumn();
   var zeile, nr;
@@ -781,4 +861,258 @@ function herbarKenntBild_(id) {
       return herbarAktiv_(b, z) && bilderListe_(zelle_(z, b.sp, "bilder")).indexOf(id) >= 0;
     });
   });
+}
+
+
+// --- 8. PACKLISTEN (ab 1.7.0, Etappe 15) ---
+// Feste Listen je Anlass. Eine Zeile je Eintrag; die Liste hat kein eigenes Blatt, ihr Name steht in „liste“
+// (neue Liste = erster Eintrag mit neuem Namen; umbenennen im Sheet mit „Suchen und ersetzen“).
+// Zwei Haken: „hin“ (eingepackt) und „zurueck“ (wieder eingepackt). Haken ändern geaendert_am nicht,
+// damit ein offenes Formular am anderen Gerät gültig bleibt.
+// Zähler: Ein Eintrag mit besitz_id zeigt die „nutzungen“ dieses Items; besitz_nutzung zählt dort +1 oder −1.
+// Siehe docs/PLAN-ETAPPE-15.md.
+
+// Blatt mit Spalten und Zeilen; fehlt eine Spalte, Hinweis auf „einrichten“
+function packBlatt_() {
+  var sheet = blatt_(PACK_BLATT_);
+  var sp = spalten_(sheet);
+  var fehlen = PACK_KOPF_.filter(function (k) { return sp[k] == null; });
+  if (fehlen.length) throw new Error("Im Blatt '" + PACK_BLATT_ + "' fehlen Spalten: " + fehlen.join(", ") + ". Bitte im Editor 'einrichten' ausführen.");
+  return { sheet: sheet, sp: sp, breite: sheet.getLastColumn(), zeilen: zeilen_(sheet) };
+}
+
+// Zählt eine Zeile? (nicht gelöscht, Name und Liste da)
+function packAktiv_(t, z) {
+  return !istWahr_(zelle_(z, t.sp, "geloescht")) && String(zelle_(z, t.sp, "name")).trim() !== "" && String(zelle_(z, t.sp, "liste")).trim() !== "";
+}
+
+function packZahl_(v) {
+  var n = Number(v);
+  return String(v == null ? "" : v).trim() !== "" && isFinite(n) ? n : 0;
+}
+
+// Eine Zeile als Objekt für die App
+function packAus_(t, z) {
+  var anzahl = Number(zelle_(z, t.sp, "anzahl"));
+  return {
+    id: String(zelle_(z, t.sp, "id")).trim(),
+    liste: ohneSchutz_(zelle_(z, t.sp, "liste")).trim(),
+    gruppe: ohneSchutz_(zelle_(z, t.sp, "gruppe")).trim(),
+    name: ohneSchutz_(zelle_(z, t.sp, "name")).trim(),
+    anzahl: isFinite(anzahl) && anzahl >= 1 ? Math.floor(anzahl) : null,
+    hin: istWahr_(zelle_(z, t.sp, "hin")),
+    zurueck: istWahr_(zelle_(z, t.sp, "zurueck")),
+    reihenfolge: packZahl_(zelle_(z, t.sp, "reihenfolge")),
+    besitz_id: String(zelle_(z, t.sp, "besitz_id")).trim(),
+    geaendert_am: stempel_(zelle_(z, t.sp, "geaendert_am"))
+  };
+}
+
+// Index einer nicht gelöschten Zeile nach id, sonst -1
+function packIndex_(t, id) {
+  id = String(id || "");
+  if (!id) return -1;
+  for (var i = 0; i < t.zeilen.length; i++) {
+    if (String(t.zeilen[i][t.sp.id]).trim() === id && !istWahr_(t.zeilen[i][t.sp.geloescht])) return i;
+  }
+  return -1;
+}
+
+// Die Items im Besitz, auf die Einträge zeigen: { <id>: { name, nutzungen } }. Fehlt ein Item, fehlt es hier.
+function packZaehler_(eintraege) {
+  var gesucht = {};
+  eintraege.forEach(function (e) { if (e.besitz_id) gesucht[e.besitz_id] = true; });
+  var antwort = {};
+  if (!Object.keys(gesucht).length) return antwort;
+  var sheet = blatt_(BLATT_BESITZ_);
+  var sp = spalten_(sheet);
+  zeilen_(sheet).forEach(function (z) {
+    var id = String(zelle_(z, sp, "id")).trim();
+    if (!gesucht[id] || istWahr_(zelle_(z, sp, "geloescht"))) return;
+    antwort[id] = { name: ohneSchutz_(zelle_(z, sp, "name")), nutzungen: nutzungen_(zelle_(z, sp, "nutzungen")) || 0 };
+  });
+  return antwort;
+}
+
+// Alle Einträge und die Zähler. Eingefügte Zeilen ohne id bekommen hier eine (darum mit Sperre).
+// schreiben = false: liest nur und liefert null, sobald eine id fehlt.
+function packListe_(schreiben) {
+  var t = packBlatt_();
+  var eintraege = [];
+  for (var i = 0; i < t.zeilen.length; i++) {
+    var z = t.zeilen[i];
+    if (!packAktiv_(t, z)) continue;
+    if (!String(z[t.sp.id]).trim()) {
+      if (!schreiben) return null;
+      z[t.sp.id] = Utilities.getUuid();
+      t.sheet.getRange(i + 2, t.sp.id + 1).setValue(z[t.sp.id]);
+    }
+    eintraege.push(packAus_(t, z));
+  }
+  return { eintraege: eintraege, zaehler: packZaehler_(eintraege) };
+}
+
+// Größte reihenfolge in einer Liste plus 1: so steht ein neuer Eintrag am Ende seiner Gruppe
+// (die App ordnet die Gruppen nach ihrem ersten Eintrag).
+function packUnten_(t, liste, ohneId) {
+  var max = 0;
+  var name = String(liste).toLowerCase();
+  t.zeilen.forEach(function (z) {
+    if (!packAktiv_(t, z) || String(z[t.sp.id]).trim() === ohneId) return;
+    if (ohneSchutz_(z[t.sp.liste]).trim().toLowerCase() !== name) return;
+    max = Math.max(max, packZahl_(z[t.sp.reihenfolge]));
+  });
+  return Math.floor(max) + 1;
+}
+
+// Text prüfen: Leerzeichen zusammenfassen, Länge, Pflicht
+function packText_(v, max, titel, pflicht) {
+  var t = String(v == null ? "" : v).replace(/\s+/g, " ").trim();
+  if (!t && pflicht) return { fehler: "Bitte " + titel + " angeben." };
+  if (t.length > max) return { fehler: titel + " ist zu lang (höchstens " + max + " Zeichen)." };
+  return { roh: t, wert: bereinigeText_(t, max) };
+}
+
+// Neu (ohne id) oder ändern (mit id und geaendert_am). data = { liste, gruppe, name, anzahl, besitz_id }.
+function packSpeichern_(data) {
+  var liste = packText_(data.liste, PACK_MAX_.liste, "eine Liste", true);
+  if (liste.fehler) return { error: "eingabe", message: liste.fehler };
+  var gruppe = packText_(data.gruppe, PACK_MAX_.gruppe, "Gruppe", false);
+  if (gruppe.fehler) return { error: "eingabe", message: gruppe.fehler };
+  var name = packText_(data.name, PACK_MAX_.name, "einen Namen", true);
+  if (name.fehler) return { error: "eingabe", message: name.fehler };
+  var anzahl = "";
+  if (data.anzahl != null && String(data.anzahl).trim() !== "") {
+    anzahl = Number(data.anzahl);
+    if (!isFinite(anzahl) || Math.floor(anzahl) !== anzahl || anzahl < 1 || anzahl > PACK_MAX_ANZAHL_) {
+      return { error: "eingabe", message: "Anzahl bitte als ganze Zahl von 1 bis " + PACK_MAX_ANZAHL_ + " (oder leer)." };
+    }
+  }
+  // Item im Besitz: muss es geben (nicht gelöscht)
+  var besitzId = String(data.besitz_id == null ? "" : data.besitz_id).trim();
+  if (besitzId) {
+    var bs = blatt_(BLATT_BESITZ_);
+    if (!finde_(bs, spalten_(bs), besitzId)) return { error: "eingabe", message: "Dieses Item gibt es im Besitz nicht mehr. Bitte neu laden." };
+  }
+
+  var t = packBlatt_();
+  var id = String(data.id || "");
+  var werte = { liste: liste.wert, gruppe: gruppe.wert, name: name.wert, anzahl: anzahl, besitz_id: besitzId };
+  var zeile, nr;
+  if (!id) {
+    var aktive = t.zeilen.filter(function (z) { return packAktiv_(t, z); });
+    if (aktive.length >= PACK_MAX_ZEILEN_) return { error: "eingabe", message: "Höchstens " + PACK_MAX_ZEILEN_ + " Einträge." };
+    var listen = {};
+    aktive.forEach(function (z) { listen[ohneSchutz_(z[t.sp.liste]).trim().toLowerCase()] = true; });
+    if (!listen[liste.roh.toLowerCase()] && Object.keys(listen).length >= PACK_MAX_LISTEN_) {
+      return { error: "eingabe", message: "Höchstens " + PACK_MAX_LISTEN_ + " Listen." };
+    }
+    zeile = new Array(t.breite).fill("");
+    zeile[t.sp.id] = Utilities.getUuid();
+    zeile[t.sp.geloescht] = false;
+    werte.reihenfolge = packUnten_(t, liste.roh, "");
+    nr = t.sheet.getLastRow() + 1;
+  } else {
+    var i = packIndex_(t, id);
+    if (i < 0) return { error: "fehlt", message: "Diesen Eintrag gibt es nicht mehr. Bitte neu laden." };
+    zeile = t.zeilen[i];
+    if (stempel_(zeile[t.sp.geaendert_am]) !== String(data.geaendert_am || "")) {
+      return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+    }
+    // Wechselt der Eintrag die Liste oder die Gruppe, steht er dort am Ende
+    var alteListe = ohneSchutz_(zeile[t.sp.liste]).trim().toLowerCase();
+    var alteGruppe = ohneSchutz_(zeile[t.sp.gruppe]).trim().toLowerCase();
+    if (alteListe !== liste.roh.toLowerCase() || alteGruppe !== gruppe.roh.toLowerCase()) {
+      werte.reihenfolge = packUnten_(t, liste.roh, id);
+    }
+    nr = i + 2;
+  }
+  var jetzt = jetzt_(zeile[t.sp.geaendert_am]);
+  if (!zeile[t.sp.erstellt_am]) zeile[t.sp.erstellt_am] = jetzt;
+  Object.keys(werte).forEach(function (k) { zeile[t.sp[k]] = werte[k]; });
+  zeile[t.sp.geaendert_am] = jetzt;
+  t.sheet.getRange(nr, 1, 1, t.breite).setValues([zeile]);
+  var neu = t.sheet.getRange(nr, 1, 1, t.breite).getValues()[0];
+  var e = packAus_(t, neu);
+  return { eintrag: e, zaehler: packZaehler_([e]) };
+}
+
+// Einen Haken setzen oder abnehmen. data = { id, art: "hin" oder "zurueck", wert: true oder false }.
+function packHaken_(data) {
+  var art = String(data.art || "");
+  if (art !== "hin" && art !== "zurueck") return { error: "eingabe", message: "Unbekannter Haken." };
+  var t = packBlatt_();
+  var i = packIndex_(t, data.id);
+  if (i < 0) return { error: "fehlt", message: "Diesen Eintrag gibt es nicht mehr. Bitte neu laden." };
+  t.sheet.getRange(i + 2, t.sp[art] + 1).setValue(data.wert === true ? true : "");
+  return { id: String(data.id), art: art, wert: data.wert === true };
+}
+
+// Alle Haken (hin und zurück) einer Liste weg. data = { liste }.
+function packZuruecksetzen_(data) {
+  var name = String(data.liste == null ? "" : data.liste).trim().toLowerCase();
+  if (!name) return { error: "eingabe", message: "Bitte eine Liste angeben." };
+  var t = packBlatt_();
+  var zahl = 0;
+  t.zeilen.forEach(function (z, i) {
+    if (!packAktiv_(t, z) || ohneSchutz_(z[t.sp.liste]).trim().toLowerCase() !== name) return;
+    if (istWahr_(z[t.sp.hin])) { t.sheet.getRange(i + 2, t.sp.hin + 1).setValue(""); zahl++; }
+    if (istWahr_(z[t.sp.zurueck])) { t.sheet.getRange(i + 2, t.sp.zurueck + 1).setValue(""); zahl++; }
+  });
+  return { ok: true, geaendert: zahl };
+}
+
+// Weich löschen (geloescht = TRUE, im Sheet zurückholbar)
+function packLoeschen_(data) {
+  var t = packBlatt_();
+  var i = packIndex_(t, data.id);
+  if (i < 0) return { error: "fehlt", message: "Diesen Eintrag gibt es nicht mehr. Bitte neu laden." };
+  if (stempel_(t.zeilen[i][t.sp.geaendert_am]) !== String(data.geaendert_am || "")) {
+    return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+  }
+  t.sheet.getRange(i + 2, t.sp.geloescht + 1).setValue(true);
+  t.sheet.getRange(i + 2, t.sp.geaendert_am + 1).setValue(jetzt_(t.zeilen[i][t.sp.geaendert_am]));
+  return { ok: true };
+}
+
+// Neue Reihenfolge einer Liste. data = { liste, ids } (alle Einträge der Liste in der gewünschten Folge).
+// Genannte bekommen 1, 2, 3 …; nicht genannte derselben Liste kommen dahinter in ihrer alten Folge.
+// Andere Listen bleiben unberührt. Ändert geaendert_am nicht. Schreibt nur die eine Spalte.
+function packReihenfolge_(data) {
+  var name = String(data.liste == null ? "" : data.liste).trim().toLowerCase();
+  var ids = Array.isArray(data.ids) ? data.ids.map(String) : null;
+  if (!name || !ids || ids.length > PACK_MAX_ZEILEN_) return { error: "eingabe", message: "Ungültige Reihenfolge." };
+  var t = packBlatt_();
+  var inListe = function (z) { return packAktiv_(t, z) && ohneSchutz_(z[t.sp.liste]).trim().toLowerCase() === name; };
+  var platz = {};
+  var hat = function (id) { return Object.prototype.hasOwnProperty.call(platz, id); };
+  ids.forEach(function (id, k) { if (!hat(id)) platz[id] = k + 1; });
+  var rest = [];
+  t.zeilen.forEach(function (z, k) { if (inListe(z) && !hat(String(z[t.sp.id]).trim())) rest.push(k); });
+  rest.sort(function (a, b) { return packZahl_(t.zeilen[a][t.sp.reihenfolge]) - packZahl_(t.zeilen[b][t.sp.reihenfolge]); });
+  var weiter = ids.length;
+  rest.forEach(function (k) { t.zeilen[k][t.sp.reihenfolge] = ++weiter; });
+  t.zeilen.forEach(function (z) {
+    var id = String(z[t.sp.id]).trim();
+    if (inListe(z) && hat(id)) z[t.sp.reihenfolge] = platz[id];
+  });
+  if (t.zeilen.length) {
+    t.sheet.getRange(2, t.sp.reihenfolge + 1, t.zeilen.length, 1).setValues(t.zeilen.map(function (z) { return [z[t.sp.reihenfolge]]; }));
+  }
+  return { ok: true };
+}
+
+// Zähler „nutzungen“ eines Items im Besitz um 1 hoch oder runter (nie unter 0). data = { id, schritt: 1 oder -1 }.
+// Ändert geaendert_am nicht, damit ein offenes Formular im Besitz gültig bleibt.
+function besitzNutzung_(data) {
+  var schritt = Number(data.schritt);
+  if (schritt !== 1 && schritt !== -1) return { error: "eingabe", message: "Ungültiger Schritt." };
+  var sheet = blatt_(BLATT_BESITZ_);
+  var sp = spalten_(sheet);
+  if (sp.nutzungen == null) return { error: "blatt", message: "Spalte nutzungen fehlt. Bitte im Editor 'einrichten' ausführen." };
+  var gefunden = finde_(sheet, sp, String(data.id || ""));
+  if (!gefunden) return { error: "fehlt", message: "Dieses Item gibt es im Besitz nicht mehr. Bitte neu laden." };
+  var n = Math.min(MAX_NUTZUNGEN_, Math.max(0, (nutzungen_(gefunden.zeile[sp.nutzungen]) || 0) + schritt));
+  sheet.getRange(gefunden.nr, sp.nutzungen + 1).setValue(n);
+  return { id: String(data.id), nutzungen: n };
 }

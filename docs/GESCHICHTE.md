@@ -374,3 +374,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.6.1** Schritt 14.2: Reiter Bucket List in der App (`js/views/bucketlist.js`, Kachel und Seitenleiste am PC, Rosé, 🎯); Partnerin oder Partner sieht die Liste nur zum Lesen.
 - **1.6.2** Schritt 14.3: Bucket List mit weiteren Listen (eigene Unterreiter, Spalte `liste` im Blatt `bucketlist`, Namen nur im Sheet), Hauptliste heißt „Unsere“.
 - **1.6.3** Bucket List: Hauptliste heißt „Meine“ statt „Unsere“ (Wunsch der Person).
+- **Etappe 15** Packlisten. **1.7.0** Schritt 15.1: Plan Etappe 15 „Packlisten“ und Skript `leben` mit Blatt `packliste` und Zähler `nutzungen` im Blatt `besitz` (für Items wie einen Wasserfilter); Aktionen `packliste`, `pack_speichern`, `pack_haken`, `pack_loeschen`, `pack_zuruecksetzen`, `pack_reihenfolge`, `besitz_nutzung`.
