@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.8.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.8.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -214,7 +214,7 @@ unter „Info“ die Version prüfen.
 - Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter es gibt, steht in `js/config.js` (`features`).
   Sichtbar ist ein Reiter nur, wenn die Adresse seines Skripts eingetragen ist (`BEREICHE[].skript`, ab 0.4.8): Tracking `tracking`, Finanzen `finanzen`,
   Pen & Paper (Kennung `dsa`) `dsa` (ab 6.1), Einkauf, Uni und Bucket List `gemeinsam`, Besitz und Packlisten `leben`. Döner ist immer da.
-- PC und Handy: Reiterleiste unten am Handy, Seitenleiste links am PC (ab 768 px). Ab 16.3 (Wunsch der Person, 23.11.2026): Leiste unten Tracking, Finanzen, Projekte, **Start** (Thetadex-Icon, führt zu `#/`, in der Mitte der Reiter ohne `nurBreit`; ab 1.8.4 größer und etwas höher in einem Kreis in Kohle), Einkauf, Besitz, Uni; die Seitenleiste am PC genauso, aber ohne Start (ab 1.8.4, Wunsch der Person), danach die übrigen (Reihenfolge von `BEREICHE`). Die Kacheln der Startseite ordnet `START` in `js/config.js`: Tracking, Finanzen, Projekte, Einkauf, Uni, Besitz, Visitenkarte, dann der Rest. Einstellungen (Zahnrad, am Handy ohne Text) und Info in der Kopfzeile.
+- PC und Handy: Reiterleiste unten am Handy, Seitenleiste links am PC (ab 768 px). Ab 16.3 (Wunsch der Person, 23.11.2026): Leiste unten Tracking, Finanzen, Projekte, **Start** (Thetadex-Icon, führt zu `#/`, in der Mitte der Reiter ohne `nurBreit`; ab 1.8.4 größer und etwas höher in einem Kreis; ab 1.8.5 heller Kreis mit feiner Linie und der Karteikarte `icons/thetadex-karte.svg`, damit er auch im Dunkelmodus sichtbar ist), Einkauf, Besitz, Uni; die Seitenleiste am PC genauso, aber ohne Start (ab 1.8.4, Wunsch der Person), danach die übrigen (Reihenfolge von `BEREICHE`). Die Kacheln der Startseite ordnet `START` in `js/config.js`: Tracking, Finanzen, Projekte, Einkauf, Uni, Besitz, Visitenkarte, dann der Rest. Einstellungen (Zahnrad, am Handy ohne Text) und Info in der Kopfzeile.
 - Name, Icon und Farben: Thetadex, siehe Abschnitt 4 „Erscheinungsbild“. Die Kopfzeile zeigt immer das vollständige Icon (Karte mit Reitern).
 - **Einstellungen** (`#/einstellungen`, bis 0.3.1 „Einrichtung“): Aussehen (Hell, Dunkel, Wie Gerät), Passwort und die Script-Adressen je Bereich. Gespeichert nur im Gerät.
   Ein Knopf „Abmelden“ löscht alles wieder aus dem Gerät.
@@ -646,6 +646,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.8.2** Schritt 16.3: Neue Reihenfolge der Kacheln und der Leiste; Knopf „Start“ mit dem Thetadex-Icon in der Mitte der Leiste; Pen & Paper und Döner am Handy nur noch als Kachel.
 - **1.8.3** Schritt 16.4: Partner*in darf auch in Uni und Bucket List schreiben (Skript `gemeinsam` und App).
 - **1.8.4** Nachbesserung: Projekte mit eigenem Werkzeug-Bild statt 🛠️; Start am Handy größer im Kreis, am PC nicht mehr in der Seitenleiste.
+- **1.8.5** Nachbesserung: Start am Handy als heller Kreis mit feiner Linie und großer Karteikarte (vorher Kohle, im Dunkelmodus unsichtbar).

@@ -68,7 +68,7 @@ function baueReiter(sichtbar) {
     const mitte = Math.floor(sichtbar.filter((b) => !b.nurBreit).length / 2);
     const start = el('a', { class: 'reiter-link reiter-start', attrs: { href: '#/', 'data-route': '' } }, [
         el('span', { class: 'reiter-start-kreis', attrs: { 'aria-hidden': 'true' } }, [
-            el('img', { class: 'reiter-start-icon', attrs: { src: 'icons/thetadex-icon.svg', alt: '', width: '38', height: '38' } })
+            el('img', { class: 'reiter-start-icon', attrs: { src: 'icons/thetadex-karte.svg', alt: '', width: '34', height: '38' } })
         ]),
         el('span', { class: 'reiter-name', text: 'Start' })
     ]);
