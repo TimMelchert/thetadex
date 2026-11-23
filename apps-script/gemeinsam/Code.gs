@@ -1,8 +1,8 @@
 // =====================================================
 // GEMEINSAM – Apps Script (Person und Partner*in, mit Passwort)
-// Einkauf und Essen (Etappe 4), Uni (Etappe 5) und Bucket List (Etappe 14).
+// Einkauf und Essen (Etappe 4), Uni (Etappe 5), Bucket List (Etappe 14) und Projekte (Etappe 16).
 // Blätter: lebensmittel, einkaufsliste, gerichte, zutaten, vorrat;
-// Uni: semester, module, kurse, termine, uni_einstellungen; Bucket List: bucketlist.
+// Uni: semester, module, kurse, termine, uni_einstellungen; Bucket List: bucketlist; Projekte: projekte.
 // Zwei Passwörter in den Skripteigenschaften: APP_PIN (Person) und PARTNER_PIN (Partner*in).
 // Kein Passwort steht hier. Über die Partnerin oder den Partner wird nichts gespeichert.
 // Rezepte (ab 1.3.4): Das Blatt „gerichte“ hält die Rezepte (Name bleibt, Blätter werden nie umbenannt),
@@ -34,14 +34,17 @@ var BLAETTER_ = {
   // Bucket List (ab 1.6.0): erledigt_am leer = offen, sonst „erreicht am“ (JJJJ-MM-TT).
   // reihenfolge: kleine Zahl = weiter oben, offene und erreichte Ziele je für sich. bild: eine Drive-Kennung oder leer.
   // liste (ab 1.6.2): leer = die Hauptliste, sonst der Name einer weiteren Liste (eigener Unterreiter in der App)
-  bucketlist: ["id", "titel", "notiz", "erledigt_am", "reihenfolge", "bild", "erstellt_am", "geaendert_am", "geloescht", "liste"]
+  bucketlist: ["id", "titel", "notiz", "erledigt_am", "reihenfolge", "bild", "erstellt_am", "geaendert_am", "geloescht", "liste"],
+  // Projekte (ab 1.8.0): projekt leer = ein Projekt, sonst die id des Projekts, zu dem dieser Abschnitt gehört.
+  // status: idee, laeuft, pausiert oder fertig. reihenfolge: kleine Zahl = weiter oben (Projekte für sich, Abschnitte je Projekt).
+  projekte: ["id", "projekt", "titel", "notiz", "status", "reihenfolge", "erstellt_am", "geaendert_am", "geloescht"]
 };
 // Spalten, die im Sheet reiner Text bleiben (kein Datum, keine Zahl)
 var TEXT_SPALTEN_ = ["id", "name", "abteilung", "einheit", "notiz", "lebensmittel_id", "gericht_id", "link", "ort",
   "semester_id", "modul_id", "stunde_id", "titel", "art", "kuerzel", "bereich", "status",
   "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "von", "bis",
   "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht", "leistung", "text", "ergibt", "bilder", "packung",
-  "erledigt_am", "bild", "liste"];
+  "erledigt_am", "bild", "liste", "projekt"];
 var MAX_ = { name: 60, abteilung: 40, einheit: 20, notiz_lm: 200, notiz_liste: 100, notiz_gericht: 300, link: 300, ort: 40,
   text_rezept: 20000, ergibt: 40 };
 var MAX_ZAHL_ = 9999;
@@ -68,17 +71,23 @@ var ECTS_ZIEL_ = 120;          // Vorgabe für uni_einstellungen, ändern im She
 var BUCKET_MAX_ = { titel: 80, notiz: 1000, liste: 40 };
 var BUCKET_MAX_ZIELE_ = 500;   // höchstens so viele Ziele insgesamt
 var BUCKET_ORDNER_NAME_ = "Thetadex Bucket List";
+// Projekte (Etappe 16)
+var PROJEKT_MAX_ = { titel: 80, notiz: 1000 };
+var PROJEKT_MAX_ANZAHL_ = 500;  // höchstens so viele Projekte und Abschnitte zusammen
+var PROJEKT_STATUS_ = ["idee", "laeuft", "pausiert", "fertig"];
 
 // Was jede Rolle darf. Das Skript prüft das bei jeder Aktion, nicht die App.
 // Uni (Etappe 5) und Bucket List (Etappe 14): Partner*in darf nur lesen.
-var LESEN_ = ["ping", "alles", "uni", "bild", "bucket"];
+// Projekte (Etappe 16): Partner*in darf alles, wie bei Einkauf (Entscheidung der Person, 23.11.2026).
+var LESEN_ = ["ping", "alles", "uni", "bild", "bucket", "projekte"];
 var UNI_SCHREIBEN_ = ["uni_speichern", "uni_loeschen"];
 var BUCKET_SCHREIBEN_ = ["bucket_speichern", "bucket_haken", "bucket_bild", "bucket_loeschen", "bucket_reihenfolge"];
+var PROJEKT_SCHREIBEN_ = ["projekt_speichern", "projekt_loeschen", "projekt_reihenfolge"];
 var EINKAUF_SCHREIBEN_ = ["lebensmittel_speichern", "lebensmittel_loeschen", "auf_liste", "liste_aendern", "abhaken",
   "gericht_speichern", "gericht_loeschen", "rezept_bild", "vorrat_speichern", "vorrat_loeschen", "reihenfolge_speichern"];
 var ERLAUBT_ = {
-  person: LESEN_.concat(EINKAUF_SCHREIBEN_, UNI_SCHREIBEN_, BUCKET_SCHREIBEN_),
-  partner: LESEN_.concat(EINKAUF_SCHREIBEN_)
+  person: LESEN_.concat(EINKAUF_SCHREIBEN_, UNI_SCHREIBEN_, BUCKET_SCHREIBEN_, PROJEKT_SCHREIBEN_),
+  partner: LESEN_.concat(EINKAUF_SCHREIBEN_, PROJEKT_SCHREIBEN_)
 };
 
 // --- 1. EINRICHTEN (im Editor ausführen, auch nach einem Update) ---
@@ -384,6 +393,7 @@ function doPost(e) {
     if (aktion === "ping") return jsonOut_({ ok: true, rolle: rolle });
     if (aktion === "bild") return jsonOut_(bildLesen_(data));
     if (aktion === "bucket") return jsonOut_({ ziele: bucketZiele_(), rolle: rolle });
+    if (aktion === "projekte") return jsonOut_({ projekte: projekteListe_(), rolle: rolle });
     if (aktion === "alles" || aktion === "uni") {
       var d = aktion === "uni" ? uni_() : alles_();
       d.rolle = rolle;
@@ -414,7 +424,10 @@ function doPost(e) {
         bucket_haken: bucketHaken_,
         bucket_bild: bucketBild_,
         bucket_loeschen: bucketLoeschen_,
-        bucket_reihenfolge: bucketReihenfolge_
+        bucket_reihenfolge: bucketReihenfolge_,
+        projekt_speichern: projektSpeichern_,
+        projekt_loeschen: projektLoeschen_,
+        projekt_reihenfolge: projektReihenfolge_
       }[aktion];
       return jsonOut_(f(data));
     } finally {
@@ -1447,4 +1460,117 @@ function bucketHatBild_(id) {
   var t;
   try { t = tabelle_("bucketlist"); } catch (e) { return false; }
   return t.zeilen.some(function (z) { return aktiv_(t, z) && driveKennung_(zelle_(z, t.sp, "bild")) === id; });
+}
+
+// --- 11. PROJEKTE (Etappe 16) ---
+// Eine schlichte Übersicht über Projekte mit Titel, Notiz und Status. Ein Projekt kann Abschnitte haben
+// (zweite Ebene, Spalte projekt = id des Projekts), ein Abschnitt hat keine eigenen Abschnitte.
+// Person und Partner*in dürfen alles (ERLAUBT_). Neue Einträge stehen ganz oben (Projekte für sich, Abschnitte je Projekt).
+
+function projektAus_(t, z) {
+  return {
+    id: String(zelle_(z, t.sp, "id")),
+    projekt: text_(z, t.sp, "projekt").trim(),
+    titel: text_(z, t.sp, "titel"),
+    notiz: text_(z, t.sp, "notiz"),
+    status: PROJEKT_STATUS_.indexOf(text_(z, t.sp, "status").trim()) >= 0 ? text_(z, t.sp, "status").trim() : "idee",
+    reihenfolge: zahl_(zelle_(z, t.sp, "reihenfolge")),
+    geaendert_am: stempel_(zelle_(z, t.sp, "geaendert_am"))
+  };
+}
+
+// Alle Projekte und Abschnitte (nicht gelöscht; Abschnitte nur, wenn ihr Projekt noch da ist). Die App sortiert nach reihenfolge.
+function projekteListe_() {
+  var t = tabelle_("projekte");
+  var alle = t.zeilen.filter(function (z) { return aktiv_(t, z); }).map(function (z) { return projektAus_(t, z); });
+  var oben = {};
+  alle.forEach(function (p) { if (!p.projekt) oben[p.id] = true; });
+  return alle.filter(function (p) { return !p.projekt || oben[p.projekt]; });
+}
+
+// Kleinste Zahl auf derselben Ebene (Projekte oder Abschnitte desselben Projekts) minus 1: so steht der Eintrag ganz oben
+function projektOben_(t, projekt) {
+  var min = null;
+  t.zeilen.forEach(function (z) {
+    if (!aktiv_(t, z) || text_(z, t.sp, "projekt").trim() !== projekt) return;
+    var n = zahl_(zelle_(z, t.sp, "reihenfolge"));
+    if (min === null || n < min) min = n;
+  });
+  return min === null ? 0 : min - 1;
+}
+
+// Neu (ohne id) oder ändern (mit id und geaendert_am). data = { titel, notiz, status, projekt }.
+// projekt: nur beim Anlegen; leer = neues Projekt, sonst die id eines Projekts (dann ein neuer Abschnitt darin).
+function projektSpeichern_(data) {
+  var titel = pruefeText_(data.titel, PROJEKT_MAX_.titel, "einen Titel", true);
+  if (titel.fehler) return { error: "eingabe", message: titel.fehler };
+  var notiz = bereinigeLang_(data.notiz, PROJEKT_MAX_.notiz + 1);
+  if (notiz.replace(/^'/, "").length > PROJEKT_MAX_.notiz) return { error: "eingabe", message: "Die Notiz ist zu lang (höchstens " + PROJEKT_MAX_.notiz + " Zeichen)." };
+  var status = pruefeListe_(data.status, PROJEKT_STATUS_, "einen Status", "idee");
+  if (status.fehler) return { error: "eingabe", message: status.fehler };
+
+  var t = tabelle_("projekte");
+  var id = String(data.id || "");
+  var werte = { titel: titel.wert, notiz: notiz, status: status.wert };
+  var i;
+  if (!id) {
+    var anzahl = t.zeilen.filter(function (z) { return aktiv_(t, z); }).length;
+    if (anzahl >= PROJEKT_MAX_ANZAHL_) return { error: "eingabe", message: "Höchstens " + PROJEKT_MAX_ANZAHL_ + " Projekte und Abschnitte." };
+    var projekt = String(data.projekt == null ? "" : data.projekt).trim();
+    if (projekt) {
+      var k = index_(t, projekt);
+      // Nur ein Projekt kann Abschnitte haben, kein Abschnitt (keine dritte Ebene)
+      if (k < 0 || text_(t.zeilen[k], t.sp, "projekt").trim() !== "") return { error: "fehlt", message: "Dieses Projekt gibt es nicht mehr. Bitte neu laden." };
+    }
+    werte.projekt = projekt;
+    werte.reihenfolge = projektOben_(t, projekt);
+    i = neu_(t, werte);
+  } else {
+    i = index_(t, id);
+    if (i < 0) return { error: "fehlt", message: "Diesen Eintrag gibt es nicht mehr. Bitte neu laden." };
+    if (veraltet_(t, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+    aendere_(t, i, werte);
+  }
+  return { projekt: projektAus_(t, t.zeilen[i]) };
+}
+
+// Weich löschen. Ein Projekt nimmt seine Abschnitte mit.
+function projektLoeschen_(data) {
+  var t = tabelle_("projekte");
+  var i = index_(t, data.id);
+  if (i < 0) return { error: "fehlt", message: "Diesen Eintrag gibt es nicht mehr. Bitte neu laden." };
+  if (veraltet_(t, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+  var id = String(data.id);
+  t.zeilen.forEach(function (z, k) {
+    if (aktiv_(t, z) && text_(z, t.sp, "projekt").trim() === id) weg_(t, k);
+  });
+  weg_(t, i);
+  return { ok: true };
+}
+
+// Neue Reihenfolge. data.ids = Projekte und Abschnitte in der gewünschten Reihenfolge (die App schickt alle).
+// Genannte bekommen 1, 2, 3 …; nicht genannte (zum Beispiel inzwischen neu) kommen dahinter in ihrer alten Folge.
+// Ändert geaendert_am nicht, damit ein offenes Formular am anderen Gerät gültig bleibt. Schreibt nur die eine Spalte.
+function projektReihenfolge_(data) {
+  var ids = Array.isArray(data.ids) ? data.ids.map(String) : null;
+  if (!ids || ids.length > PROJEKT_MAX_ANZAHL_) return { error: "eingabe", message: "Ungültige Reihenfolge." };
+  var t = tabelle_("projekte");
+  var platz = {};
+  var hat = function (id) { return Object.prototype.hasOwnProperty.call(platz, id); };
+  ids.forEach(function (id, k) { if (!hat(id)) platz[id] = k + 1; });
+  var rest = [];
+  t.zeilen.forEach(function (z, k) {
+    if (aktiv_(t, z) && !hat(String(zelle_(z, t.sp, "id")))) rest.push(k);
+  });
+  rest.sort(function (a, b) { return zahl_(zelle_(t.zeilen[a], t.sp, "reihenfolge")) - zahl_(zelle_(t.zeilen[b], t.sp, "reihenfolge")); });
+  var weiter = ids.length;
+  rest.forEach(function (k) { t.zeilen[k][t.sp.reihenfolge] = ++weiter; });
+  t.zeilen.forEach(function (z) {
+    var id = String(zelle_(z, t.sp, "id"));
+    if (aktiv_(t, z) && hat(id)) z[t.sp.reihenfolge] = platz[id];
+  });
+  if (t.zeilen.length) {
+    t.sheet.getRange(2, t.sp.reihenfolge + 1, t.zeilen.length, 1).setValues(t.zeilen.map(function (z) { return [z[t.sp.reihenfolge]]; }));
+  }
+  return { projekte: projekteListe_() };
 }
