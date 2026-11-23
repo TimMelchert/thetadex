@@ -1518,3 +1518,6 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .pack-zaehler-zahl { min-width: 2.5em; text-align: center; font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .pack-status:empty, .pack-reihe:has(> span:empty):has(> button[hidden]) { display: none; }
 .pack-rucksack { width: 44px; height: 44px; flex: 0 0 auto; }
+.pack-zaehler { flex-wrap: wrap; }
+.pack-zaehler .pack-zaehler-name { flex: 1 1 0; }
+.pack-zaehler-wartet { flex: 1 1 100%; font-size: 0.85rem; }

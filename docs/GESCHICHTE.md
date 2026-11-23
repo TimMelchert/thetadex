@@ -378,3 +378,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.7.1** Schritt 15.2: Reiter Packlisten in der App (`js/views/packlisten.js`, Kachel und Seitenleiste am PC, Flieder, 🧳, Symbol Koffer); Haken hin und zurück, Pfeile, „Alle Haken weg“, Zähler „Nutzungen“.
 - **1.7.2** Schritt 15.3: Besitz zeigt und ändert den Zähler „Nutzungen“ (Fenster und Formular).
 - **1.7.3** Packlisten: Zähler „Nutzungen“ nur bei Haken „Hin“; grüner Wanderrucksack (`icons/rucksack.svg`) statt 🧳, neues Reiter-Symbol.
+- **1.7.4** Packlisten: Zähler „Nutzungen“ auch ohne Netz (Schritte im Gerät, werden nachgetragen); „Item aus dem Besitz“ als Suchfeld mit Liste.

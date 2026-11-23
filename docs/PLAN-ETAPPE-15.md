@@ -16,7 +16,7 @@ Ein neuer Reiter **„Packlisten“**: feste Listen je Anlass. Keine Vorlagen, k
 **Nutzungszähler (Wunsch der Person, vorerst nur für einen Wasserfilter gebraucht; geht aber bei jedem Item):**
 - Ein Item im Besitz kann einen Zähler „Nutzungen“ haben (neue freiwillige Spalte `nutzungen` im Blatt `besitz`, ganze Zahl 0 bis 1.000.000).
 - Ein Eintrag einer Packliste kann auf ein Item im Besitz zeigen (Spalte `besitz_id`, im Formular „Item aus dem Besitz“ wählen).
-- Ist der Eintrag bei „Hin“ abgehakt (ab 1.7.3, Wunsch der Person), steht der Zähler des Items **oben über der Packliste**: „Wasserfilter · Nutzungen 24“ mit Knöpfen − und +. Jeder Tipp speichert sofort im Besitz.
+- Ist der Eintrag bei „Hin“ abgehakt (ab 1.7.3, Wunsch der Person), steht der Zähler des Items **oben über der Packliste**: „Wasserfilter · Nutzungen 24“ mit Knöpfen − und +. Jeder Tipp zählt sofort; ohne Netz bleibt er im Gerät und wird nachgetragen (ab 1.7.4, siehe `docs/STAND.md` 4, Ausnahme von 1.5).
 - Im Besitz zeigt das Fenster des Items „Nutzungen 24“; im Formular lässt sich die Zahl setzen (leer = kein Zähler).
 
 ## 2. Aufbau in der App (Schritt 15.2)
@@ -29,7 +29,7 @@ Ein neuer Reiter **„Packlisten“**: feste Listen je Anlass. Keine Vorlagen, k
 - Darunter die Nutzungszähler (falls vorhanden), dann „Hin 12 / 30 · Zurück 0 / 30“, dann die Einträge nach Gruppe in eigener Reihenfolge. Je Zeile: Haken Hin, Haken Zurück, Name, Anzahl („2×“), rechts ^ v. Jede Gruppe hat in ihrer Überschrift ^ v.
 - Verschieben wirkt sofort, gespeichert wird kurz nach dem letzten Tippen (wie Bucket List).
 - Ein Tipp auf einen Haken speichert sofort. Klappt es nicht, springt der Haken zurück und eine Meldung erscheint.
-- „+ Neuer Eintrag“ und Tipp auf den Namen öffnen das Formular: Name, Gruppe (Auswahl aus den vorhandenen oder neu), Anzahl, Item aus dem Besitz (freiwillig), Löschen.
+- „+ Neuer Eintrag“ und Tipp auf den Namen öffnen das Formular: Name, Gruppe (Auswahl aus den vorhandenen oder neu), Anzahl, Item aus dem Besitz (freiwillig, ab 1.7.4 Suchfeld mit Liste), Löschen.
 - Nur mit Netz (1.5): Die Listen liegen nur im Arbeitsspeicher.
 
 ## 3. Sheet „Leben“, Blatt `packliste` (Schritt 15.1)

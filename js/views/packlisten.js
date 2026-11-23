@@ -8,6 +8,7 @@ import { el, leeren, vergleiche } from '../ui/dom.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { auswahlFeld } from '../ui/auswahl.js';
+import { lesen, schreiben } from '../store.js';
 
 // Zuletzt geladene Daten { eintraege, zaehler }, nur im Arbeitsspeicher. Beim Öffnen sofort zeigen, dann frisch laden.
 let daten = null;
@@ -15,6 +16,16 @@ let daten = null;
 let listeWahl = '';
 // Items im Besitz für die Auswahl im Formular (erst beim ersten Formular geladen)
 let besitzItems = null;
+// Zähler ohne Netz (ab 1.7.4, Ausnahme von 1.5, Wunsch der Person): noch nicht gesendete Schritte je Item im Gerät,
+// { <besitz_id>: +2 }. Sie werden nachgetragen, sobald wieder Netz da ist. Nur Kennung und Zahl, keine Namen.
+const OFFEN_SPEICHER = 'pack_zaehler_offen';
+const offeneSchritte = () => { const o = lesen(OFFEN_SPEICHER, {}); return o && typeof o === 'object' ? o : {}; };
+// Wieder Netz oder zurück in der App: offene Schritte nachtragen (nur, wenn der Reiter offen ist)
+let nachtragen = null;
+window.addEventListener('online', () => { if (nachtragen && /^#\/packlisten/.test(location.hash)) nachtragen(); });
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && nachtragen && /^#\/packlisten/.test(location.hash)) nachtragen();
+});
 const MAX_NAME = 80;
 const MAX_GRUPPE = 40;
 const MAX_LISTE = 40;
@@ -90,7 +101,8 @@ export function render(container, ctx) {
     }
 
     // --- Formular: neu oder ändern ---
-    async function ladeBesitz(wahl, hinweis, gewaehlt) {
+    // Füllt das Suchfeld „Item aus dem Besitz“: Vorschlag „Name · Ort“ → id
+    async function ladeBesitz(wahl, hinweis, zuId) {
         if (!besitzItems) {
             hinweis.textContent = 'Items aus dem Besitz laden …';
             try {
@@ -102,9 +114,14 @@ export function render(container, ctx) {
                 return;
             }
         }
-        hinweis.textContent = 'Freiwillig. Dann steht oben über der Liste der Zähler „Nutzungen“ dieses Items.';
-        besitzItems.forEach((s) => wahl.append(el('option', { text: s.name + (s.ort ? ' (' + s.ort + ')' : ''), attrs: { value: s.id } })));
-        wahl.value = gewaehlt;
+        hinweis.textContent = 'Freiwillig. Tippe ins Feld oder suche. Ist der Eintrag bei „Hin“ abgehakt, steht oben der Zähler „Nutzungen“ dieses Items.';
+        besitzItems.forEach((s) => {
+            const basis = s.name + (s.ort ? ' · ' + s.ort : '');
+            let t = basis;
+            for (let k = 2; zuId.has(t); k++) t = basis + ' (' + k + ')'; // gleicher Name am gleichen Ort
+            zuId.set(t, s.id);
+        });
+        wahl.setzeEintraege([...zuId.keys()]);
     }
 
     function zeigeForm(e, neueListe) {
@@ -117,16 +134,24 @@ export function render(container, ctx) {
         const liste = auswahlFeld({ id: 'pack-f-liste', maxlength: MAX_LISTE, placeholder: 'Name der Liste' });
         liste.feld.value = e ? e.liste : (neueListe ? '' : listeWahl);
         liste.setzeEintraege(listenNamen());
-        const besitz = el('select', { attrs: { id: 'pack-f-besitz' } }, [el('option', { text: '– keins –', attrs: { value: '' } })]);
+        // Item aus dem Besitz: Suchfeld mit Liste zum Antippen (ab 1.7.4, Wunsch der Person: leichter am Handy)
+        const besitz = auswahlFeld({ id: 'pack-f-besitz', maxlength: 200, placeholder: 'leer = keins' });
         const besitzHinweis = el('p', { class: 'leise besitz-hinweis' });
+        const besitzZuId = new Map();
         const gewaehlt = e ? e.besitz_id : '';
-        if (gewaehlt) besitz.append(el('option', { text: (daten.zaehler[gewaehlt] || {}).name || 'Item im Besitz', attrs: { value: gewaehlt } }));
-        besitz.value = gewaehlt;
-        ladeBesitz(besitz, besitzHinweis, gewaehlt).then(() => {
-            // Doppelte Zeile des schon gewählten Items entfernen
-            const opt = [...besitz.options].filter((o) => o.value === gewaehlt);
-            if (gewaehlt && opt.length > 1) opt[0].remove();
-            besitz.value = gewaehlt;
+        const besitzId = () => {
+            const t = besitz.feld.value.trim();
+            if (!t) return '';
+            if (besitzZuId.has(t)) return besitzZuId.get(t);
+            // Noch nicht geladen oder unverändert: das bisherige Item bleibt
+            return gewaehlt && t === besitzStart ? gewaehlt : null;
+        };
+        let besitzStart = gewaehlt ? ((daten.zaehler[gewaehlt] || {}).name || 'Item im Besitz') : '';
+        besitz.feld.value = besitzStart;
+        ladeBesitz(besitz, besitzHinweis, besitzZuId).then(() => {
+            // Bisheriges Item mit seinem Vorschlagstext zeigen (wenn noch nichts geändert wurde)
+            const t = [...besitzZuId].find(([, id]) => id === gewaehlt);
+            if (gewaehlt && t && besitz.feld.value === besitzStart) { besitz.feld.value = t[0]; besitzStart = t[0]; }
         });
 
         const speichern = el('button', { class: 'knopf knopf-bereich', text: 'Speichern', attrs: { type: 'submit' } });
@@ -148,7 +173,9 @@ export function render(container, ctx) {
             const listenName = listenNamen().find((x) => klein(x) === klein(l)) || l;
             const g = gruppe.feld.value.trim();
             const gruppenName = (daten.eintraege.find((x) => klein(x.liste) === klein(listenName) && klein(x.gruppe) === klein(g)) || {}).gruppe || g;
-            const werte = { name: n, gruppe: gruppenName, anzahl: a, liste: listenName, besitz_id: besitz.value };
+            const bid = besitzId();
+            if (bid === null) { status.textContent = 'Bitte bei „Item aus dem Besitz“ ein Item aus der Liste wählen (oder das Feld leeren).'; besitz.feld.focus(); return; }
+            const werte = { name: n, gruppe: gruppenName, anzahl: a, liste: listenName, besitz_id: bid };
             if (e) { werte.id = e.id; werte.geaendert_am = e.geaendert_am; }
             const antwort = await senden(status, knoepfe, 'pack_speichern', werte);
             if (!antwort || !antwort.eintrag) return;
@@ -177,7 +204,7 @@ export function render(container, ctx) {
                 el('label', { text: 'Name', attrs: { for: 'pack-f-name' } }), name,
                 el('label', { text: 'Gruppe', attrs: { for: 'pack-f-gruppe' } }), gruppe.box,
                 el('label', { text: 'Anzahl', attrs: { for: 'pack-f-anzahl' } }), anzahl,
-                el('label', { text: 'Item aus dem Besitz', attrs: { for: 'pack-f-besitz' } }), besitz, besitzHinweis,
+                el('label', { text: 'Item aus dem Besitz', attrs: { for: 'pack-f-besitz' } }), besitz.box, besitzHinweis,
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe),
                 status
             ])
@@ -211,22 +238,51 @@ export function render(container, ctx) {
     }
 
     // --- Zähler „Nutzungen“ eines Items im Besitz ---
-    const zaehlerInArbeit = new Set();
-    async function zaehle(id, schritt) {
-        if (zaehlerInArbeit.has(id)) return;
-        zaehlerInArbeit.add(id);
+    // Jeder Tipp zählt sofort im Gerät mit und wird dann gesendet. Ohne Netz bleibt der Schritt im Gerät
+    // und wird nachgetragen (beim nächsten Tipp, wenn wieder Netz da ist oder beim Laden). Gesendet wird Schritt für Schritt.
+    let sendetZaehler = false;
+    const anzeige = (id) => Math.max(0, (daten.zaehler[id] ? daten.zaehler[id].nutzungen : 0) + (offeneSchritte()[id] || 0));
+    function zaehle(id, schritt) {
+        if (schritt < 0 && anzeige(id) <= 0) return;
+        const offen = offeneSchritte();
+        offen[id] = (offen[id] || 0) + schritt;
+        if (!offen[id]) delete offen[id];
+        schreiben(OFFEN_SPEICHER, offen);
         zeigeListe();
+        sendeZaehler();
+    }
+    async function sendeZaehler() {
+        if (sendetZaehler || !daten) return;
+        sendetZaehler = true;
         try {
-            const antwort = await api('leben', 'besitz_nutzung', { id, schritt });
-            daten.zaehler[id].nutzungen = antwort.nutzungen;
-            listeStatus.textContent = '';
-        } catch (f) {
-            listeStatus.textContent = 'Zähler NICHT gespeichert: ' + f.message;
+            for (;;) {
+                const offen = offeneSchritte();
+                const id = Object.keys(offen).find((k) => offen[k]);
+                if (!id) break;
+                const schritt = offen[id] > 0 ? 1 : -1;
+                let antwort;
+                try {
+                    antwort = await api('leben', 'besitz_nutzung', { id, schritt });
+                } catch (f) {
+                    if (f.code === 'fehlt') { // Item gibt es nicht mehr: Schritte verwerfen
+                        const o = offeneSchritte(); delete o[id]; schreiben(OFFEN_SPEICHER, o); continue;
+                    }
+                    listeStatus.textContent = f.code === 'netz' || !navigator.onLine ? 'Ohne Netz: Der Zähler wird nachgetragen, sobald wieder Netz da ist.' : 'Zähler noch nicht gesendet: ' + f.message;
+                    break;
+                }
+                const o = offeneSchritte();
+                o[id] = (o[id] || 0) - schritt;
+                if (!o[id]) delete o[id];
+                schreiben(OFFEN_SPEICHER, o);
+                if (daten.zaehler[id]) daten.zaehler[id].nutzungen = antwort.nutzungen;
+                if (!Object.keys(o).length) listeStatus.textContent = '';
+            }
         } finally {
-            zaehlerInArbeit.delete(id);
+            sendetZaehler = false;
             zeigeListe();
         }
     }
+    nachtragen = () => sendeZaehler();
 
     // --- Reihenfolge: Pfeile ^ und v. Verschieben wirkt sofort, gespeichert wird kurz nach dem letzten Tippen. ---
     const reiheText = el('span');
@@ -318,15 +374,17 @@ export function render(container, ctx) {
         eintraege.forEach((e) => { if (e.hin && e.besitz_id && daten.zaehler[e.besitz_id] && !ids.includes(e.besitz_id)) ids.push(e.besitz_id); });
         return ids.map((id) => {
             const z = daten.zaehler[id];
-            const warte = zaehlerInArbeit.has(id);
+            const zahl = anzeige(id);
+            const wartet = offeneSchritte()[id] || 0;
             return el('div', { class: 'pack-zaehler' }, [
                 el('span', { class: 'pack-zaehler-name' }, [
                     el('span', { text: z.name }),
                     el('span', { class: 'leise', text: ' · Nutzungen' })
                 ]),
-                el('button', { class: 'knopf knopf-zweit pack-zaehler-knopf', text: '−', attrs: { type: 'button', 'aria-label': z.name + ': eine Nutzung weniger', disabled: warte || z.nutzungen <= 0 }, on: { click: () => zaehle(id, -1) } }),
-                el('span', { class: 'pack-zaehler-zahl', text: String(z.nutzungen), attrs: { 'aria-live': 'polite' } }),
-                el('button', { class: 'knopf knopf-zweit pack-zaehler-knopf', text: '+', attrs: { type: 'button', 'aria-label': z.name + ': eine Nutzung mehr', disabled: warte }, on: { click: () => zaehle(id, 1) } })
+                el('button', { class: 'knopf knopf-zweit pack-zaehler-knopf', text: '−', attrs: { type: 'button', 'aria-label': z.name + ': eine Nutzung weniger', disabled: zahl <= 0 }, on: { click: () => zaehle(id, -1) } }),
+                el('span', { class: 'pack-zaehler-zahl', text: String(zahl), attrs: { 'aria-live': 'polite' } }),
+                el('button', { class: 'knopf knopf-zweit pack-zaehler-knopf', text: '+', attrs: { type: 'button', 'aria-label': z.name + ': eine Nutzung mehr' }, on: { click: () => zaehle(id, 1) } }),
+                wartet ? el('span', { class: 'leise pack-zaehler-wartet', text: 'noch nicht gesendet (' + (wartet > 0 ? '+' : '') + wartet + ')' }) : null
             ]);
         });
     }
@@ -390,6 +448,7 @@ export function render(container, ctx) {
             daten = { eintraege: Array.isArray(d.eintraege) ? d.eintraege : [], zaehler: d.zaehler && typeof d.zaehler === 'object' ? d.zaehler : {} };
             ladeStatus.textContent = '';
             zeigeListe();
+            sendeZaehler();
         } catch (e) {
             ladeStatus.textContent = 'Laden fehlgeschlagen: ' + e.message
                 + (e.code === 'aktion' ? ' Bitte im Sheet „Leben“ die neue Fassung des Skripts einfügen, „einrichten“ ausführen und bereitstellen (Schritt 15.1).' : '');
