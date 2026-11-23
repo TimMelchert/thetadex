@@ -114,6 +114,10 @@
 
 .inhalt:focus { outline: none; }
 
+/* Knopf „Start“ (16.3): Thetadex-Icon in der Mitte der Leiste, Streifen in Kohle wie die Kopfzeile */
+.reiter-start { --bereich: var(--kopf-grund); }
+.reiter-start-icon { display: block; width: 28px; height: 28px; }
+
 /* Visitenkarte: am Handy nicht in der Reiterleiste, nur als Kachel auf der Startseite (Wunsch der Person, 4.11.2026) */
 @media (max-width: 767px) {
     .reiter-nur-breit { display: none; }

@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.8.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.8.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -21,7 +21,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 13 „Herbarium“ (1.5.x) ist fertig (22.11.2026): Reiter Herbarium mit Karteikarten, Festlegungen in 4 („Herbarium“), Prüfung `pruefung/etappe-13-herbarium-bericht.md` in den Projektdateien.
 - Etappe 14 „Bucket List“ (1.6.x) läuft: Plan `docs/PLAN-ETAPPE-14.md`. Schritt 14.1 (Skript), 14.2 (Reiter in der App) und 14.3 (weitere Listen als Unterreiter) sind gebaut, nächster Schritt: 14.4 (Abschluss).
 - Etappe 15 „Packlisten“ (1.7.x) ist fertig (23.11.2026): Reiter Packlisten mit Zähler „Nutzungen“, Festlegungen in 4 („Packlisten“), Prüfung `pruefung/etappe-15-packlisten-bericht.md` in den Projektdateien.
-- Etappe 16 „Projekte“ (1.8.x) läuft: Plan `docs/PLAN-ETAPPE-16.md`. Schritt 16.1 (Skript `gemeinsam`, Blatt `projekte`) und 16.2 (Reiter in der App) sind gebaut, nächster Schritt: 16.3 (neue Reihenfolge der Kacheln und der Leiste).
+- Etappe 16 „Projekte“ (1.8.x) läuft: Plan `docs/PLAN-ETAPPE-16.md`. Schritt 16.1 (Skript `gemeinsam`, Blatt `projekte`) 16.2 (Reiter in der App) und 16.3 (neue Reihenfolge, Knopf Start) sind gebaut, nächster Schritt: 16.4 (Partner*in schreibt in Uni und Bucket List).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -205,7 +205,7 @@ unter „Info“ die Version prüfen.
   Repo-Bereiche: `index.html`, `manifest.webmanifest`, `sw.js`, `docs/`, `icons/`,
   `css/` (base, layout, components), `js/` (app, config, api, store, ui/, views/), `vendor/` (lokale Bibliotheken, siehe 4),
   `apps-script/` (Code aller Google-Skripte, je Bereich ein Ordner).
-- Hash-Routing: `#/tracking`, `#/doener`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einstellungen`, `#/info`, ab 10.3 `#/visitenkarte` (Kachel auf der Startseite, am PC auch in der Seitenleiste, am Handy nicht in der Leiste: `nurBreit` in `BEREICHE`, CSS `.reiter-nur-breit`), ab 13.2 `#/herbarium` (genauso `nurBreit`, Skript `leben`), ab 14.2 `#/bucketlist` (genauso `nurBreit`, Skript `gemeinsam`), ab 16.2 `#/projekte` (bis 16.3 `nurBreit`, Skript `gemeinsam`), ab 15.2 `#/packlisten` (genauso `nurBreit`, Skript `leben`).
+- Hash-Routing: `#/tracking`, `#/doener`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einstellungen`, `#/info`, ab 10.3 `#/visitenkarte` (Kachel auf der Startseite, am PC auch in der Seitenleiste, am Handy nicht in der Leiste: `nurBreit` in `BEREICHE`, CSS `.reiter-nur-breit`), ab 13.2 `#/herbarium` (genauso `nurBreit`, Skript `leben`), ab 14.2 `#/bucketlist` (genauso `nurBreit`, Skript `gemeinsam`), ab 16.2 `#/projekte` (Skript `gemeinsam`, ab 16.3 in der Leiste unten; Pen & Paper und Döner ab 16.3 `nurBreit`), ab 15.2 `#/packlisten` (genauso `nurBreit`, Skript `leben`).
   Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“)
   und `#/doener/<skript>` (öffentliche Döner-Bewertung, siehe 4 „Döner öffentlich“)
   und `#/karte/<skript>/<schluessel>` (Visitenkarte, nur lesen, ohne Reiterleiste und Kopf-Links, ab 10.2, siehe 4 „Visitenkarte“).
@@ -214,7 +214,7 @@ unter „Info“ die Version prüfen.
 - Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter es gibt, steht in `js/config.js` (`features`).
   Sichtbar ist ein Reiter nur, wenn die Adresse seines Skripts eingetragen ist (`BEREICHE[].skript`, ab 0.4.8): Tracking `tracking`, Finanzen `finanzen`,
   Pen & Paper (Kennung `dsa`) `dsa` (ab 6.1), Einkauf, Uni und Bucket List `gemeinsam`, Besitz und Packlisten `leben`. Döner ist immer da.
-- PC und Handy: Reiterleiste unten am Handy, Seitenleiste links am PC (ab 768 px). Einstellungen (Zahnrad, am Handy ohne Text) und Info in der Kopfzeile.
+- PC und Handy: Reiterleiste unten am Handy, Seitenleiste links am PC (ab 768 px). Ab 16.3 (Wunsch der Person, 23.11.2026): Leiste unten Tracking, Finanzen, Projekte, **Start** (Thetadex-Icon, führt zu `#/`, in der Mitte der Reiter ohne `nurBreit`), Einkauf, Besitz, Uni; die Seitenleiste am PC genauso, danach die übrigen (Reihenfolge von `BEREICHE`). Die Kacheln der Startseite ordnet `START` in `js/config.js`: Tracking, Finanzen, Projekte, Einkauf, Uni, Besitz, Visitenkarte, dann der Rest. Einstellungen (Zahnrad, am Handy ohne Text) und Info in der Kopfzeile.
 - Name, Icon und Farben: Thetadex, siehe Abschnitt 4 „Erscheinungsbild“. Die Kopfzeile zeigt immer das vollständige Icon (Karte mit Reitern).
 - **Einstellungen** (`#/einstellungen`, bis 0.3.1 „Einrichtung“): Aussehen (Hell, Dunkel, Wie Gerät), Passwort und die Script-Adressen je Bereich. Gespeichert nur im Gerät.
   Ein Knopf „Abmelden“ löscht alles wieder aus dem Gerät.
@@ -646,6 +646,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.7.6** Schritt 15.4: Abschluss Etappe 15 „Packlisten“: Prüfung, Plan in 4 eingearbeitet und gelöscht.
 - **1.8.0** Schritt 16.1: Skript `gemeinsam` mit Blatt `projekte` (Projekte und Abschnitte, Status, Reihenfolge); Partner*in darf dort alles. Plan `docs/PLAN-ETAPPE-16.md`.
 - **1.8.1** Schritt 16.2: Reiter Projekte (🛠️, Taupe, bis 16.3 am Handy nur Kachel): Projekte mit Abschnitten, bunter Kreis je Status, Pfeile ^ v, Tipp klappt auf; Partner*in darf alles.
+- **1.8.2** Schritt 16.3: Neue Reihenfolge der Kacheln und der Leiste; Knopf „Start“ mit dem Thetadex-Icon in der Mitte der Leiste; Pen & Paper und Döner am Handy nur noch als Kachel.

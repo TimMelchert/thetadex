@@ -63,6 +63,15 @@ function baueReiter(sichtbar) {
     leisteFuer = schluessel;
     const leiste = document.getElementById('reiter');
     leeren(leiste);
+    // Knopf „Start“ (16.3, Wunsch der Person, 23.11.2026): Thetadex-Icon in der Mitte der Leiste unten, führt zur Startseite.
+    // Mitte = nach der Hälfte der Reiter ohne nurBreit (bei der Person nach Projekte). Am PC an derselben Stelle der Seitenleiste.
+    const mitte = Math.floor(sichtbar.filter((b) => !b.nurBreit).length / 2);
+    const start = el('a', { class: 'reiter-link reiter-start', attrs: { href: '#/', 'data-route': '' } }, [
+        el('img', { class: 'reiter-start-icon', attrs: { src: 'icons/thetadex-icon.svg', alt: '', width: '28', height: '28' } }),
+        el('span', { class: 'reiter-name', text: 'Start' })
+    ]);
+    if (mitte === 0) leiste.append(start);
+    let schmal = 0;
     sichtbar.forEach((b) => {
         leiste.append(el('a', {
             class: b.nurBreit ? 'reiter-link reiter-nur-breit' : 'reiter-link',
@@ -71,6 +80,7 @@ function baueReiter(sichtbar) {
             el('span', { class: 'reiter-symbol', attrs: { 'data-symbol': b.id, 'aria-hidden': 'true' } }),
             el('span', { class: 'reiter-name', text: b.titel })
         ]));
+        if (!b.nurBreit && ++schmal === mitte) leiste.append(start);
     });
 }
 
