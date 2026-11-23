@@ -18,6 +18,7 @@ import * as dsa from './views/dsa.js';
 import * as karte from './views/karte.js';
 import * as visitenkarte from './views/visitenkarte.js';
 import * as herbarium from './views/herbarium.js';
+import * as bucketlist from './views/bucketlist.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
@@ -47,6 +48,7 @@ ANSICHTEN.bogen = dsa;
 ANSICHTEN.karte = karte;
 ANSICHTEN.visitenkarte = visitenkarte;
 ANSICHTEN.herbarium = herbarium;
+ANSICHTEN.bucketlist = bucketlist;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';
