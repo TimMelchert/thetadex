@@ -256,7 +256,7 @@ export function render(container, ctx) {
     container.append(
         el('div', { class: 'besitz-kopf' }, [
             el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
-                el('span', { class: 'titel-emoji', text: '🛠️', attrs: { 'aria-hidden': 'true' } }),
+                el('img', { class: 'projekt-werkzeug', attrs: { src: 'icons/werkzeug.svg', alt: '', width: '40', height: '40' } }),
                 el('span', { text: ctx.bereich.titel })
             ]),
             neuKnopf

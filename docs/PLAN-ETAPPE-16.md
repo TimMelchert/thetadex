@@ -19,7 +19,7 @@ Ein neuer Reiter **„Projekte“**: eine schlichte Übersicht über größere V
 
 - Name „Projekte“, Adresse `#/projekte`, Kennung `projekte`, Skript `gemeinsam` (erscheint nur mit dessen Adresse, wie Einkauf, Uni und Bucket List).
 - **In der Leiste unten am Handy** (kein `nurBreit`), siehe Schritt 16.3.
-- Farbe **Taupe `#A39382`** (`--farbe-projekte`), 🛠️ vor der Überschrift, eigenes Symbol `icons/reiter/projekte.svg` (Werkzeug).
+- Farbe **Taupe `#A39382`** (`--farbe-projekte`), vor der Überschrift ab 1.8.4 das Bild `icons/werkzeug.svg` statt 🛠️, eigenes Symbol `icons/reiter/projekte.svg` (Werkzeug).
   Ausnahme von den sieben Farben wie Visitenkarte, Herbarium, Bucket List und Packlisten: nur Kachel, Reiter und Marken, nicht im Icon.
 - Statusfarben als Variablen `--status-idee`, `--status-laeuft`, `--status-pausiert`, `--status-fertig` in `css/base.css` (hell und dunkel).
   Der Kreis hat einen unsichtbaren Text für Bildschirmleser („Status: Läuft“); im Fenster und im Formular steht der Status als Wort, damit er auch ohne Farbsehen lesbar ist.
@@ -51,7 +51,7 @@ Spalten: `id, projekt, titel, notiz, status, reihenfolge, erstellt_am, geaendert
 - **Leiste unten am Handy:** Tracking, Finanzen, Projekte, **Start** (das Thetadex-Icon `icons/thetadex-icon.svg` in Farbe, in der Mitte, führt zur Startseite `#/`), Einkauf, Besitz, Uni.
   Pen & Paper, Döner und Visitenkarte sind am Handy nur Kacheln (`nurBreit`); die Visitenkarte bleibt also wie bisher (geändert am 23.11.2026, 14:41).
 - Kein neues Symbol: Start zeigt das vorhandene Thetadex-Icon (Wunsch der Person, 23.11.2026, statt eines Hauses).
-- Seitenleiste am PC: wie die Leiste unten (mit Start an derselben Stelle), danach der Rest (bestätigt).
+- Seitenleiste am PC: wie die Leiste unten, aber ohne Start (ab 1.8.4, Wunsch der Person), danach der Rest. Start am Handy ab 1.8.4 größer, etwas höher, mittig in einem Kreis.
 - Umsetzung: Reihenfolge von `BEREICHE` in `js/config.js` = Leiste; dazu eine kurze Liste `START` für die Kacheln.
 
 ## 6. Partnerin oder Partner schreibt überall in „Gemeinsam“ (Schritt 16.4, Wunsch der Person, 23.11.2026)

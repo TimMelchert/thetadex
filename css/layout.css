@@ -114,9 +114,24 @@
 
 .inhalt:focus { outline: none; }
 
-/* Knopf „Start“ (16.3): Thetadex-Icon in der Mitte der Leiste, Streifen in Kohle wie die Kopfzeile */
-.reiter-start { --bereich: var(--kopf-grund); }
-.reiter-start-icon { display: block; width: 28px; height: 28px; }
+/* Knopf „Start“ (16.3): Thetadex-Icon in der Mitte der Leiste. Ab 1.8.4 (Wunsch der Person, 23.11.2026):
+   größer, etwas höher, mittig in einem Kreis in Kohle; am PC nicht in der Seitenleiste. */
+.reiter-start { flex: 0 0 72px; border-top-color: transparent; overflow: visible; align-items: flex-start; }
+.reiter-start-kreis {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 62px;
+    margin-top: -26px;
+    border-radius: 50%;
+    background: var(--kopf-grund);
+    border: 3px solid var(--hintergrund);
+}
+.reiter-start[aria-current="page"] { background: none; }
+.reiter-start[aria-current="page"] .reiter-start-kreis { outline: 2px solid var(--schrift); outline-offset: 1px; }
+.reiter-start-icon { display: block; width: 38px; height: 38px; }
 
 /* Visitenkarte: am Handy nicht in der Reiterleiste, nur als Kachel auf der Startseite (Wunsch der Person, 4.11.2026) */
 @media (max-width: 767px) {
@@ -132,6 +147,9 @@
     }
 
     .kopf { grid-column: 1 / -1; }
+
+    /* Start steht am PC nicht in der Seitenleiste (Wunsch der Person, 23.11.2026) */
+    .reiter-start { display: none; }
 
     .reiter {
         position: static;

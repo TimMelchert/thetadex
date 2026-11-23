@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Hammer und Schraubenschlüssel gekreuzt (Projekte, ab 1.8.4): eigenes Bild statt Emoji, damit es auf allen Geräten gleich aussieht -->
+  <g stroke="#2E2A26" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Schraubenschlüssel: von unten rechts nach oben links -->
+    <path d="M52 56 L28.5 32.5 A11 11 0 0 1 14.5 18.5 L20.5 24.5 L26 23 L27.5 17.5 L21.5 11.5 A11 11 0 0 1 35.5 25.5 L59 49 A4.9 4.9 0 0 1 52 56 Z" fill="#A9A8A3"/>
+    <!-- Hammerstiel aus Holz: von unten links nach oben rechts -->
+    <path d="M9.5 50.5 L37 23 L41 27 L13.5 54.5 A2.8 2.8 0 0 1 9.5 50.5 Z" fill="#B07A4A"/>
+    <!-- Hammerkopf -->
+    <path d="M33 13 L45 25 L52 18 L48 14 L44 15 L40 6 Z" fill="#6E6B66"/>
+  </g>
+</svg>

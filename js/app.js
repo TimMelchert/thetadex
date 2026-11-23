@@ -64,10 +64,12 @@ function baueReiter(sichtbar) {
     const leiste = document.getElementById('reiter');
     leeren(leiste);
     // Knopf „Start“ (16.3, Wunsch der Person, 23.11.2026): Thetadex-Icon in der Mitte der Leiste unten, führt zur Startseite.
-    // Mitte = nach der Hälfte der Reiter ohne nurBreit (bei der Person nach Projekte). Am PC an derselben Stelle der Seitenleiste.
+    // Mitte = nach der Hälfte der Reiter ohne nurBreit (bei der Person nach Projekte). Ab 1.8.4 nur am Handy (am PC zeigt die Kopfzeile das Icon).
     const mitte = Math.floor(sichtbar.filter((b) => !b.nurBreit).length / 2);
     const start = el('a', { class: 'reiter-link reiter-start', attrs: { href: '#/', 'data-route': '' } }, [
-        el('img', { class: 'reiter-start-icon', attrs: { src: 'icons/thetadex-icon.svg', alt: '', width: '28', height: '28' } }),
+        el('span', { class: 'reiter-start-kreis', attrs: { 'aria-hidden': 'true' } }, [
+            el('img', { class: 'reiter-start-icon', attrs: { src: 'icons/thetadex-icon.svg', alt: '', width: '38', height: '38' } })
+        ]),
         el('span', { class: 'reiter-name', text: 'Start' })
     ]);
     if (mitte === 0) leiste.append(start);
