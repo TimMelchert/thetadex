@@ -116,19 +116,20 @@
 
 /* Knopf „Start“ (16.3): Thetadex-Icon in der Mitte der Leiste. Ab 1.8.4 (Wunsch der Person, 23.11.2026):
    größer, etwas höher, mittig in einem Kreis; am PC nicht in der Seitenleiste.
-   Ab 1.8.5: heller Kreis mit feiner Linie und der Karteikarte ohne dunklen Grund, damit er hell und dunkel passt. */
+   Ab 1.8.5: Kreis mit Ring und der Karteikarte ohne dunklen Grund; Farbe und Größe aus base.css (hell anders als dunkel). */
 .reiter-start { flex: 0 0 72px; border-top-color: transparent; overflow: visible; align-items: flex-start; }
 .reiter-start-kreis {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 54px;
-    height: 54px;
-    margin-top: -14px;
+    width: var(--start-groesse);
+    height: var(--start-groesse);
+    margin-top: var(--start-hoch);
     border-radius: 50%;
-    background: var(--hintergrund);
-    border: 1px solid var(--linie);
+    background: var(--start-grund);
+    border: 3px solid var(--hintergrund);
+    box-shadow: 0 0 0 1px var(--linie);
 }
 .reiter-start[aria-current="page"] { background: none; }
 .reiter-start[aria-current="page"] .reiter-start-kreis { outline: 2px solid var(--schrift); outline-offset: 1px; }
