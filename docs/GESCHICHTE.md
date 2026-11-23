@@ -357,6 +357,10 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.3.29** Schritt 12.2: Zeitgrenze für Anfragen, Übergangs-Code für alte Skripte in Einkauf weg, gemeinsame Helfer (`euro`, `datumText`, `bildSpeicher` …), kein Service Worker auf Visitenkarten-Links, kleine Reste weg.
 - **1.3.30** Schritt 12.3: Skript `karte` ohne alte Aktion `kontakt`, Skript `gemeinsam` liest jedes Blatt je Anfrage nur einmal und ohne Merker für alte App-Fassungen. Skripte `karte` und `gemeinsam` neu einfügen.
 - **1.4.0** Schritt 12.4: Besitz und Pen & Paper nutzen ein gemeinsames Bild-Feld (`bildFeld` in `js/ui/bild.js`).
+- **1.4.1** Besitz behoben: Das Formular speicherte leere Unterorte mit („Zimmer /  / “), solche Items fehlten danach in der Liste. Jetzt ohne leere Ebenen; die App ordnet beim Laden auch alte Einträge so (`ordne` in `js/views/besitz.js`), im Sheet wird es beim nächsten Speichern richtig.
+- **1.4.2** Besitz: „Gehört zu (Zubehör von)“ ist ein Feld mit Vorschlägen wie Kategorie und Ort (`auswahlFeld`), Vorschlag „Name · Ort“; freier Text, der zu keinem Vorschlag passt, wird nicht gespeichert.
+- **1.4.3** Besitz: „Abbrechen“ im Formular; ändert sich der Ort einer Hauptsache, zieht Zubehör am alten Ort mit um (die App speichert es einzeln mit); ein Filter „Ausgeliehen / Ausmisten“ (Alle, Ausgeliehen, verkaufen, verschenken, entsorgen, „Items mit Anzahl 0“ statt des Hakens, ab 1.4.4; andere Werte nur über die Übersicht); die Trefferzahl steht an der vierten Stelle der Filter statt in einer eigenen Zeile.
+- **1.4.4** Besitz: Filter-Texte kürzer (verkaufen dazu, ohne „Ausmisten:“ und „Auch“), Trefferzahl ohne Überschrift, Sortierzeile näher an der Liste.
 - **Etappe 13** Herbarium. **1.5.0** Schritt 13.0: Plan `docs/PLAN-ETAPPE-13.md` (Reiter Herbarium: Pflanzen als Karteikarten mit Herbarium-Angaben, weitere Karten je Kategorie, Lernen mit 5 Fächern).
 - **1.5.1** Antworten zum Plan: zwei Unterreiter Herbarium und Karten (Karten mit Wahl des Fachbereichs), 5 Fächer, 5 Bilder, Reiter am Handy nur als Kachel.
 - **1.5.2** Plan: Pflanzen lassen sich auch unter Karten anlegen (auch noch nicht gefundene).
@@ -366,3 +370,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.5.6** Schritt 13.4: Karten in weiteren Fachbereichen (Wahl „+ Neuer Fachbereich“, Vorderseite, Rückseite, bis zu 5 Bilder), lernen wie bei Pflanzen; Bilder-Teil im Formular für Pflanzen und Karten gemeinsam.
 - **1.5.7** Schritt 13.5: Etappe 13 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md eingearbeitet (4 „Herbarium“), `docs/PLAN-ETAPPE-13.md` gelöscht.
 - **1.5.8** Schritt 13.6: zwei kleine Funde der Prüfung im Skript `leben` behoben (`hasOwnProperty` beim Nachschlagen, Laden ohne Sperre).
+- **Etappe 14** Bucket List. **1.6.0** Schritt 14.1: Plan Etappe 14 „Bucket List“ und Skript `gemeinsam` mit Blatt `bucketlist` (Ziele mit Titel, Notiz, „erreicht am“, Reihenfolge, einem Bild) und sechs neuen Aktionen; Partnerin oder Partner nur lesen.
