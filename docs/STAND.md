@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.7.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.7.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -526,8 +526,14 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **Ausnahme von „Keine Offline-Schreibzugriffe“ (1.5), nur Einkaufsliste:** Die Liste liegt zusätzlich im Gerät.
   Abhaken geht auch ohne Netz. Abgehakte Einträge werden gesendet, sobald wieder Netz da ist. Bis dahin zeigt die App „noch nicht gesendet“.
   Grund: Wunsch der Person, im Laden gibt es oft kein Netz. Abhaken ist harmlos: doppelt senden schadet nicht.
+- **Ausnahme von „Keine Offline-Schreibzugriffe“ (1.5), nur Zähler „Nutzungen“ in den Packlisten** (ab 1.7.4, Wunsch der Person, 23.11.2026):
+  + und − zählen sofort im Gerät. Ohne Netz bleiben die Schritte im Gerät (`thetadex_pack_zaehler_offen`, nur Kennung des Items und Zahl) und werden nachgetragen,
+  sobald wieder Netz da ist (beim nächsten Tipp, beim Laden, beim Zurückkehren in die App). Bis dahin steht „noch nicht gesendet (+2)“ da.
+  Grund: unterwegs (Trekking) gibt es oft kein Netz. Folge: Bricht eine Antwort nach dem Speichern ab (Zeitüberschreitung), kann ein Schritt doppelt zählen; die Zahl lässt sich im Besitz-Formular korrigieren.
+  Ab 1.7.5 merkt sich das Gerät auch die Zähler, die zuletzt über einer Liste standen (`thetadex_pack_zaehler_geraet`: Kennung, Name des Items, Zahl).
+  Wird die App ohne Netz neu geöffnet, zeigt der Reiter nur diese Zähler mit − und +. Die Packliste selbst liegt weiter nur im Arbeitsspeicher (Wunsch der Person: nur der Zähler offline).
 - **Im Gerät (Ergänzung zu 5):** die Einkaufsliste (`thetadex_einkaufsliste`), abgehakte vor „Einkauf fertig“ (`thetadex_einkauf_haken`)
-  und die noch nicht gesendeten Haken (`thetadex_einkauf_offen`), die Uni-Daten (`thetadex_uni`); bei Besuchern die Kennung des
+  und die noch nicht gesendeten Haken (`thetadex_einkauf_offen`), die noch nicht gesendeten Zähler-Schritte der Packlisten (`thetadex_pack_zaehler_offen`, ab 1.7.4) und die zuletzt gezeigten Zähler (`thetadex_pack_zaehler_geraet`, ab 1.7.5), die Uni-Daten (`thetadex_uni`); bei Besuchern die Kennung des
   geteilten Döner-Skripts (`thetadex_oeffentlich`). Sonst nichts Neues.
 - **Döner öffentlich** (Wunsch der Person, 29.10.2026): Jede Person mit dem Link kann Bewertungen sehen und abgeben.
   Ändern und Löschen geht nur im Sheet durch die Person. Es werden keine Namen von Bewertenden gespeichert.
@@ -627,6 +633,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.7.1** Schritt 15.2: Reiter Packlisten (🧳, Flieder, am Handy nur Kachel): je Liste ein Unterreiter, Haken „Hin“ und „Zurück“, Gruppen und Einträge mit Pfeilen ^ v, „Alle Haken weg“, Zähler „Nutzungen“ eines verknüpften Items mit − und +.
-- **1.7.2** Schritt 15.3: Besitz zeigt im Fenster eines Items „Nutzungen“, das Formular hat das Feld „Nutzungen (Zähler)“.
 - **1.7.3** Packlisten: Zähler „Nutzungen“ nur, wenn der verknüpfte Eintrag bei „Hin“ abgehakt ist; grüner Wanderrucksack statt Koffer (Überschrift und Reiter-Symbol).
+- **1.7.4** Packlisten: Zähler „Nutzungen“ merkt sich Schritte ohne Netz und trägt sie nach (Ausnahme von 1.5); „Item aus dem Besitz“ ist ein Suchfeld mit Liste.
+- **1.7.5** Packlisten: Der Zähler ist auch da, wenn die App ohne Netz neu geöffnet wird (zuletzt gezeigte Zähler im Gerät).
