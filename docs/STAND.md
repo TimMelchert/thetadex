@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.8.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.8.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -646,6 +646,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.8.3** Schritt 16.4: Partner*in darf auch in Uni und Bucket List schreiben (Skript `gemeinsam` und App).
-- **1.8.4** Nachbesserung: Projekte mit eigenem Werkzeug-Bild statt 🛠️; Start am Handy größer im Kreis, am PC nicht mehr in der Seitenleiste.
 - **1.8.5** Nachbesserung: Start am Handy mit großer Karteikarte, hell Kreis in Kohle mit Ring, dunkel kleiner mit feinem Ring (vorher im Dunkelmodus unsichtbar).
+- **1.8.6** Nachbesserung: Reiter-Symbol Projekte neu gezeichnet (Hammer mit deutlichem Kopf).
+- **1.8.7** Nachbesserung: Werkzeug-Bild vor der Überschrift Projekte klarer neu gezeichnet (Hammer mit Kopf quer zum Stiel, Schraubenschlüssel mit offenem Maul).
