@@ -366,3 +366,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.5.6** Schritt 13.4: Karten in weiteren Fachbereichen (Wahl „+ Neuer Fachbereich“, Vorderseite, Rückseite, bis zu 5 Bilder), lernen wie bei Pflanzen; Bilder-Teil im Formular für Pflanzen und Karten gemeinsam.
 - **1.5.7** Schritt 13.5: Etappe 13 abgeschlossen, Prüfung Sicherheit und Datenschutz (nur Bericht), Plan in STAND.md eingearbeitet (4 „Herbarium“), `docs/PLAN-ETAPPE-13.md` gelöscht.
 - **1.5.8** Schritt 13.6: zwei kleine Funde der Prüfung im Skript `leben` behoben (`hasOwnProperty` beim Nachschlagen, Laden ohne Sperre).
+- **1.6.0** Schritt 14.1: Plan Etappe 14 „Bucket List“ und Skript `gemeinsam` mit Blatt `bucketlist` (Ziele mit Titel, Notiz, „erreicht am“, Reihenfolge, einem Bild) und sechs neuen Aktionen; Partnerin oder Partner nur lesen.

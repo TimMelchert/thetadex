@@ -1,13 +1,14 @@
 // =====================================================
 // GEMEINSAM – Apps Script (Person und Partner*in, mit Passwort)
-// Einkauf und Essen (Etappe 4) und Uni (Etappe 5).
+// Einkauf und Essen (Etappe 4), Uni (Etappe 5) und Bucket List (Etappe 14).
 // Blätter: lebensmittel, einkaufsliste, gerichte, zutaten, vorrat;
-// Uni: semester, module, kurse, termine, uni_einstellungen.
+// Uni: semester, module, kurse, termine, uni_einstellungen; Bucket List: bucketlist.
 // Zwei Passwörter in den Skripteigenschaften: APP_PIN (Person) und PARTNER_PIN (Partner*in).
 // Kein Passwort steht hier. Über die Partnerin oder den Partner wird nichts gespeichert.
 // Rezepte (ab 1.3.4): Das Blatt „gerichte“ hält die Rezepte (Name bleibt, Blätter werden nie umbenannt),
 // neu mit Rezepttext, Personen, „ergibt“ und Bildern. Hochgeladene Bilder liegen im privaten Drive-Ordner
 // „Thetadex Rezepte“ der Person (Kennung in der Skripteigenschaft BILD_ORDNER). Nichts wird geteilt.
+// Bucket List (ab 1.6.0): ein Bild je Ziel im privaten Ordner „Thetadex Bucket List“ (Skripteigenschaft BUCKET_ORDNER).
 // Siehe docs/STAND.md 4 „Einkauf, Sheet ‚Gemeinsam‘“ und „Uni, Sheet ‚Gemeinsam‘“.
 // =====================================================
 
@@ -29,13 +30,17 @@ var BLAETTER_ = {
   kurse: ["id", "modul_id", "name", "ects", "semester_id", "tag", "von", "bis", "ort", "dozent", "pruefungsleistung", "notiz", "erstellt_am", "geaendert_am", "geloescht"],
   uni_einstellungen: ["name", "wert"],  // ohne Standardspalten, eine Zeile je Wert (ects_ziel)
   // Reihenfolge der Abteilungen im Laden (ab 1.3.17): ohne Standardspalten, eine Zeile je Abteilung, oben = zuerst
-  laden_reihenfolge: ["abteilung"]
+  laden_reihenfolge: ["abteilung"],
+  // Bucket List (ab 1.6.0): erledigt_am leer = offen, sonst „erreicht am“ (JJJJ-MM-TT).
+  // reihenfolge: kleine Zahl = weiter oben, offene und erreichte Ziele je für sich. bild: eine Drive-Kennung oder leer.
+  bucketlist: ["id", "titel", "notiz", "erledigt_am", "reihenfolge", "bild", "erstellt_am", "geaendert_am", "geloescht"]
 };
 // Spalten, die im Sheet reiner Text bleiben (kein Datum, keine Zahl)
 var TEXT_SPALTEN_ = ["id", "name", "abteilung", "einheit", "notiz", "lebensmittel_id", "gericht_id", "link", "ort",
   "semester_id", "modul_id", "stunde_id", "titel", "art", "kuerzel", "bereich", "status",
   "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "von", "bis",
-  "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht", "leistung", "text", "ergibt", "bilder", "packung"];
+  "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht", "leistung", "text", "ergibt", "bilder", "packung",
+  "erledigt_am", "bild"];
 var MAX_ = { name: 60, abteilung: 40, einheit: 20, notiz_lm: 200, notiz_liste: 100, notiz_gericht: 300, link: 300, ort: 40,
   text_rezept: 20000, ergibt: 40 };
 var MAX_ZAHL_ = 9999;
@@ -58,15 +63,20 @@ var UNI_PFLICHT_ = ["pflicht", "wahlpflicht", "auflage"];
 var UNI_MAX_KURSE_ = 300;      // höchstens so viele Kurse insgesamt
 var UNI_MAX_TERMINE_ = 3000;   // höchstens so viele Termine insgesamt
 var ECTS_ZIEL_ = 120;          // Vorgabe für uni_einstellungen, ändern im Sheet
+// Bucket List (Etappe 14)
+var BUCKET_MAX_ = { titel: 80, notiz: 1000 };
+var BUCKET_MAX_ZIELE_ = 500;   // höchstens so viele Ziele insgesamt
+var BUCKET_ORDNER_NAME_ = "Thetadex Bucket List";
 
 // Was jede Rolle darf. Das Skript prüft das bei jeder Aktion, nicht die App.
-// Uni (Etappe 5): Partner*in darf nur lesen.
-var LESEN_ = ["ping", "alles", "uni", "bild"];
+// Uni (Etappe 5) und Bucket List (Etappe 14): Partner*in darf nur lesen.
+var LESEN_ = ["ping", "alles", "uni", "bild", "bucket"];
 var UNI_SCHREIBEN_ = ["uni_speichern", "uni_loeschen"];
+var BUCKET_SCHREIBEN_ = ["bucket_speichern", "bucket_haken", "bucket_bild", "bucket_loeschen", "bucket_reihenfolge"];
 var EINKAUF_SCHREIBEN_ = ["lebensmittel_speichern", "lebensmittel_loeschen", "auf_liste", "liste_aendern", "abhaken",
   "gericht_speichern", "gericht_loeschen", "rezept_bild", "vorrat_speichern", "vorrat_loeschen", "reihenfolge_speichern"];
 var ERLAUBT_ = {
-  person: LESEN_.concat(EINKAUF_SCHREIBEN_, UNI_SCHREIBEN_),
+  person: LESEN_.concat(EINKAUF_SCHREIBEN_, UNI_SCHREIBEN_, BUCKET_SCHREIBEN_),
   partner: LESEN_.concat(EINKAUF_SCHREIBEN_)
 };
 
@@ -108,6 +118,7 @@ function einrichten() {
   // Drive-Ordner für Bilder der Rezepte (beim ersten Mal fragt Google nach der Erlaubnis für Drive)
   var ordner = bildOrdner_();
   Logger.log("Ordner für Bilder der Rezepte: '" + ordner.getName() + "'.");
+  Logger.log("Ordner für Bilder der Bucket List: '" + bildOrdner_("bucket").getName() + "'.");
 
   var props = PropertiesService.getScriptProperties();
   if (!props.getProperty("APP_PIN")) Logger.log("ACHTUNG: Skripteigenschaft APP_PIN fehlt.");
@@ -118,15 +129,17 @@ function einrichten() {
   Logger.log("Fertig.");
 }
 
-// Der private Ordner für hochgeladene Bilder. Seine Kennung steht in den Skripteigenschaften (BILD_ORDNER).
-function bildOrdner_() {
+// Der private Ordner für hochgeladene Bilder. Seine Kennung steht in den Skripteigenschaften:
+// BILD_ORDNER (Rezepte) oder, mit art = "bucket", BUCKET_ORDNER (Bucket List, ab 1.6.0).
+function bildOrdner_(art) {
+  var eigenschaft = art === "bucket" ? "BUCKET_ORDNER" : "BILD_ORDNER";
   var props = PropertiesService.getScriptProperties();
-  var id = props.getProperty("BILD_ORDNER");
+  var id = props.getProperty(eigenschaft);
   if (id) {
     try { return DriveApp.getFolderById(id); } catch (e) { /* gelöscht: neu anlegen */ }
   }
-  var ordner = DriveApp.createFolder(BILD_ORDNER_NAME_);
-  props.setProperty("BILD_ORDNER", ordner.getId());
+  var ordner = DriveApp.createFolder(art === "bucket" ? BUCKET_ORDNER_NAME_ : BILD_ORDNER_NAME_);
+  props.setProperty(eigenschaft, ordner.getId());
   return ordner;
 }
 
@@ -369,6 +382,7 @@ function doPost(e) {
   try {
     if (aktion === "ping") return jsonOut_({ ok: true, rolle: rolle });
     if (aktion === "bild") return jsonOut_(bildLesen_(data));
+    if (aktion === "bucket") return jsonOut_({ ziele: bucketZiele_(), rolle: rolle });
     if (aktion === "alles" || aktion === "uni") {
       var d = aktion === "uni" ? uni_() : alles_();
       d.rolle = rolle;
@@ -394,7 +408,12 @@ function doPost(e) {
         vorrat_loeschen: vorratLoeschen_,
         reihenfolge_speichern: reihenfolgeSpeichern_,
         uni_speichern: uniSpeichern_,
-        uni_loeschen: uniLoeschen_
+        uni_loeschen: uniLoeschen_,
+        bucket_speichern: bucketSpeichern_,
+        bucket_haken: bucketHaken_,
+        bucket_bild: bucketBild_,
+        bucket_loeschen: bucketLoeschen_,
+        bucket_reihenfolge: bucketReihenfolge_
       }[aktion];
       return jsonOut_(f(data));
     } finally {
@@ -829,7 +848,8 @@ function driveKennung_(text) {
   return m ? m[1] : "";
 }
 
-// Prüft ein neues Bild und liefert { id } oder { fehler }. Hochgeladene Bilder kommen in den Ordner „Thetadex Rezepte“.
+// Prüft ein neues Bild und liefert { id } oder { fehler }. Hochgeladene Bilder kommen in den Ordner „Thetadex Rezepte“,
+// mit data.ordner = "bucket" in den Ordner „Thetadex Bucket List“.
 function bildAus_(data) {
   if (data.bild_daten) {
     var text = String(data.bild_daten);
@@ -841,7 +861,7 @@ function bildAus_(data) {
     var png = bytes.length > 4 && (bytes[0] & 255) === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
     if (!jpeg && !png) return { fehler: "Bitte ein Bild (JPEG oder PNG) wählen." };
     var name = bereinigeText_(data.name, 60) || "Rezept";
-    var datei = bildOrdner_().createFile(Utilities.newBlob(bytes, jpeg ? "image/jpeg" : "image/png", name + (jpeg ? ".jpg" : ".png")));
+    var datei = bildOrdner_(data.ordner).createFile(Utilities.newBlob(bytes, jpeg ? "image/jpeg" : "image/png", name + (jpeg ? ".jpg" : ".png")));
     return { id: datei.getId() };
   }
   var id = driveKennung_(data.bild);
@@ -855,7 +875,7 @@ function bildAus_(data) {
   return { id: id };
 }
 
-// Liefert ein Bild als Text. Nur Bilder, die bei einem (nicht gelöschten) Rezept stehen,
+// Liefert ein Bild als Text. Nur Bilder, die bei einem (nicht gelöschten) Rezept oder Ziel der Bucket List stehen,
 // damit niemand über das Skript beliebige Dateien aus dem Drive lesen kann.
 function bildLesen_(data) {
   var id = driveKennung_(data.bild);
@@ -863,7 +883,7 @@ function bildLesen_(data) {
   var g = tabelle_("gerichte");
   var bekannt = g.zeilen.some(function (z) {
     return aktiv_(g, z) && bilderListe_(zelle_(z, g.sp, "bilder")).indexOf(id) >= 0;
-  });
+  }) || bucketHatBild_(id);
   if (!bekannt) return { error: "eingabe", message: "Unbekanntes Bild." };
   var blob;
   try {
@@ -1251,4 +1271,163 @@ function uniLoeschen_(data) {
     jeZeile("termine", "stunde_id", eins, true);
   }
   return uni_();
+}
+
+// --- 10. BUCKET LIST (Etappe 14) ---
+// Eine gemeinsame Liste von Zielen. Die Person darf alles, die Partnerin oder der Partner nur lesen (ERLAUBT_).
+// Offene Ziele stehen oben, erreichte unten unter „Erreicht“. Beide Gruppen haben ihre eigene Reihenfolge
+// (Spalte reihenfolge, kleine Zahl = oben). Ein neues Ziel und ein Ziel, das die Gruppe wechselt, kommt ganz nach oben.
+
+function bucketAus_(t, z) {
+  return {
+    id: String(zelle_(z, t.sp, "id")),
+    titel: text_(z, t.sp, "titel"),
+    notiz: text_(z, t.sp, "notiz"),
+    erledigt_am: datum_(zelle_(z, t.sp, "erledigt_am")),
+    reihenfolge: zahl_(zelle_(z, t.sp, "reihenfolge")),
+    bild: driveKennung_(zelle_(z, t.sp, "bild")),
+    geaendert_am: stempel_(zelle_(z, t.sp, "geaendert_am"))
+  };
+}
+
+// Alle Ziele (nicht gelöscht). Die App sortiert sie nach reihenfolge.
+function bucketZiele_() {
+  var t = tabelle_("bucketlist");
+  return t.zeilen.filter(function (z) { return aktiv_(t, z); }).map(function (z) { return bucketAus_(t, z); });
+}
+
+// Kleinste Zahl der Gruppe (offen oder erreicht) minus 1: so steht das Ziel dort ganz oben
+function bucketOben_(t, erreicht, ohneId) {
+  var min = null;
+  t.zeilen.forEach(function (z) {
+    if (!aktiv_(t, z) || String(zelle_(z, t.sp, "id")) === ohneId) return;
+    if ((datum_(zelle_(z, t.sp, "erledigt_am")) !== "") !== erreicht) return;
+    var n = zahl_(zelle_(z, t.sp, "reihenfolge"));
+    if (min === null || n < min) min = n;
+  });
+  return min === null ? 0 : min - 1;
+}
+
+// Heute als JJJJ-MM-TT
+function heute_() {
+  return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+}
+
+// Neu (ohne id) oder ändern (mit id und geaendert_am). data = { titel, notiz, erledigt_am, bild }.
+// erledigt_am: leer = offen, sonst das Datum „erreicht am“ (von Hand änderbar). Fehlt es in der Anfrage, bleibt es.
+// bild: nur die schon gespeicherte Kennung (behalten) oder leer (Bild weg). Neue Bilder kommen über bucket_bild.
+function bucketSpeichern_(data) {
+  var titel = pruefeText_(data.titel, BUCKET_MAX_.titel, "einen Titel", true);
+  if (titel.fehler) return { error: "eingabe", message: titel.fehler };
+  var notiz = bereinigeLang_(data.notiz, BUCKET_MAX_.notiz + 1);
+  if (notiz.replace(/^'/, "").length > BUCKET_MAX_.notiz) return { error: "eingabe", message: "Die Notiz ist zu lang (höchstens " + BUCKET_MAX_.notiz + " Zeichen)." };
+  var datum = null;
+  if ("erledigt_am" in data) {
+    datum = pruefeDatum_(data.erledigt_am, "„Erreicht am“", false);
+    if (datum.fehler) return { error: "eingabe", message: datum.fehler };
+  }
+
+  var t = tabelle_("bucketlist");
+  var id = String(data.id || "");
+  var werte = { titel: titel.wert, notiz: notiz };
+  var i;
+  if (!id) {
+    var anzahl = t.zeilen.filter(function (z) { return aktiv_(t, z); }).length;
+    if (anzahl >= BUCKET_MAX_ZIELE_) return { error: "eingabe", message: "Höchstens " + BUCKET_MAX_ZIELE_ + " Ziele." };
+    werte.erledigt_am = datum ? datum.wert : "";
+    werte.reihenfolge = bucketOben_(t, werte.erledigt_am !== "", "");
+    werte.bild = "";
+    i = neu_(t, werte);
+  } else {
+    i = index_(t, id);
+    if (i < 0) return { error: "fehlt", message: "Dieses Ziel gibt es nicht mehr. Bitte neu laden." };
+    if (veraltet_(t, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+    var z = t.zeilen[i];
+    if (datum) {
+      var vorher = datum_(zelle_(z, t.sp, "erledigt_am")) !== "";
+      werte.erledigt_am = datum.wert;
+      if ((datum.wert !== "") !== vorher) werte.reihenfolge = bucketOben_(t, datum.wert !== "", id);
+    }
+    if ("bild" in data) {
+      var alt = driveKennung_(zelle_(z, t.sp, "bild"));
+      var neu = String(data.bild == null ? "" : data.bild);
+      if (neu && neu !== alt) return { error: "eingabe", message: "Ein neues Bild bitte über „Bild wählen“ hinzufügen." };
+      werte.bild = neu;
+    }
+    aendere_(t, i, werte);
+  }
+  return { ziel: bucketAus_(t, t.zeilen[i]) };
+}
+
+// Haken setzen oder abnehmen. data = { id, geaendert_am, erledigt (true oder false) }.
+// Mit Haken: „erreicht am“ = heute, das Ziel kommt unter „Erreicht“ ganz nach oben.
+// Ohne Haken: das Datum ist weg, das Ziel steht wieder oben bei den offenen.
+function bucketHaken_(data) {
+  var t = tabelle_("bucketlist");
+  var i = index_(t, data.id);
+  if (i < 0) return { error: "fehlt", message: "Dieses Ziel gibt es nicht mehr. Bitte neu laden." };
+  if (veraltet_(t, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+  var erreicht = data.erledigt === true;
+  var vorher = datum_(zelle_(t.zeilen[i], t.sp, "erledigt_am")) !== "";
+  if (erreicht !== vorher) {
+    aendere_(t, i, { erledigt_am: erreicht ? heute_() : "", reihenfolge: bucketOben_(t, erreicht, String(data.id)) });
+  }
+  return { ziel: bucketAus_(t, t.zeilen[i]) };
+}
+
+// Ein Bild beim Ziel setzen (ersetzt das alte; die alte Datei bleibt im Drive): hochgeladen (bild_daten) oder Drive-Link (bild).
+function bucketBild_(data) {
+  var t = tabelle_("bucketlist");
+  var i = index_(t, data.id);
+  if (i < 0) return { error: "fehlt", message: "Dieses Ziel gibt es nicht mehr. Bitte neu laden." };
+  if (veraltet_(t, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+  if (!data.bild_daten && !String(data.bild == null ? "" : data.bild).trim()) return { error: "eingabe", message: "Bitte ein Bild wählen oder einen Drive-Link einfügen." };
+  var b = bildAus_({ bild_daten: data.bild_daten, bild: data.bild, name: text_(t.zeilen[i], t.sp, "titel") || "Ziel", ordner: "bucket" });
+  if (b.fehler) return { error: "eingabe", message: b.fehler };
+  aendere_(t, i, { bild: b.id });
+  return { ziel: bucketAus_(t, t.zeilen[i]) };
+}
+
+// Weich löschen. Das Bild bleibt im Drive.
+function bucketLoeschen_(data) {
+  var t = tabelle_("bucketlist");
+  var i = index_(t, data.id);
+  if (i < 0) return { error: "fehlt", message: "Dieses Ziel gibt es nicht mehr. Bitte neu laden." };
+  if (veraltet_(t, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+  weg_(t, i);
+  return { ok: true };
+}
+
+// Neue Reihenfolge. data.ids = alle Ziele in der gewünschten Reihenfolge (die App schickt offene und erreichte).
+// Genannte Ziele bekommen 1, 2, 3 …; nicht genannte (zum Beispiel inzwischen neu) kommen dahinter in ihrer alten Folge.
+// Ändert geaendert_am nicht, damit ein offenes Formular am anderen Gerät gültig bleibt. Schreibt nur die eine Spalte.
+function bucketReihenfolge_(data) {
+  var ids = Array.isArray(data.ids) ? data.ids.map(String) : null;
+  if (!ids || ids.length > BUCKET_MAX_ZIELE_) return { error: "eingabe", message: "Ungültige Reihenfolge." };
+  var t = tabelle_("bucketlist");
+  var platz = {};
+  var hat = function (id) { return Object.prototype.hasOwnProperty.call(platz, id); };
+  ids.forEach(function (id, k) { if (!hat(id)) platz[id] = k + 1; });
+  var rest = [];
+  t.zeilen.forEach(function (z, k) {
+    if (aktiv_(t, z) && !hat(String(zelle_(z, t.sp, "id")))) rest.push(k);
+  });
+  rest.sort(function (a, b) { return zahl_(zelle_(t.zeilen[a], t.sp, "reihenfolge")) - zahl_(zelle_(t.zeilen[b], t.sp, "reihenfolge")); });
+  var weiter = ids.length;
+  rest.forEach(function (k) { t.zeilen[k][t.sp.reihenfolge] = ++weiter; });
+  t.zeilen.forEach(function (z) {
+    var id = String(zelle_(z, t.sp, "id"));
+    if (aktiv_(t, z) && hat(id)) z[t.sp.reihenfolge] = platz[id];
+  });
+  if (t.zeilen.length) {
+    t.sheet.getRange(2, t.sp.reihenfolge + 1, t.zeilen.length, 1).setValues(t.zeilen.map(function (z) { return [z[t.sp.reihenfolge]]; }));
+  }
+  return { ziele: bucketZiele_() };
+}
+
+// Steht dieses Bild bei einem Ziel der Bucket List? Fehlt das Blatt noch, dann nein (Rezeptbilder gehen weiter).
+function bucketHatBild_(id) {
+  var t;
+  try { t = tabelle_("bucketlist"); } catch (e) { return false; }
+  return t.zeilen.some(function (z) { return aktiv_(t, z) && driveKennung_(zelle_(z, t.sp, "bild")) === id; });
 }
