@@ -20,6 +20,10 @@ let besitzItems = null;
 // { <besitz_id>: +2 }. Sie werden nachgetragen, sobald wieder Netz da ist. Nur Kennung und Zahl, keine Namen.
 const OFFEN_SPEICHER = 'pack_zaehler_offen';
 const offeneSchritte = () => { const o = lesen(OFFEN_SPEICHER, {}); return o && typeof o === 'object' ? o : {}; };
+// Dazu (ab 1.7.5) die Zähler, die zuletzt über einer Liste standen: { <besitz_id>: { name, nutzungen } }.
+// So sind sie auch da, wenn die App ohne Netz neu geöffnet wird (Wunsch der Person: Wasserfilter im Wald). Die Packliste selbst nicht.
+const GERAET_SPEICHER = 'pack_zaehler_geraet';
+const geraeteZaehler = () => { const o = lesen(GERAET_SPEICHER, {}); return o && typeof o === 'object' ? o : {}; };
 // Wieder Netz oder zurück in der App: offene Schritte nachtragen (nur, wenn der Reiter offen ist)
 let nachtragen = null;
 window.addEventListener('online', () => { if (nachtragen && /^#\/packlisten/.test(location.hash)) nachtragen(); });
@@ -241,7 +245,17 @@ export function render(container, ctx) {
     // Jeder Tipp zählt sofort im Gerät mit und wird dann gesendet. Ohne Netz bleibt der Schritt im Gerät
     // und wird nachgetragen (beim nächsten Tipp, wenn wieder Netz da ist oder beim Laden). Gesendet wird Schritt für Schritt.
     let sendetZaehler = false;
-    const anzeige = (id) => Math.max(0, (daten.zaehler[id] ? daten.zaehler[id].nutzungen : 0) + (offeneSchritte()[id] || 0));
+    // Zähler aus dem Skript, ohne geladene Liste die im Gerät gemerkten
+    const zaehlerDaten = () => (daten ? daten.zaehler : geraeteZaehler());
+    const anzeige = (id) => Math.max(0, (zaehlerDaten()[id] ? zaehlerDaten()[id].nutzungen : 0) + (offeneSchritte()[id] || 0));
+    // Zähler, die über einer Liste stehen (Eintrag mit Item und Haken „Hin“), im Gerät merken
+    function merkeZaehler() {
+        const ids = [];
+        daten.eintraege.forEach((e) => { if (e.hin && e.besitz_id && daten.zaehler[e.besitz_id] && !ids.includes(e.besitz_id)) ids.push(e.besitz_id); });
+        const neu = {};
+        ids.forEach((id) => { neu[id] = { name: daten.zaehler[id].name, nutzungen: daten.zaehler[id].nutzungen }; });
+        if (JSON.stringify(neu) !== JSON.stringify(geraeteZaehler())) schreiben(GERAET_SPEICHER, neu);
+    }
     function zaehle(id, schritt) {
         if (schritt < 0 && anzeige(id) <= 0) return;
         const offen = offeneSchritte();
@@ -252,7 +266,7 @@ export function render(container, ctx) {
         sendeZaehler();
     }
     async function sendeZaehler() {
-        if (sendetZaehler || !daten) return;
+        if (sendetZaehler) return;
         sendetZaehler = true;
         try {
             for (;;) {
@@ -274,7 +288,9 @@ export function render(container, ctx) {
                 o[id] = (o[id] || 0) - schritt;
                 if (!o[id]) delete o[id];
                 schreiben(OFFEN_SPEICHER, o);
-                if (daten.zaehler[id]) daten.zaehler[id].nutzungen = antwort.nutzungen;
+                if (daten && daten.zaehler[id]) daten.zaehler[id].nutzungen = antwort.nutzungen;
+                const g = geraeteZaehler();
+                if (g[id]) { g[id].nutzungen = antwort.nutzungen; schreiben(GERAET_SPEICHER, g); }
                 if (!Object.keys(o).length) listeStatus.textContent = '';
             }
         } finally {
@@ -282,7 +298,7 @@ export function render(container, ctx) {
             zeigeListe();
         }
     }
-    nachtragen = () => sendeZaehler();
+    nachtragen = () => (daten ? sendeZaehler() : laden());
 
     // --- Reihenfolge: Pfeile ^ und v. Verschieben wirkt sofort, gespeichert wird kurz nach dem letzten Tippen. ---
     const reiheText = el('span');
@@ -369,11 +385,14 @@ export function render(container, ctx) {
 
     // Zähler oben über der Liste: je verknüpftes Item eine Zeile mit − und +.
     // Nur, wenn der Eintrag bei „Hin“ abgehakt ist (Wunsch der Person, 23.11.2026: der Wasserfilter ist dann dabei).
-    function zaehlerZeilen(eintraege) {
+    function zaehlerIds(eintraege) {
         const ids = [];
         eintraege.forEach((e) => { if (e.hin && e.besitz_id && daten.zaehler[e.besitz_id] && !ids.includes(e.besitz_id)) ids.push(e.besitz_id); });
+        return ids;
+    }
+    function zaehlerZeilen(ids) {
         return ids.map((id) => {
-            const z = daten.zaehler[id];
+            const z = zaehlerDaten()[id];
             const zahl = anzeige(id);
             const wartet = offeneSchritte()[id] || 0;
             return el('div', { class: 'pack-zaehler' }, [
@@ -403,7 +422,13 @@ export function render(container, ctx) {
     }
     function zeigeListe() {
         leeren(listeBox);
-        if (!daten) return;
+        if (!daten) {
+            // Liste nicht geladen (zum Beispiel ohne Netz): nur die im Gerät gemerkten Zähler
+            const ids = ladeFehler ? Object.keys(geraeteZaehler()) : [];
+            if (ids.length) listeBox.append(el('p', { class: 'leise', text: 'Ohne Liste: Hier sind nur die Zähler. Sie werden nachgetragen, sobald wieder Netz da ist.' }), ...zaehlerZeilen(ids));
+            return;
+        }
+        merkeZaehler();
         const namen = listenNamen();
         // Gewählte Liste gibt es nicht (mehr): die erste nehmen
         if (!namen.some((n) => klein(n) === klein(listeWahl))) listeWahl = namen[0] || '';
@@ -418,7 +443,7 @@ export function render(container, ctx) {
         const zur = alle.filter((e) => e.zurueck).length;
         const wegKnopf = el('button', { class: 'knopf knopf-zweit', text: 'Alle Haken weg', attrs: { type: 'button', disabled: !hin && !zur }, on: { click: () => zuruecksetzen(wegKnopf) } });
         listeBox.append(
-            ...zaehlerZeilen(alle),
+            ...zaehlerZeilen(zaehlerIds(alle)),
             el('div', { class: 'pack-stand' }, [
                 el('span', { text: 'Hin ' + hin + ' / ' + alle.length + ' · Zurück ' + zur + ' / ' + alle.length }),
                 wegKnopf
@@ -440,6 +465,7 @@ export function render(container, ctx) {
     // --- Laden ---
     const ladeStatus = el('p', { class: 'meldung besitz-lade', attrs: { role: 'status', 'aria-live': 'polite' } });
     const neuLaden = el('button', { class: 'knopf knopf-zweit besitz-neu', text: 'Neu laden', attrs: { type: 'button' }, on: { click: () => laden() } });
+    let ladeFehler = false;
     async function laden() {
         neuLaden.disabled = true;
         ladeStatus.textContent = daten ? 'Aktualisiere …' : 'Lädt …';
@@ -447,9 +473,12 @@ export function render(container, ctx) {
             const d = await api('leben', 'packliste');
             daten = { eintraege: Array.isArray(d.eintraege) ? d.eintraege : [], zaehler: d.zaehler && typeof d.zaehler === 'object' ? d.zaehler : {} };
             ladeStatus.textContent = '';
+            ladeFehler = false;
             zeigeListe();
             sendeZaehler();
         } catch (e) {
+            ladeFehler = true;
+            zeigeListe();
             ladeStatus.textContent = 'Laden fehlgeschlagen: ' + e.message
                 + (e.code === 'aktion' ? ' Bitte im Sheet „Leben“ die neue Fassung des Skripts einfügen, „einrichten“ ausführen und bereitstellen (Schritt 15.1).' : '');
         } finally {
