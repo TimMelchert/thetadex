@@ -26,7 +26,7 @@ Ein neuer Reiter **„Bucket List“**: eine gemeinsame Liste von Zielen. Die Pe
 - Liste: je Ziel der Haken, der Titel und rechts ^ v. Unter „Erreicht“ zusätzlich das Datum. Ein Tipp auf den Titel klappt die **Detailansicht** auf
   (Bild, Notiz, „erreicht am“, „Bearbeiten“), noch ein Tipp klappt sie zu (wie bei Rezepten).
 - „+ Neues Ziel“ und „Bearbeiten“ öffnen ein Formular: Titel, Notiz, Bild (hochladen oder Drive-Link, ×), „Erreicht am“ (Datum, leer = offen), Löschen.
-- Partnerin oder Partner: dieselbe Liste und Detailansicht, ohne Haken zum Tippen, ohne Pfeile, ohne Knöpfe.
+- Partnerin oder Partner: dieselbe Liste und Detailansicht, ohne Haken zum Tippen, ohne Pfeile, ohne Knöpfe. Ab 1.8.3 (Schritt 16.4, Wunsch der Person, 23.11.2026) darf sie oder er alles wie die Person.
 - Verschieben wirkt sofort, gespeichert wird kurz nach dem letzten Tippen. Klappt es nicht, bleibt die Reihenfolge stehen und „Nochmal speichern“ erscheint.
 - Nur mit Netz (1.5): Die Liste und die Bilder liegen nur im Arbeitsspeicher.
 

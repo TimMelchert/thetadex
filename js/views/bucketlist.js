@@ -1,6 +1,6 @@
 // Reiter Bucket List (Etappe 14, docs/PLAN-ETAPPE-14.md). Eine gemeinsame Liste von Zielen.
 // Oben die offenen Ziele, unten „Erreicht“; beide mit Pfeilen ^ und v sortierbar (wie die Abteilungen der Einkaufsliste).
-// Ein Tipp auf den Titel klappt das Ziel auf (Bild, Notiz, „erreicht am“). Die Person darf alles, die Partnerin oder der Partner nur lesen.
+// Ein Tipp auf den Titel klappt das Ziel auf (Bild, Notiz, „erreicht am“). Person und Partner*in dürfen alles (ab 16.4).
 // Weitere Listen (ab 14.3, Wunsch der Person, 23.11.2026): Jede Liste mit Namen ist ein eigener Unterreiter neben der Hauptliste.
 // Die Namen stehen nur im Sheet (Spalte „liste“), nicht im Repo. Eine neue Liste entsteht, wenn ein Ziel einen neuen Namen bekommt.
 // Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“, Blatt „bucketlist“). Nur im Arbeitsspeicher.
@@ -44,8 +44,8 @@ function listenNamen() {
 export function render(container, ctx) {
     const dialog = el('dialog', { class: 'besitz-dialog', attrs: { 'aria-labelledby': 'bucket-dialog-titel' } });
     let sendet = false; // gegen doppeltes Senden durch mehrfaches Tippen
-    // Ändern darf nur die Person (das Skript prüft es auch)
-    const darfAendern = () => Boolean(daten) && daten.rolle === 'person';
+    // Ändern dürfen Person und Partner*in (ab 16.4, Wunsch der Person, 23.11.2026); das Skript prüft es auch
+    const darfAendern = () => Boolean(daten) && (daten.rolle === 'person' || daten.rolle === 'partner');
 
     function oeffneDialog(titel, inhalt) {
         leeren(dialog);
