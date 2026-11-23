@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '1.8.2';
+export const VERSION = '1.8.3';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {
@@ -41,7 +41,7 @@ export const BEREICHE = [
     { id: 'doener',   titel: 'Döner',    oeffentlich: true, nurBreit: true },
     // Herbarium (13.2): wie die Visitenkarte am Handy nur als Kachel (Entscheidung der Person, 22.11.2026). Daten im Sheet „Leben“.
     { id: 'herbarium', titel: 'Herbarium', oeffentlich: false, skript: 'leben', nurBreit: true },
-    // Bucket List (14.2): wie das Herbarium am Handy nur als Kachel (Wunsch der Person, 23.11.2026). Daten im Sheet „Gemeinsam“, Partner*in nur lesen.
+    // Bucket List (14.2): wie das Herbarium am Handy nur als Kachel (Wunsch der Person, 23.11.2026). Daten im Sheet „Gemeinsam“, Partner*in darf ab 16.4 alles.
     { id: 'bucketlist', titel: 'Bucket List', oeffentlich: false, skript: 'gemeinsam', nurBreit: true },
     // Packlisten (15.2): am Handy nur als Kachel (Wunsch der Person, 23.11.2026). Daten im Sheet „Leben“, nur die Person.
     { id: 'packlisten', titel: 'Packlisten', oeffentlich: false, skript: 'leben', nurBreit: true }

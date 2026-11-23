@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.8.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.8.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -21,7 +21,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 13 „Herbarium“ (1.5.x) ist fertig (22.11.2026): Reiter Herbarium mit Karteikarten, Festlegungen in 4 („Herbarium“), Prüfung `pruefung/etappe-13-herbarium-bericht.md` in den Projektdateien.
 - Etappe 14 „Bucket List“ (1.6.x) läuft: Plan `docs/PLAN-ETAPPE-14.md`. Schritt 14.1 (Skript), 14.2 (Reiter in der App) und 14.3 (weitere Listen als Unterreiter) sind gebaut, nächster Schritt: 14.4 (Abschluss).
 - Etappe 15 „Packlisten“ (1.7.x) ist fertig (23.11.2026): Reiter Packlisten mit Zähler „Nutzungen“, Festlegungen in 4 („Packlisten“), Prüfung `pruefung/etappe-15-packlisten-bericht.md` in den Projektdateien.
-- Etappe 16 „Projekte“ (1.8.x) läuft: Plan `docs/PLAN-ETAPPE-16.md`. Schritt 16.1 (Skript `gemeinsam`, Blatt `projekte`) 16.2 (Reiter in der App) und 16.3 (neue Reihenfolge, Knopf Start) sind gebaut, nächster Schritt: 16.4 (Partner*in schreibt in Uni und Bucket List).
+- Etappe 16 „Projekte“ (1.8.x) läuft: Plan `docs/PLAN-ETAPPE-16.md`. Schritte 16.1 (Skript `gemeinsam`, Blatt `projekte`), 16.2 (Reiter in der App), 16.3 (neue Reihenfolge, Knopf Start) und 16.4 (Partner*in schreibt in Uni und Bucket List) sind gebaut, nächster Schritt: 16.5 (Abschluss).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -240,7 +240,7 @@ unter „Info“ die Version prüfen.
   Jedes Skript liest es aus der Skripteigenschaft `APP_PIN` und vergleicht es bei jedem Aufruf (`pruefePin_`).
   Nach 5 Fehlversuchen 15 Minuten Sperre (`CacheService`). Kein Token, keine Einzelkonten (1.2, Punkt 3).
 - **Partner-Zugang** (nur Skript `gemeinsam`): ein zweites Passwort in der Skripteigenschaft `PARTNER_PIN`.
-  Damit darf die Partnerin oder der Partner Einkauf und Essen lesen und ändern, ab 1.8.0 auch Projekte (Entscheidung der Person, 23.11.2026), und Uni und Bucket List nur lesen (ab 16.4 geplant: auch ändern). Alle anderen Skripte kennen `PARTNER_PIN` nicht.
+  Damit darf die Partnerin oder der Partner alles im Skript `gemeinsam` lesen und ändern: Einkauf und Essen, ab 1.8.0 Projekte, ab 1.8.3 auch Uni und Bucket List (vorher nur lesen; Entscheidung der Person, 23.11.2026). Alle anderen Skripte kennen `PARTNER_PIN` nicht.
   Die Aktion `ping` antwortet mit der Rolle (`person` oder `partner`). Die App zeigt danach nur die erlaubten Reiter.
   Die Rechte prüft immer das Skript, nie nur die App.
 - **Ohne Passwort** gibt nur das Skript `dsa` etwas heraus (genau einen Bogen, nur lesen, nur mit seinem Freigabe-Schlüssel),
@@ -296,7 +296,7 @@ unter „Info“ die Version prüfen.
   Die gültigen Regeln je Bereich stehen in Abschnitt 4. Bei Widerspruch gilt Abschnitt 4.
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.3.30: `karte` und `gemeinsam` neue Fassung einfügen und als neue Version bereitstellen (erst nachdem 1.3.29 auf den Geräten ist). Ab 1.5.3: `leben` neue Fassung (Herbarium) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.5.8: `leben` wieder neue Fassung einfügen und als neue Version bereitstellen (kein `einrichten` nötig). Ab 1.6.0: `gemeinsam` neue Fassung (Bucket List) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.7.0: `leben` neue Fassung (Packlisten, Spalte `nutzungen`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.6.2: `gemeinsam` wieder neue Fassung (Spalte `liste`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.8.0: `gemeinsam` neue Fassung (Projekte) einfügen, `einrichten` ausführen, als neue Version bereitstellen.
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.3.30: `karte` und `gemeinsam` neue Fassung einfügen und als neue Version bereitstellen (erst nachdem 1.3.29 auf den Geräten ist). Ab 1.5.3: `leben` neue Fassung (Herbarium) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.5.8: `leben` wieder neue Fassung einfügen und als neue Version bereitstellen (kein `einrichten` nötig). Ab 1.6.0: `gemeinsam` neue Fassung (Bucket List) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.7.0: `leben` neue Fassung (Packlisten, Spalte `nutzungen`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.6.2: `gemeinsam` wieder neue Fassung (Spalte `liste`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.8.0: `gemeinsam` neue Fassung (Projekte) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.8.3: `gemeinsam` wieder neue Fassung (Partner*in schreibt in Uni und Bucket List) einfügen und als neue Version bereitstellen (kein `einrichten` nötig).
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Die Auswertung zeigt daraus „Feste Ausgaben“ (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist) und ab 1.3.14 „Feste Einnahmen“ (Zweck, dessen Kategorie es nur bei den Einnahmen gibt, zum Beispiel Job).
 
 ---
@@ -347,7 +347,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   | --- | --- | --- | --- |
   | Tracking, Finanzen, Besitz | lesen, ändern | – | – |
   | Einkauf und Essen | lesen, ändern | lesen, ändern | – |
-  | Uni (alle Zeiten, auch Arbeit und Zug) | lesen, ändern | nur lesen | – |
+  | Uni (alle Zeiten, auch Arbeit und Zug), Bucket List, Projekte | lesen, ändern | lesen, ändern (ab 1.8.3, vorher Uni und Bucket List nur lesen) | – |
   | DSA-Bögen | lesen, ändern | – | ein Bogen per Link, nur lesen |
   | Visitenkarte | lesen, Links verwalten (eigenes Passwort `KARTE_PIN`); ändern nur im Sheet | – | eine Karte per Link, nur lesen; E-Mail und Telefon gleich sichtbar (ab 1.2.8) |
   | Döner | lesen, bewerten; löschen nur im Sheet | wie alle | lesen, bewerten |
@@ -525,7 +525,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - Module als Karten mit Kursen und Prüfungen; je Modul, Kurs und Prüfung ein Knopf ✎, bei Prüfungen „bestanden?“. Ein Knopf „+ Prüfung“ je Modul
     (Kurs im Formular wählen). Beim Anlegen von Modul und Kurs kann gleich eine Prüfung mit (ohne Datum keine).
   - Fenster im Reiter Uni schließen nur mit × oder Abbrechen (kein Tipp daneben, keine Escape-Taste); in Einkauf und Besitz bleibt es wie es ist (Entscheidung der Person, 31.10.2026).
-  - Partner*in sieht alles, auch die Module, aber ohne Knöpfe; das Skript lässt sie nicht schreiben. Dozent*in-Namen stehen nur im Sheet, nie im Repo.
+  - Partner*in sieht alles, auch die Module, und darf ab 1.8.3 auch ändern (Wunsch der Person, 23.11.2026; vorher ohne Knöpfe). Dozent*in-Namen stehen nur im Sheet, nie im Repo.
 - **Reiter nach Script-Adressen** (Entscheidung der Person, 30.10.2026): Ein Reiter erscheint nur mit der Adresse seines Skripts (siehe 2.1).
   Die App speichert keine Rolle; die Rechte prüft immer das Skript.
 - **Farben der Arten im Uni-Kalender** (Wunsch der Person, Plan 7.2 und Etappe 5): Vorlesung, Prüfung, Arbeit, Zug, Urlaub, Hobby, Sonstiges und Semesterferien
@@ -646,6 +646,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.8.0** Schritt 16.1: Skript `gemeinsam` mit Blatt `projekte` (Projekte und Abschnitte, Status, Reihenfolge); Partner*in darf dort alles. Plan `docs/PLAN-ETAPPE-16.md`.
 - **1.8.1** Schritt 16.2: Reiter Projekte (🛠️, Taupe, bis 16.3 am Handy nur Kachel): Projekte mit Abschnitten, bunter Kreis je Status, Pfeile ^ v, Tipp klappt auf; Partner*in darf alles.
 - **1.8.2** Schritt 16.3: Neue Reihenfolge der Kacheln und der Leiste; Knopf „Start“ mit dem Thetadex-Icon in der Mitte der Leiste; Pen & Paper und Döner am Handy nur noch als Kachel.
+- **1.8.3** Schritt 16.4: Partner*in darf auch in Uni und Bucket List schreiben (Skript `gemeinsam` und App).

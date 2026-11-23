@@ -77,8 +77,8 @@ var PROJEKT_MAX_ANZAHL_ = 500;  // höchstens so viele Projekte und Abschnitte z
 var PROJEKT_STATUS_ = ["idee", "laeuft", "pausiert", "fertig"];
 
 // Was jede Rolle darf. Das Skript prüft das bei jeder Aktion, nicht die App.
-// Uni (Etappe 5) und Bucket List (Etappe 14): Partner*in darf nur lesen.
-// Projekte (Etappe 16): Partner*in darf alles, wie bei Einkauf (Entscheidung der Person, 23.11.2026).
+// Partner*in darf überall lesen und ändern: Einkauf, Projekte (Etappe 16) und ab 1.8.3 auch Uni und Bucket List
+// (vorher nur lesen; Wunsch der Person, 23.11.2026).
 var LESEN_ = ["ping", "alles", "uni", "bild", "bucket", "projekte"];
 var UNI_SCHREIBEN_ = ["uni_speichern", "uni_loeschen"];
 var BUCKET_SCHREIBEN_ = ["bucket_speichern", "bucket_haken", "bucket_bild", "bucket_loeschen", "bucket_reihenfolge"];
@@ -87,7 +87,7 @@ var EINKAUF_SCHREIBEN_ = ["lebensmittel_speichern", "lebensmittel_loeschen", "au
   "gericht_speichern", "gericht_loeschen", "rezept_bild", "vorrat_speichern", "vorrat_loeschen", "reihenfolge_speichern"];
 var ERLAUBT_ = {
   person: LESEN_.concat(EINKAUF_SCHREIBEN_, UNI_SCHREIBEN_, BUCKET_SCHREIBEN_, PROJEKT_SCHREIBEN_),
-  partner: LESEN_.concat(EINKAUF_SCHREIBEN_, PROJEKT_SCHREIBEN_)
+  partner: LESEN_.concat(EINKAUF_SCHREIBEN_, UNI_SCHREIBEN_, BUCKET_SCHREIBEN_, PROJEKT_SCHREIBEN_)
 };
 
 // --- 1. EINRICHTEN (im Editor ausführen, auch nach einem Update) ---
@@ -1288,7 +1288,7 @@ function uniLoeschen_(data) {
 }
 
 // --- 10. BUCKET LIST (Etappe 14) ---
-// Eine gemeinsame Liste von Zielen. Die Person darf alles, die Partnerin oder der Partner nur lesen (ERLAUBT_).
+// Eine gemeinsame Liste von Zielen. Person und Partner*in dürfen alles (ab 1.8.3, ERLAUBT_).
 // Es gibt eine Hauptliste (Spalte liste leer) und weitere Listen mit Namen (ab 1.6.2), je ein Unterreiter in der App.
 // Offene Ziele stehen oben, erreichte unten unter „Erreicht“. Beide Gruppen haben ihre eigene Reihenfolge
 // (Spalte reihenfolge, kleine Zahl = oben). Ein neues Ziel und ein Ziel, das die Gruppe wechselt, kommt ganz nach oben.

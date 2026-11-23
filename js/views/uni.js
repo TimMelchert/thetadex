@@ -4,7 +4,7 @@
 // Schritt 5.3: Arbeitsstunden. Schritt 5.4: Module mit Master-Übersicht (… von 120 ECTS, Ziel aus dem Blatt uni_einstellungen).
 // Schritt 5.5: Kein Stundenplan mehr. Module haben Kurse (jede Woche in der Vorlesungszeit), Prüfungen hängen an einem Kurs
 // und können bestanden sein. Termine können jede Woche an bestimmten Tagen gelten. Fenster gehen nur mit × oder Abbrechen zu.
-// Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“). Die Person darf ändern, Partner*in nur lesen.
+// Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“). Person und Partner*in dürfen ändern (ab 16.4).
 // Die Rolle kommt mit jeder Antwort des Skripts; die App speichert sie nicht. Die Rechte prüft immer das Skript.
 // Ohne Netz (Ausnahme in docs/STAND.md 4): Die zuletzt geladenen Uni-Daten liegen im Gerät (thetadex_uni), ohne Rolle.
 // Dann gibt es keine Knöpfe zum Ändern; Ändern geht nur mit Netz.
@@ -57,7 +57,8 @@ export function render(container, ctx) {
     dialog.addEventListener('cancel', (ev) => ev.preventDefault());
     let sendet = false; // gegen doppeltes Senden durch mehrfaches Tippen
 
-    const darfAendern = () => Boolean(daten) && daten.rolle === 'person' && !ohneNetz;
+    // Ändern dürfen Person und Partner*in (ab 16.4, Wunsch der Person, 23.11.2026); das Skript prüft es auch
+    const darfAendern = () => Boolean(daten) && (daten.rolle === 'person' || daten.rolle === 'partner') && !ohneNetz;
     const semesterVon = (id) => (daten ? daten.semester.find((s) => s.id === id) : null);
     const modulVon = (id) => (daten && id ? daten.module.find((m) => m.id === id) : null);
 
