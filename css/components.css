@@ -107,6 +107,7 @@
 [data-symbol="visitenkarte"] { --symbol: url("../icons/reiter/visitenkarte.svg"); }
 [data-symbol="herbarium"] { --symbol: url("../icons/reiter/herbarium.svg"); }
 [data-symbol="bucketlist"] { --symbol: url("../icons/reiter/bucketlist.svg"); }
+[data-symbol="packlisten"] { --symbol: url("../icons/reiter/packlisten.svg"); }
 [data-symbol="stift"]    { --symbol: url("../icons/symbole/stift.svg"); }
 [data-symbol="einstellungen"] { --symbol: url("../icons/einstellungen.svg"); }
 
@@ -1500,3 +1501,19 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .bucket-liste .einkauf-liste + .besitz-ort, .bucket-liste .leise + .besitz-ort { margin-top: 28px; }
 /* Leere Meldungen nehmen keinen Platz weg */
 .bucket-status:empty, .bucket-reihe:has(> span:empty):has(> button[hidden]) { display: none; }
+
+/* Packlisten (15.2): zwei Haken je Zeile (Hin, Zurück), Pfeile rechts; Zähler „Nutzungen“ oben */
+.pack-kopf-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
+.pack-zeile { align-items: center; gap: 8px; }
+.pack-zeile .einkauf-lm-wahl { padding-left: 4px; }
+.pack-haken { flex: 0 0 auto; width: 52px; height: 44px; padding: 0; border: 2px solid var(--schrift-leise); border-radius: var(--rund); background: var(--hintergrund); color: var(--schrift-leise); font: inherit; font-size: 0.75rem; cursor: pointer; }
+.pack-haken.ist-an { background: var(--bereich); border-color: var(--bereich); color: var(--schrift-auf-farbe); font-size: 1.4rem; font-weight: 700; }
+.pack-zeile.ist-fertig .einkauf-lm-name { color: var(--schrift-leise); }
+.pack-gruppe { margin-top: calc(var(--abstand) * 1.2); }
+.pack-stand { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: var(--abstand) 0 4px; }
+.pack-zaehler { display: flex; align-items: center; gap: 8px; margin-top: var(--abstand); padding: 8px 12px; background: var(--kachel); border-radius: var(--rund); border-left: 6px solid var(--bereich); }
+.pack-zaehler-name { flex: 1 1 auto; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.pack-zaehler-name .leise { font-weight: 400; }
+.pack-zaehler-knopf { min-width: 44px; padding: 0 12px; font-size: 1.2rem; }
+.pack-zaehler-zahl { min-width: 2.5em; text-align: center; font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pack-status:empty, .pack-reihe:has(> span:empty):has(> button[hidden]) { display: none; }

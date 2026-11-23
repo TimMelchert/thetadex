@@ -19,6 +19,8 @@
     --farbe-herbarium: #7A9455;
     /* Bucket List (Wunsch der Person, 23.11.2026): Rosé, nur im Reiter Bucket List, nicht im Icon. Kontrast 6,7:1 zur Schrift */
     --farbe-bucketlist: #D98C9A;
+    /* Packlisten (Wunsch der Person, 23.11.2026): Flieder, nur im Reiter Packlisten, nicht im Icon. Kontrast 6,7:1 zur Schrift */
+    --farbe-packlisten: #A99AC6;
 
     /* Schrift auf Bereichsfarbe (hell und dunkel gleich, Kontrast über 7:1) */
     --schrift-auf-farbe: #1C1B19;
@@ -144,6 +146,7 @@
 [data-bereich="visitenkarte"] { --bereich: var(--farbe-visitenkarte); }
 [data-bereich="herbarium"] { --bereich: var(--farbe-herbarium); }
 [data-bereich="bucketlist"] { --bereich: var(--farbe-bucketlist); }
+[data-bereich="packlisten"] { --bereich: var(--farbe-packlisten); }
 
 *, *::before, *::after { box-sizing: border-box; }
 

@@ -375,3 +375,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.6.2** Schritt 14.3: Bucket List mit weiteren Listen (eigene Unterreiter, Spalte `liste` im Blatt `bucketlist`, Namen nur im Sheet), Hauptliste heißt „Unsere“.
 - **1.6.3** Bucket List: Hauptliste heißt „Meine“ statt „Unsere“ (Wunsch der Person).
 - **Etappe 15** Packlisten. **1.7.0** Schritt 15.1: Plan Etappe 15 „Packlisten“ und Skript `leben` mit Blatt `packliste` und Zähler `nutzungen` im Blatt `besitz` (für Items wie einen Wasserfilter); Aktionen `packliste`, `pack_speichern`, `pack_haken`, `pack_loeschen`, `pack_zuruecksetzen`, `pack_reihenfolge`, `besitz_nutzung`.
+- **1.7.1** Schritt 15.2: Reiter Packlisten in der App (`js/views/packlisten.js`, Kachel und Seitenleiste am PC, Flieder, 🧳, Symbol Koffer); Haken hin und zurück, Pfeile, „Alle Haken weg“, Zähler „Nutzungen“.
