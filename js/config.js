@@ -2,7 +2,7 @@
 // Hier stehen KEINE Script-Adressen und KEIN Passwort. Die gibt die Person in der Ersteinrichtung ein.
 
 // Muss exakt gleich sein wie VERSION in sw.js.
-export const VERSION = '1.8.0';
+export const VERSION = '1.8.1';
 
 // Welche Reiter sichtbar sind. false = Reiter wird ausgeblendet.
 export const features = {
@@ -16,6 +16,7 @@ export const features = {
     visitenkarte: true,
     herbarium: true,
     bucketlist: true,
+    projekte: true,
     packlisten: true
 };
 
@@ -38,7 +39,9 @@ export const BEREICHE = [
     // Bucket List (14.2): wie das Herbarium am Handy nur als Kachel (Wunsch der Person, 23.11.2026). Daten im Sheet „Gemeinsam“, Partner*in nur lesen.
     { id: 'bucketlist', titel: 'Bucket List', oeffentlich: false, skript: 'gemeinsam', nurBreit: true },
     // Packlisten (15.2): am Handy nur als Kachel (Wunsch der Person, 23.11.2026). Daten im Sheet „Leben“, nur die Person.
-    { id: 'packlisten', titel: 'Packlisten', oeffentlich: false, skript: 'leben', nurBreit: true }
+    { id: 'packlisten', titel: 'Packlisten', oeffentlich: false, skript: 'leben', nurBreit: true },
+    // Projekte (16.2): Daten im Sheet „Gemeinsam“, Partner*in darf alles. Bis 16.3 (neue Reihenfolge, dann in der Leiste) am Handy nur als Kachel.
+    { id: 'projekte', titel: 'Projekte', oeffentlich: false, skript: 'gemeinsam', nurBreit: true }
 ];
 
 // Skripte, deren Adresse in der Ersteinrichtung eingetragen wird.
@@ -48,7 +51,7 @@ export const SKRIPTE = [
     { id: 'finanzen', titel: 'Finanzen', test: 'einstellungen' },
     { id: 'doener',   titel: 'Döner',    test: 'liste' },
     { id: 'leben',    titel: 'Besitz',   test: 'liste' },
-    { id: 'gemeinsam', titel: 'Einkauf, Uni und Bucket List', test: 'ping' },
+    { id: 'gemeinsam', titel: 'Einkauf, Uni, Bucket List und Projekte', test: 'ping' },
     { id: 'dsa',      titel: 'Pen & Paper', test: 'ping' },
     // Visitenkarte (ab 10.1): eigenes Passwort KARTE_PIN, die App schickt diesem Skript nie das Hauptpasswort
     { id: 'karte',    titel: 'Visitenkarte', test: 'ping', eigenesPasswort: 'karte_passwort' }

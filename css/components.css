@@ -108,6 +108,7 @@
 [data-symbol="herbarium"] { --symbol: url("../icons/reiter/herbarium.svg"); }
 [data-symbol="bucketlist"] { --symbol: url("../icons/reiter/bucketlist.svg"); }
 [data-symbol="packlisten"] { --symbol: url("../icons/reiter/packlisten.svg"); }
+[data-symbol="projekte"] { --symbol: url("../icons/reiter/projekte.svg"); }
 [data-symbol="stift"]    { --symbol: url("../icons/symbole/stift.svg"); }
 [data-symbol="einstellungen"] { --symbol: url("../icons/einstellungen.svg"); }
 
@@ -1521,3 +1522,12 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .pack-zaehler { flex-wrap: wrap; }
 .pack-zaehler .pack-zaehler-name { flex: 1 1 0; }
 .pack-zaehler-wartet { flex: 1 1 100%; font-size: 0.85rem; }
+
+/* Projekte (16.2): Liste wie die Bucket List, bunter Kreis je Status links, Pfeile rechts; Abschnitte eingerückt im aufgeklappten Projekt */
+.projekt-zeile { align-items: center; }
+.projekt-punkt { flex: 0 0 auto; width: 18px; height: 18px; margin: 0 4px 0 6px; border-radius: 50%; border: 1px solid var(--schrift); background: var(--status-idee); }
+.projekt-punkt.ist-laeuft { background: var(--status-laeuft); }
+.projekt-punkt.ist-pausiert { background: var(--status-pausiert); }
+.projekt-punkt.ist-fertig { background: var(--status-fertig); }
+.projekt-abschnitte { margin: 6px 0 10px; }
+.projekt-reihe:has(> span:empty):has(> button[hidden]) { display: none; }

@@ -20,6 +20,7 @@ import * as visitenkarte from './views/visitenkarte.js';
 import * as herbarium from './views/herbarium.js';
 import * as bucketlist from './views/bucketlist.js';
 import * as packlisten from './views/packlisten.js';
+import * as projekte from './views/projekte.js';
 
 const aktiv = BEREICHE.filter((b) => features[b.id]);
 
@@ -51,6 +52,7 @@ ANSICHTEN.visitenkarte = visitenkarte;
 ANSICHTEN.herbarium = herbarium;
 ANSICHTEN.bucketlist = bucketlist;
 ANSICHTEN.packlisten = packlisten;
+ANSICHTEN.projekte = projekte;
 
 // Baut die Leiste nur neu, wenn sich die sichtbaren Reiter geändert haben (z. B. nach der Einrichtung).
 let leisteFuer = '';

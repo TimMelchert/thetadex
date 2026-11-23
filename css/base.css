@@ -21,6 +21,13 @@
     --farbe-bucketlist: #D98C9A;
     /* Packlisten (Wunsch der Person, 23.11.2026): Flieder, nur im Reiter Packlisten, nicht im Icon. Kontrast 6,7:1 zur Schrift */
     --farbe-packlisten: #A99AC6;
+    /* Projekte (Wunsch der Person, 23.11.2026): Taupe, nur im Reiter Projekte, nicht im Icon */
+    --farbe-projekte: #A39382;
+    /* Status der Projekte (Wunsch der Person, 23.11.2026), nur als Kreis mit Rand, das Wort steht daneben im Text. Gleich in hell und dunkel. */
+    --status-idee: #8A4FC9;
+    --status-laeuft: #E3C567;
+    --status-pausiert: #A8A39B;
+    --status-fertig: #5FA35A;
 
     /* Schrift auf Bereichsfarbe (hell und dunkel gleich, Kontrast über 7:1) */
     --schrift-auf-farbe: #1C1B19;
@@ -147,6 +154,7 @@
 [data-bereich="herbarium"] { --bereich: var(--farbe-herbarium); }
 [data-bereich="bucketlist"] { --bereich: var(--farbe-bucketlist); }
 [data-bereich="packlisten"] { --bereich: var(--farbe-packlisten); }
+[data-bereich="projekte"] { --bereich: var(--farbe-projekte); }
 
 *, *::before, *::after { box-sizing: border-box; }
 
