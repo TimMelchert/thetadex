@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.7.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.7.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -20,7 +20,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) ist fertig (16.11.2026): Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
 - Etappe 13 „Herbarium“ (1.5.x) ist fertig (22.11.2026): Reiter Herbarium mit Karteikarten, Festlegungen in 4 („Herbarium“), Prüfung `pruefung/etappe-13-herbarium-bericht.md` in den Projektdateien.
 - Etappe 14 „Bucket List“ (1.6.x) läuft: Plan `docs/PLAN-ETAPPE-14.md`. Schritt 14.1 (Skript), 14.2 (Reiter in der App) und 14.3 (weitere Listen als Unterreiter) sind gebaut, nächster Schritt: 14.4 (Abschluss).
-- Etappe 15 „Packlisten“ (1.7.x) läuft: Plan `docs/PLAN-ETAPPE-15.md`. Schritt 15.1 (Skript `leben`) ist gebaut, nächster Schritt: 15.2 (Reiter in der App).
+- Etappe 15 „Packlisten“ (1.7.x) läuft: Plan `docs/PLAN-ETAPPE-15.md`. Schritt 15.1 (Skript `leben`) und 15.2 (Reiter in der App) sind gebaut, nächster Schritt: 15.3 (Besitz zeigt Nutzungen).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -204,7 +204,7 @@ unter „Info“ die Version prüfen.
   Repo-Bereiche: `index.html`, `manifest.webmanifest`, `sw.js`, `docs/`, `icons/`,
   `css/` (base, layout, components), `js/` (app, config, api, store, ui/, views/), `vendor/` (lokale Bibliotheken, siehe 4),
   `apps-script/` (Code aller Google-Skripte, je Bereich ein Ordner).
-- Hash-Routing: `#/tracking`, `#/doener`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einstellungen`, `#/info`, ab 10.3 `#/visitenkarte` (Kachel auf der Startseite, am PC auch in der Seitenleiste, am Handy nicht in der Leiste: `nurBreit` in `BEREICHE`, CSS `.reiter-nur-breit`), ab 13.2 `#/herbarium` (genauso `nurBreit`, Skript `leben`), ab 14.2 `#/bucketlist` (genauso `nurBreit`, Skript `gemeinsam`).
+- Hash-Routing: `#/tracking`, `#/doener`, `#/finanzen`, `#/dsa`, `#/einkauf`, `#/besitz`, `#/uni`, `#/einstellungen`, `#/info`, ab 10.3 `#/visitenkarte` (Kachel auf der Startseite, am PC auch in der Seitenleiste, am Handy nicht in der Leiste: `nurBreit` in `BEREICHE`, CSS `.reiter-nur-breit`), ab 13.2 `#/herbarium` (genauso `nurBreit`, Skript `leben`), ab 14.2 `#/bucketlist` (genauso `nurBreit`, Skript `gemeinsam`), ab 15.2 `#/packlisten` (genauso `nurBreit`, Skript `leben`).
   Dazu ohne Anmeldung `#/bogen/<skript>/<schluessel>` (geteilter Charakterbogen, nur lesen, siehe 4 „DSA teilen“)
   und `#/doener/<skript>` (öffentliche Döner-Bewertung, siehe 4 „Döner öffentlich“)
   und `#/karte/<skript>/<schluessel>` (Visitenkarte, nur lesen, ohne Reiterleiste und Kopf-Links, ab 10.2, siehe 4 „Visitenkarte“).
@@ -212,7 +212,7 @@ unter „Info“ die Version prüfen.
 - Startseite: Karteikarte mit den farbigen Reitern (`icons/thetadex-karte.svg`, ohne dunklen Grund) und Kacheln aller sichtbaren Reiter. Eine Heute-Übersicht gibt es nicht (Entscheidung der Person, 1.11.2026).
 - Eine Ansicht ist `js/views/<name>.js` mit `render(container, ctx)`. Welche Reiter es gibt, steht in `js/config.js` (`features`).
   Sichtbar ist ein Reiter nur, wenn die Adresse seines Skripts eingetragen ist (`BEREICHE[].skript`, ab 0.4.8): Tracking `tracking`, Finanzen `finanzen`,
-  Pen & Paper (Kennung `dsa`) `dsa` (ab 6.1), Einkauf, Uni und Bucket List `gemeinsam`, Besitz `leben`. Döner ist immer da.
+  Pen & Paper (Kennung `dsa`) `dsa` (ab 6.1), Einkauf, Uni und Bucket List `gemeinsam`, Besitz und Packlisten `leben`. Döner ist immer da.
 - PC und Handy: Reiterleiste unten am Handy, Seitenleiste links am PC (ab 768 px). Einstellungen (Zahnrad, am Handy ohne Text) und Info in der Kopfzeile.
 - Name, Icon und Farben: Thetadex, siehe Abschnitt 4 „Erscheinungsbild“. Die Kopfzeile zeigt immer das vollständige Icon (Karte mit Reitern).
 - **Einstellungen** (`#/einstellungen`, bis 0.3.1 „Einrichtung“): Aussehen (Hell, Dunkel, Wie Gerät), Passwort und die Script-Adressen je Bereich. Gespeichert nur im Gerät.
@@ -330,6 +330,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     Ausnahme Visitenkarte (Wunsch der Person, 4.11.2026): eigene Farbe Olivgrün `#A8AE6E` (`--farbe-visitenkarte`, Kontrast 7,3:1 zur Schrift), nur für die Kachel, den Reiter und die Karte, nicht im Icon.
     Ausnahme Herbarium (Wunsch der Person, 22.11.2026): Moosgrün `#7A9455` (`--farbe-herbarium`, Kontrast 5,1:1 zur Schrift), 🌿 vor der Überschrift, Symbol Blatt, nicht im Icon.
     Ausnahme Bucket List (Wunsch der Person, 23.11.2026): Rosé `#D98C9A` (`--farbe-bucketlist`, Kontrast 6,7:1 zur Schrift), 🎯 vor der Überschrift, Symbol Zielscheibe, nicht im Icon.
+    Ausnahme Packlisten (Wunsch der Person, 23.11.2026): Flieder `#A99AC6` (`--farbe-packlisten`, Kontrast 6,7:1 zur Schrift), 🧳 vor der Überschrift, Symbol Koffer, nicht im Icon.
     Zweite Ausnahme: Die Symbole für Instagram, LinkedIn und Signal (`icons/social/`, selbst gezeichnet) haben ihre Markenfarben, auch Blau (Wunsch der Person, 4.11.2026).
   - Bereichsfarben auf hellem Grund nur als Fläche oder Marke, nicht als Schriftfarbe (zu wenig Kontrast nach WCAG AA).
   - Ausnahme (Wunsch der Person, 29.10.2026): Nach dem Speichern erscheint kurz ein Fenster mit grünem Haken (`--erfolg`).
@@ -595,7 +596,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - Hauptordner: `CLAUDE.md` (zeigt nur hierher), `README.md`, `LIZENZEN.md` (Lizenztexte von Chart.js, @kurkle/color, Feather-Zahnrad; neue fremde Teile hier eintragen), `index.html`, `manifest.webmanifest`, `sw.js`, `.nojekyll` (GitHub Pages ohne Jekyll).
 - `css/`: `base.css` (Farben, hell und dunkel), `layout.css` (Kopf, Reiterleiste unten am Handy, links am PC), `components.css`.
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
-- `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `finanzen-sms.js` (Noch zuordnen, Vorschlag aus der SMS, ab 9.2), `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8), `karte.js` (Visitenkarte für Besucher und `zeichneKarte` für die Vorschau, ab 10.2), `visitenkarte.js` (Vorschau, Links und QR-Code für die Person, ab 10.3), `herbarium.js` (Reiter Herbarium, ab 13.2), `bucketlist.js` (Reiter Bucket List, ab 14.2). `vendor/qrcode.js`: QR Code Generator 1.4.4. `icons/social/`: Symbole für Instagram, LinkedIn, Signal (ab 1.2.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
+- `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `finanzen-sms.js` (Noch zuordnen, Vorschlag aus der SMS, ab 9.2), `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8), `karte.js` (Visitenkarte für Besucher und `zeichneKarte` für die Vorschau, ab 10.2), `visitenkarte.js` (Vorschau, Links und QR-Code für die Person, ab 10.3), `herbarium.js` (Reiter Herbarium, ab 13.2), `bucketlist.js` (Reiter Bucket List, ab 14.2), `packlisten.js` (Reiter Packlisten, ab 15.2). `vendor/qrcode.js`: QR Code Generator 1.4.4. `icons/social/`: Symbole für Instagram, LinkedIn, Signal (ab 1.2.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper. `icons/reiter/visitenkarte.svg`: Kachel Visitenkarte (ab 10.3). `icons/reiter/herbarium.svg`: Blatt, Reiter Herbarium (ab 13.2). `icons/reiter/bucketlist.svg`: Zielscheibe, Reiter Bucket List (ab 14.2).
 - `docs/`: `STAND.md` (diese Datei), `GESCHICHTE.md` (Rückblick, nur bei Bedarf lesen); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-14.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
@@ -625,6 +626,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.6.2** Schritt 14.3: Bucket List mit weiteren Listen als Unterreiter (Spalte `liste`, Namen nur im Sheet; Hauptliste „Unsere“), Feld „Liste“ im Formular. Skript `gemeinsam` neu einfügen, `einrichten` ausführen.
 - **1.6.3** Bucket List: Die Hauptliste heißt „Meine“ statt „Unsere“ (Wunsch der Person: sie gehört nur ihr).
 - **1.7.0** Schritt 15.1: Plan Etappe 15 „Packlisten“ und Skript `leben` mit Blatt `packliste` (Liste, Gruppe, Name, Anzahl, Haken hin und zurück, Reihenfolge) und Zähler `nutzungen` im Besitz; sieben neue Aktionen.
+- **1.7.1** Schritt 15.2: Reiter Packlisten (🧳, Flieder, am Handy nur Kachel): je Liste ein Unterreiter, Haken „Hin“ und „Zurück“, Gruppen und Einträge mit Pfeilen ^ v, „Alle Haken weg“, Zähler „Nutzungen“ eines verknüpften Items mit − und +.
