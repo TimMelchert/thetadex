@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.6.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.7.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -20,6 +20,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) ist fertig (16.11.2026): Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
 - Etappe 13 „Herbarium“ (1.5.x) ist fertig (22.11.2026): Reiter Herbarium mit Karteikarten, Festlegungen in 4 („Herbarium“), Prüfung `pruefung/etappe-13-herbarium-bericht.md` in den Projektdateien.
 - Etappe 14 „Bucket List“ (1.6.x) läuft: Plan `docs/PLAN-ETAPPE-14.md`. Schritt 14.1 (Skript), 14.2 (Reiter in der App) und 14.3 (weitere Listen als Unterreiter) sind gebaut, nächster Schritt: 14.4 (Abschluss).
+- Etappe 15 „Packlisten“ (1.7.x) läuft: Plan `docs/PLAN-ETAPPE-15.md`. Schritt 15.1 (Skript `leben`) ist gebaut, nächster Schritt: 15.2 (Reiter in der App).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -263,7 +264,7 @@ unter „Info“ die Version prüfen.
   `id, erstellt_am, geaendert_am, geloescht`. Die genauen Spalten legt der Plan der jeweiligen Etappe fest. Geplante Blätter:
   | Sheet | Blätter |
   | --- | --- |
-  | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026); ab 1.5.3 `arten` und `karten` (Herbarium, Spalten in 4 „Herbarium“) |
+  | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026); ab 1.5.3 `arten` und `karten` (Herbarium, Spalten in 4 „Herbarium“); ab 1.7.0 `packliste` und in `besitz` die freiwillige Spalte `nutzungen` (Spalten in `docs/PLAN-ETAPPE-15.md`) |
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, ab 1.3.17 `laden_reihenfolge` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt und seit 0.7.3 nicht mehr im Skript; das Blatt darf die Person löschen); ab 1.6.0 `bucketlist` (Spalten in `docs/PLAN-ETAPPE-14.md`) |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
@@ -294,7 +295,7 @@ unter „Info“ die Version prüfen.
   Die gültigen Regeln je Bereich stehen in Abschnitt 4. Bei Widerspruch gilt Abschnitt 4.
 ### 3.2 Offen
 
-- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.3.30: `karte` und `gemeinsam` neue Fassung einfügen und als neue Version bereitstellen (erst nachdem 1.3.29 auf den Geräten ist). Ab 1.5.3: `leben` neue Fassung (Herbarium) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.5.8: `leben` wieder neue Fassung einfügen und als neue Version bereitstellen (kein `einrichten` nötig). Ab 1.6.0: `gemeinsam` neue Fassung (Bucket List) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.6.2: `gemeinsam` wieder neue Fassung (Spalte `liste`) einfügen, `einrichten` ausführen, als neue Version bereitstellen.
+- Alle sechs Skripte sind im Editor auf dem Stand des Repos (eingefügt und bereitgestellt nach 0.8.4, 1.11.2026). `finanzen` ist seit 9.2 (1.1.4) auf dem Stand des Repos; ab 1.3.16 neue Fassung (feste Einnahmen, Aktion `buchungen`, Vermögensverlauf) einfügen und als neue Version bereitstellen. Ab 1.3.26 wieder neue Fassung (Zwischenspeicher, Spalte `monate`) einfügen und als neue Version bereitstellen. `leben`: ab 1.3.25 neue Fassung (Spalte `unklar`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.3.30: `karte` und `gemeinsam` neue Fassung einfügen und als neue Version bereitstellen (erst nachdem 1.3.29 auf den Geräten ist). Ab 1.5.3: `leben` neue Fassung (Herbarium) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.5.8: `leben` wieder neue Fassung einfügen und als neue Version bereitstellen (kein `einrichten` nötig). Ab 1.6.0: `gemeinsam` neue Fassung (Bucket List) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.7.0: `leben` neue Fassung (Packlisten, Spalte `nutzungen`) einfügen, `einrichten` ausführen, als neue Version bereitstellen. Ab 1.6.2: `gemeinsam` wieder neue Fassung (Spalte `liste`) einfügen, `einrichten` ausführen, als neue Version bereitstellen.
 - **ToDo für die Person:** Beträge für feste Zwecke im Finanz-Sheet, Blatt `Einstellungen`, Spalte D (`betrag`) eintragen. Die Auswertung zeigt daraus „Feste Ausgaben“ (bezahlt, wenn im Monat eine Ausgabe mit diesem Zweck gebucht ist) und ab 1.3.14 „Feste Einnahmen“ (Zweck, dessen Kategorie es nur bei den Einnahmen gibt, zum Beispiel Job).
 
 ---
@@ -598,7 +599,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper. `icons/reiter/visitenkarte.svg`: Kachel Visitenkarte (ab 10.3). `icons/reiter/herbarium.svg`: Blatt, Reiter Herbarium (ab 13.2). `icons/reiter/bucketlist.svg`: Zielscheibe, Reiter Bucket List (ab 14.2).
 - `docs/`: `STAND.md` (diese Datei), `GESCHICHTE.md` (Rückblick, nur bei Bedarf lesen); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-14.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
-  `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, mit Passwort, Funktion `einrichten`),
+  `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, Herbarium, ab 1.7.0 Packlisten, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`),
   `apps-script/karte/Code.gs` (Visitenkarte, mit `KARTE_PIN`, ohne nur `karte`, `bild_karte` mit Schlüssel, Funktion `einrichten`, ab 10.1).
 
@@ -624,6 +625,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.6.1** Schritt 14.2: Reiter Bucket List (🎯, Rosé, am Handy nur Kachel): offene Ziele oben, „Erreicht“ unten, Haken setzt das Datum, Pfeile ^ v sortieren, Tipp klappt auf (Bild, Notiz, Datum), Formular mit Bild und „Erreicht am“; Partnerin oder Partner nur lesen.
 - **1.6.2** Schritt 14.3: Bucket List mit weiteren Listen als Unterreiter (Spalte `liste`, Namen nur im Sheet; Hauptliste „Unsere“), Feld „Liste“ im Formular. Skript `gemeinsam` neu einfügen, `einrichten` ausführen.
 - **1.6.3** Bucket List: Die Hauptliste heißt „Meine“ statt „Unsere“ (Wunsch der Person: sie gehört nur ihr).
+- **1.7.0** Schritt 15.1: Plan Etappe 15 „Packlisten“ und Skript `leben` mit Blatt `packliste` (Liste, Gruppe, Name, Anzahl, Haken hin und zurück, Reihenfolge) und Zähler `nutzungen` im Besitz; sieben neue Aktionen.
