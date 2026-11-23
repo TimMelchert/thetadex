@@ -217,17 +217,29 @@ export function render(container, ctx) {
     }
 
     // --- Haken: wirkt sofort, springt bei einem Fehler zurück ---
+    // Je Haken läuft höchstens eine Anfrage. Tippt man währenddessen noch einmal, wird danach
+    // der zuletzt gezeigte Stand gesendet. So kommen Antworten nie in falscher Reihenfolge an.
     const listeStatus = el('p', { class: 'meldung pack-status', attrs: { role: 'status', 'aria-live': 'polite' } });
+    const hakenLaeuft = new Set();
     async function haken(e, art) {
-        const wert = !e[art];
-        e[art] = wert;
+        e[art] = !e[art];
         zeigeListe();
+        const schluessel = e.id + '|' + art;
+        if (hakenLaeuft.has(schluessel)) return;
+        hakenLaeuft.add(schluessel);
+        let gespeichert = !e[art];
         try {
-            await api('leben', 'pack_haken', { id: e.id, art, wert });
+            while (e[art] !== gespeichert) {
+                const wert = e[art];
+                await api('leben', 'pack_haken', { id: e.id, art, wert });
+                gespeichert = wert;
+            }
         } catch (f) {
-            e[art] = !wert;
+            e[art] = gespeichert;
             listeStatus.textContent = '„' + e.name + '“ NICHT gespeichert: ' + f.message;
             zeigeListe();
+        } finally {
+            hakenLaeuft.delete(schluessel);
         }
     }
 
