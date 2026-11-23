@@ -13,7 +13,7 @@ Ein neuer Reiter **„Bucket List“**: eine gemeinsame Liste von Zielen. Die Pe
 - Haken wieder abnehmen: Das Ziel kommt zurück nach oben zu den offenen, das Datum ist weg.
 - „Erreicht am“ lässt sich beim Bearbeiten von Hand ändern (zum Beispiel für Ziele, die schon früher erreicht wurden).
 - Grenzen: Titel 80 Zeichen, Notiz 1000 Zeichen, höchstens 500 Ziele.
-- **Weitere Listen** (Wunsch der Person, 23.11.2026, zuerst für eine Freundesgruppe): Jede weitere Liste ist ein eigener Unterreiter mit eigenen Zielen, neben der Hauptliste „Unsere“.
+- **Weitere Listen** (Wunsch der Person, 23.11.2026, zuerst für eine Freundesgruppe): Jede weitere Liste ist ein eigener Unterreiter mit eigenen Zielen, neben der Hauptliste „Meine“ (die eigenen Ziele der Person).
   Die Namen der Listen stehen nur im Sheet (Spalte `liste`), nicht im Repo. Eine neue Liste entsteht, wenn ein Ziel im Formular unter „Liste“ einen neuen Namen bekommt.
   Die Unterreiter erscheinen erst, wenn es mindestens eine weitere Liste gibt. Rechte wie bei der Hauptliste (Partnerin oder Partner nur lesen).
 

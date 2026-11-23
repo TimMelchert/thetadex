@@ -17,7 +17,7 @@ let daten = null;
 let offenId = null;
 // Gewählte Liste (Unterreiter): leer = Hauptliste. Bleibt, solange die Seite offen ist.
 let listeWahl = '';
-const HAUPTLISTE = 'Unsere';
+const HAUPTLISTE = 'Meine';
 // Schon geladene Bilder (Drive-Kennung → data:-Bild), nur im Arbeitsspeicher
 const bilder = bildSpeicher('gemeinsam');
 const MAX_TITEL = 80;

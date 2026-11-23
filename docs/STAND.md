@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.6.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.6.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -624,6 +624,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.6.0** Schritt 14.1: Plan `docs/PLAN-ETAPPE-14.md` (Bucket List) und Skript `gemeinsam` mit dem Blatt `bucketlist` und den Aktionen `bucket`, `bucket_speichern`, `bucket_haken`, `bucket_bild`, `bucket_loeschen`, `bucket_reihenfolge`. Skript neu einfügen, `einrichten` ausführen.
 - **1.6.1** Schritt 14.2: Reiter Bucket List (🎯, Rosé, am Handy nur Kachel): offene Ziele oben, „Erreicht“ unten, Haken setzt das Datum, Pfeile ^ v sortieren, Tipp klappt auf (Bild, Notiz, Datum), Formular mit Bild und „Erreicht am“; Partnerin oder Partner nur lesen.
 - **1.6.2** Schritt 14.3: Bucket List mit weiteren Listen als Unterreiter (Spalte `liste`, Namen nur im Sheet; Hauptliste „Unsere“), Feld „Liste“ im Formular. Skript `gemeinsam` neu einfügen, `einrichten` ausführen.
+- **1.6.3** Bucket List: Die Hauptliste heißt „Meine“ statt „Unsere“ (Wunsch der Person: sie gehört nur ihr).
