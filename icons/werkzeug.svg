@@ -1,11 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Hammer und Schraubenschlüssel gekreuzt (Projekte, ab 1.8.4): eigenes Bild statt Emoji, damit es auf allen Geräten gleich aussieht -->
-  <g stroke="#2E2A26" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">
-    <!-- Schraubenschlüssel: von unten rechts nach oben links -->
-    <path d="M52 56 L28.5 32.5 A11 11 0 0 1 14.5 18.5 L20.5 24.5 L26 23 L27.5 17.5 L21.5 11.5 A11 11 0 0 1 35.5 25.5 L59 49 A4.9 4.9 0 0 1 52 56 Z" fill="#A9A8A3"/>
-    <!-- Hammerstiel aus Holz: von unten links nach oben rechts -->
-    <path d="M9.5 50.5 L37 23 L41 27 L13.5 54.5 A2.8 2.8 0 0 1 9.5 50.5 Z" fill="#B07A4A"/>
-    <!-- Hammerkopf -->
-    <path d="M33 13 L45 25 L52 18 L48 14 L44 15 L40 6 Z" fill="#6E6B66"/>
+  <defs>
+    <mask id="maul-rand" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/><path d="M14.87 11.75 L7.66 4.54 L4.54 7.66 L11.75 14.87 Z" fill="#000"/></mask>
+    <mask id="maul" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/><path d="M17.4 11.8 L8.9 3.3 L3.3 8.9 L11.8 17.4 Z" fill="#000"/></mask>
+  </defs>
+  <!-- Hammer und Schraubenschlüssel gekreuzt (Projekte, ab 1.8.4, neu gezeichnet 1.8.7): eigenes Bild statt Emoji -->
+  <!-- Schraubenschlüssel: Stiel von unten rechts nach oben links, oben ein offenes Maul -->
+  <g mask="url(#maul-rand)">
+    <line x1="53" y1="53" x2="19" y2="19" stroke="#2E2A26" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="16" cy="16" r="11" fill="#2E2A26"/>
   </g>
+  <g mask="url(#maul)">
+    <line x1="53" y1="53" x2="19" y2="19" stroke="#B4B2AC" stroke-width="6.4" stroke-linecap="round"/>
+    <circle cx="16" cy="16" r="9.2" fill="#B4B2AC"/>
+  </g>
+  <!-- Hammer: Holzstiel von unten links nach oben rechts, Kopf quer dazu -->
+  <line x1="10.5" y1="53.5" x2="38" y2="26" stroke="#2E2A26" stroke-width="10" stroke-linecap="round"/>
+  <line x1="10.5" y1="53.5" x2="38" y2="26" stroke="#B07A4A" stroke-width="6.4" stroke-linecap="round"/>
+  <path d="M36.4 9.3 L54.7 27.6 L47.6 34.7 L29.3 16.4 Z" fill="#6E6B66" stroke="#2E2A26" stroke-width="1.8" stroke-linejoin="round"/>
+  <path d="M33.5 12.2 L36.4 9.3 L54.7 27.6 L51.8 30.5 Z" fill="#8C8983"/>
+  <path d="M36.4 9.3 L54.7 27.6 L47.6 34.7 L29.3 16.4 Z" fill="none" stroke="#2E2A26" stroke-width="1.8" stroke-linejoin="round"/>
 </svg>
