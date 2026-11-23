@@ -646,4 +646,4 @@ Letzte Versionen:
 
 - **1.7.4** Packlisten: Zähler „Nutzungen“ merkt sich Schritte ohne Netz und trägt sie nach (Ausnahme von 1.5); „Item aus dem Besitz“ ist ein Suchfeld mit Liste.
 - **1.7.5** Packlisten: Der Zähler ist auch da, wenn die App ohne Netz neu geöffnet wird (zuletzt gezeigte Zähler im Gerät).
-- **1.7.6** Schritt 15.4: Abschluss Etappe 15 „Packlisten“: Prüfung, Plan in 4 eingearbeitet und gelöscht.
+- **1.7.6** Schritt 15.4: Abschluss Etappe 15 „Packlisten“: Prüfung, Plan in 4 eingearbeitet und gelöscht. Die zwei kleinen Funde behoben („Alle Haken weg“ schreibt in einem Zug, schnelles Doppeltippen auf einen Haken sendet nacheinander).
