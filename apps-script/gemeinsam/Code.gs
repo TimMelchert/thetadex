@@ -33,14 +33,15 @@ var BLAETTER_ = {
   laden_reihenfolge: ["abteilung"],
   // Bucket List (ab 1.6.0): erledigt_am leer = offen, sonst „erreicht am“ (JJJJ-MM-TT).
   // reihenfolge: kleine Zahl = weiter oben, offene und erreichte Ziele je für sich. bild: eine Drive-Kennung oder leer.
-  bucketlist: ["id", "titel", "notiz", "erledigt_am", "reihenfolge", "bild", "erstellt_am", "geaendert_am", "geloescht"]
+  // liste (ab 1.6.2): leer = die Hauptliste, sonst der Name einer weiteren Liste (eigener Unterreiter in der App)
+  bucketlist: ["id", "titel", "notiz", "erledigt_am", "reihenfolge", "bild", "erstellt_am", "geaendert_am", "geloescht", "liste"]
 };
 // Spalten, die im Sheet reiner Text bleiben (kein Datum, keine Zahl)
 var TEXT_SPALTEN_ = ["id", "name", "abteilung", "einheit", "notiz", "lebensmittel_id", "gericht_id", "link", "ort",
   "semester_id", "modul_id", "stunde_id", "titel", "art", "kuerzel", "bereich", "status",
   "beginn", "ende", "vorlesung_beginn", "vorlesung_ende", "von", "bis",
   "tage", "kurs_id", "dozent", "pruefungsleistung", "pflicht", "leistung", "text", "ergibt", "bilder", "packung",
-  "erledigt_am", "bild"];
+  "erledigt_am", "bild", "liste"];
 var MAX_ = { name: 60, abteilung: 40, einheit: 20, notiz_lm: 200, notiz_liste: 100, notiz_gericht: 300, link: 300, ort: 40,
   text_rezept: 20000, ergibt: 40 };
 var MAX_ZAHL_ = 9999;
@@ -64,7 +65,7 @@ var UNI_MAX_KURSE_ = 300;      // höchstens so viele Kurse insgesamt
 var UNI_MAX_TERMINE_ = 3000;   // höchstens so viele Termine insgesamt
 var ECTS_ZIEL_ = 120;          // Vorgabe für uni_einstellungen, ändern im Sheet
 // Bucket List (Etappe 14)
-var BUCKET_MAX_ = { titel: 80, notiz: 1000 };
+var BUCKET_MAX_ = { titel: 80, notiz: 1000, liste: 40 };
 var BUCKET_MAX_ZIELE_ = 500;   // höchstens so viele Ziele insgesamt
 var BUCKET_ORDNER_NAME_ = "Thetadex Bucket List";
 
@@ -1275,6 +1276,7 @@ function uniLoeschen_(data) {
 
 // --- 10. BUCKET LIST (Etappe 14) ---
 // Eine gemeinsame Liste von Zielen. Die Person darf alles, die Partnerin oder der Partner nur lesen (ERLAUBT_).
+// Es gibt eine Hauptliste (Spalte liste leer) und weitere Listen mit Namen (ab 1.6.2), je ein Unterreiter in der App.
 // Offene Ziele stehen oben, erreichte unten unter „Erreicht“. Beide Gruppen haben ihre eigene Reihenfolge
 // (Spalte reihenfolge, kleine Zahl = oben). Ein neues Ziel und ein Ziel, das die Gruppe wechselt, kommt ganz nach oben.
 
@@ -1286,6 +1288,7 @@ function bucketAus_(t, z) {
     erledigt_am: datum_(zelle_(z, t.sp, "erledigt_am")),
     reihenfolge: zahl_(zelle_(z, t.sp, "reihenfolge")),
     bild: driveKennung_(zelle_(z, t.sp, "bild")),
+    liste: text_(z, t.sp, "liste").trim(),
     geaendert_am: stempel_(zelle_(z, t.sp, "geaendert_am"))
   };
 }
@@ -1296,12 +1299,14 @@ function bucketZiele_() {
   return t.zeilen.filter(function (z) { return aktiv_(t, z); }).map(function (z) { return bucketAus_(t, z); });
 }
 
-// Kleinste Zahl der Gruppe (offen oder erreicht) minus 1: so steht das Ziel dort ganz oben
-function bucketOben_(t, erreicht, ohneId) {
+// Kleinste Zahl der Gruppe (offen oder erreicht, in derselben Liste) minus 1: so steht das Ziel dort ganz oben
+function bucketOben_(t, erreicht, ohneId, liste) {
   var min = null;
+  var name = ohneSchutz_(liste).trim().toLowerCase();
   t.zeilen.forEach(function (z) {
     if (!aktiv_(t, z) || String(zelle_(z, t.sp, "id")) === ohneId) return;
     if ((datum_(zelle_(z, t.sp, "erledigt_am")) !== "") !== erreicht) return;
+    if (text_(z, t.sp, "liste").trim().toLowerCase() !== name) return;
     var n = zahl_(zelle_(z, t.sp, "reihenfolge"));
     if (min === null || n < min) min = n;
   });
@@ -1313,7 +1318,8 @@ function heute_() {
   return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
 }
 
-// Neu (ohne id) oder ändern (mit id und geaendert_am). data = { titel, notiz, erledigt_am, bild }.
+// Neu (ohne id) oder ändern (mit id und geaendert_am). data = { titel, notiz, erledigt_am, bild, liste }.
+// liste: leer = Hauptliste, sonst Name einer Liste (bis 40 Zeichen). Fehlt es in der Anfrage, bleibt es.
 // erledigt_am: leer = offen, sonst das Datum „erreicht am“ (von Hand änderbar). Fehlt es in der Anfrage, bleibt es.
 // bild: nur die schon gespeicherte Kennung (behalten) oder leer (Bild weg). Neue Bilder kommen über bucket_bild.
 function bucketSpeichern_(data) {
@@ -1321,6 +1327,11 @@ function bucketSpeichern_(data) {
   if (titel.fehler) return { error: "eingabe", message: titel.fehler };
   var notiz = bereinigeLang_(data.notiz, BUCKET_MAX_.notiz + 1);
   if (notiz.replace(/^'/, "").length > BUCKET_MAX_.notiz) return { error: "eingabe", message: "Die Notiz ist zu lang (höchstens " + BUCKET_MAX_.notiz + " Zeichen)." };
+  var liste = null;
+  if ("liste" in data) {
+    liste = pruefeText_(data.liste, BUCKET_MAX_.liste, "Liste", false);
+    if (liste.fehler) return { error: "eingabe", message: liste.fehler };
+  }
   var datum = null;
   if ("erledigt_am" in data) {
     datum = pruefeDatum_(data.erledigt_am, "„Erreicht am“", false);
@@ -1335,7 +1346,8 @@ function bucketSpeichern_(data) {
     var anzahl = t.zeilen.filter(function (z) { return aktiv_(t, z); }).length;
     if (anzahl >= BUCKET_MAX_ZIELE_) return { error: "eingabe", message: "Höchstens " + BUCKET_MAX_ZIELE_ + " Ziele." };
     werte.erledigt_am = datum ? datum.wert : "";
-    werte.reihenfolge = bucketOben_(t, werte.erledigt_am !== "", "");
+    werte.liste = liste ? liste.wert : "";
+    werte.reihenfolge = bucketOben_(t, werte.erledigt_am !== "", "", werte.liste);
     werte.bild = "";
     i = neu_(t, werte);
   } else {
@@ -1343,10 +1355,15 @@ function bucketSpeichern_(data) {
     if (i < 0) return { error: "fehlt", message: "Dieses Ziel gibt es nicht mehr. Bitte neu laden." };
     if (veraltet_(t, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
     var z = t.zeilen[i];
-    if (datum) {
-      var vorher = datum_(zelle_(z, t.sp, "erledigt_am")) !== "";
-      werte.erledigt_am = datum.wert;
-      if ((datum.wert !== "") !== vorher) werte.reihenfolge = bucketOben_(t, datum.wert !== "", id);
+    var warErreicht = datum_(zelle_(z, t.sp, "erledigt_am")) !== "";
+    var istErreicht = datum ? datum.wert !== "" : warErreicht;
+    var alteListe = text_(z, t.sp, "liste").trim();
+    var neueListe = liste ? ohneSchutz_(liste.wert) : alteListe;
+    if (datum) werte.erledigt_am = datum.wert;
+    if (liste) werte.liste = liste.wert;
+    // Wechselt das Ziel die Gruppe oder die Liste, steht es dort ganz oben
+    if (istErreicht !== warErreicht || neueListe.toLowerCase() !== alteListe.toLowerCase()) {
+      werte.reihenfolge = bucketOben_(t, istErreicht, id, neueListe);
     }
     if ("bild" in data) {
       var alt = driveKennung_(zelle_(z, t.sp, "bild"));
@@ -1370,7 +1387,7 @@ function bucketHaken_(data) {
   var erreicht = data.erledigt === true;
   var vorher = datum_(zelle_(t.zeilen[i], t.sp, "erledigt_am")) !== "";
   if (erreicht !== vorher) {
-    aendere_(t, i, { erledigt_am: erreicht ? heute_() : "", reihenfolge: bucketOben_(t, erreicht, String(data.id)) });
+    aendere_(t, i, { erledigt_am: erreicht ? heute_() : "", reihenfolge: bucketOben_(t, erreicht, String(data.id), text_(t.zeilen[i], t.sp, "liste")) });
   }
   return { ziel: bucketAus_(t, t.zeilen[i]) };
 }
