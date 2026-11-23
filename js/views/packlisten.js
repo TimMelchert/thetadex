@@ -1,4 +1,4 @@
-// Reiter Packlisten (Etappe 15, docs/PLAN-ETAPPE-15.md). Feste Listen je Anlass, jede Liste ein Unterreiter.
+// Reiter Packlisten (Etappe 15, docs/STAND.md 4 „Packlisten“). Feste Listen je Anlass, jede Liste ein Unterreiter.
 // Ein Eintrag hat Name, Gruppe, Anzahl (freiwillig) und zwei Haken: „Hin“ (eingepackt) und „Zurück“ (wieder eingepackt).
 // Gruppen und Einträge lassen sich mit Pfeilen ^ und v ordnen. „Alle Haken weg“ macht die Liste fürs nächste Mal leer.
 // Zeigt ein Eintrag auf ein Item im Besitz und ist er bei „Hin“ abgehakt, steht oben dessen Zähler „Nutzungen“ mit − und + (Wunsch der Person: Wasserfilter).

@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.7.5** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.7.6** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -20,7 +20,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) ist fertig (16.11.2026): Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
 - Etappe 13 „Herbarium“ (1.5.x) ist fertig (22.11.2026): Reiter Herbarium mit Karteikarten, Festlegungen in 4 („Herbarium“), Prüfung `pruefung/etappe-13-herbarium-bericht.md` in den Projektdateien.
 - Etappe 14 „Bucket List“ (1.6.x) läuft: Plan `docs/PLAN-ETAPPE-14.md`. Schritt 14.1 (Skript), 14.2 (Reiter in der App) und 14.3 (weitere Listen als Unterreiter) sind gebaut, nächster Schritt: 14.4 (Abschluss).
-- Etappe 15 „Packlisten“ (1.7.x) läuft: Plan `docs/PLAN-ETAPPE-15.md`. Schritt 15.1 (Skript `leben`), 15.2 (Reiter in der App) und 15.3 (Besitz zeigt Nutzungen) sind gebaut, nächster Schritt: 15.4 (Abschluss).
+- Etappe 15 „Packlisten“ (1.7.x) ist fertig (23.11.2026): Reiter Packlisten mit Zähler „Nutzungen“, Festlegungen in 4 („Packlisten“), Prüfung `pruefung/etappe-15-packlisten-bericht.md` in den Projektdateien.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -264,7 +264,7 @@ unter „Info“ die Version prüfen.
   `id, erstellt_am, geaendert_am, geloescht`. Die genauen Spalten legt der Plan der jeweiligen Etappe fest. Geplante Blätter:
   | Sheet | Blätter |
   | --- | --- |
-  | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026); ab 1.5.3 `arten` und `karten` (Herbarium, Spalten in 4 „Herbarium“); ab 1.7.0 `packliste` und in `besitz` die freiwillige Spalte `nutzungen` (Spalten in `docs/PLAN-ETAPPE-15.md`) |
+  | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026); ab 1.5.3 `arten` und `karten` (Herbarium, Spalten in 4 „Herbarium“); ab 1.7.0 `packliste` und in `besitz` die freiwillige Spalte `nutzungen` (Spalten in 4 „Packlisten“) |
   | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, ab 1.3.17 `laden_reihenfolge` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt und seit 0.7.3 nicht mehr im Skript; das Blatt darf die Person löschen); ab 1.6.0 `bucketlist` (Spalten in `docs/PLAN-ETAPPE-14.md`) |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
@@ -390,6 +390,17 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - **DSA teilen:** Jeder Bogen hat einen zufälligen, langen Freigabe-Schlüssel (Spalte `freigabe` im Blatt `boegen`).
   Der Link enthält die Skript-Kennung und diesen Schlüssel, nie das Passwort. „Neuen Link erstellen“ macht alte Links ungültig.
   Die geteilte Ansicht zeigt den ganzen Bogen, aber keine Knöpfe zum Ändern. Grund: Bögen sollen ohne Passwort an andere gehen.
+- **Packlisten, Sheet „Leben“** (Etappe 15, Plan eingearbeitet am 23.11.2026). Reiter `#/packlisten`, Skript `leben`, nur die Person (`APP_PIN`), kein Teilen, kein Partner-Zugang.
+  Am Handy nur als Kachel, am PC auch in der Seitenleiste (`nurBreit`). Hinweise im Code auf `docs/PLAN-ETAPPE-15.md` meinen diesen Abschnitt.
+  - **Ziel:** feste Listen je Anlass (Wunsch der Person: keine Vorlagen, keine Kopien je Reise). Namen der Listen stehen nur im Sheet. Jede Liste ist ein Unterreiter, „+ Neue Liste“ legt sie mit dem ersten Eintrag an.
+  - **Eintrag:** Name (Pflicht, 80), Gruppe (40), Anzahl (freiwillig, 1 bis 999), keine Notiz. Zwei Haken „Hin“ (eingepackt) und „Zurück“ (wieder eingepackt); ein Tipp speichert sofort, bei Fehler springt der Haken zurück.
+    „Alle Haken weg“ (mit Rückfrage) leert eine Liste. Oben „Hin x / y · Zurück x / y“.
+  - **Reihenfolge:** Gruppen und Einträge mit Pfeilen ^ v (gespeichert kurz nach dem letzten Tippen). Gruppen stehen in der Reihenfolge ihres ersten Eintrags. Neue Einträge kommen ans Ende ihrer Gruppe.
+  - **Zähler „Nutzungen“** (Wunsch der Person, zuerst für einen Wasserfilter): freiwillige Spalte `nutzungen` im Blatt `besitz` (0 bis 1.000.000, leer = kein Zähler). Ein Eintrag kann im Formular auf ein Item im Besitz zeigen („Item aus dem Besitz“, Suchfeld mit Liste, Spalte `besitz_id`).
+    Ist der Eintrag bei „Hin“ abgehakt, steht über der Liste „Name · Nutzungen 24“ mit − und + (Aktion `besitz_nutzung`, nie unter 0). Im Besitz zeigt das Fenster „Nutzungen“, das Formular setzt die Zahl (gesendet nur, wenn dort geändert). Ohne Netz siehe die Ausnahme unten.
+  - **Blatt `packliste`:** `id, liste, gruppe, name, anzahl, hin, zurueck, reihenfolge, besitz_id, erstellt_am, geaendert_am, geloescht`. Listen haben kein eigenes Blatt (Name als Text in `liste`, umbenennen mit „Suchen und ersetzen“). `hin`, `zurueck`: `TRUE` oder leer. Höchstens 50 Listen, 2000 Einträge. Löschen ist weich.
+  - **Aktionen** (nur `APP_PIN`, alle mit `LockService`): `packliste` (lesen, mit Zählern der verknüpften Items; ohne Sperre, außer eingefügte Zeilen haben keine `id`), `pack_speichern`, `pack_haken`, `pack_loeschen`, `pack_zuruecksetzen`, `pack_reihenfolge` (eine Liste; ändert `geaendert_am` nicht), `besitz_nutzung`. Haken und Zähler ändern `geaendert_am` nicht.
+  - **Aussehen:** Flieder `#A99AC6` (siehe „Erscheinungsbild“), grüner Wanderrucksack `icons/rucksack.svg` vor der Überschrift, Reiter-Symbol Rucksack.
 - **Pen & Paper, Sheet „DSA“** (Etappe 6, Plan eingearbeitet am 1.11.2026). Reiter heißt „Pen & Paper“; Kennung `dsa`, Adresse `#/dsa`, Skript `dsa`
   und Sheet „DSA“ heißen weiter so. Eigenes Sheet und eigenes Skript: Ein Fehler beim Teilen kann nie andere Bereiche verraten (2.2).
   Nur `APP_PIN` (Rolle Person), `PARTNER_PIN` kennt das Skript nicht. Ohne Passwort nur `geteilt`.
@@ -633,6 +644,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.7.3** Packlisten: Zähler „Nutzungen“ nur, wenn der verknüpfte Eintrag bei „Hin“ abgehakt ist; grüner Wanderrucksack statt Koffer (Überschrift und Reiter-Symbol).
 - **1.7.4** Packlisten: Zähler „Nutzungen“ merkt sich Schritte ohne Netz und trägt sie nach (Ausnahme von 1.5); „Item aus dem Besitz“ ist ein Suchfeld mit Liste.
 - **1.7.5** Packlisten: Der Zähler ist auch da, wenn die App ohne Netz neu geöffnet wird (zuletzt gezeigte Zähler im Gerät).
+- **1.7.6** Schritt 15.4: Abschluss Etappe 15 „Packlisten“: Prüfung, Plan in 4 eingearbeitet und gelöscht.
