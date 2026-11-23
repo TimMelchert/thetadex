@@ -646,6 +646,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.7.6** Schritt 15.4: Abschluss Etappe 15 „Packlisten“: Prüfung, Plan in 4 eingearbeitet und gelöscht.
+- **1.7.6** Schritt 15.4: Abschluss Etappe 15 „Packlisten“: Prüfung, Plan in 4 eingearbeitet und gelöscht. Die zwei kleinen Funde behoben („Alle Haken weg“ schreibt in einem Zug, schnelles Doppeltippen auf einen Haken sendet nacheinander).
 - **1.8.0** Schritt 16.1: Skript `gemeinsam` mit Blatt `projekte` (Projekte und Abschnitte, Status, Reihenfolge); Partner*in darf dort alles. Plan `docs/PLAN-ETAPPE-16.md`.
 - **1.8.1** Schritt 16.2: Reiter Projekte (🛠️, Taupe, bis 16.3 am Handy nur Kachel): Projekte mit Abschnitten, bunter Kreis je Status, Pfeile ^ v, Tipp klappt auf; Partner*in darf alles.
