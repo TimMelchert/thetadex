@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.7.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.7.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -330,7 +330,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     Ausnahme Visitenkarte (Wunsch der Person, 4.11.2026): eigene Farbe Olivgrün `#A8AE6E` (`--farbe-visitenkarte`, Kontrast 7,3:1 zur Schrift), nur für die Kachel, den Reiter und die Karte, nicht im Icon.
     Ausnahme Herbarium (Wunsch der Person, 22.11.2026): Moosgrün `#7A9455` (`--farbe-herbarium`, Kontrast 5,1:1 zur Schrift), 🌿 vor der Überschrift, Symbol Blatt, nicht im Icon.
     Ausnahme Bucket List (Wunsch der Person, 23.11.2026): Rosé `#D98C9A` (`--farbe-bucketlist`, Kontrast 6,7:1 zur Schrift), 🎯 vor der Überschrift, Symbol Zielscheibe, nicht im Icon.
-    Ausnahme Packlisten (Wunsch der Person, 23.11.2026): Flieder `#A99AC6` (`--farbe-packlisten`, Kontrast 6,7:1 zur Schrift), 🧳 vor der Überschrift, Symbol Koffer, nicht im Icon.
+    Ausnahme Packlisten (Wunsch der Person, 23.11.2026): Flieder `#A99AC6` (`--farbe-packlisten`, Kontrast 6,7:1 zur Schrift), grüner Wanderrucksack vor der Überschrift (`icons/rucksack.svg`, ab 1.7.3 statt 🧳, Wunsch der Person), Symbol Rucksack, nicht im Icon.
     Zweite Ausnahme: Die Symbole für Instagram, LinkedIn und Signal (`icons/social/`, selbst gezeichnet) haben ihre Markenfarben, auch Blau (Wunsch der Person, 4.11.2026).
   - Bereichsfarben auf hellem Grund nur als Fläche oder Marke, nicht als Schriftfarbe (zu wenig Kontrast nach WCAG AA).
   - Ausnahme (Wunsch der Person, 29.10.2026): Nach dem Speichern erscheint kurz ein Fenster mit grünem Haken (`--erfolg`).
@@ -627,6 +627,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.7.0** Schritt 15.1: Plan Etappe 15 „Packlisten“ und Skript `leben` mit Blatt `packliste` (Liste, Gruppe, Name, Anzahl, Haken hin und zurück, Reihenfolge) und Zähler `nutzungen` im Besitz; sieben neue Aktionen.
 - **1.7.1** Schritt 15.2: Reiter Packlisten (🧳, Flieder, am Handy nur Kachel): je Liste ein Unterreiter, Haken „Hin“ und „Zurück“, Gruppen und Einträge mit Pfeilen ^ v, „Alle Haken weg“, Zähler „Nutzungen“ eines verknüpften Items mit − und +.
 - **1.7.2** Schritt 15.3: Besitz zeigt im Fenster eines Items „Nutzungen“, das Formular hat das Feld „Nutzungen (Zähler)“.
+- **1.7.3** Packlisten: Zähler „Nutzungen“ nur, wenn der verknüpfte Eintrag bei „Hin“ abgehakt ist; grüner Wanderrucksack statt Koffer (Überschrift und Reiter-Symbol).

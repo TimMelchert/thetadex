@@ -16,14 +16,14 @@ Ein neuer Reiter **„Packlisten“**: feste Listen je Anlass. Keine Vorlagen, k
 **Nutzungszähler (Wunsch der Person, vorerst nur für einen Wasserfilter gebraucht; geht aber bei jedem Item):**
 - Ein Item im Besitz kann einen Zähler „Nutzungen“ haben (neue freiwillige Spalte `nutzungen` im Blatt `besitz`, ganze Zahl 0 bis 1.000.000).
 - Ein Eintrag einer Packliste kann auf ein Item im Besitz zeigen (Spalte `besitz_id`, im Formular „Item aus dem Besitz“ wählen).
-- Hat das gewählte Item einen Zähler, steht er **oben über der Packliste**: „Wasserfilter · Nutzungen 24“ mit Knöpfen − und +. Jeder Tipp speichert sofort im Besitz.
+- Ist der Eintrag bei „Hin“ abgehakt (ab 1.7.3, Wunsch der Person), steht der Zähler des Items **oben über der Packliste**: „Wasserfilter · Nutzungen 24“ mit Knöpfen − und +. Jeder Tipp speichert sofort im Besitz.
 - Im Besitz zeigt das Fenster des Items „Nutzungen 24“; im Formular lässt sich die Zahl setzen (leer = kein Zähler).
 
 ## 2. Aufbau in der App (Schritt 15.2)
 
 - Name „Packlisten“, Adresse `#/packlisten`, Kennung `packlisten`, Skript `leben` (nur die Person, wie Besitz und Herbarium).
 - Kachel auf der Startseite und am PC in der Seitenleiste, am Handy nicht in der Leiste unten (`nurBreit`).
-- Farbe **Flieder `#A99AC6`** (`--farbe-packlisten`, Kontrast 6,7:1 zur dunklen Schrift), 🧳 vor der Überschrift, Symbol Koffer `icons/reiter/packlisten.svg`.
+- Farbe **Flieder `#A99AC6`** (`--farbe-packlisten`, Kontrast 6,7:1 zur dunklen Schrift), grüner Wanderrucksack vor der Überschrift (`icons/rucksack.svg`, ab 1.7.3, vorher 🧳), Symbol Rucksack `icons/reiter/packlisten.svg`.
   Ausnahme von den sieben Farben wie Visitenkarte, Herbarium und Bucket List: nur Kachel, Reiter und Marken, nicht im Icon.
 - Oben je Liste ein **Unterreiter** (Namen nur im Sheet), dazu „+ Neue Liste“.
 - Darunter die Nutzungszähler (falls vorhanden), dann „Hin 12 / 30 · Zurück 0 / 30“, dann die Einträge nach Gruppe in eigener Reihenfolge. Je Zeile: Haken Hin, Haken Zurück, Name, Anzahl („2×“), rechts ^ v. Jede Gruppe hat in ihrer Überschrift ^ v.

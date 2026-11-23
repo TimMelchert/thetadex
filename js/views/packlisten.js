@@ -1,7 +1,7 @@
 // Reiter Packlisten (Etappe 15, docs/PLAN-ETAPPE-15.md). Feste Listen je Anlass, jede Liste ein Unterreiter.
 // Ein Eintrag hat Name, Gruppe, Anzahl (freiwillig) und zwei Haken: „Hin“ (eingepackt) und „Zurück“ (wieder eingepackt).
 // Gruppen und Einträge lassen sich mit Pfeilen ^ und v ordnen. „Alle Haken weg“ macht die Liste fürs nächste Mal leer.
-// Zeigt ein Eintrag auf ein Item im Besitz, steht oben dessen Zähler „Nutzungen“ mit − und + (Wunsch der Person: Wasserfilter).
+// Zeigt ein Eintrag auf ein Item im Besitz und ist er bei „Hin“ abgehakt, steht oben dessen Zähler „Nutzungen“ mit − und + (Wunsch der Person: Wasserfilter).
 // Die Namen der Listen stehen nur im Sheet (Spalte „liste“), nicht im Repo. Daten aus dem Skript „leben“, nur im Arbeitsspeicher.
 
 import { el, leeren, vergleiche } from '../ui/dom.js';
@@ -311,10 +311,11 @@ export function render(container, ctx) {
         ]);
     }
 
-    // Zähler oben über der Liste: je verknüpftes Item eine Zeile mit − und +
+    // Zähler oben über der Liste: je verknüpftes Item eine Zeile mit − und +.
+    // Nur, wenn der Eintrag bei „Hin“ abgehakt ist (Wunsch der Person, 23.11.2026: der Wasserfilter ist dann dabei).
     function zaehlerZeilen(eintraege) {
         const ids = [];
-        eintraege.forEach((e) => { if (e.besitz_id && daten.zaehler[e.besitz_id] && !ids.includes(e.besitz_id)) ids.push(e.besitz_id); });
+        eintraege.forEach((e) => { if (e.hin && e.besitz_id && daten.zaehler[e.besitz_id] && !ids.includes(e.besitz_id)) ids.push(e.besitz_id); });
         return ids.map((id) => {
             const z = daten.zaehler[id];
             const warte = zaehlerInArbeit.has(id);
@@ -402,7 +403,7 @@ export function render(container, ctx) {
     container.append(
         el('div', { class: 'besitz-kopf' }, [
             el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
-                el('span', { class: 'titel-emoji', text: '🧳', attrs: { 'aria-hidden': 'true' } }),
+                el('img', { class: 'pack-rucksack', attrs: { src: 'icons/rucksack.svg', alt: '', width: '44', height: '44' } }),
                 el('span', { text: ctx.bereich.titel })
             ]),
             el('div', { class: 'pack-kopf-knoepfe' }, [neuKnopf, neueListeKnopf])
