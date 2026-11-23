@@ -23,8 +23,8 @@
     --farbe-packlisten: #A99AC6;
     /* Projekte (Wunsch der Person, 23.11.2026): Taupe, nur im Reiter Projekte, nicht im Icon */
     --farbe-projekte: #A39382;
-    /* Status der Projekte (Wunsch der Person, 23.11.2026), nur als Kreis mit Rand, das Wort steht daneben im Text. Gleich in hell und dunkel. */
-    --status-idee: #8A4FC9;
+    /* Status der Projekte (Wunsch der Person, 23.11.2026): Fläche hinter dem Wort, Schrift --schrift-auf-farbe (Kontrast über 5:1). Gleich in hell und dunkel. */
+    --status-idee: #A47BD9;
     --status-laeuft: #E3C567;
     --status-pausiert: #A8A39B;
     --status-fertig: #5FA35A;

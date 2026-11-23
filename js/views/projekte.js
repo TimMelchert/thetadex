@@ -1,7 +1,7 @@
 // Reiter Projekte (Etappe 16, docs/PLAN-ETAPPE-16.md). Eine schlichte Übersicht über Projekte mit Titel, Notiz und Status.
-// Ein Projekt kann Abschnitte haben (zweite Ebene). Vor jedem Eintrag ein bunter Kreis in der Farbe seines Status.
+// Ein Projekt kann Abschnitte haben (zweite Ebene). Rechts neben dem Titel ein farbiges Feld mit dem Status als Wort (ab 1.8.9).
 // Eine Liste, nicht nach Status gruppiert; Projekte und Abschnitte (je Projekt) mit Pfeilen ^ und v sortierbar.
-// Ein Tipp auf den Titel klappt auf (Notiz, Status, Abschnitte). Person und Partner*in dürfen alles (das Skript prüft es).
+// Ein Tipp auf den Titel klappt auf (Notiz, Abschnitte). Person und Partner*in dürfen alles (das Skript prüft es).
 // Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“, Blatt „projekte“). Nur im Arbeitsspeicher.
 
 import { el, leeren, vergleiche } from '../ui/dom.js';
@@ -15,7 +15,7 @@ const offen = new Set();
 const MAX_TITEL = 80;
 const MAX_NOTIZ = 1000;
 
-// Feste Status (keine persönlichen Daten). Farbe über CSS (.projekt-punkt.ist-<wert>).
+// Feste Status (keine persönlichen Daten). Farbe über CSS (.projekt-status.ist-<wert>).
 const STATUS = [
     { wert: 'idee', text: 'Idee' },
     { wert: 'laeuft', text: 'Läuft' },
@@ -30,9 +30,9 @@ const projekte = () => (daten ? daten.projekte.filter((p) => !p.projekt).sort(or
 const abschnitte = (id) => (daten ? daten.projekte.filter((p) => p.projekt === id).sort(ordne) : []);
 const geschwister = (p) => (p.projekt ? abschnitte(p.projekt) : projekte());
 
-// Bunter Kreis; für Bildschirmleser mit dem Status als Wort
-function punkt(p) {
-    return el('span', { class: 'projekt-punkt ist-' + p.status, attrs: { role: 'img', 'aria-label': 'Status: ' + statusText(p.status) } });
+// Farbiges Feld mit dem Status als Wort (Wunsch der Person, 23.11.2026: rechts neben dem Titel, immer in einer Spalte)
+function statusFeld(p) {
+    return el('span', { class: 'projekt-status ist-' + p.status, text: statusText(p.status) });
 }
 
 export function render(container, ctx) {
@@ -179,10 +179,11 @@ export function render(container, ctx) {
         reiheFertigTimer = setTimeout(() => { if (reiheText.textContent === 'Reihenfolge gespeichert.') reiheText.textContent = ''; }, 3000);
     }
 
-    // --- Aufgeklappt: Notiz, Status als Wort, bei Projekten die Abschnitte, Knöpfe ---
+    // --- Aufgeklappt: Notiz, bei Projekten die Abschnitte, Knöpfe ---
     function inhalt(p) {
-        const teile = [el('p', { class: 'leise', text: 'Status: ' + statusText(p.status) })];
+        const teile = [];
         if (p.notiz) teile.push(el('p', { class: 'einkauf-notiz', text: p.notiz }));
+        else if (p.projekt || !abschnitte(p.id).length) teile.push(el('p', { class: 'leise', text: 'Keine Notiz.' }));
         if (!p.projekt) {
             const liste = abschnitte(p.id);
             if (liste.length) teile.push(el('ul', { class: 'einkauf-liste projekt-abschnitte', attrs: { 'aria-label': 'Abschnitte' } }, liste.map((a, i) => zeile(a, i, liste.length))));
@@ -194,7 +195,7 @@ export function render(container, ctx) {
         return el('div', { class: 'einkauf-rezept-inhalt' }, teile);
     }
 
-    // Eine Zeile: Kreis, Titel (Tipp klappt auf), Pfeile
+    // Eine Zeile: Titel und Status-Feld (Tipp klappt auf), Pfeile
     function zeile(p, i, anzahl) {
         const istOffen = offen.has(p.id);
         const n = p.projekt ? 0 : abschnitte(p.id).length;
@@ -204,16 +205,15 @@ export function render(container, ctx) {
             on: { click: () => schiebe(p, d) }
         }))) : null;
         return el('li', { class: 'einkauf-zeile einkauf-lm einkauf-rezept projekt-zeile' + (istOffen ? ' ist-offen' : '') }, [
-            punkt(p),
             el('button', {
-                class: 'einkauf-lm-wahl', attrs: { type: 'button', 'aria-expanded': istOffen ? 'true' : 'false' },
+                class: 'einkauf-lm-wahl projekt-wahl', attrs: { type: 'button', 'aria-expanded': istOffen ? 'true' : 'false' },
                 on: { click: () => { if (istOffen) offen.delete(p.id); else offen.add(p.id); zeigeListe(); } }
             }, [
-                el('span', { class: 'einkauf-lm-name' }, [
-                    el('span', { class: 'einkauf-pfeil', text: istOffen ? '▾ ' : '▸ ', attrs: { 'aria-hidden': 'true' } }),
-                    el('span', { text: p.titel })
+                el('span', { class: 'projekt-text' }, [
+                    el('span', { class: 'einkauf-lm-name', text: p.titel }),
+                    n ? el('span', { class: 'leise einkauf-klein', text: n === 1 ? '1 Abschnitt' : n + ' Abschnitte' }) : null
                 ]),
-                n ? el('span', { class: 'leise einkauf-klein', text: n === 1 ? '1 Abschnitt' : n + ' Abschnitte' }) : null
+                statusFeld(p)
             ]),
             pfeile,
             istOffen ? inhalt(p) : null

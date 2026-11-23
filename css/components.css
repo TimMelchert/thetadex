@@ -1523,13 +1523,16 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 .pack-zaehler .pack-zaehler-name { flex: 1 1 0; }
 .pack-zaehler-wartet { flex: 1 1 100%; font-size: 0.85rem; }
 
-/* Projekte (16.2): Liste wie die Bucket List, bunter Kreis je Status links, Pfeile rechts; Abschnitte eingerückt im aufgeklappten Projekt */
+/* Projekte (16.2, ab 1.8.9): Titel links, rechts ein farbiges Feld mit dem Status als Wort (immer gleich breit, darum eine Spalte), Pfeile rechts */
 .projekt-zeile { align-items: center; }
-.projekt-punkt { flex: 0 0 auto; width: 18px; height: 18px; margin: 0 4px 0 6px; border-radius: 50%; border: 1px solid var(--schrift); background: var(--status-idee); }
-.projekt-punkt.ist-laeuft { background: var(--status-laeuft); }
-.projekt-punkt.ist-pausiert { background: var(--status-pausiert); }
-.projekt-punkt.ist-fertig { background: var(--status-fertig); }
+.projekt-wahl { flex-direction: row; align-items: center; gap: 10px; padding-left: 4px; }
+.projekt-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.projekt-status { flex: 0 0 5.6rem; padding: 4px 6px; border-radius: 999px; text-align: center; font-size: 0.85rem; font-weight: 600; color: var(--schrift-auf-farbe); background: var(--status-idee); }
+.projekt-status.ist-laeuft { background: var(--status-laeuft); }
+.projekt-status.ist-pausiert { background: var(--status-pausiert); }
+.projekt-status.ist-fertig { background: var(--status-fertig); }
 .projekt-abschnitte { margin: 6px 0 10px; }
 .projekt-reihe:has(> span:empty):has(> button[hidden]) { display: none; }
+
 /* Projekte (1.8.4): eigenes Bild statt 🛠️ vor der Überschrift */
 .projekt-werkzeug { width: 40px; height: 40px; flex: 0 0 auto; }
