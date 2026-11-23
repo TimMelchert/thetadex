@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.7.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.7.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -20,7 +20,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 12 „Entschlacken“ (1.3.28 bis 1.4.0, Abschluss ist 1.4.0: Entscheidung der Person, 16.11.2026) ist fertig (16.11.2026): Bericht `pruefung/entschlacken-bericht.md` in den Projektdateien, Schritte 12.1 bis 12.4 (Pull Requests #105 bis #108).
 - Etappe 13 „Herbarium“ (1.5.x) ist fertig (22.11.2026): Reiter Herbarium mit Karteikarten, Festlegungen in 4 („Herbarium“), Prüfung `pruefung/etappe-13-herbarium-bericht.md` in den Projektdateien.
 - Etappe 14 „Bucket List“ (1.6.x) läuft: Plan `docs/PLAN-ETAPPE-14.md`. Schritt 14.1 (Skript), 14.2 (Reiter in der App) und 14.3 (weitere Listen als Unterreiter) sind gebaut, nächster Schritt: 14.4 (Abschluss).
-- Etappe 15 „Packlisten“ (1.7.x) läuft: Plan `docs/PLAN-ETAPPE-15.md`. Schritt 15.1 (Skript `leben`) und 15.2 (Reiter in der App) sind gebaut, nächster Schritt: 15.3 (Besitz zeigt Nutzungen).
+- Etappe 15 „Packlisten“ (1.7.x) läuft: Plan `docs/PLAN-ETAPPE-15.md`. Schritt 15.1 (Skript `leben`), 15.2 (Reiter in der App) und 15.3 (Besitz zeigt Nutzungen) sind gebaut, nächster Schritt: 15.4 (Abschluss).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -368,6 +368,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Tipp auf ein Item zeigt erst seine Daten mit Bild; darin lassen sich Ausleihen (Haken und Name) und Ausmisten (Haken und Art) direkt ändern, „Übernehmen“ speichert. „Bearbeiten“ öffnet das Formular. Nach dem Speichern schließt es sich, der Ort bleibt stehen.
   Unklar (ab 1.3.25, Wunsch der Person, 16.11.2026): freiwillige Spalte `unklar` am Ende des Blatts, nur im Sheet gepflegt (die App ändert sie nie, Speichern verlangt sie nicht).
   Leer = klar, sonst ein kurzer Text, was zu klären ist. Die Kachel ist dann gelb (`--besitz-unklar`), das Fenster zeigt „Unklar“ mit dem Text, die Suche findet ihn.
+  Nutzungen (ab 1.7.2, Wunsch der Person, 23.11.2026): freiwillige Spalte `nutzungen` am Ende des Blatts, ein Zähler (zum Beispiel beim Wasserfilter). Leer = kein Zähler. Das Fenster zeigt „Nutzungen“, das Formular kann die Zahl setzen (geschickt wird sie nur, wenn sie dort geändert wurde). + und − gibt es in den Packlisten.
   Übersicht zählt Items mit Anzahl über 0, Zubehör eingeschlossen, als Items und als Stück (ohne Hinweistext darunter).
   Bild-Kacheln (ab 1.3.23, Wunsch der Person, 16.11.2026): Items der Kategorien Filme, Bücher (auch „Bücher und Hefte“) und Spiele stehen je Ort als Kacheln nebeneinander (Handy zwei, PC vier je Reihe), ab 1.3.24 nur, wenn oben im Filter diese Kategorie gewählt ist (sonst Zeilen wie alle anderen), oben das Bild (ohne Bild ein Zeichen 🎬 📚 🎲), darunter der Name.
   Erkannt am Anfang der Kategorie (`GALERIE` in `js/views/besitz.js`). Bilder lädt die Liste erst, wenn die Kachel fast zu sehen ist, höchstens drei gleichzeitig, nur im Arbeitsspeicher.
@@ -626,6 +627,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.6.3** Bucket List: Die Hauptliste heißt „Meine“ statt „Unsere“ (Wunsch der Person: sie gehört nur ihr).
 - **1.7.0** Schritt 15.1: Plan Etappe 15 „Packlisten“ und Skript `leben` mit Blatt `packliste` (Liste, Gruppe, Name, Anzahl, Haken hin und zurück, Reihenfolge) und Zähler `nutzungen` im Besitz; sieben neue Aktionen.
 - **1.7.1** Schritt 15.2: Reiter Packlisten (🧳, Flieder, am Handy nur Kachel): je Liste ein Unterreiter, Haken „Hin“ und „Zurück“, Gruppen und Einträge mit Pfeilen ^ v, „Alle Haken weg“, Zähler „Nutzungen“ eines verknüpften Items mit − und +.
+- **1.7.2** Schritt 15.3: Besitz zeigt im Fenster eines Items „Nutzungen“, das Formular hat das Feld „Nutzungen (Zähler)“.

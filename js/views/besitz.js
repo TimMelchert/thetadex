@@ -127,6 +127,8 @@ export function render(container, ctx) {
     const ausgeliehen = auswahlFeld({ id: 'besitz-ausgeliehen', maxlength: 60, placeholder: 'Name, leer = nicht ausgeliehen' });
     const leihAnzahl = el('input', { attrs: { id: 'besitz-leih-anzahl', type: 'number', inputmode: 'numeric', min: '1', max: '9999', step: '1', placeholder: 'leer = alle' } });
     const notiz = el('textarea', { attrs: { id: 'besitz-notiz', maxlength: 300, rows: 2, placeholder: 'freiwillig' } });
+    // Zähler „Nutzungen“ (ab 1.7.2, Etappe 15): zum Beispiel beim Wasserfilter. Leer = kein Zähler. + und − gibt es in den Packlisten.
+    const nutzungen = el('input', { attrs: { id: 'besitz-nutzungen', type: 'number', inputmode: 'numeric', min: '0', max: '1000000', step: '1', placeholder: 'leer = kein Zähler' } });
     // Gehört zu: Auswahl der Hauptsachen. Wer selbst Zubehör hat, kann nicht Zubehör werden (nur eine Ebene).
     // Gehört zu (Wunsch der Person, 20.11.2026): Feld mit Vorschlägen wie bei Kategorie und Ort.
     // Vorschlag = „Name · Ort“, damit gleiche Namen an verschiedenen Orten unterscheidbar bleiben. Leer = eigenes Item.
@@ -204,6 +206,15 @@ export function render(container, ctx) {
             datum.focus();
             return;
         }
+        // Nutzungen nur mitschicken, wenn sie hier geändert wurden (in den Packlisten zählt + und − daran weiter)
+        const nz = nutzungen.value.trim();
+        if (nz !== '' && !(/^\d+$/.test(nz) && Number(nz) <= 1000000)) {
+            status.textContent = 'Nutzungen bitte als ganze Zahl ab 0 (oder leer = kein Zähler).';
+            nutzungen.focus();
+            return;
+        }
+        const nzAlt = bearbeite && bearbeite.nutzungen != null ? String(bearbeite.nutzungen) : '';
+        if (nz !== nzAlt) werte.nutzungen = nz;
 
         sendet = true;
         speichernKnopf.disabled = true;
@@ -266,6 +277,7 @@ export function render(container, ctx) {
         el('label', { text: 'Davon ausgeliehen (Stück)', attrs: { for: 'besitz-leih-anzahl' } }), leihAnzahl,
         el('label', { text: 'Ausmisten', attrs: { for: 'besitz-ausmisten' } }), ausmisten,
         el('label', { text: 'Notiz', attrs: { for: 'besitz-notiz' } }), notiz,
+        el('label', { text: 'Nutzungen (Zähler)', attrs: { for: 'besitz-nutzungen' } }), nutzungen,
         el('label', { text: 'Gehört zu (Zubehör von)', attrs: { for: 'besitz-gehoert' } }), gehoertFeld.box, gehoertHinweis,
         ...bild.elemente,
         el('div', { class: 'besitz-form-knoepfe' }, [speichernKnopf, loeschenKnopf, abbrechenKnopf]),
@@ -279,6 +291,7 @@ export function render(container, ctx) {
         preis.value = '';
         datum.value = '';
         notiz.value = '';
+        nutzungen.value = '';
         ausgeliehen.feld.value = '';
         leihAnzahl.value = '';
         ausmisten.value = '';
@@ -384,6 +397,7 @@ export function render(container, ctx) {
             preis.value = sache.kaufpreis == null ? '' : String(sache.kaufpreis);
             datum.value = sache.kaufdatum || '';
             notiz.value = sache.notiz || '';
+            nutzungen.value = sache.nutzungen == null ? '' : String(sache.nutzungen);
             ausgeliehen.feld.value = verliehen(sache);
             leihAnzahl.value = sache.ausgeliehen_anzahl ? String(sache.ausgeliehen_anzahl) : '';
             bild.setze(sache.bild || '');
@@ -419,6 +433,7 @@ export function render(container, ctx) {
             ['Gehört zu', haupt ? haupt.name : ''],
             ['Zubehör', zubehoer.map((z) => z.name + (z.anzahl > 1 ? ' (' + z.anzahl + ')' : '')).join(', ')],
             ['Notiz', s.notiz],
+            ['Nutzungen', s.nutzungen == null ? '' : String(s.nutzungen)],
             ['Unklar', s.unklar]
         ].filter(([, w]) => w);
         const bild = el('img', { class: 'besitz-dialog-bild', attrs: { alt: 'Bild: ' + s.name, hidden: true } });
