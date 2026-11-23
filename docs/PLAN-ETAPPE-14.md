@@ -1,6 +1,6 @@
 # Plan Etappe 14 „Bucket List“ (1.6.x)
 
-Stand: 23.11.2026, Schritt 14.2. Grundlage: Wünsche und Antworten der Person (23.11.2026). Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelöscht.
+Stand: 23.11.2026, Schritt 14.3. Grundlage: Wünsche und Antworten der Person (23.11.2026). Am Ende der Etappe wird dieser Plan in `docs/STAND.md` eingearbeitet und gelöscht.
 
 ## 1. Ziel
 
@@ -13,6 +13,9 @@ Ein neuer Reiter **„Bucket List“**: eine gemeinsame Liste von Zielen. Die Pe
 - Haken wieder abnehmen: Das Ziel kommt zurück nach oben zu den offenen, das Datum ist weg.
 - „Erreicht am“ lässt sich beim Bearbeiten von Hand ändern (zum Beispiel für Ziele, die schon früher erreicht wurden).
 - Grenzen: Titel 80 Zeichen, Notiz 1000 Zeichen, höchstens 500 Ziele.
+- **Weitere Listen** (Wunsch der Person, 23.11.2026, zuerst für eine Freundesgruppe): Jede weitere Liste ist ein eigener Unterreiter mit eigenen Zielen, neben der Hauptliste „Unsere“.
+  Die Namen der Listen stehen nur im Sheet (Spalte `liste`), nicht im Repo. Eine neue Liste entsteht, wenn ein Ziel im Formular unter „Liste“ einen neuen Namen bekommt.
+  Die Unterreiter erscheinen erst, wenn es mindestens eine weitere Liste gibt. Rechte wie bei der Hauptliste (Partnerin oder Partner nur lesen).
 
 ## 2. Aufbau in der App (Schritt 14.2)
 
@@ -29,7 +32,7 @@ Ein neuer Reiter **„Bucket List“**: eine gemeinsame Liste von Zielen. Die Pe
 
 ## 3. Sheet „Gemeinsam“, Blatt `bucketlist` (Schritt 14.1)
 
-Spalten: `id, titel, notiz, erledigt_am, reihenfolge, bild, erstellt_am, geaendert_am, geloescht`. `einrichten` legt das Blatt an. Löschen ist weich.
+Spalten: `id, titel, notiz, erledigt_am, reihenfolge, bild, erstellt_am, geaendert_am, geloescht`, ab 14.3 `liste` (40, leer = Hauptliste). `einrichten` legt das Blatt an. Löschen ist weich.
 
 - `erledigt_am`: leer = offen, sonst `JJJJ-MM-TT`. `reihenfolge`: kleine Zahl = oben, offene und erreichte je für sich. `bild`: eine Drive-Kennung oder leer.
 - Hochgeladene Bilder liegen im neuen privaten Drive-Ordner **„Thetadex Bucket List“** der Person (Skripteigenschaft `BUCKET_ORDNER`, legt `einrichten` an).
@@ -46,4 +49,5 @@ Spalten: `id, titel, notiz, erledigt_am, reihenfolge, bild, erstellt_am, geaende
 
 - **14.1** Skript `gemeinsam`: Blatt `bucketlist`, Aktionen, Bild-Ordner; dieser Plan (1.6.0).
 - **14.2** Reiter in der App (1.6.1).
-- **14.3** Abschluss: Prüfung, Plan in `docs/STAND.md` einarbeiten, diese Datei löschen.
+- **14.3** Weitere Listen als Unterreiter: Spalte `liste` im Skript, Unterreiter und Feld „Liste“ in der App (1.6.2).
+- **14.4** Abschluss: Prüfung, Plan in `docs/STAND.md` einarbeiten, diese Datei löschen.

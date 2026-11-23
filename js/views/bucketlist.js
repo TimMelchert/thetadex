@@ -1,27 +1,45 @@
 // Reiter Bucket List (Etappe 14, docs/PLAN-ETAPPE-14.md). Eine gemeinsame Liste von Zielen.
 // Oben die offenen Ziele, unten „Erreicht“; beide mit Pfeilen ^ und v sortierbar (wie die Abteilungen der Einkaufsliste).
 // Ein Tipp auf den Titel klappt das Ziel auf (Bild, Notiz, „erreicht am“). Die Person darf alles, die Partnerin oder der Partner nur lesen.
+// Weitere Listen (ab 14.3, Wunsch der Person, 23.11.2026): Jede Liste mit Namen ist ein eigener Unterreiter neben der Hauptliste.
+// Die Namen stehen nur im Sheet (Spalte „liste“), nicht im Repo. Eine neue Liste entsteht, wenn ein Ziel einen neuen Namen bekommt.
 // Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“, Blatt „bucketlist“). Nur im Arbeitsspeicher.
 
 import { el, leeren, heute, kalenderBeiKlick, vergleiche, datumText } from '../ui/dom.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { bildSpeicher, bildFeld } from '../ui/bild.js';
+import { auswahlFeld } from '../ui/auswahl.js';
 
 // Zuletzt geladene Daten { ziele, rolle }, nur im Arbeitsspeicher. Beim Öffnen sofort zeigen, dann frisch laden.
 let daten = null;
 // Aufgeklapptes Ziel (id) oder null
 let offenId = null;
+// Gewählte Liste (Unterreiter): leer = Hauptliste. Bleibt, solange die Seite offen ist.
+let listeWahl = '';
+const HAUPTLISTE = 'Unsere';
 // Schon geladene Bilder (Drive-Kennung → data:-Bild), nur im Arbeitsspeicher
 const bilder = bildSpeicher('gemeinsam');
 const MAX_TITEL = 80;
 const MAX_NOTIZ = 1000;
+const MAX_LISTE = 40;
 
 const istErreicht = (z) => Boolean(z.erledigt_am);
 // Kleine Zahl zuerst; gleiche Zahl nach Titel
 const ordne = (a, b) => (a.reihenfolge - b.reihenfolge) || vergleiche(a.titel, b.titel);
-const offene = () => (daten ? daten.ziele.filter((z) => !istErreicht(z)).sort(ordne) : []);
-const erreichte = () => (daten ? daten.ziele.filter(istErreicht).sort(ordne) : []);
+const klein = (t) => String(t || '').trim().toLocaleLowerCase('de');
+const inListe = (z) => klein(z.liste) === klein(listeWahl);
+const offene = () => (daten ? daten.ziele.filter((z) => inListe(z) && !istErreicht(z)).sort(ordne) : []);
+const erreichte = () => (daten ? daten.ziele.filter((z) => inListe(z) && istErreicht(z)).sort(ordne) : []);
+// Namen aller weiteren Listen (ohne Hauptliste), A–Z, jeder Name nur einmal
+function listenNamen() {
+    const namen = [];
+    (daten ? daten.ziele : []).forEach((z) => {
+        const n = String(z.liste || '').trim();
+        if (n && !namen.some((x) => klein(x) === klein(n))) namen.push(n);
+    });
+    return namen.sort(vergleiche);
+}
 
 export function render(container, ctx) {
     const dialog = el('dialog', { class: 'besitz-dialog', attrs: { 'aria-labelledby': 'bucket-dialog-titel' } });
@@ -74,6 +92,9 @@ export function render(container, ctx) {
         const notiz = el('textarea', { attrs: { id: 'bucket-f-notiz', maxlength: MAX_NOTIZ, rows: 5, placeholder: 'freiwillig' } });
         notiz.value = z ? z.notiz : '';
         const datum = kalenderBeiKlick(el('input', { attrs: { id: 'bucket-f-datum', type: 'date', max: heute(), autocomplete: 'off', value: z ? z.erledigt_am : '' } }));
+        const liste = auswahlFeld({ id: 'bucket-f-liste', maxlength: MAX_LISTE, placeholder: 'leer = ' + HAUPTLISTE });
+        liste.feld.value = z ? z.liste : listeWahl;
+        liste.setzeEintraege(listenNamen());
         const bild = bildFeld({ id: 'bucket-f-bild', alt: 'Bild zum Ziel', bilder });
         bild.setze(z ? z.bild : '');
 
@@ -91,7 +112,10 @@ export function render(container, ctx) {
             const alt = z ? z.bild : '';
             const b = bild.werte();
             const neuesBild = b.bild_daten ? b : (b.bild && b.bild !== alt ? b : null);
-            const werte = { titel: t, notiz: notiz.value, erledigt_am: datum.value, bild: neuesBild ? alt : (b.bild || '') };
+            // Gleicher Name wie eine schon vorhandene Liste (anders geschrieben): deren Schreibweise nehmen
+            const l = liste.feld.value.trim();
+            const name = listenNamen().find((x) => klein(x) === klein(l)) || l;
+            const werte = { titel: t, notiz: notiz.value, liste: name, erledigt_am: datum.value, bild: neuesBild ? alt : (b.bild || '') };
             if (z) { werte.id = z.id; werte.geaendert_am = z.geaendert_am; }
             const warNeu = !z;
             const antwort = await senden(status, knoepfe, 'bucket_speichern', werte);
@@ -111,6 +135,7 @@ export function render(container, ctx) {
                 bild.merke(z.bild);
             }
             offenId = z.id;
+            listeWahl = z.liste;
             dialog.close();
             zeigeGespeichert(warNeu ? 'Gespeichert' : 'Geändert', z.titel);
             zeigeListe();
@@ -131,6 +156,8 @@ export function render(container, ctx) {
             el('form', { class: 'formular', attrs: { novalidate: true }, on: { submit: absenden, input: () => { if (!sendet) status.textContent = ''; } } }, [
                 el('label', { text: 'Titel', attrs: { for: 'bucket-f-titel' } }), titel,
                 el('label', { text: 'Notiz', attrs: { for: 'bucket-f-notiz' } }), notiz,
+                el('label', { text: 'Liste', attrs: { for: 'bucket-f-liste' } }), liste.box,
+                el('p', { class: 'leise besitz-hinweis', text: 'Leer = „' + HAUPTLISTE + '“. Ein neuer Name legt eine neue Liste an.' }),
                 ...bild.elemente,
                 el('label', { text: 'Erreicht am (leer = noch offen)', attrs: { for: 'bucket-f-datum' } }), datum,
                 el('div', { class: 'besitz-form-knoepfe' }, knoepfe),
@@ -160,11 +187,12 @@ export function render(container, ctx) {
     function schiebe(z, d) {
         const gruppe = istErreicht(z) ? erreichte() : offene();
         const i = gruppe.findIndex((x) => x.id === z.id);
-        const j = i + d;
-        if (i < 0 || j < 0 || j >= gruppe.length) return;
-        [gruppe[i], gruppe[j]] = [gruppe[j], gruppe[i]];
-        // Wie das Skript: alle Ziele der Reihe nach 1, 2, 3 … (offene zuerst, dann erreichte)
-        const alle = istErreicht(z) ? [...offene(), ...gruppe] : [...gruppe, ...erreichte()];
+        const nachbar = gruppe[i + d];
+        if (i < 0 || !nachbar) return;
+        // In der Folge aller Ziele (alle Listen) die beiden tauschen, dann wie das Skript der Reihe nach 1, 2, 3 …
+        const alle = daten.ziele.slice().sort(ordne);
+        const a = alle.indexOf(z), b = alle.indexOf(nachbar);
+        [alle[a], alle[b]] = [alle[b], alle[a]];
         alle.forEach((x, k) => { x.reihenfolge = k + 1; });
         zeigeListe();
         // Den Finger am gleichen Pfeil lassen; ist er jetzt aus (ganz oben oder unten), den anderen nehmen
@@ -180,12 +208,12 @@ export function render(container, ctx) {
     async function speichereReihe() {
         clearTimeout(reiheTimer);
         if (sendet) { reiheTimer = setTimeout(speichereReihe, 600); return; }
-        const ids = [...offene(), ...erreichte()].map((x) => x.id);
+        const ids = daten.ziele.slice().sort(ordne).map((x) => x.id);
         reiheNochmal.hidden = true;
         const antwort = await senden(reiheText, [], 'bucket_reihenfolge', { ids });
         if (!antwort) { reiheNochmal.hidden = false; return; }
         // Inzwischen weiter geschoben? Dann gilt die neue Reihenfolge, sie wird gleich gespeichert.
-        const jetzt = [...offene(), ...erreichte()].map((x) => x.id);
+        const jetzt = daten.ziele.slice().sort(ordne).map((x) => x.id);
         if (jetzt.join('\n') === ids.join('\n') && Array.isArray(antwort.ziele)) {
             daten.ziele = antwort.ziele;
             zeigeListe();
@@ -251,9 +279,23 @@ export function render(container, ctx) {
 
     // --- Liste: offen oben, „Erreicht“ unten ---
     const listeBox = el('div', { class: 'bucket-liste' });
+    const listenLeiste = el('div', { class: 'ansichten', attrs: { role: 'group', 'aria-label': 'Listen', hidden: true } });
+    function zeigeListen() {
+        leeren(listenLeiste);
+        const namen = listenNamen();
+        // Gewählte Liste gibt es nicht mehr (zum Beispiel letztes Ziel verschoben): zurück zur Hauptliste
+        if (listeWahl && !namen.some((n) => klein(n) === klein(listeWahl))) listeWahl = '';
+        listenLeiste.hidden = !namen.length;
+        ['', ...namen].forEach((n) => listenLeiste.append(el('button', {
+            class: 'ansicht', text: n || HAUPTLISTE,
+            attrs: { type: 'button', 'aria-pressed': klein(n) === klein(listeWahl) ? 'true' : 'false' },
+            on: { click: () => { listeWahl = n; offenId = null; zeigeListe(); } }
+        })));
+    }
     function zeigeListe() {
         leeren(listeBox);
         if (!daten) return;
+        zeigeListen();
         neuKnopf.hidden = !darfAendern();
         const of = offene(), er = erreichte();
         if (offenId && !daten.ziele.some((z) => z.id === offenId)) offenId = null;
@@ -297,6 +339,7 @@ export function render(container, ctx) {
             ]),
             neuKnopf
         ]),
+        listenLeiste,
         ladeStatus,
         listeStatus,
         reiheStatus,
