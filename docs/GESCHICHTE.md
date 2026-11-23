@@ -389,3 +389,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.8.5** Nachbesserung: Knopf Start am Handy mit der Karteikarte `icons/thetadex-karte.svg` im Kreis; hell Kohle mit Ring und weiter erhöht (Variante D), dunkel kleiner und flacher mit feinem Ring (Variante B), Werte `--start-grund`, `--start-groesse`, `--start-hoch` in `css/base.css` (Wunsch der Person). Vorher war der Kreis im Dunkelmodus nicht zu sehen.
 - **1.8.6** Nachbesserung: `icons/reiter/projekte.svg` neu gezeichnet, Hammer mit breitem Kopf und Stiel, damit er klar zu erkennen ist (Wunsch der Person).
 - **1.8.7** Nachbesserung: `icons/werkzeug.svg` neu gezeichnet (Hammerkopf quer zum Holzstiel, Schraubenschlüssel mit offenem Maul), weil der Hammer vorher nicht zu erkennen war.
+- **1.8.8** Schritt 16.5: Abschluss Etappe 16 „Projekte“ (Prüfung ohne schlimme Funde, Plan in `docs/STAND.md` 4 eingearbeitet, `docs/PLAN-ETAPPE-16.md` gelöscht).

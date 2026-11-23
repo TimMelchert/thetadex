@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.8.7** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.8.8** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -21,7 +21,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 13 „Herbarium“ (1.5.x) ist fertig (22.11.2026): Reiter Herbarium mit Karteikarten, Festlegungen in 4 („Herbarium“), Prüfung `pruefung/etappe-13-herbarium-bericht.md` in den Projektdateien.
 - Etappe 14 „Bucket List“ (1.6.x) läuft: Plan `docs/PLAN-ETAPPE-14.md`. Schritt 14.1 (Skript), 14.2 (Reiter in der App) und 14.3 (weitere Listen als Unterreiter) sind gebaut, nächster Schritt: 14.4 (Abschluss).
 - Etappe 15 „Packlisten“ (1.7.x) ist fertig (23.11.2026): Reiter Packlisten mit Zähler „Nutzungen“, Festlegungen in 4 („Packlisten“), Prüfung `pruefung/etappe-15-packlisten-bericht.md` in den Projektdateien.
-- Etappe 16 „Projekte“ (1.8.x) läuft: Plan `docs/PLAN-ETAPPE-16.md`. Schritte 16.1 (Skript `gemeinsam`, Blatt `projekte`), 16.2 (Reiter in der App), 16.3 (neue Reihenfolge, Knopf Start) und 16.4 (Partner*in schreibt in Uni und Bucket List) sind gebaut, nächster Schritt: 16.5 (Abschluss).
+- Etappe 16 „Projekte“ (1.8.x) ist fertig (23.11.2026): Reiter Projekte, neue Reihenfolge der Leiste mit Knopf Start, Partner*in schreibt überall in „Gemeinsam“. Festlegungen in 4 („Projekte“), Prüfung `pruefung/etappe-16-projekte-bericht.md` in den Projektdateien.
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -266,7 +266,7 @@ unter „Info“ die Version prüfen.
   | Sheet | Blätter |
   | --- | --- |
   | Leben | `besitz` (Orte und Kategorien stehen als Text darin, kein Blatt `orte`, Entscheidung 30.10.2026); ab 1.5.3 `arten` und `karten` (Herbarium, Spalten in 4 „Herbarium“); ab 1.7.0 `packliste` und in `besitz` die freiwillige Spalte `nutzungen` (Spalten in 4 „Packlisten“) |
-  | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, ab 1.3.17 `laden_reihenfolge` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt und seit 0.7.3 nicht mehr im Skript; das Blatt darf die Person löschen); ab 1.6.0 `bucketlist` (Spalten in `docs/PLAN-ETAPPE-14.md`); ab 1.8.0 `projekte` (Spalten in `docs/PLAN-ETAPPE-16.md`) |
+  | Gemeinsam | `lebensmittel`, `vorrat`, `gerichte`, `zutaten` (Gericht ↔ Lebensmittel mit Menge), `einkaufsliste`, ab 1.3.17 `laden_reihenfolge` (Spalten in 4 „Einkauf“); ab Etappe 5 `semester`, `module`, `kurse`, `termine`, `uni_einstellungen` (`stundenplan` nur noch alt und seit 0.7.3 nicht mehr im Skript; das Blatt darf die Person löschen); ab 1.6.0 `bucketlist` (Spalten in `docs/PLAN-ETAPPE-14.md`); ab 1.8.0 `projekte` (Spalten in 4 „Projekte“) |
   | Döner | `bewertungen` (`laden, doener, yufka, pommes, ladennote, begruendung, fleisch` + Standardspalten), `laeden` (`name`),
     `kriterien` (`teil, name`, die Person pflegt sie), `details` (`bewertung_id, teil, kriterium, wert, begruendung`) |
   | DSA | `boegen` (ein Bogen je Zeile), `eintraege` (eine Zeile je Vorteil, Talent, Zauber, Waffe, Gegenstand), `verlauf` (Geld, AP, AsP, LeP), `abenteuer`, `sessions`; Spalten in 4 „Pen & Paper, Sheet ‚DSA‘“ |
@@ -403,6 +403,16 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   - **Blatt `packliste`:** `id, liste, gruppe, name, anzahl, hin, zurueck, reihenfolge, besitz_id, erstellt_am, geaendert_am, geloescht`. Listen haben kein eigenes Blatt (Name als Text in `liste`, umbenennen mit „Suchen und ersetzen“). `hin`, `zurueck`: `TRUE` oder leer. Höchstens 50 Listen, 2000 Einträge. Löschen ist weich.
   - **Aktionen** (nur `APP_PIN`, alle mit `LockService`): `packliste` (lesen, mit Zählern der verknüpften Items; ohne Sperre, außer eingefügte Zeilen haben keine `id`), `pack_speichern`, `pack_haken`, `pack_loeschen`, `pack_zuruecksetzen`, `pack_reihenfolge` (eine Liste; ändert `geaendert_am` nicht), `besitz_nutzung`. Haken und Zähler ändern `geaendert_am` nicht.
   - **Aussehen:** Flieder `#A99AC6` (siehe „Erscheinungsbild“), grüner Wanderrucksack `icons/rucksack.svg` vor der Überschrift, Reiter-Symbol Rucksack.
+- **Projekte, Sheet „Gemeinsam“** (Etappe 16, Plan eingearbeitet am 23.11.2026). Reiter `#/projekte`, Skript `gemeinsam`. Person und Partner*in dürfen alles (Entscheidung der Person, 23.11.2026).
+  In der Leiste unten am Handy (kein `nurBreit`). Hinweise im Code auf `docs/PLAN-ETAPPE-16.md` meinen diesen Abschnitt.
+  - **Ziel:** eine schlichte Übersicht über größere Vorhaben (Bastelprojekte, Smart Home, die App, ein Haus). Nur Titel (Pflicht, 80), Notiz (1000, Zeilenumbrüche bleiben) und Status. Keine Aufgaben, keine ToDos, keine Fristen, keine Bilder, keine Verbindung zu anderen Reitern (Wünsche der Person).
+  - **Abschnitte:** zweite Ebene unter einem Projekt (zum Beispiel Küche, Bad), mit Titel, Notiz und Status. Keine dritte Ebene.
+  - **Status:** `idee` (violett), `laeuft` (sandgelb), `pausiert` (grau), `fertig` (grün), fest im Code. In der Liste ein bunter Kreis mit Rand (`--status-…` in `css/base.css`), für Bildschirmleser „Status: …“, aufgeklappt auch als Wort.
+  - **Liste:** eine Liste, nicht nach Status gruppiert. Projekte und Abschnitte (je Projekt) mit Pfeilen ^ v, gespeichert kurz nach dem letzten Tippen. Neue stehen ganz oben. Ein Tipp auf den Titel klappt auf (Status, Notiz, Abschnitte, „+ Abschnitt“, „Bearbeiten“).
+    Formular: Titel, Status, Notiz, Löschen (ein Projekt nimmt seine Abschnitte mit, mit Rückfrage).
+  - **Blatt `projekte`:** `id, projekt, titel, notiz, status, reihenfolge, erstellt_am, geaendert_am, geloescht`. `projekt` leer = Projekt, sonst die `id` des Projekts (ein Blatt für beide Ebenen). `reihenfolge`: kleine Zahl = oben, Projekte für sich, Abschnitte je Projekt. Höchstens 500 Einträge. Löschen ist weich.
+  - **Aktionen** (beide Rollen, Schreiben mit `LockService`): `projekte` (lesen), `projekt_speichern`, `projekt_loeschen`, `projekt_reihenfolge` (ändert `geaendert_am` nicht).
+  - **Aussehen:** Taupe `#A39382` (siehe „Erscheinungsbild“), Bild `icons/werkzeug.svg` (Hammer und Schraubenschlüssel) vor der Überschrift, Reiter-Symbol Hammer.
 - **Pen & Paper, Sheet „DSA“** (Etappe 6, Plan eingearbeitet am 1.11.2026). Reiter heißt „Pen & Paper“; Kennung `dsa`, Adresse `#/dsa`, Skript `dsa`
   und Sheet „DSA“ heißen weiter so. Eigenes Sheet und eigenes Skript: Ein Fehler beim Teilen kann nie andere Bereiche verraten (2.2).
   Nur `APP_PIN` (Rolle Person), `PARTNER_PIN` kennt das Skript nicht. Ohne Passwort nur `geteilt`.
@@ -646,6 +656,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.8.5** Nachbesserung: Start am Handy mit großer Karteikarte, hell Kreis in Kohle mit Ring, dunkel kleiner mit feinem Ring (vorher im Dunkelmodus unsichtbar).
 - **1.8.6** Nachbesserung: Reiter-Symbol Projekte neu gezeichnet (Hammer mit deutlichem Kopf).
 - **1.8.7** Nachbesserung: Werkzeug-Bild vor der Überschrift Projekte klarer neu gezeichnet (Hammer mit Kopf quer zum Stiel, Schraubenschlüssel mit offenem Maul).
+- **1.8.8** Schritt 16.5: Abschluss Etappe 16 „Projekte“: Prüfung, Plan in 4 eingearbeitet und gelöscht.
