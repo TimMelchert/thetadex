@@ -115,23 +115,25 @@
 .inhalt:focus { outline: none; }
 
 /* Knopf „Start“ (16.3): Thetadex-Icon in der Mitte der Leiste. Ab 1.8.4 (Wunsch der Person, 23.11.2026):
-   größer, etwas höher, mittig in einem Kreis in Kohle; am PC nicht in der Seitenleiste. */
+   größer, etwas höher, mittig in einem Kreis; am PC nicht in der Seitenleiste.
+   Ab 1.8.5: Kreis mit Ring und der Karteikarte ohne dunklen Grund; Farbe und Größe aus base.css (hell anders als dunkel). */
 .reiter-start { flex: 0 0 72px; border-top-color: transparent; overflow: visible; align-items: flex-start; }
 .reiter-start-kreis {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 62px;
-    height: 62px;
-    margin-top: -26px;
+    width: var(--start-groesse);
+    height: var(--start-groesse);
+    margin-top: var(--start-hoch);
     border-radius: 50%;
-    background: var(--kopf-grund);
+    background: var(--start-grund);
     border: 3px solid var(--hintergrund);
+    box-shadow: 0 0 0 1px var(--linie);
 }
 .reiter-start[aria-current="page"] { background: none; }
 .reiter-start[aria-current="page"] .reiter-start-kreis { outline: 2px solid var(--schrift); outline-offset: 1px; }
-.reiter-start-icon { display: block; width: 38px; height: 38px; }
+.reiter-start-icon { display: block; width: 34px; height: 38px; }
 
 /* Visitenkarte: am Handy nicht in der Reiterleiste, nur als Kachel auf der Startseite (Wunsch der Person, 4.11.2026) */
 @media (max-width: 767px) {

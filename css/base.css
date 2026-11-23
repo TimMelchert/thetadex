@@ -82,6 +82,11 @@
     --kopf-leise: #B3AEA6;
     --kopf-aktiv: #2A2826;
 
+    /* Knopf Start am Handy (1.8.5, Wunsch der Person): hell ein Kreis in Kohle mit Ring, dunkel etwas kleiner und flacher */
+    --start-grund: #1C1B19;
+    --start-groesse: 60px;
+    --start-hoch: -22px;
+
     --rund: 10px;
     --abstand: 16px;
 }
@@ -113,6 +118,9 @@
     --plus-schrift: #81C784;
     --minus-schrift: #F28B82;
     --art-ferien: #3D3629;
+    --start-grund: #1C1B19;
+    --start-groesse: 54px;
+    --start-hoch: -14px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -138,6 +146,9 @@
         --plus-schrift: #81C784;
         --minus-schrift: #F28B82;
         --art-ferien: #3D3629;
+        --start-grund: #1C1B19;
+        --start-groesse: 54px;
+        --start-hoch: -14px;
     }
 }
 
