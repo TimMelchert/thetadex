@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.8.9** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.8.10** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -412,7 +412,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
     Formular: Titel, Status, Notiz, Löschen (ein Projekt nimmt seine Abschnitte mit, mit Rückfrage).
   - **Blatt `projekte`:** `id, projekt, titel, notiz, status, reihenfolge, erstellt_am, geaendert_am, geloescht`. `projekt` leer = Projekt, sonst die `id` des Projekts (ein Blatt für beide Ebenen). `reihenfolge`: kleine Zahl = oben, Projekte für sich, Abschnitte je Projekt. Höchstens 500 Einträge. Löschen ist weich.
   - **Aktionen** (beide Rollen, Schreiben mit `LockService`): `projekte` (lesen), `projekt_speichern`, `projekt_loeschen`, `projekt_reihenfolge` (ändert `geaendert_am` nicht).
-  - **Aussehen:** Taupe `#A39382` (siehe „Erscheinungsbild“), Bild `icons/werkzeug.svg` (Hammer und Schraubenschlüssel) vor der Überschrift, Reiter-Symbol Hammer.
+  - **Aussehen:** Taupe `#A39382` (siehe „Erscheinungsbild“), Bild `icons/werkzeug.svg` (Hammer und Schraubenschlüssel) vor der Überschrift, Reiter-Symbol Hammer (ab 1.8.10 Vorschlag E: Kopf mit abgeschrägter Seite, Wunsch der Person, 24.11.2026).
 - **Pen & Paper, Sheet „DSA“** (Etappe 6, Plan eingearbeitet am 1.11.2026). Reiter heißt „Pen & Paper“; Kennung `dsa`, Adresse `#/dsa`, Skript `dsa`
   und Sheet „DSA“ heißen weiter so. Eigenes Sheet und eigenes Skript: Ein Fehler beim Teilen kann nie andere Bereiche verraten (2.2).
   Nur `APP_PIN` (Rolle Person), `PARTNER_PIN` kennt das Skript nicht. Ohne Passwort nur `geteilt`.
@@ -656,6 +656,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.8.7** Nachbesserung: Werkzeug-Bild vor der Überschrift Projekte klarer neu gezeichnet (Hammer mit Kopf quer zum Stiel, Schraubenschlüssel mit offenem Maul).
 - **1.8.8** Schritt 16.5: Abschluss Etappe 16 „Projekte“: Prüfung, Plan in 4 eingearbeitet und gelöscht.
 - **1.8.9** Fund 1 der Prüfung: Status der Projekte als farbiges Feld mit Wort rechts neben dem Titel, ohne Dreieck.
+- **1.8.10** Nachbesserung: Reiter-Symbol Projekte jetzt Hammer Vorschlag E.
