@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.9.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.9.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -22,7 +22,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 14 „Bucket List“ (1.6.x) läuft: Plan `docs/PLAN-ETAPPE-14.md`. Schritt 14.1 (Skript), 14.2 (Reiter in der App) und 14.3 (weitere Listen als Unterreiter) sind gebaut, nächster Schritt: 14.4 (Abschluss).
 - Etappe 15 „Packlisten“ (1.7.x) ist fertig (23.11.2026): Reiter Packlisten mit Zähler „Nutzungen“, Festlegungen in 4 („Packlisten“), Prüfung `pruefung/etappe-15-packlisten-bericht.md` in den Projektdateien.
 - Etappe 16 „Projekte“ (1.8.x) ist fertig (23.11.2026): Reiter Projekte, neue Reihenfolge der Leiste mit Knopf Start, Partner*in schreibt überall in „Gemeinsam“. Festlegungen in 4 („Projekte“), Prüfung `pruefung/etappe-16-projekte-bericht.md` in den Projektdateien.
-- Etappe 17 „Bingo“ (1.9.x) läuft: Plan `docs/PLAN-ETAPPE-17.md`. Schritt 17.1 (Skript) ist gebaut, nächster Schritt: 17.2 (Bingo in der App).
+- Etappe 17 „Bingo“ (1.9.x) läuft: Plan `docs/PLAN-ETAPPE-17.md`. Schritt 17.1 (Skript) und 17.2 (Bingo in der App) sind gebaut, nächster Schritt: 17.3 (Bingo im Gerät behalten).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -657,6 +657,6 @@ Hinweise im Code wie „STAND.md 7.2, Etappe 2“ meinen diesen Teil. Neue Etapp
 Die Geschichte aller Versionen steht in `docs/GESCHICHTE.md` (Teil 3). Nach jedem Schritt kommt dort unten eine kurze Zeile dazu.
 Letzte Versionen:
 
-- **1.8.9** Fund 1 der Prüfung: Status der Projekte als farbiges Feld mit Wort rechts neben dem Titel, ohne Dreieck.
 - **1.8.10** Nachbesserung: Reiter-Symbol Projekte jetzt Hammer Vorschlag E.
 - **1.9.0** Schritt 17.1: Skript `gemeinsam` mit Blatt `bingo` und Aktionen fürs Jahres-Bingo; Plan Etappe 17.
+- **1.9.1** Schritt 17.2: Unterreiter Projekte · Bingo, Raster 5 × 5 mit Bild, Text und Kästchen, Jahre mit Pfeilen.

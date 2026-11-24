@@ -1536,3 +1536,38 @@ body[data-seite="karte"] .inhalt { padding-bottom: var(--abstand); }
 
 /* Projekte (1.8.4): eigenes Bild statt 🛠️ vor der Überschrift */
 .projekt-werkzeug { width: 40px; height: 40px; flex: 0 0 auto; }
+
+/* Bingo (Etappe 17, ab 1.9.1): 5 × 5 Felder, Bild mit Textzeile, Kästchen unten rechts, abgehakt grau */
+.bingo-kopf { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: var(--abstand); }
+.bingo-jahr { margin: 0; min-width: 4ch; text-align: center; }
+.bingo-jahr-pfeil { min-width: 44px; min-height: 44px; padding: 0; font-size: 1.4rem; line-height: 1; }
+.bingo-zaehler { margin: 4px 0 10px; text-align: center; font-weight: 600; }
+.bingo-raster { list-style: none; margin: 0 auto var(--abstand); padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; max-width: 640px; }
+.bingo-feld { position: relative; border: 1px solid var(--linie); border-radius: 8px; background: var(--kachel); overflow: hidden; }
+.bingo-feld-knopf { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.bingo-feld-knopf:focus-visible { outline: 2px solid var(--fokus); outline-offset: -2px; }
+.bingo-bild { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.bingo-bild.ist-ohne { background: var(--farbe-projekte); }
+.bingo-text { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.4em;
+    margin: 3px 4px 4px; font-size: 0.7rem; line-height: 1.2; hyphens: auto; overflow-wrap: break-word; }
+.bingo .meldung:empty { display: none; }
+.bingo-feld.ist-leer .bingo-feld-knopf { align-items: center; justify-content: center; min-height: 100%; aspect-ratio: 1 / 1.35; font-size: 1.4rem; color: var(--schrift-leise); }
+/* Tippfläche größer als das Kästchen: die ganze untere rechte Ecke */
+.bingo-haken { position: absolute; right: 0; bottom: calc(2.4em * 0.7 + 7px); display: flex; align-items: flex-end; justify-content: flex-end; width: 32px; height: 32px; padding: 4px; cursor: pointer; }
+.bingo-haken::before { content: ""; position: absolute; right: 2px; bottom: 2px; width: 20px; height: 20px; border-radius: 4px; background: var(--kachel); }
+.bingo-kasten { position: relative; }
+.bingo-kasten { width: 16px; height: 16px; margin: 0; accent-color: var(--knopf-grund); cursor: pointer; }
+.bingo-feld.ist-erledigt { background: var(--zelle-grau); }
+.bingo-feld.ist-erledigt .bingo-bild { filter: grayscale(1); opacity: 0.55; }
+.bingo-gross.ist-erledigt { filter: grayscale(1); opacity: 0.6; }
+.bingo-gross { width: min(100%, 240px); aspect-ratio: 1; object-fit: cover; }
+.bingo-d-haken { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.bingo-d-haken input { width: 22px; height: 22px; margin: 0; }
+.bingo-vorschau { display: block; width: 120px; height: 120px; margin: 6px 0; border-radius: 8px; object-fit: cover; }
+/* Am Handy sitzt das Kästchen unten rechts auf dem Bild, damit die schmale Textzeile die ganze Breite hat; am PC unten rechts im Feld */
+@media (min-width: 768px) {
+    .bingo-raster { gap: 6px; }
+    .bingo-text { margin-right: 24px; font-size: 0.8rem; }
+    .bingo-haken { bottom: 0; width: 40px; height: 40px; padding: 3px; }
+    .bingo-haken::before { display: none; }
+}
