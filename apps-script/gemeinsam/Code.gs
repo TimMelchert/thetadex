@@ -40,7 +40,7 @@ var BLAETTER_ = {
   projekte: ["id", "projekt", "titel", "notiz", "status", "reihenfolge", "erstellt_am", "geaendert_am", "geloescht"],
   // Bingo (ab 1.9.0): ein Feld je Zeile. jahr vierstellig, feld 0 bis 24 (Zeile für Zeile von links oben).
   // bild: leer oder ein kleines JPEG als Text (data:image/jpeg;base64,…), kein Drive. projekt: leer oder die id eines Projekts.
-  // erledigt: TRUE oder leer, gilt nur für Felder ohne Projekt (sonst zählt der Status des Projekts, das macht die App).
+  // erledigt: TRUE oder leer. Wird ein verknüpftes Projekt „fertig“, setzt projektSpeichern_ den Haken; abhaken geht immer auch von Hand.
   bingo: ["id", "jahr", "feld", "text", "bild", "projekt", "erledigt", "erstellt_am", "geaendert_am", "geloescht"]
 };
 // Spalten, die im Sheet reiner Text bleiben (kein Datum, keine Zahl)
@@ -1546,7 +1546,9 @@ function projektSpeichern_(data) {
     i = index_(t, id);
     if (i < 0) return { error: "fehlt", message: "Diesen Eintrag gibt es nicht mehr. Bitte neu laden." };
     if (veraltet_(t, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+    var warFertig = text_(t.zeilen[i], t.sp, "status").trim() === "fertig";
     aendere_(t, i, werte);
+    if (!warFertig && werte.status === "fertig") bingoProjektFertig_(id);
   }
   return { projekt: projektAus_(t, t.zeilen[i]) };
 }
@@ -1631,7 +1633,7 @@ function bingoPlatz_(t, jahr, feld) {
 }
 
 // Ein Jahr lesen. data.jahr leer = dieses Jahr. Dazu alle Jahre mit Feldern (und dieses Jahr)
-// und die Projekte (ohne Abschnitte) mit Titel und Status, damit die App verknüpfte Felder abhaken kann.
+// und die Projekte (ohne Abschnitte) mit Titel und Status für die Auswahl im Formular.
 function bingo_(data) {
   var jahr = bingoJahr_(data.jahr);
   if (jahr === null) return { error: "eingabe", message: "Ungültiges Jahr." };
@@ -1687,7 +1689,8 @@ function bingoSpeichern_(data) {
     if (!jahre[jahr] && Object.keys(jahre).length >= BINGO_MAX_JAHRE_) return { error: "eingabe", message: "Höchstens " + BINGO_MAX_JAHRE_ + " Jahre." };
     werte.jahr = jahr;
     werte.feld = feld;
-    werte.erledigt = false;
+    // Ist das verknüpfte Projekt schon fertig, hat das neue Feld gleich den Haken
+    werte.erledigt = projekt ? text_(tp.zeilen[k], tp.sp, "status").trim() === "fertig" : false;
     i = neu_(t, werte);
   } else {
     i = index_(t, id);
@@ -1698,7 +1701,20 @@ function bingoSpeichern_(data) {
   return { feld: bingoAus_(t, t.zeilen[i]) };
 }
 
-// Haken setzen oder abnehmen. data = { id, erledigt (true oder false) }. Ohne Schutz vor Überschreiben:
+// Ein Projekt ist gerade „fertig“ geworden: alle damit verknüpften Felder (alle Jahre) bekommen den Haken
+// (Wunsch der Person, 24.11.2026). Wird das Projekt wieder zurückgesetzt, bleibt der Haken; abnehmen geht von Hand.
+// Fehlt das Blatt bingo noch (einrichten nicht ausgeführt), passiert nichts.
+function bingoProjektFertig_(projektId) {
+  if (!SpreadsheetApp.getActiveSpreadsheet().getSheetByName("bingo")) return;
+  var t = tabelle_("bingo");
+  t.zeilen.forEach(function (z, i) {
+    if (!aktiv_(t, z) || text_(z, t.sp, "projekt").trim() !== projektId || istWahr_(zelle_(z, t.sp, "erledigt"))) return;
+    z[t.sp.erledigt] = true;
+    t.sheet.getRange(i + 2, t.sp.erledigt + 1).setValue(true);
+  });
+}
+
+// Haken setzen oder abnehmen, auch bei verknüpften Feldern. data = { id, erledigt (true oder false) }. Ohne Schutz vor Überschreiben:
 // doppelt senden schadet nicht, und ein offenes Formular am anderen Gerät bleibt gültig (geaendert_am bleibt).
 function bingoHaken_(data) {
   var t = tabelle_("bingo");

@@ -14,7 +14,9 @@ Ein Jahres-Vorsatz-Bingo im Reiter Projekte. Ziel ist, in einem Jahr so viele Fe
   Ein abgehaktes Feld wird grau (Bild in Graustufen, Fläche grau, Haken bleibt sichtbar).
 - Über dem Raster steht „12 von 25 geschafft“. Volle Reihen werden nicht hervorgehoben (nicht gewünscht).
 - **Verknüpfung:** Jedes Feld kann mit einem Projekt verknüpft werden (nicht mit einem Abschnitt), muss aber nicht.
-  Steht das Projekt auf „Fertig“, ist das Feld abgehakt. Siehe Rückfrage 1.
+  Wird das Projekt auf „Fertig“ gesetzt, bekommt das Feld den Haken (das macht das Skript beim Speichern des Projekts).
+  Abhaken und Haken abnehmen geht immer auch von Hand, auch bei verknüpften Feldern (Wunsch der Person, 24.11.2026). Wird das Projekt zurückgesetzt, bleibt der Haken.
+  Ein neues Feld zu einem schon fertigen Projekt hat gleich den Haken.
 - **Partnerin oder Partner** darf das Bingo sehen und bearbeiten, wie die Projekte (Entscheidung der Person, 24.11.2026).
 
 ## 2. Bilder, die sofort da sind (Wunsch der Person)
@@ -38,7 +40,7 @@ In der Bucket List lädt jedes Bild einzeln aus dem Drive (etwa 1 bis 2 Sekunden
   Ein leeres Feld zeigt „+“ und öffnet gleich das Formular.
 - **Formular:** Bild (Datei oder Foto), Text, Projekt (Auswahl aus den Projekten, „kein Projekt“), Löschen (leert das Feld).
 - **Neues Jahr:** Gibt es für das laufende Jahr noch kein Bingo, zeigt der Unterreiter ein leeres Raster. Felder entstehen beim ersten Speichern.
-- Felder verschieben: nicht geplant (siehe Rückfrage 2).
+- Felder tauschen oder verschieben: nicht nötig (Entscheidung der Person, 24.11.2026). Ein Feld wird neu befüllt.
 
 ## 4. Sheet „Gemeinsam“, Blatt `bingo` (Schritt 17.1)
 
@@ -46,7 +48,7 @@ Spalten: `id, jahr, feld, text, bild, projekt, erledigt, erstellt_am, geaendert_
 
 - `jahr`: vierstellig. `feld`: 0 bis 24 (Zeile für Zeile von links oben). Je Jahr und Feld höchstens ein Eintrag.
 - `text`: Pflicht, 40 Zeichen, durch `pruefeText_`. `bild`: leer oder `data:image/jpeg;base64,…`, höchstens 50.000 Zeichen, das Skript prüft den Anfang.
-- `projekt`: leer oder die `id` eines Projekts (nicht eines Abschnitts). `erledigt`: TRUE oder leer, nur für Felder ohne Projekt.
+- `projekt`: leer oder die `id` eines Projekts (nicht eines Abschnitts). `erledigt`: TRUE oder leer, für alle Felder.
 - Aktionen (beide Rollen, `person` und `partner`, Rechte in `ERLAUBT_`): `bingo` (ein Jahr lesen, dazu die Liste der Jahre), `bingo_speichern`, `bingo_haken`, `bingo_loeschen`.
 - Grenzen: höchstens 25 Felder je Jahr, höchstens 50 Jahre.
 - `bingo` liefert das Jahr (leer = dieses Jahr), die Liste der Jahre und die Projekte (ohne Abschnitte) mit Titel und Status, damit die App verknüpfte Felder abhaken kann. Alles in einer Antwort.
@@ -66,8 +68,3 @@ Spalten: `id, jahr, feld, text, bild, projekt, erledigt, erstellt_am, geaendert_
 - **17.2** App: Unterreiter Projekte · Bingo, Raster, Fenster, Formular mit Bild, Abhaken, Verknüpfung (1.9.1).
 - **17.3** App: Bingo im Gerät behalten (1.9.2).
 - **17.4** Abschluss: Prüfung, Plan in `docs/STAND.md` einarbeiten, diese Datei löschen.
-
-## 7. Rückfragen
-
-1. **Abhaken bei verknüpften Feldern:** Mein Vorschlag: Das Feld folgt immer dem Projekt. Steht das Projekt auf „Fertig“, ist es abgehakt, sonst nicht. Das Kästchen ist dann nicht antippbar, das Fenster sagt „hakt sich ab, wenn das Projekt fertig ist“. Passt das?
-2. **Felder umsortieren:** Brauchst du das (zum Beispiel zwei Felder tauschen), oder reicht es, ein Feld neu zu befüllen?
