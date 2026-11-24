@@ -2,11 +2,15 @@
 // Ein Feld: Bild, kurze Textzeile, Kästchen unten rechts; abgehakt wird es grau. Ein Feld kann mit einem Projekt verknüpft sein:
 // Wird das Projekt „fertig“, setzt das Skript den Haken. Abhaken geht immer auch von Hand (Wunsch der Person, 24.11.2026).
 // Die Bilder stehen klein im Sheet (kein Drive), darum kommt ein ganzes Jahr mit einer Anfrage. Person und Partner*in dürfen alles.
+// Im Gerät (ab 1.9.2, Wunsch der Person, 24.11.2026): das laufende Jahr mit Bildern (thetadex_bingo, ohne Rolle).
+// Beim Öffnen steht es sofort da, dann lädt die App frisch. Ohne Netz bleibt es mit „Stand von …“ stehen.
+// Ändern prüft immer das Skript (Feld belegt, inzwischen geändert), darum sind die Knöpfe auch dann da.
 
 import { el, leeren, vergleiche } from '../ui/dom.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
 import { quadratBild } from '../ui/bild.js';
+import { lesen, schreiben } from '../store.js';
 
 const FELDER = 25;
 const MAX_TEXT = 40;
@@ -26,6 +30,18 @@ export function bingoTeil({ oeffneDialog, dialog, ladeStatus }) {
     const feldAn = (nr) => daten && daten.felder.find((f) => f.feld === nr);
     const projektVon = (f) => (f && f.projekt && daten ? daten.projekte.find((p) => p.id === f.projekt) : null);
     const diesesJahr = () => new Date().getFullYear();
+
+    // Gleich zeigen, was im Gerät liegt (nur das laufende Jahr)
+    const imGeraet = lesen('bingo', null);
+    if (!daten && imGeraet && imGeraet.daten && imGeraet.daten.jahr === diesesJahr() && (!jahr || jahr === diesesJahr())) {
+        daten = imGeraet.daten;
+        jahr = daten.jahr;
+    }
+    // Das laufende Jahr nach dem Laden und nach jeder gespeicherten Änderung im Gerät ablegen
+    function imGeraetMerken() {
+        if (daten && daten.jahr === diesesJahr()) schreiben('bingo', { stand: Date.now(), daten });
+    }
+    const standText = (ms) => new Date(ms).toLocaleString('de-DE', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     async function senden(status, knoepfe, action, werte) {
         if (sendet) return null;
@@ -48,6 +64,7 @@ export function bingoTeil({ oeffneDialog, dialog, ladeStatus }) {
     function merke(f) {
         const i = daten.felder.findIndex((x) => x.id === f.id);
         if (i >= 0) daten.felder[i] = f; else daten.felder.push(f);
+        imGeraetMerken();
     }
 
     // --- Abhaken: wirkt sofort, klappt das Senden nicht, springt der Haken zurück ---
@@ -148,6 +165,7 @@ export function bingoTeil({ oeffneDialog, dialog, ladeStatus }) {
             const antwort = await senden(status, knoepfe, 'bingo_loeschen', { id: f.id, geaendert_am: f.geaendert_am });
             if (!antwort) return;
             daten.felder = daten.felder.filter((x) => x.id !== f.id);
+            imGeraetMerken();
             dialog.close();
             zeigeGespeichert('Geleert', f.text);
             zeige();
@@ -226,10 +244,20 @@ export function bingoTeil({ oeffneDialog, dialog, ladeStatus }) {
                 projekte: Array.isArray(d.projekte) ? d.projekte : []
             };
             jahr = d.jahr;
+            imGeraetMerken();
             ladeStatus.textContent = '';
             zeige();
         } catch (e) {
             if (nr !== ladeNr) return;
+            // Ohne Netz: das laufende Jahr aus dem Gerät zeigen
+            const im = lesen('bingo', null);
+            if ((e.code === 'netz' || e.code === 'zeit') && im && im.daten && (!jahr || jahr === im.daten.jahr)) {
+                daten = im.daten;
+                jahr = daten.jahr;
+                zeige();
+                ladeStatus.textContent = 'Ohne Verbindung: Stand von ' + standText(im.stand) + ' Uhr. Ändern geht nur mit Netz.';
+                return;
+            }
             ladeStatus.textContent = 'Laden fehlgeschlagen: ' + e.message
                 + (e.code === 'aktion' ? ' Bitte im Sheet „Gemeinsam“ die neue Fassung des Skripts einfügen, „einrichten“ ausführen und bereitstellen (Schritt 17.1).' : '');
         }
