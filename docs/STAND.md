@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.9.2** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.9.3** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -364,6 +364,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
   Im Formular drei Felder (Ort, Darin, Darin), je bis 40 Zeichen, die Auswahl zeigt nur Unterorte des gewählten Oberorts. Der Ort-Filter ist ein Baum:
   Ein Oberort zeigt auch alles in seinen Unterorten. Liste je Raum mit kleineren Überschriften je Unterort; Übersicht „Je Ort“ eingerückt.
   Ausmisten (ab 1.3.20): Spalte `ausmisten`, leer = nein, sonst `offen`, `verkaufen`, `verschenken`, `entsorgen` (prüft das Skript). Filter „Ausmisten“, Kachel und Tabelle in der Übersicht.
+  Suche und Zubehör (ab 1.9.3, Wunsch der Person, 24.11.2026): Passt die Hauptsache zum Suchwort, steht ihr ganzes Zubehör aufgeklappt mit da, auch ohne das Suchwort (die übrigen Filter gelten weiter).
   Zubehör nur eine Ebene. Anzahl 0 heißt „nicht mehr da“: ausgeblendet, außer mit Zubehör oder mit „Items mit Anzahl 0“ im Filter Ausgeliehen / Ausmisten (bis 1.4.2 ein Haken).
   Liste kompakt (ab 1.3.21, Wunsch der Person): am Handy nur Name, rechts die Anzahl und die Zeile mit Zubehör, Bild, ausgeliehen, ausmisten; am PC Spalten Name, Anzahl, Kaufpreis, Kaufdatum.
   Ab 1.3.22 (Wunsch der Person, 16.11.2026): In der App heißen Sachen „Items“ (Spalten und Code bleiben `sachen`/`besitz`). Der Listenkopf (Titel, Unterreiter, Suche, Filter, Sortierzeile) scrollt mit (ab 1.3.27 wieder, Wunsch der Person: fest nahm er am PC zu viel Platz weg); nur die Kopfzeile der App bleibt angeheftet. Die Sortierzeile (Name, Anzahl, Kaufpreis, Kaufdatum) steht am PC einmal oben unter den Filtern, darunter die Orte als Überschriften.
@@ -663,3 +664,4 @@ Letzte Versionen:
 - **1.9.0** Schritt 17.1: Skript `gemeinsam` mit Blatt `bingo` und Aktionen fürs Jahres-Bingo; Plan Etappe 17.
 - **1.9.1** Schritt 17.2: Unterreiter Projekte · Bingo, Raster 5 × 5 mit Bild, Text und Kästchen, Jahre mit Pfeilen.
 - **1.9.2** Schritt 17.3: Das laufende Jahr des Bingos liegt im Gerät und steht beim Öffnen sofort da.
+- **1.9.3** Besitz: Passt die Hauptsache zur Suche, wird ihr ganzes Zubehör mit gezeigt.

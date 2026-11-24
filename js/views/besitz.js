@@ -627,12 +627,13 @@ export function render(container, ctx) {
         const filterAn = Boolean(wort || ortFilter.value || katFilter.value || zustand());
         const passtMist = (s) => !mist || (mist === 'ja' ? Boolean(s.ausmisten) : mist === 'nein' ? !s.ausmisten : s.ausmisten === mist.slice(1));
         const passtLeihe = (s) => !leihe || (leihe === 'ja' ? Boolean(verliehen(s)) : leihe === 'nein' ? !verliehen(s) : verliehen(s) === leihe.slice(3));
-        const passt = (s) =>
+        const passtOhneWort = (s) =>
             sichtbar(s)
             && (!ortFilter.value || imOrt(s.ort, ortFilter.value))
             && (!katFilter.value || s.kategorie === katFilter.value)
             && passtLeihe(s)
-            && passtMist(s)
+            && passtMist(s);
+        const passt = (s) => passtOhneWort(s)
             && (!wort || [s.name, s.kategorie, s.ort, s.notiz, verliehen(s), s.unklar].some((t) => klein(t).includes(wort)));
         const treffer = sachen.filter(passt).length;
         if (filterAn) {
@@ -640,10 +641,12 @@ export function render(container, ctx) {
         }
         // Hauptsachen mit ihrem Zubehör. Eine Hauptsache steht da, wenn sie selbst oder ihr Zubehör passt.
         // Bei Suche oder Filter wird passendes Zubehör aufgeklappt gezeigt, sonst alles Zubehör zugeklappt.
+        // Passt die Hauptsache selbst zum Suchwort, kommt ihr ganzes Zubehör mit, auch ohne das Suchwort (Wunsch der Person, 1.9.3).
         const eintraege = sachen.filter((s) => !istZubehoer(s)).map((s) => {
             const alle = zubehoerVon(s.id).filter(sichtbar).sort(nachSpalte);
-            const kinder = filterAn ? alle.filter(passt) : alle;
-            return { s, kinder, anzahlZubehoer: alle.length, selbst: passt(s), auf: offen.has(s.id) || (filterAn && kinder.length > 0) };
+            const selbst = passt(s);
+            const kinder = filterAn ? alle.filter((k) => passt(k) || (selbst && wort && passtOhneWort(k))) : alle;
+            return { s, kinder, anzahlZubehoer: alle.length, selbst, auf: offen.has(s.id) || (filterAn && kinder.length > 0) };
         }).filter((e) => e.selbst || e.kinder.length);
         zeigeSortZeile(eintraege.length > 0);
         if (!eintraege.length && !filterAn) {
