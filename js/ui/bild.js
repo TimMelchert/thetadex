@@ -34,6 +34,41 @@ export function verkleinereBild(datei, maxSeite = 1600, qualitaet = 0.85) {
     });
 }
 
+// Schneidet ein Bild quadratisch aus der Mitte und verkleinert es auf seite × seite Pixel (Bingo, ab 1.9.1).
+// Wird das Ergebnis länger als maxZeichen (eine Zelle im Sheet), versucht es eine geringere Qualität.
+export function quadratBild(datei, seite = 240, maxZeichen = 50000) {
+    return new Promise((fertig, fehler) => {
+        if (!datei || !/^image\//.test(datei.type)) {
+            fehler(new Error('Bitte ein Bild wählen.'));
+            return;
+        }
+        // Über FileReader, weil die Content-Security-Policy nur data:-Bilder erlaubt (kein blob:)
+        const leser = new FileReader();
+        leser.onerror = () => fehler(new Error('Das Bild konnte nicht gelesen werden.'));
+        leser.onload = () => {
+            const bild = new Image();
+            bild.onerror = () => fehler(new Error('Dieses Bildformat kann der Browser nicht öffnen. Bitte JPEG oder PNG wählen.'));
+            bild.onload = () => {
+                const kante = Math.min(bild.naturalWidth, bild.naturalHeight);
+                const leinwand = document.createElement('canvas');
+                leinwand.width = seite;
+                leinwand.height = seite;
+                const malen = leinwand.getContext('2d');
+                malen.fillStyle = '#FFFFFF';
+                malen.fillRect(0, 0, seite, seite);
+                malen.drawImage(bild, (bild.naturalWidth - kante) / 2, (bild.naturalHeight - kante) / 2, kante, kante, 0, 0, seite, seite);
+                for (const q of [0.75, 0.6, 0.45, 0.3]) {
+                    const ergebnis = leinwand.toDataURL('image/jpeg', q);
+                    if (ergebnis.length <= maxZeichen) { fertig(ergebnis); return; }
+                }
+                fehler(new Error('Das Bild ist zu groß. Bitte ein anderes wählen.'));
+            };
+            bild.src = leser.result;
+        };
+        leser.readAsDataURL(datei);
+    });
+}
+
 // Baut aus einer Skript-Antwort { typ, daten } ein data:-Bild. Nur bekannte Bildarten.
 export function bildAdresse(antwort) {
     const typ = String(antwort && antwort.typ || '');

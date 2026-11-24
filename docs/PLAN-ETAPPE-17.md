@@ -35,7 +35,9 @@ In der Bucket List lädt jedes Bild einzeln aus dem Drive (etwa 1 bis 2 Sekunden
 
 - Adresse bleibt `#/projekte`, der Unterreiter wird sich gemerkt, solange die Seite offen ist (wie Herbarium).
 - **Raster:** am Handy 5 Spalten über die ganze Breite (je etwa 66 px), Textzeile klein (0,7 rem) und höchstens zwei Zeilen, längere Texte enden mit „…“.
-  Am PC höchstens etwa 640 px breit. Das Kästchen ist klein gezeichnet, die Tippfläche ist trotzdem 44 px groß (die untere rechte Ecke des Feldes).
+  Am PC höchstens etwa 640 px breit. Das Kästchen ist klein gezeichnet, die Tippfläche ist größer (am PC 40 px).
+  Am Handy sitzt das Kästchen unten rechts auf dem Bild, damit die schmale Textzeile die ganze Breite hat (gebaut in 1.9.1); am PC unten rechts im Feld.
+  Mit Pfeilen erreichbar: alle Jahre mit Feldern, dieses Jahr und das nächste (zum Vorbereiten im Dezember).
 - **Tipp auf ein Feld** (nicht auf das Kästchen) öffnet ein Fenster: großes Bild, ganzer Text, verknüpftes Projekt mit Status, „Bearbeiten“.
   Ein leeres Feld zeigt „+“ und öffnet gleich das Formular.
 - **Formular:** Bild (Datei oder Foto), Text, Projekt (Auswahl aus den Projekten, „kein Projekt“), Löschen (leert das Feld).

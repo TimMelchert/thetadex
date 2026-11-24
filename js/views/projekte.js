@@ -3,13 +3,17 @@
 // Eine Liste, nicht nach Status gruppiert; Projekte und Abschnitte (je Projekt) mit Pfeilen ^ und v sortierbar.
 // Ein Tipp auf den Titel klappt auf (Notiz, Abschnitte). Person und Partner*in dürfen alles (das Skript prüft es).
 // Daten aus dem Skript „gemeinsam“ (Sheet „Gemeinsam“, Blatt „projekte“). Nur im Arbeitsspeicher.
+// Ab 1.9.1 zwei Unterreiter: Projekte (diese Liste) und Bingo (js/views/bingo.js, Etappe 17).
 
 import { el, leeren, vergleiche } from '../ui/dom.js';
 import { api } from '../api.js';
 import { zeigeGespeichert } from '../ui/overlay.js';
+import { bingoTeil } from './bingo.js';
 
 // Zuletzt geladene Daten { projekte, rolle }, nur im Arbeitsspeicher. Beim Öffnen sofort zeigen, dann frisch laden.
 let daten = null;
+// Gewählter Unterreiter (projekte oder bingo). Bleibt, solange die Seite offen ist.
+let teil = 'projekte';
 // Aufgeklappte Einträge (ids), solange die Seite offen ist
 const offen = new Set();
 const MAX_TITEL = 80;
@@ -225,7 +229,7 @@ export function render(container, ctx) {
     function zeigeListe() {
         leeren(listeBox);
         if (!daten) return;
-        neuKnopf.hidden = false;
+        neuKnopf.hidden = teil !== 'projekte';
         const liste = projekte();
         [...offen].forEach((id) => { if (!daten.projekte.some((p) => p.id === id)) offen.delete(id); });
         listeBox.append(liste.length
@@ -235,7 +239,7 @@ export function render(container, ctx) {
 
     // --- Laden ---
     const ladeStatus = el('p', { class: 'meldung besitz-lade', attrs: { role: 'status', 'aria-live': 'polite' } });
-    const neuLaden = el('button', { class: 'knopf knopf-zweit besitz-neu', text: 'Neu laden', attrs: { type: 'button' }, on: { click: () => laden() } });
+    const neuLaden = el('button', { class: 'knopf knopf-zweit besitz-neu', text: 'Neu laden', attrs: { type: 'button' }, on: { click: () => (teil === 'bingo' ? bingo.laden : laden)() } });
     async function laden() {
         neuLaden.disabled = true;
         ladeStatus.textContent = daten ? 'Aktualisiere …' : 'Lädt …';
@@ -253,6 +257,27 @@ export function render(container, ctx) {
     }
 
     const neuKnopf = el('button', { class: 'knopf knopf-bereich', text: '+ Neues Projekt', attrs: { type: 'button', hidden: true }, on: { click: () => zeigeForm(null) } });
+
+    // --- Unterreiter Projekte · Bingo (Wunsch der Person, 24.11.2026) ---
+    const bingo = bingoTeil({ oeffneDialog, dialog, ladeStatus });
+    const projekteTeil = el('div', { attrs: { id: 'projekte-teil-projekte' } }, [reiheStatus, listeBox]);
+    const teilKnoepfe = [['projekte', 'Projekte', projekteTeil], ['bingo', 'Bingo', bingo.box]].map(([id, text, box]) => [
+        id,
+        el('button', { class: 'ansicht', text, attrs: { type: 'button', 'aria-controls': box.id }, on: { click: () => zeigeTeil(id, true) } }),
+        box
+    ]);
+    // nachladen = true: beim Wechsel frisch laden (ein Projekt kann inzwischen „fertig“ sein und einen Haken gesetzt haben)
+    function zeigeTeil(id, nachladen) {
+        teil = id;
+        teilKnoepfe.forEach(([k, knopf, box]) => {
+            knopf.setAttribute('aria-pressed', k === id ? 'true' : 'false');
+            box.hidden = k !== id;
+        });
+        neuKnopf.hidden = id !== 'projekte' || !daten;
+        ladeStatus.textContent = '';
+        if (nachladen) (id === 'bingo' ? bingo.laden : laden)();
+    }
+
     container.append(
         el('div', { class: 'besitz-kopf' }, [
             el('h1', { class: 'bereich-titel titel-mit-emoji' }, [
@@ -261,12 +286,14 @@ export function render(container, ctx) {
             ]),
             neuKnopf
         ]),
+        el('div', { class: 'ansichten' }, teilKnoepfe.map(([, knopf]) => knopf)),
         ladeStatus,
-        reiheStatus,
-        listeBox,
+        projekteTeil,
+        bingo.box,
         neuLaden,
         dialog
     );
+    zeigeTeil(teil, false);
     zeigeListe();
-    laden();
+    (teil === 'bingo' ? bingo.laden : laden)();
 }
