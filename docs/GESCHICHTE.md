@@ -391,3 +391,4 @@ Prüfung gegen die Grundsätze (1.2):
 - **1.8.7** Nachbesserung: `icons/werkzeug.svg` neu gezeichnet (Hammerkopf quer zum Holzstiel, Schraubenschlüssel mit offenem Maul), weil der Hammer vorher nicht zu erkennen war.
 - **1.8.8** Schritt 16.5: Abschluss Etappe 16 „Projekte“ (Prüfung ohne schlimme Funde, Plan in `docs/STAND.md` 4 eingearbeitet, `docs/PLAN-ETAPPE-16.md` gelöscht).
 - **1.8.9** Fund 1 der Prüfung zu Etappe 16: Status in der Liste Projekte als abgerundetes, farbiges Feld mit dem Wort rechts neben dem Titel, alle gleich breit in einer Spalte; Dreieck zum Aufklappen entfernt, Aufklappen zeigt Notiz und Abschnitte; `--status-idee` kräftiger für lesbare Schrift (Wunsch der Person).
+- **1.8.10** Nachbesserung: `icons/reiter/projekte.svg` durch Hammer Vorschlag E ersetzt (Kopf mit abgeschrägter Seite), in Leiste, Seitenleiste und Kachel (Wunsch der Person, 24.11.2026).
