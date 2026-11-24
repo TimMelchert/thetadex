@@ -1,8 +1,8 @@
 // =====================================================
 // GEMEINSAM – Apps Script (Person und Partner*in, mit Passwort)
-// Einkauf und Essen (Etappe 4), Uni (Etappe 5), Bucket List (Etappe 14) und Projekte (Etappe 16).
+// Einkauf und Essen (Etappe 4), Uni (Etappe 5), Bucket List (Etappe 14), Projekte (Etappe 16) und Bingo (Etappe 17).
 // Blätter: lebensmittel, einkaufsliste, gerichte, zutaten, vorrat;
-// Uni: semester, module, kurse, termine, uni_einstellungen; Bucket List: bucketlist; Projekte: projekte.
+// Uni: semester, module, kurse, termine, uni_einstellungen; Bucket List: bucketlist; Projekte: projekte; Bingo: bingo.
 // Zwei Passwörter in den Skripteigenschaften: APP_PIN (Person) und PARTNER_PIN (Partner*in).
 // Kein Passwort steht hier. Über die Partnerin oder den Partner wird nichts gespeichert.
 // Rezepte (ab 1.3.4): Das Blatt „gerichte“ hält die Rezepte (Name bleibt, Blätter werden nie umbenannt),
@@ -37,7 +37,11 @@ var BLAETTER_ = {
   bucketlist: ["id", "titel", "notiz", "erledigt_am", "reihenfolge", "bild", "erstellt_am", "geaendert_am", "geloescht", "liste"],
   // Projekte (ab 1.8.0): projekt leer = ein Projekt, sonst die id des Projekts, zu dem dieser Abschnitt gehört.
   // status: idee, laeuft, pausiert oder fertig. reihenfolge: kleine Zahl = weiter oben (Projekte für sich, Abschnitte je Projekt).
-  projekte: ["id", "projekt", "titel", "notiz", "status", "reihenfolge", "erstellt_am", "geaendert_am", "geloescht"]
+  projekte: ["id", "projekt", "titel", "notiz", "status", "reihenfolge", "erstellt_am", "geaendert_am", "geloescht"],
+  // Bingo (ab 1.9.0): ein Feld je Zeile. jahr vierstellig, feld 0 bis 24 (Zeile für Zeile von links oben).
+  // bild: leer oder ein kleines JPEG als Text (data:image/jpeg;base64,…), kein Drive. projekt: leer oder die id eines Projekts.
+  // erledigt: TRUE oder leer, gilt nur für Felder ohne Projekt (sonst zählt der Status des Projekts, das macht die App).
+  bingo: ["id", "jahr", "feld", "text", "bild", "projekt", "erledigt", "erstellt_am", "geaendert_am", "geloescht"]
 };
 // Spalten, die im Sheet reiner Text bleiben (kein Datum, keine Zahl)
 var TEXT_SPALTEN_ = ["id", "name", "abteilung", "einheit", "notiz", "lebensmittel_id", "gericht_id", "link", "ort",
@@ -75,14 +79,19 @@ var BUCKET_ORDNER_NAME_ = "Thetadex Bucket List";
 var PROJEKT_MAX_ = { titel: 80, notiz: 1000 };
 var PROJEKT_MAX_ANZAHL_ = 500;  // höchstens so viele Projekte und Abschnitte zusammen
 var PROJEKT_STATUS_ = ["idee", "laeuft", "pausiert", "fertig"];
+// Bingo (Etappe 17)
+var BINGO_FELDER_ = 25;          // 5 x 5
+var BINGO_MAX_TEXT_ = 40;
+var BINGO_MAX_BILD_ = 50000;     // so viele Zeichen fasst eine Zelle im Sheet
+var BINGO_MAX_JAHRE_ = 50;
 
 // Was jede Rolle darf. Das Skript prüft das bei jeder Aktion, nicht die App.
-// Partner*in darf überall lesen und ändern: Einkauf, Projekte (Etappe 16) und ab 1.8.3 auch Uni und Bucket List
+// Partner*in darf überall lesen und ändern: Einkauf, Projekte (Etappe 16) mit Bingo (Etappe 17) und ab 1.8.3 auch Uni und Bucket List
 // (vorher nur lesen; Wunsch der Person, 23.11.2026).
-var LESEN_ = ["ping", "alles", "uni", "bild", "bucket", "projekte"];
+var LESEN_ = ["ping", "alles", "uni", "bild", "bucket", "projekte", "bingo"];
 var UNI_SCHREIBEN_ = ["uni_speichern", "uni_loeschen"];
 var BUCKET_SCHREIBEN_ = ["bucket_speichern", "bucket_haken", "bucket_bild", "bucket_loeschen", "bucket_reihenfolge"];
-var PROJEKT_SCHREIBEN_ = ["projekt_speichern", "projekt_loeschen", "projekt_reihenfolge"];
+var PROJEKT_SCHREIBEN_ = ["projekt_speichern", "projekt_loeschen", "projekt_reihenfolge", "bingo_speichern", "bingo_haken", "bingo_loeschen"];
 var EINKAUF_SCHREIBEN_ = ["lebensmittel_speichern", "lebensmittel_loeschen", "auf_liste", "liste_aendern", "abhaken",
   "gericht_speichern", "gericht_loeschen", "rezept_bild", "vorrat_speichern", "vorrat_loeschen", "reihenfolge_speichern"];
 var ERLAUBT_ = {
@@ -394,6 +403,11 @@ function doPost(e) {
     if (aktion === "bild") return jsonOut_(bildLesen_(data));
     if (aktion === "bucket") return jsonOut_({ ziele: bucketZiele_(), rolle: rolle });
     if (aktion === "projekte") return jsonOut_({ projekte: projekteListe_(), rolle: rolle });
+    if (aktion === "bingo") {
+      var b = bingo_(data);
+      if (!b.error) b.rolle = rolle;
+      return jsonOut_(b);
+    }
     if (aktion === "alles" || aktion === "uni") {
       var d = aktion === "uni" ? uni_() : alles_();
       d.rolle = rolle;
@@ -427,7 +441,10 @@ function doPost(e) {
         bucket_reihenfolge: bucketReihenfolge_,
         projekt_speichern: projektSpeichern_,
         projekt_loeschen: projektLoeschen_,
-        projekt_reihenfolge: projektReihenfolge_
+        projekt_reihenfolge: projektReihenfolge_,
+        bingo_speichern: bingoSpeichern_,
+        bingo_haken: bingoHaken_,
+        bingo_loeschen: bingoLoeschen_
       }[aktion];
       return jsonOut_(f(data));
     } finally {
@@ -1573,4 +1590,131 @@ function projektReihenfolge_(data) {
     t.sheet.getRange(2, t.sp.reihenfolge + 1, t.zeilen.length, 1).setValues(t.zeilen.map(function (z) { return [z[t.sp.reihenfolge]]; }));
   }
   return { projekte: projekteListe_() };
+}
+
+// --- 12. BINGO (Etappe 17) ---
+// Ein Jahres-Vorsatz-Bingo mit 5 x 5 Feldern je Jahr. Ein Feld hat Text, ein kleines Bild und einen Haken,
+// und kann mit einem Projekt verknüpft sein. Die Bilder stehen klein direkt im Sheet, damit ein ganzes Jahr
+// mit einer Anfrage kommt (Wunsch der Person: Bilder sofort da). Person und Partner*in dürfen alles (ERLAUBT_).
+
+function bingoAus_(t, z) {
+  return {
+    id: String(zelle_(z, t.sp, "id")),
+    jahr: zahl_(zelle_(z, t.sp, "jahr")),
+    feld: zahl_(zelle_(z, t.sp, "feld")),
+    text: text_(z, t.sp, "text"),
+    bild: String(zelle_(z, t.sp, "bild")).indexOf("data:image/jpeg;base64,") === 0 ? String(zelle_(z, t.sp, "bild")) : "",
+    projekt: text_(z, t.sp, "projekt").trim(),
+    erledigt: istWahr_(zelle_(z, t.sp, "erledigt")),
+    geaendert_am: stempel_(zelle_(z, t.sp, "geaendert_am"))
+  };
+}
+
+function diesesJahr_() {
+  return Number(Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy"));
+}
+
+// Jahr prüfen: leer = dieses Jahr. Liefert die Zahl oder null.
+function bingoJahr_(roh) {
+  if (roh == null || String(roh).trim() === "") return diesesJahr_();
+  var n = Number(roh);
+  return Math.floor(n) === n && n >= 2000 && n <= 2100 ? n : null;
+}
+
+// Die aktive Zeile für Jahr und Feld, oder -1
+function bingoPlatz_(t, jahr, feld) {
+  for (var i = 0; i < t.zeilen.length; i++) {
+    var z = t.zeilen[i];
+    if (aktiv_(t, z) && zahl_(zelle_(z, t.sp, "jahr")) === jahr && zahl_(zelle_(z, t.sp, "feld")) === feld) return i;
+  }
+  return -1;
+}
+
+// Ein Jahr lesen. data.jahr leer = dieses Jahr. Dazu alle Jahre mit Feldern (und dieses Jahr)
+// und die Projekte (ohne Abschnitte) mit Titel und Status, damit die App verknüpfte Felder abhaken kann.
+function bingo_(data) {
+  var jahr = bingoJahr_(data.jahr);
+  if (jahr === null) return { error: "eingabe", message: "Ungültiges Jahr." };
+  var t = tabelle_("bingo");
+  var jahre = {};
+  jahre[diesesJahr_()] = true;
+  var felder = [];
+  t.zeilen.forEach(function (z) {
+    if (!aktiv_(t, z)) return;
+    var f = bingoAus_(t, z);
+    jahre[f.jahr] = true;
+    if (f.jahr === jahr && f.feld >= 0 && f.feld < BINGO_FELDER_) felder.push(f);
+  });
+  var projekte = projekteListe_().filter(function (p) { return !p.projekt; })
+    .map(function (p) { return { id: p.id, titel: p.titel, status: p.status, reihenfolge: p.reihenfolge }; });
+  return {
+    jahr: jahr,
+    jahre: Object.keys(jahre).map(Number).sort(function (a, b) { return a - b; }),
+    felder: felder,
+    projekte: projekte
+  };
+}
+
+// Neu (ohne id: data.jahr und data.feld) oder ändern (mit id und geaendert_am).
+// data = { text, projekt, bild }. bild fehlt = bleibt, "" = weg, sonst ein JPEG als data:-Text.
+function bingoSpeichern_(data) {
+  var text = pruefeText_(data.text, BINGO_MAX_TEXT_, "ein Ziel", true);
+  if (text.fehler) return { error: "eingabe", message: text.fehler };
+  var projekt = String(data.projekt == null ? "" : data.projekt).trim();
+  if (projekt) {
+    var tp = tabelle_("projekte");
+    var k = index_(tp, projekt);
+    if (k < 0 || text_(tp.zeilen[k], tp.sp, "projekt").trim() !== "") return { error: "fehlt", message: "Dieses Projekt gibt es nicht mehr. Bitte neu laden." };
+  }
+  var werte = { text: text.wert, projekt: projekt };
+  if (data.bild != null) {
+    var bild = String(data.bild);
+    if (bild && !/^data:image\/jpeg;base64,[A-Za-z0-9+\/]+=*$/.test(bild)) return { error: "eingabe", message: "Das Bild ist ungültig." };
+    if (bild.length > BINGO_MAX_BILD_) return { error: "eingabe", message: "Das Bild ist zu groß. Bitte ein anderes wählen." };
+    werte.bild = bild;
+  }
+
+  var t = tabelle_("bingo");
+  var id = String(data.id || "");
+  var i;
+  if (!id) {
+    var jahr = bingoJahr_(data.jahr);
+    var feld = Number(data.feld);
+    if (jahr === null || Math.floor(feld) !== feld || feld < 0 || feld >= BINGO_FELDER_) return { error: "eingabe", message: "Ungültiges Feld." };
+    if (bingoPlatz_(t, jahr, feld) >= 0) return { error: "geaendert", message: "Dieses Feld ist inzwischen belegt (zum Beispiel am anderen Gerät). Bitte neu laden." };
+    var jahre = {};
+    t.zeilen.forEach(function (z) { if (aktiv_(t, z)) jahre[zahl_(zelle_(z, t.sp, "jahr"))] = true; });
+    if (!jahre[jahr] && Object.keys(jahre).length >= BINGO_MAX_JAHRE_) return { error: "eingabe", message: "Höchstens " + BINGO_MAX_JAHRE_ + " Jahre." };
+    werte.jahr = jahr;
+    werte.feld = feld;
+    werte.erledigt = false;
+    i = neu_(t, werte);
+  } else {
+    i = index_(t, id);
+    if (i < 0) return { error: "fehlt", message: "Dieses Feld gibt es nicht mehr. Bitte neu laden." };
+    if (veraltet_(t, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+    aendere_(t, i, werte);
+  }
+  return { feld: bingoAus_(t, t.zeilen[i]) };
+}
+
+// Haken setzen oder abnehmen. data = { id, erledigt (true oder false) }. Ohne Schutz vor Überschreiben:
+// doppelt senden schadet nicht, und ein offenes Formular am anderen Gerät bleibt gültig (geaendert_am bleibt).
+function bingoHaken_(data) {
+  var t = tabelle_("bingo");
+  var i = index_(t, data.id);
+  if (i < 0) return { error: "fehlt", message: "Dieses Feld gibt es nicht mehr. Bitte neu laden." };
+  t.zeilen[i][t.sp.erledigt] = data.erledigt === true;
+  t.sheet.getRange(i + 2, t.sp.erledigt + 1).setValue(data.erledigt === true);
+  return { feld: bingoAus_(t, t.zeilen[i]) };
+}
+
+// Weich löschen: das Feld ist danach wieder leer
+function bingoLoeschen_(data) {
+  var t = tabelle_("bingo");
+  var i = index_(t, data.id);
+  if (i < 0) return { error: "fehlt", message: "Dieses Feld gibt es nicht mehr. Bitte neu laden." };
+  if (veraltet_(t, i, data)) return { error: "geaendert", message: "Wurde inzwischen geändert (zum Beispiel am anderen Gerät). Bitte neu laden." };
+  weg_(t, i);
+  return { ok: true };
 }
