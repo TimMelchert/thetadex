@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.9.4** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.10.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -23,6 +23,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 15 „Packlisten“ (1.7.x) ist fertig (23.11.2026): Reiter Packlisten mit Zähler „Nutzungen“, Festlegungen in 4 („Packlisten“), Prüfung `pruefung/etappe-15-packlisten-bericht.md` in den Projektdateien.
 - Etappe 16 „Projekte“ (1.8.x) ist fertig (23.11.2026): Reiter Projekte, neue Reihenfolge der Leiste mit Knopf Start, Partner*in schreibt überall in „Gemeinsam“. Festlegungen in 4 („Projekte“), Prüfung `pruefung/etappe-16-projekte-bericht.md` in den Projektdateien.
 - Etappe 17 „Bingo“ (1.9.x) ist fertig (26.11.2026): Jahres-Vorsatz-Bingo als Unterreiter im Reiter Projekte, Bilder klein im Sheet, laufendes Jahr im Gerät. Festlegungen in 4 („Projekte“, Unterpunkt „Bingo“), Prüfung `pruefung/etappe-17-bingo-bericht.md` in den Projektdateien.
+- Etappe 18 „Widget“ (1.10.x) ist geplant: Plan `docs/PLAN-ETAPPE-18.md` (eigene kleine Android-App mit Widget und Overlay am Abend, Skripte melden nur ja/nein und eine Zahl). Nächster Schritt: 18.1 (Skripte).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -646,7 +647,7 @@ Diese Regeln gelten. Wer etwas daran ändert, ändert es hier mit. Ausnahmen von
 - `js/`: `app.js` (Routing, Reiterleiste, Update-Hinweis), `config.js` (VERSION, `features`, `BEREICHE`, `SKRIPTE`), `api.js`, `store.js`, `ui/dom.js`.
 - `js/views/`: `start.js` (Kacheln), `einstellungen.js`, `info.js`, `nichtgefunden.js`, `doener.js`, `tracking.js`, `finanzen.js`, `finanzen-auswertung.js`, `finanzen-sms.js` (Noch zuordnen, Vorschlag aus der SMS, ab 9.2), `besitz.js`, `einkauf.js`, `uni.js`, `uni-kalender.js` (Kalender zeichnen), `dsa.js` (Pen & Paper), `dsa-abenteuer.js` (Ansichten Abenteuer und DM, ab 0.6.8), `karte.js` (Visitenkarte für Besucher und `zeichneKarte` für die Vorschau, ab 10.2), `visitenkarte.js` (Vorschau, Links und QR-Code für die Person, ab 10.3), `herbarium.js` (Reiter Herbarium, ab 13.2), `bucketlist.js` (Reiter Bucket List, ab 14.2), `projekte.js` (Reiter Projekte, ab 16.2), `bingo.js` (Unterreiter Bingo im Reiter Projekte, ab 17.2), `packlisten.js` (Reiter Packlisten, ab 15.2). `vendor/qrcode.js`: QR Code Generator 1.4.4. `icons/social/`: Symbole für Instagram, LinkedIn, Signal (ab 1.2.8). `js/ui/kalender.js`: Rechenhelfer für den Kalender. `vendor/chart.umd.js`: Chart.js 4.4.1, nur in der Auswertung geladen. `js/ui/auswahl.js`: Auswahlfeld mit Freitext (Zweck, Kategorie, Ort, ausgeliehen an); Tipp ins Feld öffnet die Liste. `js/ui/overlay.js`: Fenster „Gespeichert“. `js/ui/farben.js`: Farbregeln der Tracking-Übersicht. `js/ui/aussehen.js`: Hell, Dunkel, Wie Gerät. `js/ui/bild.js`: Bilder verkleinern. `js/ui/wuerfel.js`: Würfel (Pen & Paper und geteilter Bogen).
 - `icons/`: `thetadex-icon.svg`, `thetadex-icon-512.png`, `-192.png`, `-180.png` (Apple), `thetadex-icon-maskable-512.png` (Android-Startbildschirm, füllt die Form aus). `icons/reiter/<id>.svg`: Symbole der Reiter (Farbe per CSS-Maske). `icons/einstellungen.svg`: Zahnrad in der Kopfzeile. `icons/thetadex-karte.svg`: Karteikarte ohne Grund (Startseite). `icons/w20.svg`: W20 bei Pen & Paper. `icons/reiter/visitenkarte.svg`: Kachel Visitenkarte (ab 10.3). `icons/reiter/herbarium.svg`: Blatt, Reiter Herbarium (ab 13.2). `icons/reiter/bucketlist.svg`: Zielscheibe, Reiter Bucket List (ab 14.2). `icons/reiter/projekte.svg`: Hammer, Reiter Projekte (ab 16.2). `icons/werkzeug.svg`: Hammer und Schraubenschlüssel vor der Überschrift Projekte (ab 1.8.4).
-- `docs/`: `STAND.md` (diese Datei), `GESCHICHTE.md` (Rückblick, nur bei Bedarf lesen); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-14.md`).
+- `docs/`: `STAND.md` (diese Datei), `GESCHICHTE.md` (Rückblick, nur bei Bedarf lesen); während einer Etappe ihr Plan (`PLAN-ETAPPE-<n>.md`, zurzeit `PLAN-ETAPPE-14.md`, `PLAN-ETAPPE-18.md`).
 - `apps-script/tracking/Code.gs` (ohne PIN), `apps-script/finanzen/Code.gs` (Passwort in den Skripteigenschaften),
   `apps-script/doener/Code.gs` (öffentlich, ohne Passwort, Funktion `einrichten`), `apps-script/leben/Code.gs` (Besitz, Herbarium, ab 1.7.0 Packlisten, mit Passwort, Funktion `einrichten`),
   `apps-script/gemeinsam/Code.gs` (Einkauf und Uni, `APP_PIN` und `PARTNER_PIN`, Funktion `einrichten`), `apps-script/dsa/Code.gs` (Pen & Paper, mit Passwort, ohne nur `geteilt`, Funktion `einrichten`),
@@ -678,3 +679,4 @@ Letzte Versionen:
 - **1.9.2** Schritt 17.3: Das laufende Jahr des Bingos liegt im Gerät und steht beim Öffnen sofort da.
 - **1.9.3** Besitz: Passt die Hauptsache zur Suche, wird ihr ganzes Zubehör mit gezeigt.
 - **1.9.4** Schritt 17.4: Abschluss Etappe 17 „Bingo“: Prüfung, Plan in 4 eingearbeitet und gelöscht.
+- **1.10.0** Schritt 18.0: Plan Etappe 18 „Widget“.
