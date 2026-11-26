@@ -66,6 +66,10 @@ function doPost(e) {
     return jsonOut_(antwort);
   }
 
+  // Widget-App (Etappe 18): nur mit WIDGET_SCHLUESSEL, nicht mit dem Passwort.
+  // Antwortet nur mit der Zahl der offenen SMS. Liest keinen SMS-Text, schreibt nichts.
+  if (data && data.action === "widget") return jsonOut_(widgetAntwort_(data));
+
   var status = pruefePin_(data.pin);
   if (status === 'gesperrt') {
     return jsonOut_({ error: "gesperrt", message: "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen." });
@@ -844,4 +848,46 @@ function smsErledigt_(id) {
   if (sms.fehler) return sms.fehler;
   smsAbschliessen_(sms, "verworfen");
   return { ok: true };
+}
+
+// --- WIDGET (Etappe 18, siehe docs/PLAN-ETAPPE-18.md) ---
+
+// Einmal im Editor ausführen: erzeugt einen neuen, zufälligen WIDGET_SCHLUESSEL und zeigt ihn im Protokoll.
+// Ein alter Schlüssel gilt danach nicht mehr. Den Schlüssel nur in die Widget-App eintragen, nie ins Repo.
+function widgetSchluesselErzeugen() {
+  var schluessel = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, "");
+  PropertiesService.getScriptProperties().setProperty("WIDGET_SCHLUESSEL", schluessel);
+  Logger.log("Neuer WIDGET_SCHLUESSEL (in die Widget-App kopieren): " + schluessel);
+}
+
+// Prüft den Widget-Schlüssel. Bewusst ohne Sperre nach Fehlversuchen (wie beim SMS-Schlüssel).
+// Ein falscher Schlüssel zählt nie als Fehlversuch beim Passwort.
+function pruefeWidgetSchluessel_(schluessel) {
+  var soll = PropertiesService.getScriptProperties().getProperty("WIDGET_SCHLUESSEL");
+  if (!soll) return "fehlt";
+  return String(schluessel || "") === soll ? "ok" : "falsch";
+}
+
+// Antwort für die Widget-App: { ok, offen } = Zahl der SMS mit Status "offen". Liest nur die Spalte "status".
+function widgetAntwort_(data) {
+  var status = pruefeWidgetSchluessel_(data.schluessel);
+  if (status !== "ok") {
+    console.warn("Widget abgelehnt: " + (status === "fehlt" ? "Schlüssel fehlt" : "Schlüssel falsch"));
+    return { error: "schluessel", message: status === "fehlt" ? "WIDGET_SCHLUESSEL fehlt" : "Schlüssel falsch" };
+  }
+  try {
+    var blatt = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BLATT_SMS_);
+    if (!blatt) return { ok: true, offen: 0 };
+    var sp = smsSpalten_(blatt);
+    if (!sp) return { error: "blatt", message: "Im Blatt 'SMS' fehlen Spalten in Zeile 1." };
+    var letzte = blatt.getLastRow();
+    if (letzte < 2) return { ok: true, offen: 0 };
+    var offen = 0;
+    blatt.getRange(2, sp.status + 1, letzte - 1, 1).getValues().forEach(function (z) {
+      if (String(z[0]) === "offen") offen++;
+    });
+    return { ok: true, offen: offen };
+  } catch (err) {
+    return { error: "server", message: "Fehler beim Lesen" };
+  }
 }
