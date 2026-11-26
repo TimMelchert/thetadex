@@ -4,7 +4,7 @@
 Lies sie zuerst, bei jeder Aufgabe. Der Rückblick (was wann gebaut wurde) steht in `docs/GESCHICHTE.md`; die liest du nur bei Bedarf (Entscheidung der Person, 16.11.2026). `CLAUDE.md` im Hauptordner zeigt nur hierher.
 Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); am Ende der Etappe wird er hier eingearbeitet und gelöscht.
 
-- Version der App: **1.10.0** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
+- Version der App: **1.10.1** (gleich in `js/config.js` und `sw.js`: beide Dateien prüfen; die Dateien gibt es ab Schritt 0.1)
 - Repo: https://github.com/TimMelchert/thetadex (öffentlich)
 - Seite (App): https://timmelchert.github.io/thetadex/
 - Etappe 2 „Bestehendes umziehen“ ist fertig (30.10.2026). Der Umstieg von den alten Apps ist erledigt (1.11.2026).
@@ -23,7 +23,7 @@ Für eine neue Etappe kommt ein eigener Plan dazu (`docs/PLAN-ETAPPE-<n>.md`); a
 - Etappe 15 „Packlisten“ (1.7.x) ist fertig (23.11.2026): Reiter Packlisten mit Zähler „Nutzungen“, Festlegungen in 4 („Packlisten“), Prüfung `pruefung/etappe-15-packlisten-bericht.md` in den Projektdateien.
 - Etappe 16 „Projekte“ (1.8.x) ist fertig (23.11.2026): Reiter Projekte, neue Reihenfolge der Leiste mit Knopf Start, Partner*in schreibt überall in „Gemeinsam“. Festlegungen in 4 („Projekte“), Prüfung `pruefung/etappe-16-projekte-bericht.md` in den Projektdateien.
 - Etappe 17 „Bingo“ (1.9.x) ist fertig (26.11.2026): Jahres-Vorsatz-Bingo als Unterreiter im Reiter Projekte, Bilder klein im Sheet, laufendes Jahr im Gerät. Festlegungen in 4 („Projekte“, Unterpunkt „Bingo“), Prüfung `pruefung/etappe-17-bingo-bericht.md` in den Projektdateien.
-- Etappe 18 „Widget“ (1.10.x) ist geplant: Plan `docs/PLAN-ETAPPE-18.md` (eigene kleine Android-App mit Widget und Overlay am Abend, Skripte melden nur ja/nein und eine Zahl). Nächster Schritt: 18.1 (Skripte).
+- Etappe 18 „Widget“ (1.10.x) ist geplant: Plan `docs/PLAN-ETAPPE-18.md` (eigene kleine Android-App mit Widget und Overlay am Abend, Skripte melden nur ja/nein und eine Zahl). Schritt 18.1 (Aktion `widget` in den Skripten Tracking und Finanzen) ist gebaut, nächster Schritt: 18.2 (Widget-App).
 
 Inhalt: 1 Arbeitsregeln · 2 Aufbau · 3 Aktueller Stand und Offen · 4 Festlegungen je Bereich · 5 Technik-Merkzettel ·
 6 Dateiübersicht · 7 Pläne · 8 Geschichte (Verweis auf `docs/GESCHICHTE.md`)
@@ -285,6 +285,7 @@ unter „Info“ die Version prüfen.
   - Tracking (ab 0.2): Passwort aus `APP_PIN`, Sperre, JSON-Antworten, `LockService`, Prüfung von Datum und Feldnamen.
     Aktionen: `ping` (nur prüfen), `einstellungen` (Felder aus Blatt `Einstellungen`, ab 2.1), `eintragen` (`datum` als JJJJ-MM-TT, `values` = Spaltenname → Wert).
     `tabelle` (`jahr`: Einträge eines Jahres und Liste der Jahre, ab 2.3).
+    Ab 18.1: Aktion `widget` (ohne Passwort, nur mit `WIDGET_SCHLUESSEL`, antwortet nur `datum`, `heute`, `gestern` als ja/nein), Funktion `widgetSchluesselErzeugen`.
     Funktion `einrichten` legt das Blatt `Einstellungen` an (Spalten `feld, gruppe, art, vorgabe, optionen, schritt, farben`).
   - Finanzen: Aktionen `stats`, `analyse` (ab 2.4 mit `kategorien` je Monat: `aus`, `ein`, `netto`), `buchen`, `einstellungen` (ab 2.2: Zwecke, Kategorien, Rückzahlungen, Eigenanteile
     aus Blatt `Einstellungen`, Spalten `liste, name, kategorie, betrag, zweck`). Funktion `einrichten` legt das Blatt an.
@@ -294,6 +295,7 @@ unter „Info“ die Version prüfen.
     Ab 1.3.16 liefert `analyse` auch `vermoegen` (`verlauf`: Vermögen am Ende jedes Monats, rückwärts vom Gesamtstand in `Übersicht` gerechnet mit der Spalte `Haben aktuell` (Kopfzeile 7) jedes Konto-Blatts; `fehlend`: Blätter ohne diese Spalte).
     Ab 1.3.26: `analyse` liegt 10 Minuten im Zwischenspeicher des Skripts (CacheService, in Stücken); `buchen` löscht ihn, `frisch: true` (Knopf „Neu laden“) fragt am Speicher vorbei. Jedes Konto-Blatt wird je Aufruf nur einmal gelesen (`kontoDaten_`). `einstellungen` liefert bei Zwecken `monate`.
     Ab 9.2: `smsListe` (offene SMS), `smsErledigt` (`id`, verwerfen), `buchen` mit `sms_id` (bucht und setzt die SMS im selben Lauf auf „gebucht“; ist sie schon erledigt, Fehler `erledigt`). Nach der Zuordnung löscht das Skript Text und Absender. `einstellungen` liefert dazu `smsWoerter` (Liste `sms`: `name` = Suchwort, `zweck`, `kategorie`).
+    Ab 18.1: Aktion `widget` (ohne Passwort, nur mit `WIDGET_SCHLUESSEL`, antwortet nur `offen` = Zahl der offenen SMS), Funktion `widgetSchluesselErzeugen`.
 - Was in welcher Etappe gebaut wurde (Etappen 0 bis 11, jeweils fertig, siehe Kopf dieser Datei), steht ausführlich in `docs/GESCHICHTE.md` (Teil 1).
   Die gültigen Regeln je Bereich stehen in Abschnitt 4. Bei Widerspruch gilt Abschnitt 4.
 ### 3.2 Offen
@@ -680,3 +682,4 @@ Letzte Versionen:
 - **1.9.3** Besitz: Passt die Hauptsache zur Suche, wird ihr ganzes Zubehör mit gezeigt.
 - **1.9.4** Schritt 17.4: Abschluss Etappe 17 „Bingo“: Prüfung, Plan in 4 eingearbeitet und gelöscht.
 - **1.10.0** Schritt 18.0: Plan Etappe 18 „Widget“.
+- **1.10.1** Schritt 18.1: Aktion `widget` mit eigenem `WIDGET_SCHLUESSEL` in den Skripten Tracking und Finanzen.

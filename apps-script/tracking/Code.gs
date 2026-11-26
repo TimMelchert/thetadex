@@ -58,6 +58,10 @@ function doPost(e) {
     return jsonOut_({ error: "anfrage", message: "Ungültige Anfrage" });
   }
 
+  // Widget-App (Etappe 18): nur mit WIDGET_SCHLUESSEL, nicht mit dem Passwort.
+  // Antwortet nur, ob heute und gestern eingetragen ist. Liest keine Werte, schreibt nichts.
+  if (data && data.action === "widget") return jsonOut_(widgetAntwort_(data));
+
   var status = pruefePin_(data.pin);
   if (status === 'gesperrt') {
     return jsonOut_({ error: "gesperrt", message: "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen." });
@@ -247,4 +251,57 @@ function tabelleLesen_(jahrWunsch) {
     felder: einst.felder,
     zeilen: zeilen
   };
+}
+
+// --- 6. WIDGET (Etappe 18, siehe docs/PLAN-ETAPPE-18.md) ---
+
+// Einmal im Editor ausführen: erzeugt einen neuen, zufälligen WIDGET_SCHLUESSEL und zeigt ihn im Protokoll.
+// Ein alter Schlüssel gilt danach nicht mehr. Den Schlüssel nur in die Widget-App eintragen, nie ins Repo.
+function widgetSchluesselErzeugen() {
+  var schluessel = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, "");
+  PropertiesService.getScriptProperties().setProperty("WIDGET_SCHLUESSEL", schluessel);
+  Logger.log("Neuer WIDGET_SCHLUESSEL (in die Widget-App kopieren): " + schluessel);
+}
+
+// Prüft den Widget-Schlüssel. Bewusst ohne Sperre nach Fehlversuchen: 64 zufällige Zeichen sind nicht zu erraten,
+// und eine Sperre ließe Fremde das Widget blockieren. Ein falscher Schlüssel zählt nie als Fehlversuch beim Passwort.
+function pruefeWidgetSchluessel_(schluessel) {
+  var soll = PropertiesService.getScriptProperties().getProperty("WIDGET_SCHLUESSEL");
+  if (!soll) return "fehlt";
+  return String(schluessel || "") === soll ? "ok" : "falsch";
+}
+
+// Antwort für die Widget-App: { ok, datum, heute, gestern }. "Eingetragen" = es gibt eine Zeile mit diesem Datum.
+// Liest nur die Spalte "Datum" der letzten 14 Zeilen, nie die Werte.
+function widgetAntwort_(data) {
+  var status = pruefeWidgetSchluessel_(data.schluessel);
+  if (status !== "ok") {
+    console.warn("Widget abgelehnt: " + (status === "fehlt" ? "Schlüssel fehlt" : "Schlüssel falsch"));
+    return { error: "schluessel", message: status === "fehlt" ? "WIDGET_SCHLUESSEL fehlt" : "Schlüssel falsch" };
+  }
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BLATT_);
+    if (!sheet) return { error: "blatt", message: "Blatt '" + BLATT_ + "' nicht gefunden" };
+    var kopf = sheet.getRange(KOPFZEILE_, 1, 1, sheet.getLastColumn()).getValues()[0].map(function (h) { return String(h).trim(); });
+    var datumSpalte = kopf.indexOf("Datum");
+    if (datumSpalte === -1) return { error: "blatt", message: "Spalte 'Datum' nicht gefunden" };
+
+    var zone = Session.getScriptTimeZone();
+    var heute = Utilities.formatDate(new Date(), zone, "yyyy-MM-dd");
+    var t = heute.split("-").map(Number);
+    // Gestern über das Datum rechnen (12:00 Uhr), nicht über 24 Stunden: sonst stimmt es bei der Zeitumstellung nicht.
+    var gestern = Utilities.formatDate(new Date(t[0], t[1] - 1, t[2] - 1, 12, 0, 0), zone, "yyyy-MM-dd");
+
+    var lastRow = sheet.getLastRow();
+    var ab = Math.max(KOPFZEILE_ + 1, lastRow - 13);
+    var tage = {};
+    if (lastRow >= ab) {
+      sheet.getRange(ab, datumSpalte + 1, lastRow - ab + 1, 1).getValues().forEach(function (z) {
+        if (z[0] instanceof Date) tage[Utilities.formatDate(z[0], zone, "yyyy-MM-dd")] = true;
+      });
+    }
+    return { ok: true, datum: heute, heute: tage[heute] === true, gestern: tage[gestern] === true };
+  } catch (err) {
+    return { error: "server", message: "Fehler beim Lesen" };
+  }
 }
